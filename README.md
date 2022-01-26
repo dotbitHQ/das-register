@@ -14,6 +14,7 @@ Backend of DAS registration service. You can use this repo to build your own DAS
 
 * Ubuntu 18.04 or newer
 * MYSQL >= 8.0
+* Redis >= 5.0 (for cache)  
 * GO version >= 1.15.0
 * [CKB Node](https://github.com/nervosnetwork/ckb)
 * [CKB Indexer](https://github.com/nervosnetwork/ckb-indexer)

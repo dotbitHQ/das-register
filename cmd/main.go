@@ -75,10 +75,12 @@ func runServer(ctx *cli.Context) error {
 	// redis
 	red, err := toolib.NewRedisClient(config.Cfg.Cache.Redis.Addr, config.Cfg.Cache.Redis.Password, config.Cfg.Cache.Redis.DbNum)
 	if err != nil {
-		return fmt.Errorf("NewRedisClient err:%s", err.Error())
+		log.Info("NewRedisClient err: %s", err.Error())
+		//return fmt.Errorf("NewRedisClient err:%s", err.Error())
+	} else {
+		log.Info("redis ok")
 	}
 	rc := cache.Initialize(red)
-	log.Info("redis ok")
 
 	// das core
 	dasCore, dasCache, err := initDasCore()
