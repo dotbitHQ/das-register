@@ -52,7 +52,7 @@ func SendNotifyDiscord(webhook, content string) error {
 	resp, _, errs := gorequest.New().Post(webhook).SendStruct(&data).Timeout(time.Second * 10).End()
 	if len(errs) > 0 {
 		return fmt.Errorf("errs:%v", errs)
-	} else if resp.StatusCode != http.StatusOK {
+	} else if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("http code:%d", resp.StatusCode)
 	}
 	return nil
