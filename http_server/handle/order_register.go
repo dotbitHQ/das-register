@@ -92,6 +92,10 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
+	if yes := req.PayTokenId.IsTokenIdCkbInternal(); yes {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
+		return nil
+	}
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {

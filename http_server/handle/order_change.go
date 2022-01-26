@@ -88,6 +88,10 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
+	if yes := req.PayTokenId.IsTokenIdCkbInternal(); yes {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
+		return nil
+	}
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {

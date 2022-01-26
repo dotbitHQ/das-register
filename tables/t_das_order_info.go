@@ -84,9 +84,13 @@ const (
 	TokenIdMatic       PayTokenId = "polygon_matic"
 )
 
+func (p PayTokenId) IsTokenIdCkbInternal() bool {
+	return p == TokenIdCkbInternal
+}
+
 func (p PayTokenId) ToChainString() string {
 	switch p {
-	case TokenIdDas, TokenIdCkb:
+	case TokenIdDas, TokenIdCkb, TokenIdCkbInternal:
 		return "ckb"
 	case TokenIdEth:
 		return "eth"
@@ -102,7 +106,7 @@ func (p PayTokenId) ToChainString() string {
 
 func (p PayTokenId) ToChainType() common.ChainType {
 	switch p {
-	case TokenIdDas, TokenIdCkb:
+	case TokenIdDas, TokenIdCkb, TokenIdCkbInternal:
 		return common.ChainTypeCkb
 	case TokenIdEth, TokenIdBnb, TokenIdMatic:
 		return common.ChainTypeEth
