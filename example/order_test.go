@@ -42,7 +42,7 @@ func TestAccountSearch(t *testing.T) {
 func TestOrderRegister(t *testing.T) {
 	req := handle.ReqOrderRegister{
 		ReqAccountSearch: handle.ReqAccountSearch{
-			ChainType: common.ChainTypeEth,
+			ChainType: common.ChainTypeTron,
 			Address:   "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			Account:   "1234567885.bit",
 			AccountCharStr: []tables.AccountCharSet{

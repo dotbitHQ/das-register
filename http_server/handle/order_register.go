@@ -15,6 +15,7 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -96,8 +97,8 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
 		return nil
 	}
-	if ok := checkRegisterChainType(req.ChainType); !ok {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%s] invalid", req.ChainType.String()))
+	if ok := checkRegisterChainTypeAndAddress(req.ChainType, req.Address); !ok {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type and address [%s-%s] invalid", req.ChainType.String(), req.Address))
 		return nil
 	}
 
@@ -350,10 +351,16 @@ func (h *HttpHandle) getOrderAmount(account, inviterAccount string, years int, i
 	return
 }
 
-func checkRegisterChainType(chainType common.ChainType) bool {
+func checkRegisterChainTypeAndAddress(chainType common.ChainType, address string) bool {
 	switch chainType {
-	case common.ChainTypeTron, common.ChainTypeEth:
-		return true
+	case common.ChainTypeTron:
+		if strings.HasPrefix(address, common.TronPreFix) || strings.HasPrefix(address, common.TronBase58PreFix) {
+			return true
+		}
+	case common.ChainTypeEth:
+		if strings.HasPrefix(address, common.HexPreFix) {
+			return true
+		}
 	}
 	return false
 }
