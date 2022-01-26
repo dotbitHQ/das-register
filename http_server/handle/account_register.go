@@ -84,6 +84,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 
 	if len(req.AccountCharStr) == 0 {
 		req.AccountCharStr = AccountToCharSet(req.Account)
+		log.Info("AccountToCharSet:", toolib.JsonString(req.AccountCharStr))
 	}
 
 	if ok := checkRegisterChainTypeAndAddress(req.ChainType, req.Address); !ok {
