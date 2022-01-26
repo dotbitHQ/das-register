@@ -5,7 +5,7 @@ server:
   http_server_internal_addr: ":8119"
   pay_server_address: "" # for send register tx
   pay_private: ""
-  parser_url: "http://127.0.0.1:9118" # das-database server
+  parser_url: "http://127.0.0.1:9118/v1" # das-database server
   tx_tool_switch: true # open send register tx
 origins: # cross domain
   - ""
