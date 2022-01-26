@@ -51,7 +51,6 @@ func (h *HttpHandle) Version(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
-	// 业务
 	if err = h.doVersion(&req, &apiResp); err != nil {
 		log.Error("doVersion err:", err.Error(), funcName, clientIp)
 	}

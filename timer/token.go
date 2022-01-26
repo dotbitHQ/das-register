@@ -26,7 +26,7 @@ func (t *TxTimer) doUpdateTokenMap() error {
 }
 
 func GetTokenInfo(tokenId tables.PayTokenId) tables.TableTokenPriceInfo {
-	if tokenId == tables.TokenIdDas {
+	if tokenId == tables.TokenIdDas || tokenId == tables.TokenIdCkbInternal {
 		tokenId = tables.TokenIdCkb
 	}
 	tokenLock.RLock()
