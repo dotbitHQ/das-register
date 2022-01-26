@@ -14,6 +14,7 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -80,6 +81,11 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
+
+	if len(req.AccountCharStr) == 0 {
+		req.AccountCharStr = AccountToCharSet(req.Account)
+	}
+
 	if ok := checkRegisterChainTypeAndAddress(req.ChainType, req.Address); !ok {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type and address [%s-%s] invalid", req.ChainType.String(), req.Address))
 		return nil
@@ -152,6 +158,24 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 
 	apiResp.ApiRespOK(resp)
 	return nil
+}
+
+func AccountToCharSet(account string) (accountChars []tables.AccountCharSet) {
+	chars := []rune(account)
+	for _, v := range chars {
+		char := string(v)
+		charSetName := tables.AccountCharTypeEmoji
+		if strings.Contains(config.AccountCharSetEn, char) {
+			charSetName = tables.AccountCharTypeEn
+		} else if strings.Contains(config.AccountCharSetNumber, char) {
+			charSetName = tables.AccountCharTypeNumber
+		}
+		accountChars = append(accountChars, tables.AccountCharSet{
+			CharSetName: charSetName,
+			Char:        char,
+		})
+	}
+	return
 }
 
 func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *api_code.ApiResp, resp *RespAccountRegister) {

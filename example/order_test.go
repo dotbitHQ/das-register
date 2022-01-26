@@ -169,3 +169,8 @@ func TestRegisteringList(t *testing.T) {
 	}
 	fmt.Println(data)
 }
+
+func TestAccountCharSet(t *testing.T) {
+	account := "0123456789abcdefghijklmnopqrstuvwxyz.bit"
+	fmt.Println(handle.AccountToCharSet(account))
+}
