@@ -92,6 +92,10 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
 		return nil
 	}
+	if ok := checkRegisterChainType(req.ChainType); !ok {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%s] invalid", req.ChainType.String()))
+		return nil
+	}
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {

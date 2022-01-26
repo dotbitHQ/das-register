@@ -96,6 +96,11 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
 		return nil
 	}
+	if ok := checkRegisterChainType(req.ChainType); !ok {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%s] invalid", req.ChainType.String()))
+		return nil
+	}
+
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
@@ -343,4 +348,12 @@ func (h *HttpHandle) getOrderAmount(account, inviterAccount string, years int, i
 		log.Info("amountTotalPayToken:", amountTotalPayToken.String())
 	}
 	return
+}
+
+func checkRegisterChainType(chainType common.ChainType) bool {
+	switch chainType {
+	case common.ChainTypeTron, common.ChainTypeEth:
+		return true
+	}
+	return false
 }
