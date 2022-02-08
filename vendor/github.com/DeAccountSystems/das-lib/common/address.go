@@ -11,10 +11,11 @@ import (
 type ChainType int
 
 const (
-	ChainTypeCkb  ChainType = 0
-	ChainTypeEth  ChainType = 1
-	ChainTypeBtc  ChainType = 2
-	ChainTypeTron ChainType = 3
+	ChainTypeCkb   ChainType = 0
+	ChainTypeEth   ChainType = 1
+	ChainTypeBtc   ChainType = 2
+	ChainTypeTron  ChainType = 3
+	ChainTypeMixin ChainType = 4
 
 	HexPreFix           = "0x"
 	TronPreFix          = "41"
@@ -23,6 +24,7 @@ const (
 	DasLockEthPreFix    = "03"
 	DasLockTronPreFix   = "04"
 	DasLockEth712PreFix = "05"
+	DasLockMixinPreFix  = "06"
 )
 
 const (
@@ -31,10 +33,11 @@ const (
 )
 
 const (
-	DasAccountSuffix = ".bit"
-	DasLockArgsLen   = 42
-	DasAccountIdLen  = 20
-	HashBytesLen     = 32
+	DasAccountSuffix  = ".bit"
+	DasLockArgsLen    = 42
+	DasLockArgsLenMax = 66
+	DasAccountIdLen   = 20
+	HashBytesLen      = 32
 
 	ExpireTimeLen    = 8
 	NextAccountIdLen = 20
@@ -54,6 +57,8 @@ func (c ChainType) String() string {
 		return "ETH"
 	case ChainTypeTron:
 		return "TRON"
+	case ChainTypeMixin:
+		return "MIXIN"
 	}
 	return ""
 }

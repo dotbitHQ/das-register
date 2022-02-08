@@ -1,9 +1,12 @@
 package witness
 
 import (
+	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
 	"github.com/DeAccountSystems/das-lib/molecule"
+	"github.com/shopspring/decimal"
 	"strings"
+	"time"
 )
 
 func ParserWitnessData(witnessByte []byte) interface{} {
@@ -117,7 +120,8 @@ func ParserWitnessData(witnessByte []byte) interface{} {
 
 func parserDefaultWitness(witnessByte []byte) interface{} {
 	return map[string]interface{}{
-		"unknown": common.Bytes2Hex(witnessByte),
+		"name":    "unknown",
+		"witness": common.Bytes2Hex(witnessByte),
 	}
 }
 
@@ -167,8 +171,8 @@ func parserConfig(priceConfig *molecule.PriceConfig) map[string]interface{} {
 
 	return map[string]interface{}{
 		"length": length,
-		"new":    newP,
-		"renew":  renew,
+		"new":    ConvertDollar(newP),
+		"renew":  ConvertDollar(renew),
 	}
 }
 
@@ -181,7 +185,8 @@ func ParserActionData(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(builder.ActionData.AsSlice())),
-		"ActionData": map[string]interface{}{
+		"name":         "ActionData",
+		"data": map[string]interface{}{
 			"action":      builder.Action,
 			"action_hash": common.Bytes2Hex(builder.ActionData.Action().RawData()),
 			"params":      builder.ParamsStr,
@@ -223,8 +228,9 @@ func ParserAccountCell(witnessByte []byte) interface{} {
 	}
 
 	return map[string]interface{}{
-		"witness":     common.Bytes2Hex(witnessByte),
-		"AccountCell": accountCells,
+		"witness": common.Bytes2Hex(witnessByte),
+		"name":    "AccountCell",
+		"data":    accountCells,
 	}
 }
 
@@ -246,7 +252,7 @@ func parserAccountCellV1(dataEntity *molecule.DataEntity) map[string]interface{}
 			"type":  string(record.RecordType().RawData()),
 			"label": string(record.RecordLabel().RawData()),
 			"value": string(record.RecordValue().RawData()),
-			"ttl":   ttl,
+			"ttl":   ConvertMinute(ttl),
 		})
 	}
 
@@ -255,8 +261,8 @@ func parserAccountCellV1(dataEntity *molecule.DataEntity) map[string]interface{}
 		"entity": map[string]interface{}{
 			"id":            common.Bytes2Hex(accountCellV1.Id().RawData()),
 			"account":       common.AccountCharsToAccount(accountCellV1.Account()),
-			"registered_at": registeredAt,
-			"updated_at":    updatedAt,
+			"registered_at": ConvertTimestamp(int64(registeredAt)),
+			"updated_at":    ConvertTimestamp(int64(updatedAt)),
 			"status":        status,
 			"records":       recordsMaps,
 		},
@@ -283,7 +289,7 @@ func parserAccountCell(dataEntity *molecule.DataEntity) map[string]interface{} {
 			"type":  string(record.RecordType().RawData()),
 			"label": string(record.RecordLabel().RawData()),
 			"value": string(record.RecordValue().RawData()),
-			"ttl":   ttl,
+			"ttl":   ConvertMinute(ttl),
 		})
 	}
 
@@ -292,10 +298,10 @@ func parserAccountCell(dataEntity *molecule.DataEntity) map[string]interface{} {
 		"entity": map[string]interface{}{
 			"id":                       common.Bytes2Hex(accountCell.Id().RawData()),
 			"account":                  common.AccountCharsToAccount(accountCell.Account()),
-			"registered_at":            registeredAt,
-			"last_transfer_account_at": lastTransferAccountAt,
-			"last_edit_manager_at":     lastEditManagerAt,
-			"last_edit_records_at":     lastEditRecordsAt,
+			"registered_at":            ConvertTimestamp(int64(registeredAt)),
+			"last_transfer_account_at": ConvertTimestamp(int64(lastTransferAccountAt)),
+			"last_edit_manager_at":     ConvertTimestamp(int64(lastEditManagerAt)),
+			"last_edit_records_at":     ConvertTimestamp(int64(lastEditRecordsAt)),
 			"status":                   status,
 			"records":                  recordsMaps,
 		},
@@ -337,8 +343,9 @@ func ParserAccountSaleCell(witnessByte []byte) interface{} {
 	}
 
 	return map[string]interface{}{
-		"witness":         common.Bytes2Hex(witnessByte),
-		"AccountSaleCell": accountSaleCells,
+		"witness": common.Bytes2Hex(witnessByte),
+		"name":    "AccountSaleCell",
+		"data":    accountSaleCells,
 	}
 }
 
@@ -355,9 +362,9 @@ func parserAccountSaleCellV1(dataEntity *molecule.DataEntity) map[string]interfa
 		"entity": map[string]interface{}{
 			"id":          common.Bytes2Hex(accountSaleCellV1.AccountId().RawData()),
 			"account":     string(accountSaleCellV1.Account().RawData()),
-			"price":       price,
+			"price":       ConvertCapacity(price),
 			"description": string(accountSaleCellV1.Description().RawData()),
-			"started_at":  startedAt,
+			"started_at":  ConvertTimestamp(int64(startedAt)),
 		},
 	}
 }
@@ -375,9 +382,9 @@ func parserAccountSaleCell(dataEntity *molecule.DataEntity) map[string]interface
 		"entity": map[string]interface{}{
 			"id":          common.Bytes2Hex(accountSaleCell.AccountId().RawData()),
 			"account":     string(accountSaleCell.Account().RawData()),
-			"price":       price,
+			"price":       ConvertCapacity(price),
 			"description": string(accountSaleCell.Description().RawData()),
-			"started_at":  startedAt,
+			"started_at":  ConvertTimestamp(int64(startedAt)),
 		},
 	}
 }
@@ -417,20 +424,21 @@ func ParserAccountAuctionCell(witnessByte []byte) interface{} {
 				"id":                      common.Bytes2Hex(accountAuctionCell.AccountId().RawData()),
 				"account":                 string(accountAuctionCell.Account().RawData()),
 				"description":             string(accountAuctionCell.Description().RawData()),
-				"opening_price":           openingPrice,
-				"incrementRateEachBid":    incrementRateEachBid,
-				"started_at":              startedAt,
-				"ended_at":                endedAt,
+				"opening_price":           ConvertCapacity(openingPrice),
+				"incrementRateEachBid":    ConvertRate(incrementRateEachBid),
+				"started_at":              ConvertTimestamp(int64(startedAt)),
+				"ended_at":                ConvertTimestamp(int64(endedAt)),
 				"current_bidder_lock":     parserScript(accountAuctionCell.CurrentBidderLock()),
-				"current_bid_price":       currentBidPrice,
-				"prev_bidder_profit_rate": prevBidderProfitRate,
+				"current_bid_price":       ConvertCapacity(currentBidPrice),
+				"prev_bidder_profit_rate": ConvertRate(prevBidderProfitRate),
 			},
 		}
 	}
 
 	return map[string]interface{}{
-		"witness":            common.Bytes2Hex(witnessByte),
-		"AccountAuctionCell": accountAuctionCells,
+		"witness": common.Bytes2Hex(witnessByte),
+		"name":    "AccountAuctionCell",
+		"data":    accountAuctionCells,
 	}
 }
 
@@ -484,8 +492,9 @@ func ParserProposalCell(witnessByte []byte) interface{} {
 	}
 
 	return map[string]interface{}{
-		"witness":      common.Bytes2Hex(witnessByte),
-		"ProposalCell": proposalCells,
+		"witness": common.Bytes2Hex(witnessByte),
+		"name":    "ProposalCell",
+		"data":    proposalCells,
 	}
 }
 
@@ -528,15 +537,16 @@ func ParserPreAccountCell(witnessByte []byte) interface{} {
 				"channel_lock":     parserScript(channelLock),
 				"price":            parserConfig(preAccountCell.Price()),
 				"quote":            quote,
-				"invited_discount": invitedDiscount,
-				"created_at":       createdAt,
+				"invited_discount": ConvertRate(invitedDiscount),
+				"created_at":       ConvertTimestamp(int64(createdAt)),
 			},
 		}
 	}
 
 	return map[string]interface{}{
-		"witness":        common.Bytes2Hex(witnessByte),
-		"PreAccountCell": preAccountCells,
+		"witness": common.Bytes2Hex(witnessByte),
+		"name":    "PreAccountCell",
+		"data":    preAccountCells,
 	}
 }
 
@@ -570,7 +580,7 @@ func ParserIncomeCell(witnessByte []byte) interface{} {
 					"hash_type": common.Bytes2Hex(record.BelongTo().HashType().AsSlice()),
 					"args":      common.Bytes2Hex(record.BelongTo().Args().RawData()),
 				},
-				"capacity": capacity,
+				"capacity": ConvertCapacity(capacity),
 			})
 		}
 
@@ -589,8 +599,9 @@ func ParserIncomeCell(witnessByte []byte) interface{} {
 	}
 
 	return map[string]interface{}{
-		"witness":    common.Bytes2Hex(witnessByte),
-		"IncomeCell": incomeCells,
+		"witness": common.Bytes2Hex(witnessByte),
+		"name":    "IncomeCell",
+		"data":    incomeCells,
 	}
 }
 
@@ -630,8 +641,9 @@ func ParserOfferCell(witnessByte []byte) interface{} {
 	}
 
 	return map[string]interface{}{
-		"witness":   common.Bytes2Hex(witnessByte),
-		"OfferCell": offerCells,
+		"witness": common.Bytes2Hex(witnessByte),
+		"name":    "OfferCell",
+		"data":    offerCells,
 	}
 }
 
@@ -659,21 +671,22 @@ func ParserConfigCellAccount(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellAccount.AsSlice())),
-		"ConfigCellAccount": map[string]interface{}{
+		"name":         "ConfigCellAccount",
+		"data": map[string]interface{}{
 			"max_length":                maxLength,
-			"basic_capacity":            basicCapacity,
-			"prepared_fee_capacity":     preparedFeeCapacity,
-			"expiration_grace_period":   expirationGracePeriod,
-			"record_min_ttl":            recordMinTtl,
+			"basic_capacity":            ConvertCapacity(basicCapacity),
+			"prepared_fee_capacity":     ConvertCapacity(preparedFeeCapacity),
+			"expiration_grace_period":   ConvertDay(expirationGracePeriod),
+			"record_min_ttl":            ConvertMinute(recordMinTtl),
 			"record_size_limit":         recordSizeLimit,
-			"transfer_account_fee":      transferAccountFee,
-			"edit_manager_fee":          editManagerFee,
-			"edit_records_fee":          editRecordsFee,
-			"common_fee":                commonFee,
-			"transfer_account_throttle": transferAccountThrottle,
-			"edit_manager_throttle":     editManagerThrottle,
-			"edit_records_throttle":     editRecordsThrottle,
-			"common_throttle":           commonThrottle,
+			"transfer_account_fee":      ConvertCapacity(transferAccountFee),
+			"edit_manager_fee":          ConvertCapacity(editManagerFee),
+			"edit_records_fee":          ConvertCapacity(editRecordsFee),
+			"common_fee":                ConvertCapacity(commonFee),
+			"transfer_account_throttle": ConvertMinute(transferAccountThrottle),
+			"edit_manager_throttle":     ConvertMinute(editManagerThrottle),
+			"edit_records_throttle":     ConvertMinute(editRecordsThrottle),
+			"common_throttle":           ConvertMinute(commonThrottle),
 		},
 	}
 }
@@ -689,7 +702,8 @@ func ParserConfigCellApply(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellApply.AsSlice())),
-		"ConfigCellApply": map[string]interface{}{
+		"name":         "ConfigCellApply",
+		"data": map[string]interface{}{
 			"apply_min_waiting_block_number": applyMinWaitingBlockNumber,
 			"apply_max_waiting_block_number": applyMaxWaitingBlockNumber,
 		},
@@ -708,10 +722,11 @@ func ParserConfigCellIncome(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellIncome.AsSlice())),
-		"ConfigCellIncome": map[string]interface{}{
-			"basic_capacity":        basicCapacity,
+		"name":         "ConfigCellIncome",
+		"data": map[string]interface{}{
+			"basic_capacity":        ConvertCapacity(basicCapacity),
 			"max_records":           maxRecords,
-			"min_transfer_capacity": minTransferCapacity,
+			"min_transfer_capacity": ConvertCapacity(minTransferCapacity),
 		},
 	}
 }
@@ -731,7 +746,8 @@ func ParserConfigCellMain(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellMain.AsSlice())),
-		"ConfigCellMain": map[string]interface{}{
+		"name":         "ConfigCellMain",
+		"data": map[string]interface{}{
 			"status": status,
 			"type_id_table": map[string]interface{}{
 				"account_cell":         common.Bytes2Hex(configCellMain.TypeIdTable().AccountCell().RawData()),
@@ -786,9 +802,10 @@ func ParserConfigCellPrice(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellPrice.AsSlice())),
-		"ConfigCellPrice": map[string]interface{}{
+		"name":         "ConfigCellPrice",
+		"data": map[string]interface{}{
 			"discount": map[string]interface{}{
-				"invited_discount": invitedDiscount,
+				"invited_discount": ConvertRate(invitedDiscount),
 			},
 			"prices": prices,
 		},
@@ -809,7 +826,8 @@ func ParserConfigCellProposal(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellProposal.AsSlice())),
-		"ConfigCellProposal": map[string]interface{}{
+		"name":         "ConfigCellProposal",
+		"data": map[string]interface{}{
 			"proposal_min_confirm_interval":    proposalMinConfirmInterval,
 			"proposal_min_recycle_interval":    proposalMinRecycleInterval,
 			"proposal_min_extend_interval":     proposalMinExtendInterval,
@@ -841,19 +859,20 @@ func ParserConfigCellProfitRate(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellProfitRate.AsSlice())),
-		"ConfigCellProfitRate": map[string]interface{}{
-			"inviter":                inviter,
-			"channel":                channel,
-			"proposal_create":        proposalCreate,
-			"proposal_confirm":       proposalConfirm,
-			"income_consolidate":     incomeConsolidate,
-			"sale_buyer_inviter":     saleBuyerInviter,
-			"sale_buyer_channel":     saleBuyerChannel,
-			"sale_das":               saleDas,
-			"auction_bidder_inviter": auctionBidderInviter,
-			"auction_bidder_channel": auctionBidderChannel,
-			"auction_das":            auctionDas,
-			"auction_prev_bidder":    auctionPrevBidder,
+		"name":         "ConfigCellProfitRate",
+		"data": map[string]interface{}{
+			"inviter":                ConvertRate(inviter),
+			"channel":                ConvertRate(channel),
+			"proposal_create":        ConvertRate(proposalCreate),
+			"proposal_confirm":       ConvertRate(proposalConfirm),
+			"income_consolidate":     ConvertRate(incomeConsolidate),
+			"sale_buyer_inviter":     ConvertRate(saleBuyerInviter),
+			"sale_buyer_channel":     ConvertRate(saleBuyerChannel),
+			"sale_das":               ConvertRate(saleDas),
+			"auction_bidder_inviter": ConvertRate(auctionBidderInviter),
+			"auction_bidder_channel": ConvertRate(auctionBidderChannel),
+			"auction_das":            ConvertRate(auctionDas),
+			"auction_prev_bidder":    ConvertRate(auctionPrevBidder),
 		},
 	}
 }
@@ -868,7 +887,8 @@ func ParserConfigCellRecordNamespace(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(slice)),
-		"ConfigCellRecordNamespace": map[string]interface{}{
+		"name":         "ConfigCellRecordNamespace",
+		"data": map[string]interface{}{
 			"length":                       dataLength,
 			"config_cell_record_namespace": strings.Split(string(slice[4:dataLength]), string([]byte{0x00})),
 		},
@@ -889,15 +909,16 @@ func ParserConfigCellRelease(witnessByte []byte) interface{} {
 		releaseEnd, _ := molecule.Bytes2GoU64(releaseRule.ReleaseEnd().RawData())
 		releaseRules = append(releaseRules, map[string]interface{}{
 			"length":        length,
-			"release_start": releaseStart,
-			"release_end":   releaseEnd,
+			"release_start": ConvertTimestamp(int64(releaseStart)),
+			"release_end":   ConvertTimestamp(int64(releaseEnd)),
 		})
 	}
 
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellRelease.AsSlice())),
-		"ConfigCellRelease": map[string]interface{}{
+		"name":         "ConfigCellRelease",
+		"data": map[string]interface{}{
 			"release_rules": releaseRules,
 		},
 	}
@@ -913,7 +934,8 @@ func ParserConfigCellUnavailable(witnessByte []byte, action string) interface{} 
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(slice)),
-		action: map[string]interface{}{
+		"name":         action,
+		"data": map[string]interface{}{
 			"length": dataLength,
 		},
 	}
@@ -946,23 +968,24 @@ func ParserConfigCellSecondaryMarket(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellSecondaryMarket.AsSlice())),
-		"ConfigCellSecondaryMarket": map[string]interface{}{
-			"common_fee":                          commonFee,
-			"sale_min_price":                      saleMinPrice,
+		"name":         "ConfigCellSecondaryMarket",
+		"data": map[string]interface{}{
+			"common_fee":                          ConvertCapacity(commonFee),
+			"sale_min_price":                      ConvertCapacity(saleMinPrice),
 			"sale_expiration_limit":               saleExpirationLimit,
 			"sale_description_bytes_limit":        saleDescriptionBytesLimit,
-			"sale_cell_basic_capacity":            saleCellBasicCapacity,
-			"sale_cell_prepared_fee_capacity":     saleCellPreparedFeeCapacity,
+			"sale_cell_basic_capacity":            ConvertCapacity(saleCellBasicCapacity),
+			"sale_cell_prepared_fee_capacity":     ConvertCapacity(saleCellPreparedFeeCapacity),
 			"auction_max_extendable_duration":     auctionMaxExtendableDuration,
 			"auction_duration_increment_each_bid": auctionDurationIncrementEachBid,
-			"auction_min_opening_price":           auctionMinOpeningPrice,
+			"auction_min_opening_price":           ConvertCapacity(auctionMinOpeningPrice),
 			"auction_min_increment_rate_each_bid": auctionMinIncrementRateEachBid,
 			"auction_description_bytes_limit":     auctionDescriptionBytesLimit,
-			"auction_cell_basic_capacity":         auctionCellBasicCapacity,
-			"auction_cell_prepared_fee_capacity":  auctionCellPreparedFeeCapacity,
-			"offer_min_price":                     offerMinPrice,
-			"offer_cell_basic_capacity":           offerCellBasicCapacity,
-			"offer_cell_prepared_fee_capacity":    offerCellPreparedFeeCapacity,
+			"auction_cell_basic_capacity":         ConvertCapacity(auctionCellBasicCapacity),
+			"auction_cell_prepared_fee_capacity":  ConvertCapacity(auctionCellPreparedFeeCapacity),
+			"offer_min_price":                     ConvertCapacity(offerMinPrice),
+			"offer_cell_basic_capacity":           ConvertCapacity(offerCellBasicCapacity),
+			"offer_cell_prepared_fee_capacity":    ConvertCapacity(offerCellPreparedFeeCapacity),
 			"offer_message_bytes_limit":           offerMessageBytesLimit,
 		},
 	}
@@ -980,10 +1003,11 @@ func ParserConfigCellReverseRecord(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellReverseRecord.AsSlice())),
-		"ConfigCellReverseRecord": map[string]interface{}{
-			"common_fee":                   commonFee,
-			"record_prepared_fee_capacity": recordPreparedFeeCapacity,
-			"record_basic_capacity":        recordBasicCapacity,
+		"name":         "ConfigCellReverseRecord",
+		"data": map[string]interface{}{
+			"common_fee":                   ConvertCapacity(commonFee),
+			"record_prepared_fee_capacity": ConvertCapacity(recordPreparedFeeCapacity),
+			"record_basic_capacity":        ConvertCapacity(recordBasicCapacity),
 		},
 	}
 }
@@ -998,7 +1022,8 @@ func ParserConfigCellTypeArgsCharSetEmoji(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(slice)),
-		"ConfigCellTypeArgsCharSetEmoji": map[string]interface{}{
+		"name":         "ConfigCellTypeArgsCharSetEmoji",
+		"data": map[string]interface{}{
 			"length":            dataLength,
 			"config_cell_emoji": strings.Split(string(slice[4:dataLength]), string([]byte{0x00})),
 		},
@@ -1015,7 +1040,8 @@ func ParserConfigCellTypeArgsCharSetDigit(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(slice)),
-		"ConfigCellTypeArgsCharSetDigit": map[string]interface{}{
+		"name":         "ConfigCellTypeArgsCharSetDigit",
+		"data": map[string]interface{}{
 			"length":            dataLength,
 			"config_cell_digit": strings.Split(string(slice[4:dataLength]), string([]byte{0x00})),
 		},
@@ -1032,7 +1058,8 @@ func ParserConfigCellTypeArgsCharSetEn(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(slice)),
-		"ConfigCellTypeArgsCharSetEn": map[string]interface{}{
+		"name":         "ConfigCellTypeArgsCharSetEn",
+		"data": map[string]interface{}{
 			"length":         dataLength,
 			"config_cell_en": strings.Split(string(slice[4:dataLength]), string([]byte{0x00})),
 		},
@@ -1049,7 +1076,8 @@ func ParserConfigCellTypeArgsCharSetHanS(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(slice)),
-		"ConfigCellTypeArgsCharSetHanS": map[string]interface{}{
+		"name":         "ConfigCellTypeArgsCharSetHanS",
+		"data": map[string]interface{}{
 			"length":            dataLength,
 			"config_cell_han_s": strings.Split(string(slice[4:dataLength]), string([]byte{0x00})),
 		},
@@ -1066,9 +1094,36 @@ func ParserConfigCellTypeArgsCharSetHanT(witnessByte []byte) interface{} {
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(slice)),
-		"ConfigCellTypeArgsCharSetHanT": map[string]interface{}{
+		"name":         "ConfigCellTypeArgsCharSetHanT",
+		"data": map[string]interface{}{
 			"length":            dataLength,
 			"config_cell_han_t": strings.Split(string(slice[4:dataLength]), string([]byte{0x00})),
 		},
 	}
+}
+
+func ConvertMinute(minute uint32) string {
+	return fmt.Sprintf("%d (%d minutes)", minute, minute/60)
+}
+
+func ConvertDay(day uint32) string {
+	return fmt.Sprintf("%d (%d days)", day, day/60/60/24)
+}
+
+func ConvertTimestamp(timestamp int64) string {
+	return fmt.Sprintf("%d (%s)", timestamp, time.Unix(timestamp, 0).Format("2006-01-02 15:04:05"))
+}
+
+func ConvertDollar(dollar uint64) string {
+	capacityDec, _ := decimal.NewFromString(fmt.Sprintf("%d", dollar))
+	return fmt.Sprintf("%d ($%s)", dollar, capacityDec.DivRound(decimal.NewFromInt(1000000), 6))
+}
+
+func ConvertCapacity(capacity uint64) string {
+	capacityDec, _ := decimal.NewFromString(fmt.Sprintf("%d", capacity))
+	return fmt.Sprintf("%d (%s CKB)", capacity, capacityDec.DivRound(decimal.NewFromInt(100000000), 8))
+}
+
+func ConvertRate(rate uint32) string {
+	return fmt.Sprintf("%d (%d%%)", rate, rate/100)
 }
