@@ -39,12 +39,14 @@ func TestAccountSearch(t *testing.T) {
 	fmt.Println(data)
 }
 
+// mixin: 0xf2011f49d9ad51fe64ce0f03afcff509e0324a046d8ef9b509805678fd2d9254e1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4
+// mixin: 0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4
 func TestOrderRegister(t *testing.T) {
 	req := handle.ReqOrderRegister{
 		ReqAccountSearch: handle.ReqAccountSearch{
-			ChainType: common.ChainTypeTron,
-			Address:   "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
-			Account:   "1234567885.bit",
+			ChainType: common.ChainTypeMixin,
+			Address:   "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4",
+			Account:   "1234567886.bit",
 			AccountCharStr: []tables.AccountCharSet{
 				{CharSetName: tables.AccountCharTypeNumber, Char: "1"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "2"},
@@ -55,7 +57,7 @@ func TestOrderRegister(t *testing.T) {
 				{CharSetName: tables.AccountCharTypeNumber, Char: "7"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "8"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "8"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "5"},
+				{CharSetName: tables.AccountCharTypeNumber, Char: "6"},
 				//{CharSetName: tables.AccountCharTypeEn, Char: "a"},
 				{CharSetName: tables.AccountCharTypeEn, Char: "."},
 				{CharSetName: tables.AccountCharTypeEn, Char: "b"},
@@ -70,7 +72,7 @@ func TestOrderRegister(t *testing.T) {
 		},
 		PayChainType: 0,
 		PayAddress:   "",
-		PayTokenId:   tables.TokenIdTrx,
+		PayTokenId:   tables.TokenIdDas,
 		PayType:      "",
 	}
 

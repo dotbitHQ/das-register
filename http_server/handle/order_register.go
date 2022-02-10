@@ -358,7 +358,11 @@ func checkRegisterChainTypeAndAddress(chainType common.ChainType, address string
 			return true
 		}
 	case common.ChainTypeEth:
-		if strings.HasPrefix(address, common.HexPreFix) {
+		if strings.HasPrefix(address, common.HexPreFix) && len(address) == 42 {
+			return true
+		}
+	case common.ChainTypeMixin:
+		if strings.HasPrefix(address, common.HexPreFix) && len(address) == 66 {
 			return true
 		}
 	}
