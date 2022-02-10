@@ -1,6 +1,7 @@
 package example
 
 import (
+	"crypto/ed25519"
 	"das_register_server/http_server/handle"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
@@ -30,4 +31,11 @@ func TestBalanceWithdraw(t *testing.T) {
 	signReq.Private = ""
 	fmt.Println(toolib.JsonString(signReq))
 	// curl -X POST http://127.0.0.1:8119/v1/sign/tx
+}
+
+func TestSign(t *testing.T) {
+	private := common.Hex2Bytes("0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4")
+	msg := common.Hex2Bytes("0x6d31bda56835b9c2d4876a53d611dfb58238aacf26ca00d3c8f5a2165c3f70cf")
+	sig := common.Hex2Bytes("0x4d0fff8474b060546d7cd5310ba317412e100c53bad5a15665052e344b615f979bf951666276d8e1548d2a39b899f518d2d6718ad4bfe4ee2b6bc988b049bd0d")
+	fmt.Println(ed25519.Verify(private, msg, sig))
 }

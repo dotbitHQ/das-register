@@ -1,7 +1,6 @@
 package handle
 
 import (
-	"crypto/ed25519"
 	"das_register_server/http_server/api_code"
 	"encoding/json"
 	"fmt"
@@ -89,7 +88,7 @@ func (h *HttpHandle) doSignTx(req *ReqSignTx, apiResp *api_code.ApiResp) error {
 				return err
 			}
 		case common.DasAlgorithmIdEd25519:
-			signData = ed25519.Sign(common.Hex2Bytes(req.Private), common.Hex2Bytes(v.SignMsg))
+			signData = sign.Ed25519Signature(common.Hex2Bytes(req.Private), common.Hex2Bytes(v.SignMsg))
 		case common.DasAlgorithmIdEth712:
 			var obj3 core.TypedData
 			mmJson := req.MMJson.String()
