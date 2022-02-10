@@ -50,6 +50,15 @@ func (b *BlockParser) ActionPreRegister(req FuncTransactionHandleReq) (resp Func
 		owner, _ := builder.OwnerLockArgsStr()
 		_, _, oct, _, oa, _ := core.FormatDasLockToHexAddress(common.Hex2Bytes(owner))
 
+		acc, err := b.DbDao.GetAccountInfoByAccountId(accountId)
+		orderStatus := tables.OrderStatusDefault
+		if err != nil {
+			resp.Err = fmt.Errorf("GetAccountInfoByAccountId err: %s [%s]", err.Error(), accountId)
+			return
+		} else if acc.Id > 0 {
+			orderStatus = tables.OrderStatusClosed
+		}
+
 		order := tables.TableDasOrderInfo{
 			Id:                0,
 			OrderType:         tables.OrderTypeOther,
@@ -68,7 +77,7 @@ func (b *BlockParser) ActionPreRegister(req FuncTransactionHandleReq) (resp Func
 			HedgeStatus:       tables.TxStatusDefault,
 			PreRegisterStatus: tables.TxStatusDefault,
 			RegisterStatus:    tables.RegisterStatusProposal,
-			OrderStatus:       tables.OrderStatusDefault,
+			OrderStatus:       orderStatus,
 		}
 		order.CreateOrderId()
 		var orderTxList []tables.TableDasOrderTxInfo
