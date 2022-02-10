@@ -127,6 +127,12 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 		return nil
 	}
 
+	if (req.ChainType == common.ChainTypeMixin && req.RawParam.ReceiverChainType != common.ChainTypeMixin) ||
+		(req.ChainType != common.ChainTypeMixin && req.RawParam.ReceiverChainType == common.ChainTypeMixin) {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "ChainType is invalid")
+		return nil
+	}
+
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasActionTransferAccount
 	reqBuild.Account = req.Account
