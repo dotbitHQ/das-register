@@ -17,6 +17,7 @@ func (d *DasCore) InitDasSoScript() error {
 	DasSoScriptMap.Store(common.SoScriptTypeTron, &SoScript{Name: common.SoScriptTypeTron})
 	DasSoScriptMap.Store(common.SoScriptTypeCkb, &SoScript{Name: common.SoScriptTypeCkb})
 	DasSoScriptMap.Store(common.SoScriptTypeCkbMulti, &SoScript{Name: common.SoScriptTypeCkbMulti})
+	DasSoScriptMap.Store(common.SoScriptTypeEd25519, &SoScript{Name: common.SoScriptTypeEd25519})
 	return d.asyncDasSoScript()
 }
 
