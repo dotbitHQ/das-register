@@ -89,7 +89,7 @@ func (h *HttpHandle) doSignTx(req *ReqSignTx, apiResp *api_code.ApiResp) error {
 				return err
 			}
 		case common.DasAlgorithmIdEd25519:
-			signData = ed25519.Sign(common.Hex2Bytes(req.Private), common.Hex2Bytes(v.SignMsg))
+			signData = ed25519.Sign(common.Hex2Bytes(req.Private), []byte(v.SignMsg))
 		case common.DasAlgorithmIdEth712:
 			var obj3 core.TypedData
 			mmJson := req.MMJson.String()
