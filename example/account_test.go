@@ -97,9 +97,9 @@ func TestEditRecords(t *testing.T) {
 	url := TestUrl + "/account/edit/records"
 
 	var req handle.ReqEditRecords
-	req.ChainType = common.ChainTypeTron
-	req.Address = "TQoLh9evwUmZKxpD1uhFttsZk3EBs8BksV"
-	req.Account = "tangzhihong007.bit"
+	req.ChainType = common.ChainTypeMixin
+	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+	req.Account = "1234567871.bit"
 	req.RawParam.Records = []handle.ReqRecord{{
 		Key:   "twitter",
 		Type:  "profile",
