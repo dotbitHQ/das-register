@@ -46,7 +46,7 @@ func TestOrderRegister(t *testing.T) {
 		ReqAccountSearch: handle.ReqAccountSearch{
 			ChainType: common.ChainTypeMixin,
 			Address:   "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4",
-			Account:   "1234567886.bit",
+			Account:   "1234567871.bit",
 			AccountCharStr: []tables.AccountCharSet{
 				{CharSetName: tables.AccountCharTypeNumber, Char: "1"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "2"},
@@ -56,8 +56,8 @@ func TestOrderRegister(t *testing.T) {
 				{CharSetName: tables.AccountCharTypeNumber, Char: "6"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "7"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "8"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "8"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "6"},
+				{CharSetName: tables.AccountCharTypeNumber, Char: "7"},
+				{CharSetName: tables.AccountCharTypeNumber, Char: "1"},
 				//{CharSetName: tables.AccountCharTypeEn, Char: "a"},
 				{CharSetName: tables.AccountCharTypeEn, Char: "."},
 				{CharSetName: tables.AccountCharTypeEn, Char: "b"},
@@ -101,11 +101,11 @@ func TestOrderDetail(t *testing.T) {
 
 func TestOrderRenew(t *testing.T) {
 	req := handle.ReqOrderRenew{
-		ChainType:    common.ChainTypeEth,
-		Address:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
-		Account:      "11111111.bit",
-		PayChainType: common.ChainTypeEth,
-		PayTokenId:   tables.TokenIdBnb,
+		ChainType:    common.ChainTypeMixin,
+		Address:      "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4",
+		Account:      "1234567871.bit",
+		PayChainType: common.ChainTypeCkb,
+		PayTokenId:   tables.TokenIdDas,
 		PayAddress:   "",
 		PayType:      "",
 		RenewYears:   1,

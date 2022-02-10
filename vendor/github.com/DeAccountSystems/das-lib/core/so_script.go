@@ -58,6 +58,8 @@ func (d *DasCore) asyncDasSoScript() error {
 				txHash = types.HexToHash(common.Bytes2Hex(dasLockOutPoint.Eth().TxHash().RawData()))
 			case common.SoScriptTypeTron:
 				txHash = types.HexToHash(common.Bytes2Hex(dasLockOutPoint.Tron().TxHash().RawData()))
+			case common.SoScriptTypeEd25519:
+				txHash = types.HexToHash(common.Bytes2Hex(dasLockOutPoint.Ed25519().TxHash().RawData()))
 			}
 			itemSo.OutPoint = types.OutPoint{
 				TxHash: txHash,
