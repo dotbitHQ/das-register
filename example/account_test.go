@@ -16,7 +16,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"2267ba99b67fd2c466add8493ae0dc52","sign_list":[{"sign_type":6,"sign_msg":"0x55035f8d3e1821d94b98647728db7c26a4b079a3dbae7ff3dc780fb118775c29401d1781ce01a3ca1cab429fbbc4a582bd6985e445dd92484d7e20c6c5dca700"}],"mm_json":null}`
+	str := `{"sign_key":"6c6833be5e0e4ab02ab4808007148fcf","sign_list":[{"sign_type":6,"sign_msg":"0x860d46babd290ee09968eb4f257d351c9457b2556f64f2e2004c28c265f0a1f9d263eeaf6c5b1947da33421837cc25dc60620f890ab0e02d5913ae9c8aa1770701"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
@@ -48,11 +48,11 @@ func TestEditManager(t *testing.T) {
 	url := TestUrl + "/account/edit/manager"
 
 	var req handle.ReqEditManager
-	req.ChainType = common.ChainTypeEth
-	req.Address = "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
-	req.Account = "tangzhihong007.bit"
-	req.RawParam.ManagerChainType = common.ChainTypeTron
-	req.RawParam.ManagerAddress = "TQoLh9evwUmZKxpD1uhFttsZk3EBs8BksV"
+	req.ChainType = common.ChainTypeMixin
+	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+	req.Account = "1234567871.bit"
+	req.RawParam.ManagerChainType = common.ChainTypeMixin
+	req.RawParam.ManagerAddress = "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58"
 	var data handle.RespEditManager
 
 	if err := doReq(url, req, &data); err != nil {
@@ -72,11 +72,11 @@ func TestEditOwner(t *testing.T) {
 	url := TestUrl + "/account/edit/owner"
 
 	var req handle.ReqEditOwner
-	req.ChainType = common.ChainTypeEth
-	req.Address = "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
-	req.Account = "tang0001.bit"
-	req.RawParam.ReceiverChainType = common.ChainTypeTron
-	req.RawParam.ReceiverAddress = "TQoLh9evwUmZKxpD1uhFttsZk3EBs8BksV"
+	req.ChainType = common.ChainTypeMixin
+	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+	req.Account = "1234567871.bit"
+	req.RawParam.ReceiverChainType = common.ChainTypeMixin
+	req.RawParam.ReceiverAddress = "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58"
 	req.EvmChainId = 97
 
 	var data handle.RespEditOwner
@@ -98,12 +98,12 @@ func TestEditRecords(t *testing.T) {
 
 	var req handle.ReqEditRecords
 	req.ChainType = common.ChainTypeMixin
-	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+	req.Address = "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58"
 	req.Account = "1234567871.bit"
 	req.RawParam.Records = []handle.ReqRecord{{
 		Key:   "twitter",
 		Type:  "profile",
-		Label: "22",
+		Label: "33",
 		Value: "111",
 		TTL:   "300",
 	}}
@@ -126,9 +126,9 @@ func TestBalancePay(t *testing.T) {
 	url := TestUrl + "/balance/pay"
 	var req handle.ReqBalancePay
 	req.EvmChainId = 5
-	req.OrderId = "bb4a9ed3eb80dcfbc3b28b8028fad362"
-	req.ChainType = common.ChainTypeEth
-	req.Address = "0xc9f53b1d85356b60453f867610888d89a0b667ad"
+	req.OrderId = "45e215c533894aa2d215b4cf976e6ee5"
+	req.ChainType = common.ChainTypeMixin
+	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
 
 	var data handle.RespBalancePay
 
@@ -141,4 +141,36 @@ func TestBalancePay(t *testing.T) {
 	signReq.Private = ""
 	fmt.Println(toolib.JsonString(signReq))
 	// curl -X POST http://127.0.0.1:8119/v1/sign/tx
+}
+
+func TestReverseDeclare(t *testing.T) {
+	url := TestUrl + "/reverse/declare"
+	var req handle.ReqReverseDeclare
+	req.ChainType = common.ChainTypeMixin
+	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+	req.Account = "1234567871.bit"
+	req.EvmChainId = 5
+
+	var data handle.RespReverseDeclare
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	var signReq handle.ReqSignTx
+	signReq.SignInfo = data.SignInfo
+	signReq.ChainId = 5
+	signReq.Private = ""
+	fmt.Println(toolib.JsonString(signReq))
+}
+
+func TestBalanceInfo(t *testing.T) {
+	url := TestUrl + "/balance/info"
+	var req handle.ReqBalanceInfo
+	req.ChainType = common.ChainTypeMixin
+	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+
+	var data handle.RespBalanceInfo
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(data))
 }

@@ -41,12 +41,14 @@ func TestAccountSearch(t *testing.T) {
 
 // mixin: 0xf2011f49d9ad51fe64ce0f03afcff509e0324a046d8ef9b509805678fd2d9254e1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4
 // mixin: 0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4
+// 0x11ebce55b1cc815df4d82e7c387c7428589875f60c01a56dcd7b9589c660081e99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58
+// 0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58
 func TestOrderRegister(t *testing.T) {
 	req := handle.ReqOrderRegister{
 		ReqAccountSearch: handle.ReqAccountSearch{
 			ChainType: common.ChainTypeMixin,
-			Address:   "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4",
-			Account:   "1234567871.bit",
+			Address:   "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58",
+			Account:   "1234567872.bit",
 			AccountCharStr: []tables.AccountCharSet{
 				{CharSetName: tables.AccountCharTypeNumber, Char: "1"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "2"},
@@ -57,7 +59,7 @@ func TestOrderRegister(t *testing.T) {
 				{CharSetName: tables.AccountCharTypeNumber, Char: "7"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "8"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "7"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "1"},
+				{CharSetName: tables.AccountCharTypeNumber, Char: "2"},
 				//{CharSetName: tables.AccountCharTypeEn, Char: "a"},
 				{CharSetName: tables.AccountCharTypeEn, Char: "."},
 				{CharSetName: tables.AccountCharTypeEn, Char: "b"},

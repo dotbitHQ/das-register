@@ -84,10 +84,10 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 		return fmt.Errorf("sync block number")
 	}
 
-	if req.ChainType == common.ChainTypeMixin {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "chain type not supported")
-		return nil
-	}
+	//if req.ChainType == common.ChainTypeMixin {
+	//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "chain type not supported")
+	//	return nil
+	//}
 
 	if exi := h.rc.ApiLimitExist(req.ChainType, req.Address, common.DasActionDeclareReverseRecord); exi {
 		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
