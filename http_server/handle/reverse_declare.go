@@ -65,7 +65,6 @@ func (h *HttpHandle) ReverseDeclare(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
-	// 业务
 	if err = h.doReverseDeclare(&req, &apiResp); err != nil {
 		log.Error("doReverseDeclare err:", err.Error(), funcName, clientIp)
 	}
@@ -83,6 +82,11 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 	if ok := internal.IsLatestBlockNumber(config.Cfg.Server.ParserUrl); !ok {
 		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
 		return fmt.Errorf("sync block number")
+	}
+
+	if req.ChainType == common.ChainTypeMixin {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "chain type not supported")
+		return nil
 	}
 
 	if exi := h.rc.ApiLimitExist(req.ChainType, req.Address, common.DasActionDeclareReverseRecord); exi {
