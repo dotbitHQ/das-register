@@ -16,7 +16,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"6c6833be5e0e4ab02ab4808007148fcf","sign_list":[{"sign_type":6,"sign_msg":"0x860d46babd290ee09968eb4f257d351c9457b2556f64f2e2004c28c265f0a1f9d263eeaf6c5b1947da33421837cc25dc60620f890ab0e02d5913ae9c8aa1770701"}],"mm_json":null}`
+	str := `{"sign_key":"3006b6f61c704cd33d19f6e52bf033b6","sign_list":[{"sign_type":6,"sign_msg":"0x7fc2127e46a95588f28ec3cc069645e8f46d974eee48b6830712bfd8734212d914744d0765a4fbfd8368dc57ff4cfedb82936ee8147285df7b6802ce4e0dc20801"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
@@ -73,10 +73,10 @@ func TestEditOwner(t *testing.T) {
 
 	var req handle.ReqEditOwner
 	req.ChainType = common.ChainTypeMixin
-	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+	req.Address = "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58"
 	req.Account = "1234567871.bit"
 	req.RawParam.ReceiverChainType = common.ChainTypeMixin
-	req.RawParam.ReceiverAddress = "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58"
+	req.RawParam.ReceiverAddress = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
 	req.EvmChainId = 97
 
 	var data handle.RespEditOwner
@@ -162,6 +162,43 @@ func TestReverseDeclare(t *testing.T) {
 	fmt.Println(toolib.JsonString(signReq))
 }
 
+func TestReverseRedeclare(t *testing.T) {
+	url := TestUrl + "/reverse/redeclare"
+	var req handle.ReqReverseRedeclare
+	req.ChainType = common.ChainTypeMixin
+	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+	req.Account = "1234567872.bit"
+	req.EvmChainId = 5
+
+	var data handle.RespReverseRedeclare
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	var signReq handle.ReqSignTx
+	signReq.SignInfo = data.SignInfo
+	signReq.ChainId = 5
+	signReq.Private = ""
+	fmt.Println(toolib.JsonString(signReq))
+}
+
+func TestReverseRetract(t *testing.T) {
+	var req handle.ReqReverseRetract
+	req.ChainType = common.ChainTypeMixin
+	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+	req.EvmChainId = 5
+	url := TestUrl + "/reverse/retract"
+
+	var data handle.RespReverseRetract
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	var signReq handle.ReqSignTx
+	signReq.SignInfo = data.SignInfo
+	signReq.ChainId = 5
+	signReq.Private = ""
+	fmt.Println(toolib.JsonString(signReq))
+}
+
 func TestBalanceInfo(t *testing.T) {
 	url := TestUrl + "/balance/info"
 	var req handle.ReqBalanceInfo
@@ -169,6 +206,18 @@ func TestBalanceInfo(t *testing.T) {
 	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
 
 	var data handle.RespBalanceInfo
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(data))
+}
+
+func TestReverseLatest(t *testing.T) {
+	url := TestUrl + "/reverse/latest"
+	var req handle.ReqReverseLatest
+	req.ChainType = common.ChainTypeMixin
+	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+	var data handle.RespReverseLatest
 	if err := doReq(url, req, &data); err != nil {
 		t.Fatal(err)
 	}

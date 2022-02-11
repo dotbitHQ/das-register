@@ -65,23 +65,6 @@ func getClientTestnet2() (rpc.Client, error) {
 	return rpc.DialWithIndexer(ckbUrl, indexerUrl)
 }
 
-func TestReverseRetract(t *testing.T) {
-	var req handle.ReqReverseRetract
-	req.ChainType = common.ChainTypeEth
-	req.Address = "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"
-	req.EvmChainId = 5
-	url := TestUrl + "/reverse/retract"
-
-	var data handle.RespReverseRetract
-	var resp api_code.ApiResp
-	resp.Data = &data
-	_, _, errs := gorequest.New().Post(url).SendStruct(&req).EndStruct(&resp)
-	if errs != nil {
-		t.Fatal(errs)
-	}
-	fmt.Println(toolib.JsonString(data))
-}
-
 func TestEIP712Signature(t *testing.T) {
 	mmjson := `{
         "types":{
