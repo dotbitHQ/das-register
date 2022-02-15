@@ -119,7 +119,7 @@ func (d *DasTxBuilder) generateDigestByGroup(group []int, skipGroups []int) (Sig
 		signData.SignType = managerAlgorithmId
 	}
 	if signData.SignType == common.DasAlgorithmIdTron {
-		signData.SignMsg += "4" // fix tron sign
+		signData.SignMsg += "04" // fix tron sign
 	}
 
 	// skip useless signature

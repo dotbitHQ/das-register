@@ -130,6 +130,8 @@ func doDiscordNotify(inviters []tables.TableAccountInfo, builderPreMap map[strin
 	}()
 	go func() {
 		for _, v := range contentList {
+			tmp := strings.Replace(v, "** ", "[ ", -1)
+			tmp = strings.Replace(tmp, " **", " ]", -1)
 			notify.SendLarkTextNotify(config.Cfg.Notify.LarkRegisterOkKey, "", v)
 		}
 	}()
