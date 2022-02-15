@@ -231,7 +231,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	priceCapacity = priceCapacity * uint64(p.registerYears)
 	log.Info("buildOrderPreRegisterTx:", priceCapacity, newPrice, p.registerYears, quote, invitedDiscount)
 	// basicCapacity
-	basicCapacity, _ := priceBuilder.BasicCapacity()
+	basicCapacity, _ := priceBuilder.BasicCapacityFromOwnerDasAlgorithmId(common.Bytes2Hex(p.ownerLockArgs))
 	preparedFeeCapacity, _ := priceBuilder.PreparedFeeCapacity()
 	basicCapacity = basicCapacity + preparedFeeCapacity + uint64(len([]byte(p.order.Account)))*common.OneCkb
 	log.Info("pre capacity:", basicCapacity, priceCapacity)

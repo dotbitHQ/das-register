@@ -97,7 +97,8 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 		return nil
 	}
 	// account price
-	baseAmount, accountPrice, err := h.getAccountPrice(req.Account, false)
+	args := core.FormatOwnerManagerAddressToArgs(req.ChainType, req.ChainType, req.Address, req.Address)
+	baseAmount, accountPrice, err := h.getAccountPrice(common.Bytes2Hex(args), req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())

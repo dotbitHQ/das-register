@@ -209,9 +209,9 @@ func (h *HttpHandle) checkOrderInfo(req *ReqOrderRegisterBase, apiResp *api_code
 }
 
 func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
-
 	// pay amount
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	args := common.Bytes2Hex(core.FormatOwnerManagerAddressToArgs(req.ChainType, req.ChainType, req.Address, req.Address))
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(args, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
@@ -292,7 +292,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	return
 }
 
-func (h *HttpHandle) getOrderAmount(account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
+func (h *HttpHandle) getOrderAmount(args, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
 	// pay token
 	payToken := timer.GetTokenInfo(payTokenId)
 	if payToken.TokenId == "" {
@@ -308,7 +308,7 @@ func (h *HttpHandle) getOrderAmount(account, inviterAccount string, years int, i
 	quote := quoteCell.Quote()
 	decQuote := decimal.NewFromInt(int64(quote)).Div(decimal.NewFromInt(common.UsdRateBase))
 	// base price
-	baseAmount, accountPrice, err := h.getAccountPrice(account, isRenew)
+	baseAmount, accountPrice, err := h.getAccountPrice(args, account, isRenew)
 	if err != nil {
 		e = fmt.Errorf("getAccountPrice err: %s", err.Error())
 		return

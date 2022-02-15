@@ -182,7 +182,8 @@ func AccountToCharSet(account string) (accountChars []tables.AccountCharSet) {
 func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *api_code.ApiResp, resp *RespAccountRegister) {
 	payTokenId := tables.TokenIdCkbInternal
 	// pay amount
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(req.Account, req.InviterAccount, req.RegisterYears, false, payTokenId)
+	args := common.Bytes2Hex(core.FormatOwnerManagerAddressToArgs(req.ChainType, req.ChainType, req.Address, req.Address))
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(args, req.Account, req.InviterAccount, req.RegisterYears, false, payTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

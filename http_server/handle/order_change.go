@@ -140,7 +140,8 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 
 func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, resp *RespOrderChange, oldOrderContent *tables.TableOrderContent) {
 	// pay amount
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	args := common.Bytes2Hex(core.FormatOwnerManagerAddressToArgs(req.ChainType, req.ChainType, req.Address, req.Address))
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(args, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

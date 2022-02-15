@@ -78,7 +78,7 @@ func (h *HttpHandle) AccountDetail(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) getAccountPrice(account string, isRenew bool) (baseAmount, accountPrice decimal.Decimal, err error) {
+func (h *HttpHandle) getAccountPrice(args, account string, isRenew bool) (baseAmount, accountPrice decimal.Decimal, err error) {
 	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(common.ConfigCellTypeArgsPrice, common.ConfigCellTypeArgsAccount)
 	if err != nil {
 		err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
@@ -98,7 +98,10 @@ func (h *HttpHandle) getAccountPrice(account string, isRenew bool) (baseAmount, 
 	}
 	quote := quoteCell.Quote()
 
-	basicCapacity, err := builder.BasicCapacity()
+	if args == "" {
+		args = "0x03"
+	}
+	basicCapacity, err := builder.BasicCapacityFromOwnerDasAlgorithmId(args)
 	if err != nil {
 		err = fmt.Errorf("BasicCapacity err: %s", err.Error())
 		return
@@ -133,7 +136,7 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 
 	// price
 	var err error
-	resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(req.Account, true)
+	resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice("", req.Account, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())

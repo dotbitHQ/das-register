@@ -125,7 +125,8 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 
 func (h *HttpHandle) doRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiResp, resp *RespOrderRenew) {
 	// pay amount
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(req.Account, "", req.RenewYears, true, req.PayTokenId)
+	args := common.Bytes2Hex(core.FormatOwnerManagerAddressToArgs(req.ChainType, req.ChainType, req.Address, req.Address))
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(args, req.Account, "", req.RenewYears, true, req.PayTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
