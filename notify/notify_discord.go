@@ -47,6 +47,9 @@ type Image struct {
 }
 
 func SendNotifyDiscord(webhook, content string) error {
+	if webhook == "" {
+		return nil
+	}
 	var data Webhook
 	data.Content = content
 	resp, _, errs := gorequest.New().Post(webhook).SendStruct(&data).Timeout(time.Second * 10).End()

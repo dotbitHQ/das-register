@@ -60,9 +60,10 @@ type CfgServer struct {
 	} `json:"server" yaml:"server"`
 	Origins []string `json:"origins" yaml:"origins"`
 	Notify  struct {
-		LarkErrorKey    string `json:"lark_error_key" yaml:"lark_error_key"`
-		LarkRegisterKey string `json:"lark_register_key" yaml:"lark_register_key"`
-		DiscordWebhook  string `json:"discord_webhook" yaml:"discord_webhook"`
+		LarkErrorKey      string `json:"lark_error_key" yaml:"lark_error_key"`
+		LarkRegisterKey   string `json:"lark_register_key" yaml:"lark_register_key"`
+		LarkRegisterOkKey string `json:"lark_register_ok_key" yaml:"lark_register_ok_key"`
+		DiscordWebhook    string `json:"discord_webhook" yaml:"discord_webhook"`
 	} `json:"notify" yaml:"notify"`
 	PayAddressMap map[string]string `json:"pay_address_map" yaml:"pay_address_map"`
 	Chain         struct {

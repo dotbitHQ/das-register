@@ -128,4 +128,9 @@ func doDiscordNotify(inviters []tables.TableAccountInfo, builderPreMap map[strin
 			}
 		}
 	}()
+	go func() {
+		for _, v := range contentList {
+			notify.SendLarkTextNotify(config.Cfg.Notify.LarkRegisterOkKey, "", v)
+		}
+	}()
 }
