@@ -48,7 +48,7 @@ func TestOrderRegister(t *testing.T) {
 		ReqAccountSearch: handle.ReqAccountSearch{
 			ChainType: common.ChainTypeMixin,
 			Address:   "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58",
-			Account:   "1234567872.bit",
+			Account:   "1234567873.bit",
 			AccountCharStr: []tables.AccountCharSet{
 				{CharSetName: tables.AccountCharTypeNumber, Char: "1"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "2"},
@@ -59,7 +59,7 @@ func TestOrderRegister(t *testing.T) {
 				{CharSetName: tables.AccountCharTypeNumber, Char: "7"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "8"},
 				{CharSetName: tables.AccountCharTypeNumber, Char: "7"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "2"},
+				{CharSetName: tables.AccountCharTypeNumber, Char: "3"},
 				//{CharSetName: tables.AccountCharTypeEn, Char: "a"},
 				{CharSetName: tables.AccountCharTypeEn, Char: "."},
 				{CharSetName: tables.AccountCharTypeEn, Char: "b"},

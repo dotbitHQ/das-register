@@ -16,7 +16,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"3006b6f61c704cd33d19f6e52bf033b6","sign_list":[{"sign_type":6,"sign_msg":"0x7fc2127e46a95588f28ec3cc069645e8f46d974eee48b6830712bfd8734212d914744d0765a4fbfd8368dc57ff4cfedb82936ee8147285df7b6802ce4e0dc20801"}],"mm_json":null}`
+	str := `{"sign_key":"83ab69378b33b61b1b443f3eff151fd9","sign_list":[{"sign_type":6,"sign_msg":"0x220d0945769b66d2874e3f5433720c20f379d18f51e3acf5fea32924fdf1884111d48025a4178062de739dd882666389103438deb7e3a765711c58c5d2d6ad0901"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
@@ -99,12 +99,12 @@ func TestEditRecords(t *testing.T) {
 	var req handle.ReqEditRecords
 	req.ChainType = common.ChainTypeMixin
 	req.Address = "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58"
-	req.Account = "1234567871.bit"
+	req.Account = "1234567873.bit"
 	req.RawParam.Records = []handle.ReqRecord{{
 		Key:   "twitter",
 		Type:  "profile",
 		Label: "33",
-		Value: "111",
+		Value: "121",
 		TTL:   "300",
 	}}
 	req.EvmChainId = 5
@@ -126,7 +126,7 @@ func TestBalancePay(t *testing.T) {
 	url := TestUrl + "/balance/pay"
 	var req handle.ReqBalancePay
 	req.EvmChainId = 5
-	req.OrderId = "45e215c533894aa2d215b4cf976e6ee5"
+	req.OrderId = "8cd2b0df823d243dc54b1bcb61a0e6cd"
 	req.ChainType = common.ChainTypeMixin
 	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
 
