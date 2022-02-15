@@ -20,7 +20,6 @@ func TronSignature(signType bool, data []byte, hexPrivateKey string) ([]byte, er
 	}
 
 	tmpHash := crypto.Keccak256(data)
-	fmt.Println(common.Bytes2Hex(tmpHash))
 
 	privateKey, err := crypto.HexToECDSA(hexPrivateKey)
 	if err != nil {
