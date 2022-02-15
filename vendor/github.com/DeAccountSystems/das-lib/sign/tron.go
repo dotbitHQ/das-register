@@ -15,10 +15,12 @@ func TronSignature(signType bool, data []byte, hexPrivateKey string) ([]byte, er
 	}
 
 	if signType {
+		l = 32 // fix tron sign
 		data = append([]byte(fmt.Sprintf(common.TronMessageHeader, l)), data...)
 	}
 
 	tmpHash := crypto.Keccak256(data)
+	fmt.Println(common.Bytes2Hex(tmpHash))
 
 	privateKey, err := crypto.HexToECDSA(hexPrivateKey)
 	if err != nil {
