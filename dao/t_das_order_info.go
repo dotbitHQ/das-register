@@ -12,14 +12,14 @@ import (
 func (d *DbDao) GetLatestRegisterOrderByAddress(chainType common.ChainType, address, accountId string) (order tables.TableDasOrderInfo, err error) {
 	err = d.db.Where("chain_type=? AND address=? AND account_id=? AND action=?",
 		chainType, address, accountId, common.DasActionApplyRegister).
-		Order("register_status DESC,id DESC").Limit(1).Find(&order).Error
+		Order("order_status,register_status DESC,id DESC").Limit(1).Find(&order).Error
 	return
 }
 
 func (d *DbDao) GetLatestRegisterOrderByLatest(accountId string) (order tables.TableDasOrderInfo, err error) {
 	err = d.db.Where("account_id=? AND action=? AND order_status=?",
 		accountId, common.DasActionApplyRegister, tables.OrderStatusDefault).
-		Order("register_status DESC,id DESC").Limit(1).Find(&order).Error
+		Order("order_status,register_status DESC,id DESC").Limit(1).Find(&order).Error
 	return
 }
 
@@ -129,7 +129,7 @@ func (d *DbDao) CreateOrder(order *tables.TableDasOrderInfo) error {
 func (d *DbDao) GetLatestRegisterOrderBySelf(chainType common.ChainType, address, accountId string) (order tables.TableDasOrderInfo, err error) {
 	err = d.db.Where("chain_type=? AND address=? AND account_id=? AND action=? AND order_type=? AND order_status=?",
 		chainType, address, accountId, common.DasActionApplyRegister, tables.OrderTypeSelf, tables.OrderStatusDefault).
-		Order("register_status DESC,id DESC").Limit(1).
+		Order("order_status,register_status DESC,id DESC").Limit(1).
 		Find(&order).Error
 	return
 }
