@@ -232,7 +232,7 @@ func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.
 		log.Error("GetLatestRegisterOrderByAddress err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
 		return
-	} else if order.Id > 0 {
+	} else if (order.Id > 0 && order.OrderStatus == tables.OrderStatusDefault) || (order.Id > 0 && order.RegisterStatus == tables.RegisterStatusRegistered) {
 		status = tables.FormatRegisterStatusToSearchStatus(order.RegisterStatus)
 		if !isGetOrderTx {
 			return
