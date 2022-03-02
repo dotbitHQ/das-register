@@ -127,8 +127,8 @@ func (d *DbDao) CreateOrder(order *tables.TableDasOrderInfo) error {
 }
 
 func (d *DbDao) GetLatestRegisterOrderBySelf(chainType common.ChainType, address, accountId string) (order tables.TableDasOrderInfo, err error) {
-	err = d.db.Where("chain_type=? AND address=? AND account_id=? AND action=? AND order_type=?",
-		chainType, address, accountId, common.DasActionApplyRegister, tables.OrderTypeSelf).
+	err = d.db.Where("chain_type=? AND address=? AND account_id=? AND action=? AND order_type=? AND order_status=?",
+		chainType, address, accountId, common.DasActionApplyRegister, tables.OrderTypeSelf, tables.OrderStatusDefault).
 		Order("register_status DESC,id DESC").Limit(1).
 		Find(&order).Error
 	return
