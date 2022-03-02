@@ -43,6 +43,7 @@ func (t *TxTimer) Run() error {
 	//tickerPending := time.NewTicker(time.Minute)
 	//pendingLimit := 10
 	tickerRejected := time.NewTicker(time.Minute * 3)
+	tickerExpired := time.NewTicker(time.Minute * 30)
 	t.wg.Add(1)
 
 	go func() {
@@ -68,6 +69,12 @@ func (t *TxTimer) Run() error {
 					log.Error("checkRejected err: ", err.Error())
 				}
 				log.Info("checkRejected end ...")
+			case <-tickerExpired.C:
+				log.Info("checkExpired start ...")
+				if err := t.checkExpired(); err != nil {
+					log.Error("checkExpired err: ", err.Error())
+				}
+				log.Info("checkExpired end ...")
 			case <-t.ctx.Done():
 				log.Info("timer done")
 				t.wg.Done()
