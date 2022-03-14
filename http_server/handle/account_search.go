@@ -212,7 +212,14 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 			apiResp.ApiRespErr(api_code.ApiCodeAccountLenInvalid, fmt.Sprintf("account len err:%d [%s]", accLen, accountName))
 			return
 		} else if accLen >= config.Cfg.Das.OpenAccountMinLength && accLen <= config.Cfg.Das.OpenAccountMaxLength {
-			if resNum, _ := Blake256AndFourBytesBigEndian([]byte(req.Account)); resNum > config.Cfg.Das.OpenAccountHashNum {
+			configRelease, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsRelease)
+			if err != nil {
+				log.Error("GetDasConfigCellInfo err:", err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "search config release fail")
+				return
+			}
+			luckyNumber, _ := configRelease.LuckyNumber()
+			if resNum, _ := Blake256AndFourBytesBigEndian([]byte(req.Account)); resNum > luckyNumber {
 				status = tables.SearchStatusRegisterNotOpen
 				return
 			}

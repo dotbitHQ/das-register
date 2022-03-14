@@ -901,25 +901,13 @@ func ParserConfigCellRelease(witnessByte []byte) interface{} {
 		return parserDefaultWitness(witnessByte)
 	}
 
-	var releaseRules []interface{}
-	for i := uint(0); i < configCellRelease.ReleaseRules().Len(); i++ {
-		releaseRule := configCellRelease.ReleaseRules().Get(i)
-		length, _ := molecule.Bytes2GoU32(releaseRule.Length().RawData())
-		releaseStart, _ := molecule.Bytes2GoU64(releaseRule.ReleaseStart().RawData())
-		releaseEnd, _ := molecule.Bytes2GoU64(releaseRule.ReleaseEnd().RawData())
-		releaseRules = append(releaseRules, map[string]interface{}{
-			"length":        length,
-			"release_start": ConvertTimestamp(int64(releaseStart)),
-			"release_end":   ConvertTimestamp(int64(releaseEnd)),
-		})
-	}
-
+	luckyNumber, _ := molecule.Bytes2GoU32(configCellRelease.LuckyNumber().RawData())
 	return map[string]interface{}{
 		"witness":      common.Bytes2Hex(witnessByte),
 		"witness_hash": common.Bytes2Hex(common.Blake2b(configCellRelease.AsSlice())),
 		"name":         "ConfigCellRelease",
 		"data": map[string]interface{}{
-			"release_rules": releaseRules,
+			"lucky_number": luckyNumber,
 		},
 	}
 }

@@ -189,7 +189,14 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 	//	apiResp.ApiRespOK(resp)
 	//	return nil
 	//} else if accLen >= config.Cfg.Das.OpenAccountMinLength && accLen <= config.Cfg.Das.OpenAccountMaxLength {
-	//	if resNum, _ := Blake256AndFourBytesBigEndian([]byte(req.Account)); resNum > config.Cfg.Das.OpenAccountHashNum {
+	//	configRelease, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsRelease)
+	//	if err != nil {
+	//		resp.Status = tables.SearchStatusRegisterNotOpen
+	//		apiResp.ApiRespOK(resp)
+	//		return nil
+	//	}
+	//	luckyNumber, _ := configRelease.LuckyNumber()
+	//	if resNum, _ := Blake256AndFourBytesBigEndian([]byte(req.Account)); resNum > luckyNumber {
 	//		resp.Status = tables.SearchStatusRegisterNotOpen
 	//		apiResp.ApiRespOK(resp)
 	//		return nil

@@ -46,7 +46,6 @@ das:
   account_max_length: 42
   open_account_min_length: 4
   open_account_max_length: 9
-  open_account_hash_num: 1503238553
   max_register_years: 20
   premium: "0.1"
 das_lib:
