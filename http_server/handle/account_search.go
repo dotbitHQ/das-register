@@ -219,6 +219,7 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 				return
 			}
 			luckyNumber, _ := configRelease.LuckyNumber()
+			log.Info("config release lucky number: ", luckyNumber)
 			if resNum, _ := Blake256AndFourBytesBigEndian([]byte(req.Account)); resNum > luckyNumber {
 				status = tables.SearchStatusRegisterNotOpen
 				return
