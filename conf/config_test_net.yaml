@@ -25,7 +25,7 @@ pay_address_map:
 chain:
   ckb_url: "http://127.0.0.1:8114"
   index_url: "http://127.0.0.1:8116"
-  current_block_number: 1927285
+  current_block_number: 0
   confirm_num: 4
   concurrency_num: 100
 db:

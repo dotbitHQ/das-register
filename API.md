@@ -30,6 +30,7 @@
     * [Account Order Register](#account-order-register)
     * [Account Order Change](#account-order-change)
     * [Account Order Pay Hash](#account-order-pay-hash)
+    * [Account Register](#account-register)  
  * [NODE RPC](#node-rpc)
     * [Node Ckb Rpc](#node-ckb-rpc)
 
@@ -1465,6 +1466,54 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/change -d'{"chain_type":1,"a
 curl -X POST http://127.0.0.1:8120/v1/account/order/pay/hash -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"asxasadasx.bit","order_id":"17b05429826dc39016a6f9e4de9c55ba","pay_hash":"0xfcc6eca382311be8702862f36c0863e27c4f63beedd9ff786b8413558be14559"}'
 ```
 
+
+#### Account Register 
+
+**Request**
+
+* (Internal Service Api)
+* path: /account/register
+* param:
+
+
+```json
+{
+  "chain_type": 1,
+  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
+  "account": "1234.bit",
+  "account_char_str": [
+     {"char_set_name":1,"char":"1"},
+     {"char_set_name":1,"char":"2"},
+     {"char_set_name":1,"char":"3"},
+     {"char_set_name":1,"char":"4"},
+     {"char_set_name":2,"char":"."},
+     {"char_set_name":2,"char":"b"},
+     {"char_set_name":2,"char":"i"},
+     {"char_set_name":2,"char":"t"}
+  ], 
+   "register_years": 1,
+   "inviter_account": "",
+   "channel_account": ""
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "order_id": ""
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8119/v1/account/register -d'{"chain_type":1,"address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad","account":"1234567887.bit","account_char_str":[{"char_set_name":1,"char":"1"},{"char_set_name":1,"char":"2"},{"char_set_name":1,"char":"3"},{"char_set_name":1,"char":"4"},{"char_set_name":1,"char":"5"},{"char_set_name":1,"char":"6"},{"char_set_name":1,"char":"7"},{"char_set_name":1,"char":"8"},{"char_set_name":1,"char":"8"},{"char_set_name":1,"char":"7"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}],"register_years":1,"inviter_account":"","channel_account":""}'
+```
 
 ### NODE RPC
 
