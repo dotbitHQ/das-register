@@ -28,7 +28,7 @@ type RespConfigInfo struct {
 	TransferThrottle             uint32          `json:"transfer_throttle"`
 	IncomeCellMinTransferValue   uint64          `json:"income_cell_min_transfer_value"`
 	Premium                      decimal.Decimal `json:"premium" yaml:"premium"`
-	Timestamp                    int64           `json:"timestamp"`
+	TimestampOnChain             int64           `json:"timestamp_on_chain"`
 }
 
 func (h *HttpHandle) RpcConfigInfo(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -109,7 +109,7 @@ func (h *HttpHandle) doConfigInfo(apiResp *api_code.ApiResp) error {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 		return fmt.Errorf("GetTimeCell err: %s", err.Error())
 	}
-	resp.Timestamp = timeCell.Timestamp()
+	resp.TimestampOnChain = timeCell.Timestamp()
 
 	apiResp.ApiRespOK(resp)
 	return nil
