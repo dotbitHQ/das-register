@@ -39,7 +39,7 @@ func (h *HttpServer) initRouter() {
 		// query
 		v1.GET("/version", api_code.DoMonitorLog("Version"), cacheHandleShort, h.h.Version)
 		v1.POST("/token/list", api_code.DoMonitorLog(api_code.MethodTokenList), cacheHandleLong, h.h.TokenList)
-		v1.POST("/config/info", api_code.DoMonitorLog(api_code.MethodConfigInfo), cacheHandleLong, h.h.ConfigInfo)
+		v1.POST("/config/info", api_code.DoMonitorLog(api_code.MethodConfigInfo), cacheHandleShort, h.h.ConfigInfo)
 		v1.POST("/account/list", api_code.DoMonitorLog(api_code.MethodAccountList), cacheHandleLong, h.h.AccountList) // user's not on sale accounts
 		v1.POST("/account/mine", api_code.DoMonitorLog(api_code.MethodAccountMine), cacheHandleLong, h.h.AccountMine) // user's accounts by pagination
 		v1.POST("/account/detail", api_code.DoMonitorLog(api_code.MethodAccountDetail), cacheHandleLong, h.h.AccountDetail)
