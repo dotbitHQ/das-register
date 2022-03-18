@@ -160,7 +160,8 @@ curl -X POST http://127.0.0.1:8120/v1/token/list
     "edit_manager_throttle": 300,
     "transfer_throttle": 300,
     "income_cell_min_transfer_value": 11600000000,
-    "premium": "0.1"
+    "premium": "0.1",
+    "timestamp": 1647589995
   }
 }
 ```
