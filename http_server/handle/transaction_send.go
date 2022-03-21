@@ -108,6 +108,10 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, err.Error())
 			return fmt.Errorf("SendTransaction err: %s", err.Error())
 		}
+		if strings.Contains(err.Error(), "-102 in the page") {
+			apiResp.ApiRespErr(api_code.ApiCodeAccountActionLimit, "account frequency limit")
+			return fmt.Errorf("SendTransaction err: %s", err.Error())
+		}
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "send tx err:"+err.Error())
 		return fmt.Errorf("SendTransaction err: %s", err.Error())
 	} else {
