@@ -37,7 +37,6 @@ const (
 	ApiCodeInviterAccountNotExist       ApiCode = 30018
 	ApiCodeSystemUpgrade                ApiCode = 30019
 	ApiCodeRecordInvalid                ApiCode = 30020
-	ApiCodeAccountActionLimit           ApiCode = 30022
 	ApiCodeSameLock                     ApiCode = 30023
 	ApiCodeChannelAccountNotExist       ApiCode = 30026
 	ApiCodeOrderPaid                    ApiCode = 30027
