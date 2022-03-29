@@ -59,12 +59,14 @@ const (
 	ActionAcceptOffer   TxAction = 19
 	ActionOfferAccepted TxAction = 20
 	ActionEditOfferSub  TxAction = 21
+	ActionOrderRefund   TxAction = 22
 
 	DasActionTransferBalance = "transfer_balance"
 	DasActionSaleAccount     = "sale_account"
 	DasActionOfferAccepted   = "offer_accepted"
 	DasActionEditOfferAdd    = "offer_edit_add"
 	DasActionEditOfferSub    = "offer_edit_sub"
+	DasActionOrderRefund     = "order_refund"
 )
 
 func FormatTxAction(action string) TxAction {
@@ -113,6 +115,8 @@ func FormatTxAction(action string) TxAction {
 		return ActionAcceptOffer
 	case DasActionOfferAccepted:
 		return ActionOfferAccepted
+	case DasActionOrderRefund:
+		return ActionOrderRefund
 
 	}
 	return ActionUndefined
@@ -164,6 +168,8 @@ func FormatActionType(actionType TxAction) string {
 		return common.DasActionAcceptOffer
 	case ActionOfferAccepted:
 		return DasActionOfferAccepted
+	case ActionOrderRefund:
+		return DasActionOrderRefund
 	}
 	return ""
 }
