@@ -23,17 +23,20 @@ type ReqAccountDetail struct {
 }
 
 type RespAccountDetail struct {
-	Account             string              `json:"account"`
-	Owner               string              `json:"owner"`
-	OwnerChainType      common.ChainType    `json:"owner_chain_type"`
-	Manager             string              `json:"manager"`
-	ManagerChainType    common.ChainType    `json:"manager_chain_type"`
-	RegisteredAt        int64               `json:"registered_at"`
-	ExpiredAt           int64               `json:"expired_at"`
-	Status              tables.SearchStatus `json:"status"`
-	AccountPrice        decimal.Decimal     `json:"account_price"`
-	BaseAmount          decimal.Decimal     `json:"base_amount"`
-	ConfirmProposalHash string              `json:"confirm_proposal_hash"`
+	Account              string                  `json:"account"`
+	Owner                string                  `json:"owner"`
+	OwnerChainType       common.ChainType        `json:"owner_chain_type"`
+	Manager              string                  `json:"manager"`
+	ManagerChainType     common.ChainType        `json:"manager_chain_type"`
+	RegisteredAt         int64                   `json:"registered_at"`
+	ExpiredAt            int64                   `json:"expired_at"`
+	Status               tables.SearchStatus     `json:"status"`
+	AccountPrice         decimal.Decimal         `json:"account_price"`
+	BaseAmount           decimal.Decimal         `json:"base_amount"`
+	ConfirmProposalHash  string                  `json:"confirm_proposal_hash"`
+	EnableSubAccount     tables.EnableSubAccount `json:"enable_sub_account"`
+	RenewSubAccountPrice uint64                  `json:"renew_sub_account_price"`
+	Nonce                uint64                  `json:"nonce"`
 }
 
 func (h *HttpHandle) RpcAccountDetail(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -158,6 +161,9 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		resp.ManagerChainType = acc.ManagerChainType
 		resp.Manager = core.FormatHexAddressToNormal(acc.ManagerChainType, acc.Manager)
 		resp.ConfirmProposalHash = acc.ConfirmProposalHash
+		resp.EnableSubAccount = acc.EnableSubAccount
+		resp.RenewSubAccountPrice = acc.RenewSubAccountPrice
+		resp.Nonce = acc.Nonce
 		apiResp.ApiRespOK(resp)
 		return nil
 	}

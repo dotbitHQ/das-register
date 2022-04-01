@@ -22,10 +22,13 @@ type RespAccountList struct {
 }
 
 type AccountData struct {
-	Account      string              `json:"account"`
-	Status       tables.SearchStatus `json:"status"`
-	ExpiredAt    int64               `json:"expired_at"`
-	RegisteredAt int64               `json:"registered_at"`
+	Account              string                  `json:"account"`
+	Status               tables.SearchStatus     `json:"status"`
+	ExpiredAt            int64                   `json:"expired_at"`
+	RegisteredAt         int64                   `json:"registered_at"`
+	EnableSubAccount     tables.EnableSubAccount `json:"enable_sub_account"`
+	RenewSubAccountPrice uint64                  `json:"renew_sub_account_price"`
+	Nonce                uint64                  `json:"nonce"`
 }
 
 func (h *HttpHandle) RpcAccountList(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -84,10 +87,13 @@ func (h *HttpHandle) doAccountList(req *ReqAccountList, apiResp *api_code.ApiRes
 	}
 	for _, v := range list {
 		resp.List = append(resp.List, AccountData{
-			Account:      v.Account,
-			Status:       v.FormatAccountStatus(),
-			ExpiredAt:    int64(v.ExpiredAt) * 1e3,
-			RegisteredAt: int64(v.RegisteredAt) * 1e3,
+			Account:              v.Account,
+			Status:               v.FormatAccountStatus(),
+			ExpiredAt:            int64(v.ExpiredAt) * 1e3,
+			RegisteredAt:         int64(v.RegisteredAt) * 1e3,
+			EnableSubAccount:     v.EnableSubAccount,
+			RenewSubAccountPrice: v.RenewSubAccountPrice,
+			Nonce:                v.Nonce,
 		})
 	}
 
