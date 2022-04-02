@@ -47,18 +47,19 @@ const (
 type SearchStatus int
 
 const (
-	SearchStatusRegisterNotOpen    SearchStatus = -1
-	SearchStatusRegisterAble       SearchStatus = 0
-	SearchStatusPaymentConfirm     SearchStatus = 1
-	SearchStatusLockedAccount      SearchStatus = 2
-	SearchStatusRegistering        SearchStatus = 3
-	SearchStatusProposal           SearchStatus = 4
-	SearchStatusConfirmProposal    SearchStatus = 5
-	SearchStatusRegistered         SearchStatus = 6
-	SearchStatusReservedAccount    SearchStatus = 7
-	SearchStatusOnSale             SearchStatus = 8
-	SearchStatusOnAuction          SearchStatus = 9
-	SearchStatusUnAvailableAccount SearchStatus = 13
+	SearchStatusRegisterNotOpen      SearchStatus = -1
+	SearchStatusRegisterAble         SearchStatus = 0
+	SearchStatusPaymentConfirm       SearchStatus = 1
+	SearchStatusLockedAccount        SearchStatus = 2
+	SearchStatusRegistering          SearchStatus = 3
+	SearchStatusProposal             SearchStatus = 4
+	SearchStatusConfirmProposal      SearchStatus = 5
+	SearchStatusRegistered           SearchStatus = 6
+	SearchStatusReservedAccount      SearchStatus = 7
+	SearchStatusOnSale               SearchStatus = 8
+	SearchStatusOnAuction            SearchStatus = 9
+	SearchStatusUnAvailableAccount   SearchStatus = 13
+	SearchStatusSubAccountUnRegister SearchStatus = 14
 )
 
 func (t *TableAccountInfo) IsExpired() bool {

@@ -82,6 +82,18 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	var resp RespAccountSearch
 	resp.RegisterTxMap = make(map[tables.RegisterStatus]RegisterTx)
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+
+	// check sub account
+	isSubAccount := false
+	resp.Status, resp.IsSelf, isSubAccount = h.checkSubAccount(req, apiResp)
+	if isSubAccount {
+		if apiResp.ErrNo != api_code.ApiCodeSuccess {
+			return nil
+		}
+		apiResp.ApiRespOK(resp)
+		return nil
+	}
+
 	// account char set check
 	h.checkAccountCharSet(req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -302,6 +314,29 @@ func (h *HttpHandle) checkOtherAddressOrder(req *ReqAccountSearch, apiResp *api_
 		return
 	} else if order.Id > 0 {
 		status = tables.FormatRegisterStatusToSearchStatus(order.RegisterStatus)
+	}
+	return
+}
+
+func (h *HttpHandle) checkSubAccount(req *ReqAccountSearch, apiResp *api_code.ApiResp) (status tables.SearchStatus, isSelf, isSubAccount bool) {
+	count := strings.Count(req.Account, ".")
+	if count > 1 {
+		isSubAccount = true
+		accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+		acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
+		if err != nil {
+			log.Error("GetAccountInfoByAccountId err:", err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account fail")
+			return
+		} else if acc.Id > 0 {
+			status = acc.FormatAccountStatus()
+			if req.ChainType == acc.OwnerChainType && strings.EqualFold(req.Address, acc.Owner) {
+				isSelf = true
+			}
+			return
+		} else {
+			status = tables.SearchStatusSubAccountUnRegister
+		}
 	}
 	return
 }

@@ -6,11 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func (d *DbDao) SearchAccount(account string) (acc tables.TableAccountInfo, err error) {
-	err = d.parserDb.Where(" account=? ", account).First(&acc).Error
-	return
-}
-
 func (d *DbDao) SearchAccountList(chainType common.ChainType, address string) (list []tables.TableAccountInfo, err error) {
 	err = d.parserDb.Where(" owner_chain_type=? AND owner=? ", chainType, address).
 		Or(" manager_chain_type=? AND manager=? ", chainType, address).

@@ -137,16 +137,21 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 	resp.Account = req.Account
 	resp.Status = tables.SearchStatusRegisterAble
 
-	// price
-	var err error
-	resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice("", req.Account, true)
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
-		return fmt.Errorf("getAccountPrice err: %s", err.Error())
+	// check sub account
+	count := strings.Count(req.Account, ".")
+	if count == 1 {
+		// price
+		var err error
+		resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice("", req.Account, true)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
+			return fmt.Errorf("getAccountPrice err: %s", err.Error())
+		}
 	}
 
 	// acc
-	acc, err := h.dbDao.SearchAccount(req.Account)
+	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
 		return fmt.Errorf("SearchAccount err: %s", err.Error())
@@ -168,21 +173,23 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		return nil
 	}
 
-	// reserve account
-	accountName := strings.ToLower(strings.TrimSuffix(req.Account, common.DasAccountSuffix))
-	accountName = common.Bytes2Hex(common.Blake2b([]byte(accountName))[:20])
+	if count == 1 {
+		// reserve account
+		accountName := strings.ToLower(strings.TrimSuffix(req.Account, common.DasAccountSuffix))
+		accountName = common.Bytes2Hex(common.Blake2b([]byte(accountName))[:20])
 
-	if _, ok := h.mapReservedAccounts[accountName]; ok {
-		resp.Status = tables.SearchStatusReservedAccount
-		apiResp.ApiRespOK(resp)
-		return nil
-	}
+		if _, ok := h.mapReservedAccounts[accountName]; ok {
+			resp.Status = tables.SearchStatusReservedAccount
+			apiResp.ApiRespOK(resp)
+			return nil
+		}
 
-	// unavailable account
-	if _, ok := h.mapUnAvailableAccounts[accountName]; ok {
-		resp.Status = tables.SearchStatusUnAvailableAccount
-		apiResp.ApiRespOK(resp)
-		return nil
+		// unavailable account
+		if _, ok := h.mapUnAvailableAccounts[accountName]; ok {
+			resp.Status = tables.SearchStatusUnAvailableAccount
+			apiResp.ApiRespOK(resp)
+			return nil
+		}
 	}
 
 	// account not exist

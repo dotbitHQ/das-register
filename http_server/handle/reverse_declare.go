@@ -112,7 +112,8 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 
 	// account check
 
-	acc, err := h.dbDao.SearchAccount(req.Account)
+	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
 			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
