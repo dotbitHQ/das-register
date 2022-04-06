@@ -17,6 +17,7 @@ var (
 		common.DasActionConfirmProposal,
 		common.DasActionRenewAccount,
 		tables.DasActionOfferAccepted,
+		common.DasActionEditSubAccount,
 	}
 )
 
