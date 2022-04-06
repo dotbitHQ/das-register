@@ -82,6 +82,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	var resp RespAccountSearch
 	resp.RegisterTxMap = make(map[tables.RegisterStatus]RegisterTx)
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	resp.Account = req.Account
 
 	// check sub account
 	isSubAccount := false
@@ -99,7 +100,6 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
-	resp.Account = req.Account
 
 	resp.Status, resp.IsSelf = h.checkAccountBase(req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
