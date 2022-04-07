@@ -48,4 +48,3 @@ das:
   open_account_max_length: 9
   max_register_years: 20
   premium: "0.1"
-  args: ""
