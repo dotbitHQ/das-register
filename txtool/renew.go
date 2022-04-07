@@ -295,9 +295,9 @@ func (t *TxTool) genIncomeCell(p *genIncomeCellParam) (*genIncomeCellRes, error)
 	//
 	var dasLock *types.Script
 	if config.Cfg.Server.Net == common.DasNetTypeMainNet {
-		dasLock = common.GetNormalLockScriptByMultiSig(config.Cfg.DasLib.DasArgs)
+		dasLock = common.GetNormalLockScriptByMultiSig(core.EnvMainNet.ContractArgs)
 	} else {
-		dasLock = common.GetNormalLockScript(config.Cfg.DasLib.DasArgs)
+		dasLock = common.GetNormalLockScript(core.EnvTestnet2.ContractArgs)
 	}
 	lockList = append(lockList, dasLock)
 	incomeCapacities = append(incomeCapacities, p.priceCapacity)
