@@ -91,6 +91,7 @@ type CfgServer struct {
 		OpenAccountMaxLength uint8           `json:"open_account_max_length" yaml:"open_account_max_length"`
 		MaxRegisterYears     int             `json:"max_register_years" yaml:"max_register_years"`
 		Premium              decimal.Decimal `json:"premium" yaml:"premium"`
+		Args                 string          `json:"args" yaml:"args"`
 	} `json:"das" yaml:"das"`
 }
 
