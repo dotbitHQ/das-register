@@ -147,45 +147,45 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 
 func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_code.ApiResp) {
 	if !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "not has suffix .bit")
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "not has suffix .bit")
 		return
 	}
 
 	accountName := strings.TrimSuffix(req.Account, common.DasAccountSuffix)
 	if strings.Contains(accountName, ".") {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 		return
 	}
 	var accountCharStr string
 	for _, v := range req.AccountCharStr {
 		if v.Char == "" {
-			apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+			apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 			return
 		}
 		switch v.CharSetName {
 		case tables.AccountCharTypeEmoji:
 			if !strings.Contains(config.AccountCharSetEmoji, v.Char) {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
 		case tables.AccountCharTypeNumber:
 			if !strings.Contains(config.AccountCharSetNumber, v.Char) {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
 		case tables.AccountCharTypeEn:
 			if !strings.Contains(config.AccountCharSetEn, v.Char) {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
 		default:
-			apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+			apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 			return
 		}
 		accountCharStr += v.Char
 	}
 	if !strings.EqualFold(req.Account, accountCharStr) {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, fmt.Sprintf("diff account chars[%s]!=[%s]", accountCharStr, req.Account))
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, fmt.Sprintf("diff account chars[%s]!=[%s]", accountCharStr, req.Account))
 		return
 	}
 	return

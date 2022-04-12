@@ -76,6 +76,8 @@ CREATE TABLE `t_das_order_info`
     UNIQUE KEY `uk_order_id` (`order_id`),
     KEY                   `k_chain_type_address` (`chain_type`,`address`),
     KEY                   `k_account_id` (`account_id`),
+    KEY                   `k_action` (`action`),
+    KEY                   `k_order_status` (`order_status`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT ='das order info';
