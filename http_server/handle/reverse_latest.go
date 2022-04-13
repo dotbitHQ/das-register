@@ -85,7 +85,8 @@ func (h *HttpHandle) doReverseLatest(req *ReqReverseLatest, apiResp *api_code.Ap
 
 	// account
 
-	acc, err := h.dbDao.SearchAccount(reverse.Account)
+	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(reverse.Account))
+	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
 			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")

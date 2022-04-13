@@ -105,7 +105,8 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 		return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
 	}
 
-	acc, err := h.dbDao.SearchAccount(req.Account)
+	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
 		return fmt.Errorf("SearchAccount err: %s", err.Error())
