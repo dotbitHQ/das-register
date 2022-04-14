@@ -264,8 +264,18 @@ func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.
 				apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order pay fail")
 				return
 			} else if payInfo.Id > 0 {
+				chainType := payInfo.ChainType
+				switch order.PayTokenId {
+				case tables.TokenIdDas, tables.TokenIdCkb, tables.TokenIdCkbInternal:
+					chainType = common.ChainTypeCkb
+				case tables.TokenIdEth, tables.TokenIdBnb, tables.TokenIdMatic:
+					chainType = common.ChainTypeEth
+				case tables.TokenIdTrx:
+					chainType = common.ChainTypeTron
+				}
+
 				mapTx[tables.RegisterStatusConfirmPayment] = RegisterTx{
-					ChainType: payInfo.ChainType,
+					ChainType: chainType,
 					TokenId:   order.PayTokenId,
 					Hash:      payInfo.Hash,
 				}
