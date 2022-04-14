@@ -24,8 +24,6 @@ const (
 	ApiCodeReverseAlreadyExist ApiCode = 12001
 	ApiCodeReverseNotExist     ApiCode = 12002
 
-	ApiCodeAccountFormatInvalid ApiCode = 20006
-
 	ApiCodeNotOpenForRegistration       ApiCode = 30001
 	ApiCodeAccountNotExist              ApiCode = 30003
 	ApiCodeAccountAlreadyRegister       ApiCode = 30004
@@ -33,6 +31,7 @@ const (
 	ApiCodeOrderNotExist                ApiCode = 30006
 	ApiCodeAccountIsExpired             ApiCode = 30010
 	ApiCodePermissionDenied             ApiCode = 30011
+	ApiCodeAccountContainsInvalidChar   ApiCode = 30015
 	ApiCodeReservedAccount              ApiCode = 30017
 	ApiCodeInviterAccountNotExist       ApiCode = 30018
 	ApiCodeSystemUpgrade                ApiCode = 30019

@@ -21,6 +21,7 @@ type ConfigCellDataBuilder struct {
 	ConfigCellProposal              *molecule.ConfigCellProposal
 	ConfigCellApply                 *molecule.ConfigCellApply
 	ConfigCellRelease               *molecule.ConfigCellRelease
+	ConfigCellSubAccount            *molecule.ConfigCellSubAccount
 	ConfigCellRecordKeys            []string
 	ConfigCellEmojis                []string
 	ConfigCellUnavailableAccountMap map[string]struct{}
@@ -111,6 +112,12 @@ func ConfigCellDataBuilderRefByTypeArgs(builder *ConfigCellDataBuilder, tx *type
 			return fmt.Errorf("ConfigCellReverseResolutionFromSlice err: %s", err.Error())
 		}
 		builder.ConfigCellReverseResolution = ConfigCellReverseResolution
+	case common.ConfigCellTypeArgsSubAccount:
+		ConfigCellSubAccount, err := molecule.ConfigCellSubAccountFromSlice(configCellDataBys, false)
+		if err != nil {
+			return fmt.Errorf("ConfigCellSubAccountFromSlice err: %s", err.Error())
+		}
+		builder.ConfigCellSubAccount = ConfigCellSubAccount
 	case common.ConfigCellTypeArgsProposal:
 		ConfigCellProposal, err := molecule.ConfigCellProposalFromSlice(configCellDataBys, false)
 		if err != nil {
@@ -469,4 +476,18 @@ func (c *ConfigCellDataBuilder) LuckyNumber() (uint32, error) {
 		return molecule.Bytes2GoU32(c.ConfigCellRelease.LuckyNumber().RawData())
 	}
 	return 0, fmt.Errorf("ConfigCellRelease is nil")
+}
+
+func (c *ConfigCellDataBuilder) NewSubAccountPrice() (uint64, error) {
+	if c.ConfigCellSubAccount != nil {
+		return molecule.Bytes2GoU64(c.ConfigCellSubAccount.NewSubAccountPrice().RawData())
+	}
+	return 0, fmt.Errorf("ConfigCellSubAccount is nil")
+}
+
+func (c *ConfigCellDataBuilder) RenewSubAccountPrice() (uint64, error) {
+	if c.ConfigCellSubAccount != nil {
+		return molecule.Bytes2GoU64(c.ConfigCellSubAccount.RenewSubAccountPrice().RawData())
+	}
+	return 0, fmt.Errorf("ConfigCellSubAccount is nil")
 }

@@ -78,10 +78,13 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 	}
 	for _, v := range list {
 		resp.List = append(resp.List, AccountData{
-			Account:      v.Account,
-			Status:       v.FormatAccountStatus(),
-			ExpiredAt:    int64(v.ExpiredAt) * 1e3,
-			RegisteredAt: int64(v.RegisteredAt) * 1e3,
+			Account:              v.Account,
+			Status:               v.FormatAccountStatus(),
+			ExpiredAt:            int64(v.ExpiredAt) * 1e3,
+			RegisteredAt:         int64(v.RegisteredAt) * 1e3,
+			EnableSubAccount:     v.EnableSubAccount,
+			RenewSubAccountPrice: v.RenewSubAccountPrice,
+			Nonce:                v.Nonce,
 		})
 	}
 

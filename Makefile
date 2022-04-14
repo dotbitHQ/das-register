@@ -9,7 +9,7 @@ register:
 	@echo "Build $(BIN_BINARY_NAME) successfully. You can run ./$(BIN_BINARY_NAME) now.If you can't see it soon,wait some seconds"
 
 update:
-	go env -w GOPRIVATE="github.com/DeAccountSystems"
+	export GOPRIVATE="github.com/dotbitHQ"
 	go mod tidy
 	go mod vendor
 

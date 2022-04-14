@@ -106,6 +106,7 @@ func (h *HttpHandle) doReverseRedeclare(req *ReqReverseRedeclare, apiResp *api_c
 	}
 
 	// account check
+
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
@@ -143,7 +144,7 @@ func (h *HttpHandle) doReverseRedeclare(req *ReqReverseRedeclare, apiResp *api_c
 	var redeclareParams RedeclareParams
 	redeclareParams.Reverse = &reverse
 	redeclareParams.FeeCapacity = feeCapacity
-	redeclareParams.AccountInfo = &acc
+	//redeclareParams.AccountInfo = &acc
 
 	txParams, err := h.buildRedeclareReverseRecordTx(&reqBuild, &redeclareParams)
 	if err != nil {
@@ -163,7 +164,7 @@ func (h *HttpHandle) doReverseRedeclare(req *ReqReverseRedeclare, apiResp *api_c
 }
 
 type RedeclareParams struct {
-	AccountInfo *tables.TableAccountInfo
+	//AccountInfo *tables.TableAccountInfo
 	Reverse     *tables.TableReverseInfo
 	FeeCapacity uint64
 }
@@ -198,31 +199,31 @@ func (h *HttpHandle) buildRedeclareReverseRecordTx(req *reqBuildTx, p *Redeclare
 	txParams.Witnesses = append(txParams.Witnesses, actionWitness)
 
 	// accoun witness
-	resAcc, err := h.dasCore.Client().GetTransaction(h.ctx, common.String2OutPointStruct(p.AccountInfo.Outpoint).TxHash)
-	if err != nil {
-		return nil, fmt.Errorf("GetTransaction err: %s", err.Error())
-	}
-	accMap, err := witness.AccountCellDataBuilderMapFromTx(resAcc.Transaction, common.DataTypeNew)
-	if err != nil {
-		return nil, fmt.Errorf("AccountCellDataBuilderMapFromTx err: %s", err.Error())
-	}
-	if acc, ok := accMap[req.Account]; !ok {
-		return nil, fmt.Errorf("acc map not exist [%s]", req.Account)
-	} else {
-		witnessAcc, _, err := acc.GenWitness(&witness.AccountCellParam{
-			OldIndex: 0,
-			Action:   common.DasActionRedeclareReverseRecord,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("acc.GenWitness err: %s", err.Error())
-		}
-		txParams.Witnesses = append(txParams.Witnesses, witnessAcc)
-	}
-
-	accountDep := &types.CellDep{
-		OutPoint: common.String2OutPointStruct(p.AccountInfo.Outpoint),
-		DepType:  types.DepTypeCode,
-	}
+	//resAcc, err := h.dasCore.Client().GetTransaction(h.ctx, common.String2OutPointStruct(p.AccountInfo.Outpoint).TxHash)
+	//if err != nil {
+	//	return nil, fmt.Errorf("GetTransaction err: %s", err.Error())
+	//}
+	//accMap, err := witness.AccountCellDataBuilderMapFromTx(resAcc.Transaction, common.DataTypeNew)
+	//if err != nil {
+	//	return nil, fmt.Errorf("AccountCellDataBuilderMapFromTx err: %s", err.Error())
+	//}
+	//if acc, ok := accMap[req.Account]; !ok {
+	//	return nil, fmt.Errorf("acc map not exist [%s]", req.Account)
+	//} else {
+	//	witnessAcc, _, err := acc.GenWitness(&witness.AccountCellParam{
+	//		OldIndex: 0,
+	//		Action:   common.DasActionRedeclareReverseRecord,
+	//	})
+	//	if err != nil {
+	//		return nil, fmt.Errorf("acc.GenWitness err: %s", err.Error())
+	//	}
+	//	txParams.Witnesses = append(txParams.Witnesses, witnessAcc)
+	//}
+	//
+	//accountDep := &types.CellDep{
+	//	OutPoint: common.String2OutPointStruct(p.AccountInfo.Outpoint),
+	//	DepType:  types.DepTypeCode,
+	//}
 
 	// cell deps
 	accContract, err := core.GetDasContractInfo(common.DasContractNameAccountCellType)
@@ -242,7 +243,7 @@ func (h *HttpHandle) buildRedeclareReverseRecordTx(req *reqBuildTx, p *Redeclare
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
 	txParams.CellDeps = append(txParams.CellDeps,
-		accountDep,
+		//accountDep,
 		accContract.ToCellDep(),
 		configCellReverse.ToCellDep(),
 		balContract.ToCellDep(),

@@ -23,17 +23,20 @@ type ReqAccountDetail struct {
 }
 
 type RespAccountDetail struct {
-	Account             string              `json:"account"`
-	Owner               string              `json:"owner"`
-	OwnerChainType      common.ChainType    `json:"owner_chain_type"`
-	Manager             string              `json:"manager"`
-	ManagerChainType    common.ChainType    `json:"manager_chain_type"`
-	RegisteredAt        int64               `json:"registered_at"`
-	ExpiredAt           int64               `json:"expired_at"`
-	Status              tables.SearchStatus `json:"status"`
-	AccountPrice        decimal.Decimal     `json:"account_price"`
-	BaseAmount          decimal.Decimal     `json:"base_amount"`
-	ConfirmProposalHash string              `json:"confirm_proposal_hash"`
+	Account              string                  `json:"account"`
+	Owner                string                  `json:"owner"`
+	OwnerChainType       common.ChainType        `json:"owner_chain_type"`
+	Manager              string                  `json:"manager"`
+	ManagerChainType     common.ChainType        `json:"manager_chain_type"`
+	RegisteredAt         int64                   `json:"registered_at"`
+	ExpiredAt            int64                   `json:"expired_at"`
+	Status               tables.SearchStatus     `json:"status"`
+	AccountPrice         decimal.Decimal         `json:"account_price"`
+	BaseAmount           decimal.Decimal         `json:"base_amount"`
+	ConfirmProposalHash  string                  `json:"confirm_proposal_hash"`
+	EnableSubAccount     tables.EnableSubAccount `json:"enable_sub_account"`
+	RenewSubAccountPrice uint64                  `json:"renew_sub_account_price"`
+	Nonce                uint64                  `json:"nonce"`
 }
 
 func (h *HttpHandle) RpcAccountDetail(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -134,12 +137,16 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 	resp.Account = req.Account
 	resp.Status = tables.SearchStatusRegisterAble
 
-	// price
-	var err error
-	resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice("", req.Account, true)
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
-		return fmt.Errorf("getAccountPrice err: %s", err.Error())
+	// check sub account
+	count := strings.Count(req.Account, ".")
+	if count == 1 {
+		// price
+		var err error
+		resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice("", req.Account, true)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
+			return fmt.Errorf("getAccountPrice err: %s", err.Error())
+		}
 	}
 
 	// acc
@@ -159,25 +166,30 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		resp.ManagerChainType = acc.ManagerChainType
 		resp.Manager = core.FormatHexAddressToNormal(acc.ManagerChainType, acc.Manager)
 		resp.ConfirmProposalHash = acc.ConfirmProposalHash
+		resp.EnableSubAccount = acc.EnableSubAccount
+		resp.RenewSubAccountPrice = acc.RenewSubAccountPrice
+		resp.Nonce = acc.Nonce
 		apiResp.ApiRespOK(resp)
 		return nil
 	}
 
-	// reserve account
-	accountName := strings.ToLower(strings.TrimSuffix(req.Account, common.DasAccountSuffix))
-	accountName = common.Bytes2Hex(common.Blake2b([]byte(accountName))[:20])
+	if count == 1 {
+		// reserve account
+		accountName := strings.ToLower(strings.TrimSuffix(req.Account, common.DasAccountSuffix))
+		accountName = common.Bytes2Hex(common.Blake2b([]byte(accountName))[:20])
 
-	if _, ok := h.mapReservedAccounts[accountName]; ok {
-		resp.Status = tables.SearchStatusReservedAccount
-		apiResp.ApiRespOK(resp)
-		return nil
-	}
+		if _, ok := h.mapReservedAccounts[accountName]; ok {
+			resp.Status = tables.SearchStatusReservedAccount
+			apiResp.ApiRespOK(resp)
+			return nil
+		}
 
-	// unavailable account
-	if _, ok := h.mapUnAvailableAccounts[accountName]; ok {
-		resp.Status = tables.SearchStatusUnAvailableAccount
-		apiResp.ApiRespOK(resp)
-		return nil
+		// unavailable account
+		if _, ok := h.mapUnAvailableAccounts[accountName]; ok {
+			resp.Status = tables.SearchStatusUnAvailableAccount
+			apiResp.ApiRespOK(resp)
+			return nil
+		}
 	}
 
 	// account not exist

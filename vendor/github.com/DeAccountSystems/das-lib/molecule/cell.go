@@ -244,7 +244,7 @@ func (s *ConfigCellMain) AsSlice() []byte {
 }
 
 func ConfigCellMainDefault() ConfigCellMain {
-	return *ConfigCellMainFromSliceUnchecked([]byte{113, 2, 0, 0, 16, 0, 0, 0, 17, 0, 0, 0, 125, 1, 0, 0, 0, 108, 1, 0, 0, 44, 0, 0, 0, 76, 0, 0, 0, 108, 0, 0, 0, 140, 0, 0, 0, 172, 0, 0, 0, 204, 0, 0, 0, 236, 0, 0, 0, 12, 1, 0, 0, 44, 1, 0, 0, 76, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 244, 0, 0, 0, 28, 0, 0, 0, 64, 0, 0, 0, 100, 0, 0, 0, 136, 0, 0, 0, 172, 0, 0, 0, 208, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+	return *ConfigCellMainFromSliceUnchecked([]byte{149, 2, 0, 0, 16, 0, 0, 0, 17, 0, 0, 0, 161, 1, 0, 0, 0, 144, 1, 0, 0, 48, 0, 0, 0, 80, 0, 0, 0, 112, 0, 0, 0, 144, 0, 0, 0, 176, 0, 0, 0, 208, 0, 0, 0, 240, 0, 0, 0, 16, 1, 0, 0, 48, 1, 0, 0, 80, 1, 0, 0, 112, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 244, 0, 0, 0, 28, 0, 0, 0, 64, 0, 0, 0, 100, 0, 0, 0, 136, 0, 0, 0, 172, 0, 0, 0, 208, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
 }
 
 func ConfigCellMainFromSlice(slice []byte, compatible bool) (*ConfigCellMain, error) {
@@ -385,13 +385,14 @@ type TypeIdTableBuilder struct {
 	account_auction_cell Hash
 	offer_cell           Hash
 	reverse_record_cell  Hash
+	sub_account_cell     Hash
 }
 
 func (s *TypeIdTableBuilder) Build() TypeIdTable {
 	b := new(bytes.Buffer)
 
-	totalSize := HeaderSizeUint * (10 + 1)
-	offsets := make([]uint32, 0, 10)
+	totalSize := HeaderSizeUint * (11 + 1)
+	offsets := make([]uint32, 0, 11)
 
 	offsets = append(offsets, totalSize)
 	totalSize += uint32(len(s.account_cell.AsSlice()))
@@ -413,6 +414,8 @@ func (s *TypeIdTableBuilder) Build() TypeIdTable {
 	totalSize += uint32(len(s.offer_cell.AsSlice()))
 	offsets = append(offsets, totalSize)
 	totalSize += uint32(len(s.reverse_record_cell.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.sub_account_cell.AsSlice()))
 
 	b.Write(packNumber(Number(totalSize)))
 
@@ -430,6 +433,7 @@ func (s *TypeIdTableBuilder) Build() TypeIdTable {
 	b.Write(s.account_auction_cell.AsSlice())
 	b.Write(s.offer_cell.AsSlice())
 	b.Write(s.reverse_record_cell.AsSlice())
+	b.Write(s.sub_account_cell.AsSlice())
 	return TypeIdTable{inner: b.Bytes()}
 }
 
@@ -483,8 +487,13 @@ func (s *TypeIdTableBuilder) ReverseRecordCell(v Hash) *TypeIdTableBuilder {
 	return s
 }
 
+func (s *TypeIdTableBuilder) SubAccountCell(v Hash) *TypeIdTableBuilder {
+	s.sub_account_cell = v
+	return s
+}
+
 func NewTypeIdTableBuilder() *TypeIdTableBuilder {
-	return &TypeIdTableBuilder{account_cell: HashDefault(), apply_register_cell: HashDefault(), balance_cell: HashDefault(), income_cell: HashDefault(), pre_account_cell: HashDefault(), proposal_cell: HashDefault(), account_sale_cell: HashDefault(), account_auction_cell: HashDefault(), offer_cell: HashDefault(), reverse_record_cell: HashDefault()}
+	return &TypeIdTableBuilder{account_cell: HashDefault(), apply_register_cell: HashDefault(), balance_cell: HashDefault(), income_cell: HashDefault(), pre_account_cell: HashDefault(), proposal_cell: HashDefault(), account_sale_cell: HashDefault(), account_auction_cell: HashDefault(), offer_cell: HashDefault(), reverse_record_cell: HashDefault(), sub_account_cell: HashDefault()}
 }
 
 type TypeIdTable struct {
@@ -499,7 +508,7 @@ func (s *TypeIdTable) AsSlice() []byte {
 }
 
 func TypeIdTableDefault() TypeIdTable {
-	return *TypeIdTableFromSliceUnchecked([]byte{108, 1, 0, 0, 44, 0, 0, 0, 76, 0, 0, 0, 108, 0, 0, 0, 140, 0, 0, 0, 172, 0, 0, 0, 204, 0, 0, 0, 236, 0, 0, 0, 12, 1, 0, 0, 44, 1, 0, 0, 76, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+	return *TypeIdTableFromSliceUnchecked([]byte{144, 1, 0, 0, 48, 0, 0, 0, 80, 0, 0, 0, 112, 0, 0, 0, 144, 0, 0, 0, 176, 0, 0, 0, 208, 0, 0, 0, 240, 0, 0, 0, 16, 1, 0, 0, 48, 1, 0, 0, 80, 1, 0, 0, 112, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
 }
 
 func TypeIdTableFromSlice(slice []byte, compatible bool) (*TypeIdTable, error) {
@@ -515,7 +524,7 @@ func TypeIdTableFromSlice(slice []byte, compatible bool) (*TypeIdTable, error) {
 		return nil, errors.New(errMsg)
 	}
 
-	if uint32(sliceLen) == HeaderSizeUint && 10 == 0 {
+	if uint32(sliceLen) == HeaderSizeUint && 11 == 0 {
 		return &TypeIdTable{inner: slice}, nil
 	}
 
@@ -536,9 +545,9 @@ func TypeIdTableFromSlice(slice []byte, compatible bool) (*TypeIdTable, error) {
 	}
 
 	fieldCount := uint32(offsetFirst)/HeaderSizeUint - 1
-	if fieldCount < 10 {
+	if fieldCount < 11 {
 		return nil, errors.New("FieldCountNotMatch")
-	} else if !compatible && fieldCount > 10 {
+	} else if !compatible && fieldCount > 11 {
 		return nil, errors.New("FieldCountNotMatch")
 	}
 
@@ -607,6 +616,11 @@ func TypeIdTableFromSlice(slice []byte, compatible bool) (*TypeIdTable, error) {
 		return nil, err
 	}
 
+	_, err = HashFromSlice(slice[offsets[10]:offsets[11]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
 	return &TypeIdTable{inner: slice}, nil
 }
 
@@ -628,11 +642,11 @@ func (s *TypeIdTable) IsEmpty() bool {
 	return s.Len() == 0
 }
 func (s *TypeIdTable) CountExtraFields() uint {
-	return s.FieldCount() - 10
+	return s.FieldCount() - 11
 }
 
 func (s *TypeIdTable) HasExtraFields() bool {
-	return 10 != s.FieldCount()
+	return 11 != s.FieldCount()
 }
 
 func (s *TypeIdTable) AccountCell() *Hash {
@@ -690,10 +704,16 @@ func (s *TypeIdTable) OfferCell() *Hash {
 }
 
 func (s *TypeIdTable) ReverseRecordCell() *Hash {
-	var ret *Hash
 	start := unpackNumber(s.inner[40:])
+	end := unpackNumber(s.inner[44:])
+	return HashFromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *TypeIdTable) SubAccountCell() *Hash {
+	var ret *Hash
+	start := unpackNumber(s.inner[44:])
 	if s.HasExtraFields() {
-		end := unpackNumber(s.inner[44:])
+		end := unpackNumber(s.inner[48:])
 		ret = HashFromSliceUnchecked(s.inner[start:end])
 	} else {
 		ret = HashFromSliceUnchecked(s.inner[start:])
@@ -702,7 +722,7 @@ func (s *TypeIdTable) ReverseRecordCell() *Hash {
 }
 
 func (s *TypeIdTable) AsBuilder() TypeIdTableBuilder {
-	ret := NewTypeIdTableBuilder().AccountCell(*s.AccountCell()).ApplyRegisterCell(*s.ApplyRegisterCell()).BalanceCell(*s.BalanceCell()).IncomeCell(*s.IncomeCell()).PreAccountCell(*s.PreAccountCell()).ProposalCell(*s.ProposalCell()).AccountSaleCell(*s.AccountSaleCell()).AccountAuctionCell(*s.AccountAuctionCell()).OfferCell(*s.OfferCell()).ReverseRecordCell(*s.ReverseRecordCell())
+	ret := NewTypeIdTableBuilder().AccountCell(*s.AccountCell()).ApplyRegisterCell(*s.ApplyRegisterCell()).BalanceCell(*s.BalanceCell()).IncomeCell(*s.IncomeCell()).PreAccountCell(*s.PreAccountCell()).ProposalCell(*s.ProposalCell()).AccountSaleCell(*s.AccountSaleCell()).AccountAuctionCell(*s.AccountAuctionCell()).OfferCell(*s.OfferCell()).ReverseRecordCell(*s.ReverseRecordCell()).SubAccountCell(*s.SubAccountCell())
 	return *ret
 }
 
@@ -4050,6 +4070,318 @@ func (s *ConfigCellReverseResolution) AsBuilder() ConfigCellReverseResolutionBui
 	return *ret
 }
 
+type ConfigCellSubAccountBuilder struct {
+	basic_capacity          Uint64
+	prepared_fee_capacity   Uint64
+	new_sub_account_price   Uint64
+	renew_sub_account_price Uint64
+	common_fee              Uint64
+	create_fee              Uint64
+	edit_fee                Uint64
+	renew_fee               Uint64
+	recycle_fee             Uint64
+}
+
+func (s *ConfigCellSubAccountBuilder) Build() ConfigCellSubAccount {
+	b := new(bytes.Buffer)
+
+	totalSize := HeaderSizeUint * (9 + 1)
+	offsets := make([]uint32, 0, 9)
+
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.basic_capacity.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.prepared_fee_capacity.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.new_sub_account_price.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.renew_sub_account_price.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.common_fee.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.create_fee.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.edit_fee.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.renew_fee.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.recycle_fee.AsSlice()))
+
+	b.Write(packNumber(Number(totalSize)))
+
+	for i := 0; i < len(offsets); i++ {
+		b.Write(packNumber(Number(offsets[i])))
+	}
+
+	b.Write(s.basic_capacity.AsSlice())
+	b.Write(s.prepared_fee_capacity.AsSlice())
+	b.Write(s.new_sub_account_price.AsSlice())
+	b.Write(s.renew_sub_account_price.AsSlice())
+	b.Write(s.common_fee.AsSlice())
+	b.Write(s.create_fee.AsSlice())
+	b.Write(s.edit_fee.AsSlice())
+	b.Write(s.renew_fee.AsSlice())
+	b.Write(s.recycle_fee.AsSlice())
+	return ConfigCellSubAccount{inner: b.Bytes()}
+}
+
+func (s *ConfigCellSubAccountBuilder) BasicCapacity(v Uint64) *ConfigCellSubAccountBuilder {
+	s.basic_capacity = v
+	return s
+}
+
+func (s *ConfigCellSubAccountBuilder) PreparedFeeCapacity(v Uint64) *ConfigCellSubAccountBuilder {
+	s.prepared_fee_capacity = v
+	return s
+}
+
+func (s *ConfigCellSubAccountBuilder) NewSubAccountPrice(v Uint64) *ConfigCellSubAccountBuilder {
+	s.new_sub_account_price = v
+	return s
+}
+
+func (s *ConfigCellSubAccountBuilder) RenewSubAccountPrice(v Uint64) *ConfigCellSubAccountBuilder {
+	s.renew_sub_account_price = v
+	return s
+}
+
+func (s *ConfigCellSubAccountBuilder) CommonFee(v Uint64) *ConfigCellSubAccountBuilder {
+	s.common_fee = v
+	return s
+}
+
+func (s *ConfigCellSubAccountBuilder) CreateFee(v Uint64) *ConfigCellSubAccountBuilder {
+	s.create_fee = v
+	return s
+}
+
+func (s *ConfigCellSubAccountBuilder) EditFee(v Uint64) *ConfigCellSubAccountBuilder {
+	s.edit_fee = v
+	return s
+}
+
+func (s *ConfigCellSubAccountBuilder) RenewFee(v Uint64) *ConfigCellSubAccountBuilder {
+	s.renew_fee = v
+	return s
+}
+
+func (s *ConfigCellSubAccountBuilder) RecycleFee(v Uint64) *ConfigCellSubAccountBuilder {
+	s.recycle_fee = v
+	return s
+}
+
+func NewConfigCellSubAccountBuilder() *ConfigCellSubAccountBuilder {
+	return &ConfigCellSubAccountBuilder{basic_capacity: Uint64Default(), prepared_fee_capacity: Uint64Default(), new_sub_account_price: Uint64Default(), renew_sub_account_price: Uint64Default(), common_fee: Uint64Default(), create_fee: Uint64Default(), edit_fee: Uint64Default(), renew_fee: Uint64Default(), recycle_fee: Uint64Default()}
+}
+
+type ConfigCellSubAccount struct {
+	inner []byte
+}
+
+func ConfigCellSubAccountFromSliceUnchecked(slice []byte) *ConfigCellSubAccount {
+	return &ConfigCellSubAccount{inner: slice}
+}
+func (s *ConfigCellSubAccount) AsSlice() []byte {
+	return s.inner
+}
+
+func ConfigCellSubAccountDefault() ConfigCellSubAccount {
+	return *ConfigCellSubAccountFromSliceUnchecked([]byte{112, 0, 0, 0, 40, 0, 0, 0, 48, 0, 0, 0, 56, 0, 0, 0, 64, 0, 0, 0, 72, 0, 0, 0, 80, 0, 0, 0, 88, 0, 0, 0, 96, 0, 0, 0, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+}
+
+func ConfigCellSubAccountFromSlice(slice []byte, compatible bool) (*ConfigCellSubAccount, error) {
+	sliceLen := len(slice)
+	if uint32(sliceLen) < HeaderSizeUint {
+		errMsg := strings.Join([]string{"HeaderIsBroken", "ConfigCellSubAccount", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	totalSize := unpackNumber(slice)
+	if Number(sliceLen) != totalSize {
+		errMsg := strings.Join([]string{"TotalSizeNotMatch", "ConfigCellSubAccount", strconv.Itoa(int(sliceLen)), "!=", strconv.Itoa(int(totalSize))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	if uint32(sliceLen) == HeaderSizeUint && 9 == 0 {
+		return &ConfigCellSubAccount{inner: slice}, nil
+	}
+
+	if uint32(sliceLen) < HeaderSizeUint*2 {
+		errMsg := strings.Join([]string{"TotalSizeNotMatch", "ConfigCellSubAccount", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	offsetFirst := unpackNumber(slice[HeaderSizeUint:])
+	if uint32(offsetFirst)%HeaderSizeUint != 0 || uint32(offsetFirst) < HeaderSizeUint*2 {
+		errMsg := strings.Join([]string{"OffsetsNotMatch", "ConfigCellSubAccount", strconv.Itoa(int(offsetFirst % 4)), "!= 0", strconv.Itoa(int(offsetFirst)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	if sliceLen < int(offsetFirst) {
+		errMsg := strings.Join([]string{"HeaderIsBroken", "ConfigCellSubAccount", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(offsetFirst))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	fieldCount := uint32(offsetFirst)/HeaderSizeUint - 1
+	if fieldCount < 9 {
+		return nil, errors.New("FieldCountNotMatch")
+	} else if !compatible && fieldCount > 9 {
+		return nil, errors.New("FieldCountNotMatch")
+	}
+
+	offsets := make([]uint32, fieldCount)
+
+	for i := 0; i < int(fieldCount); i++ {
+		offsets[i] = uint32(unpackNumber(slice[HeaderSizeUint:][int(HeaderSizeUint)*i:]))
+	}
+	offsets = append(offsets, uint32(totalSize))
+
+	for i := 0; i < len(offsets); i++ {
+		if i&1 != 0 && offsets[i-1] > offsets[i] {
+			return nil, errors.New("OffsetsNotMatch")
+		}
+	}
+
+	var err error
+
+	_, err = Uint64FromSlice(slice[offsets[0]:offsets[1]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[1]:offsets[2]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[2]:offsets[3]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[3]:offsets[4]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[4]:offsets[5]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[5]:offsets[6]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[6]:offsets[7]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[7]:offsets[8]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[8]:offsets[9]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ConfigCellSubAccount{inner: slice}, nil
+}
+
+func (s *ConfigCellSubAccount) TotalSize() uint {
+	return uint(unpackNumber(s.inner))
+}
+func (s *ConfigCellSubAccount) FieldCount() uint {
+	var number uint = 0
+	if uint32(s.TotalSize()) == HeaderSizeUint {
+		return number
+	}
+	number = uint(unpackNumber(s.inner[HeaderSizeUint:]))/4 - 1
+	return number
+}
+func (s *ConfigCellSubAccount) Len() uint {
+	return s.FieldCount()
+}
+func (s *ConfigCellSubAccount) IsEmpty() bool {
+	return s.Len() == 0
+}
+func (s *ConfigCellSubAccount) CountExtraFields() uint {
+	return s.FieldCount() - 9
+}
+
+func (s *ConfigCellSubAccount) HasExtraFields() bool {
+	return 9 != s.FieldCount()
+}
+
+func (s *ConfigCellSubAccount) BasicCapacity() *Uint64 {
+	start := unpackNumber(s.inner[4:])
+	end := unpackNumber(s.inner[8:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *ConfigCellSubAccount) PreparedFeeCapacity() *Uint64 {
+	start := unpackNumber(s.inner[8:])
+	end := unpackNumber(s.inner[12:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *ConfigCellSubAccount) NewSubAccountPrice() *Uint64 {
+	start := unpackNumber(s.inner[12:])
+	end := unpackNumber(s.inner[16:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *ConfigCellSubAccount) RenewSubAccountPrice() *Uint64 {
+	start := unpackNumber(s.inner[16:])
+	end := unpackNumber(s.inner[20:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *ConfigCellSubAccount) CommonFee() *Uint64 {
+	start := unpackNumber(s.inner[20:])
+	end := unpackNumber(s.inner[24:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *ConfigCellSubAccount) CreateFee() *Uint64 {
+	start := unpackNumber(s.inner[24:])
+	end := unpackNumber(s.inner[28:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *ConfigCellSubAccount) EditFee() *Uint64 {
+	start := unpackNumber(s.inner[28:])
+	end := unpackNumber(s.inner[32:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *ConfigCellSubAccount) RenewFee() *Uint64 {
+	start := unpackNumber(s.inner[32:])
+	end := unpackNumber(s.inner[36:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *ConfigCellSubAccount) RecycleFee() *Uint64 {
+	var ret *Uint64
+	start := unpackNumber(s.inner[36:])
+	if s.HasExtraFields() {
+		end := unpackNumber(s.inner[40:])
+		ret = Uint64FromSliceUnchecked(s.inner[start:end])
+	} else {
+		ret = Uint64FromSliceUnchecked(s.inner[start:])
+	}
+	return ret
+}
+
+func (s *ConfigCellSubAccount) AsBuilder() ConfigCellSubAccountBuilder {
+	ret := NewConfigCellSubAccountBuilder().BasicCapacity(*s.BasicCapacity()).PreparedFeeCapacity(*s.PreparedFeeCapacity()).NewSubAccountPrice(*s.NewSubAccountPrice()).RenewSubAccountPrice(*s.RenewSubAccountPrice()).CommonFee(*s.CommonFee()).CreateFee(*s.CreateFee()).EditFee(*s.EditFee()).RenewFee(*s.RenewFee()).RecycleFee(*s.RecycleFee())
+	return *ret
+}
+
 type ProposalCellDataBuilder struct {
 	proposer_lock     Script
 	created_at_height Uint64
@@ -5348,270 +5680,18 @@ func (s *IncomeRecord) AsBuilder() IncomeRecordBuilder {
 	return *ret
 }
 
-type AccountCellDataV1Builder struct {
-	id            AccountId
-	account       AccountChars
-	registered_at Uint64
-	updated_at    Uint64
-	status        Uint8
-	records       Records
-}
-
-func (s *AccountCellDataV1Builder) Build() AccountCellDataV1 {
-	b := new(bytes.Buffer)
-
-	totalSize := HeaderSizeUint * (6 + 1)
-	offsets := make([]uint32, 0, 6)
-
-	offsets = append(offsets, totalSize)
-	totalSize += uint32(len(s.id.AsSlice()))
-	offsets = append(offsets, totalSize)
-	totalSize += uint32(len(s.account.AsSlice()))
-	offsets = append(offsets, totalSize)
-	totalSize += uint32(len(s.registered_at.AsSlice()))
-	offsets = append(offsets, totalSize)
-	totalSize += uint32(len(s.updated_at.AsSlice()))
-	offsets = append(offsets, totalSize)
-	totalSize += uint32(len(s.status.AsSlice()))
-	offsets = append(offsets, totalSize)
-	totalSize += uint32(len(s.records.AsSlice()))
-
-	b.Write(packNumber(Number(totalSize)))
-
-	for i := 0; i < len(offsets); i++ {
-		b.Write(packNumber(Number(offsets[i])))
-	}
-
-	b.Write(s.id.AsSlice())
-	b.Write(s.account.AsSlice())
-	b.Write(s.registered_at.AsSlice())
-	b.Write(s.updated_at.AsSlice())
-	b.Write(s.status.AsSlice())
-	b.Write(s.records.AsSlice())
-	return AccountCellDataV1{inner: b.Bytes()}
-}
-
-func (s *AccountCellDataV1Builder) Id(v AccountId) *AccountCellDataV1Builder {
-	s.id = v
-	return s
-}
-
-func (s *AccountCellDataV1Builder) Account(v AccountChars) *AccountCellDataV1Builder {
-	s.account = v
-	return s
-}
-
-func (s *AccountCellDataV1Builder) RegisteredAt(v Uint64) *AccountCellDataV1Builder {
-	s.registered_at = v
-	return s
-}
-
-func (s *AccountCellDataV1Builder) UpdatedAt(v Uint64) *AccountCellDataV1Builder {
-	s.updated_at = v
-	return s
-}
-
-func (s *AccountCellDataV1Builder) Status(v Uint8) *AccountCellDataV1Builder {
-	s.status = v
-	return s
-}
-
-func (s *AccountCellDataV1Builder) Records(v Records) *AccountCellDataV1Builder {
-	s.records = v
-	return s
-}
-
-func NewAccountCellDataV1Builder() *AccountCellDataV1Builder {
-	return &AccountCellDataV1Builder{id: AccountIdDefault(), account: AccountCharsDefault(), registered_at: Uint64Default(), updated_at: Uint64Default(), status: Uint8Default(), records: RecordsDefault()}
-}
-
-type AccountCellDataV1 struct {
-	inner []byte
-}
-
-func AccountCellDataV1FromSliceUnchecked(slice []byte) *AccountCellDataV1 {
-	return &AccountCellDataV1{inner: slice}
-}
-func (s *AccountCellDataV1) AsSlice() []byte {
-	return s.inner
-}
-
-func AccountCellDataV1Default() AccountCellDataV1 {
-	return *AccountCellDataV1FromSliceUnchecked([]byte{73, 0, 0, 0, 28, 0, 0, 0, 48, 0, 0, 0, 52, 0, 0, 0, 60, 0, 0, 0, 68, 0, 0, 0, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0})
-}
-
-func AccountCellDataV1FromSlice(slice []byte, compatible bool) (*AccountCellDataV1, error) {
-	sliceLen := len(slice)
-	if uint32(sliceLen) < HeaderSizeUint {
-		errMsg := strings.Join([]string{"HeaderIsBroken", "AccountCellDataV1", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint))}, " ")
-		return nil, errors.New(errMsg)
-	}
-
-	totalSize := unpackNumber(slice)
-	if Number(sliceLen) != totalSize {
-		errMsg := strings.Join([]string{"TotalSizeNotMatch", "AccountCellDataV1", strconv.Itoa(int(sliceLen)), "!=", strconv.Itoa(int(totalSize))}, " ")
-		return nil, errors.New(errMsg)
-	}
-
-	if uint32(sliceLen) == HeaderSizeUint && 6 == 0 {
-		return &AccountCellDataV1{inner: slice}, nil
-	}
-
-	if uint32(sliceLen) < HeaderSizeUint*2 {
-		errMsg := strings.Join([]string{"TotalSizeNotMatch", "AccountCellDataV1", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
-		return nil, errors.New(errMsg)
-	}
-
-	offsetFirst := unpackNumber(slice[HeaderSizeUint:])
-	if uint32(offsetFirst)%HeaderSizeUint != 0 || uint32(offsetFirst) < HeaderSizeUint*2 {
-		errMsg := strings.Join([]string{"OffsetsNotMatch", "AccountCellDataV1", strconv.Itoa(int(offsetFirst % 4)), "!= 0", strconv.Itoa(int(offsetFirst)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
-		return nil, errors.New(errMsg)
-	}
-
-	if sliceLen < int(offsetFirst) {
-		errMsg := strings.Join([]string{"HeaderIsBroken", "AccountCellDataV1", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(offsetFirst))}, " ")
-		return nil, errors.New(errMsg)
-	}
-
-	fieldCount := uint32(offsetFirst)/HeaderSizeUint - 1
-	if fieldCount < 6 {
-		return nil, errors.New("FieldCountNotMatch")
-	} else if !compatible && fieldCount > 6 {
-		return nil, errors.New("FieldCountNotMatch")
-	}
-
-	offsets := make([]uint32, fieldCount)
-
-	for i := 0; i < int(fieldCount); i++ {
-		offsets[i] = uint32(unpackNumber(slice[HeaderSizeUint:][int(HeaderSizeUint)*i:]))
-	}
-	offsets = append(offsets, uint32(totalSize))
-
-	for i := 0; i < len(offsets); i++ {
-		if i&1 != 0 && offsets[i-1] > offsets[i] {
-			return nil, errors.New("OffsetsNotMatch")
-		}
-	}
-
-	var err error
-
-	_, err = AccountIdFromSlice(slice[offsets[0]:offsets[1]], compatible)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = AccountCharsFromSlice(slice[offsets[1]:offsets[2]], compatible)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = Uint64FromSlice(slice[offsets[2]:offsets[3]], compatible)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = Uint64FromSlice(slice[offsets[3]:offsets[4]], compatible)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = Uint8FromSlice(slice[offsets[4]:offsets[5]], compatible)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = RecordsFromSlice(slice[offsets[5]:offsets[6]], compatible)
-	if err != nil {
-		return nil, err
-	}
-
-	return &AccountCellDataV1{inner: slice}, nil
-}
-
-func (s *AccountCellDataV1) TotalSize() uint {
-	return uint(unpackNumber(s.inner))
-}
-func (s *AccountCellDataV1) FieldCount() uint {
-	var number uint = 0
-	if uint32(s.TotalSize()) == HeaderSizeUint {
-		return number
-	}
-	number = uint(unpackNumber(s.inner[HeaderSizeUint:]))/4 - 1
-	return number
-}
-func (s *AccountCellDataV1) Len() uint {
-	return s.FieldCount()
-}
-func (s *AccountCellDataV1) IsEmpty() bool {
-	return s.Len() == 0
-}
-func (s *AccountCellDataV1) CountExtraFields() uint {
-	return s.FieldCount() - 6
-}
-
-func (s *AccountCellDataV1) HasExtraFields() bool {
-	return 6 != s.FieldCount()
-}
-
-func (s *AccountCellDataV1) Id() *AccountId {
-	start := unpackNumber(s.inner[4:])
-	end := unpackNumber(s.inner[8:])
-	return AccountIdFromSliceUnchecked(s.inner[start:end])
-}
-
-func (s *AccountCellDataV1) Account() *AccountChars {
-	start := unpackNumber(s.inner[8:])
-	end := unpackNumber(s.inner[12:])
-	return AccountCharsFromSliceUnchecked(s.inner[start:end])
-}
-
-func (s *AccountCellDataV1) RegisteredAt() *Uint64 {
-	start := unpackNumber(s.inner[12:])
-	end := unpackNumber(s.inner[16:])
-	return Uint64FromSliceUnchecked(s.inner[start:end])
-}
-
-func (s *AccountCellDataV1) UpdatedAt() *Uint64 {
-	start := unpackNumber(s.inner[16:])
-	end := unpackNumber(s.inner[20:])
-	return Uint64FromSliceUnchecked(s.inner[start:end])
-}
-
-func (s *AccountCellDataV1) Status() *Uint8 {
-	start := unpackNumber(s.inner[20:])
-	end := unpackNumber(s.inner[24:])
-	return Uint8FromSliceUnchecked(s.inner[start:end])
-}
-
-func (s *AccountCellDataV1) Records() *Records {
-	var ret *Records
-	start := unpackNumber(s.inner[24:])
-	if s.HasExtraFields() {
-		end := unpackNumber(s.inner[28:])
-		ret = RecordsFromSliceUnchecked(s.inner[start:end])
-	} else {
-		ret = RecordsFromSliceUnchecked(s.inner[start:])
-	}
-	return ret
-}
-
-func (s *AccountCellDataV1) AsBuilder() AccountCellDataV1Builder {
-	ret := NewAccountCellDataV1Builder().Id(*s.Id()).Account(*s.Account()).RegisteredAt(*s.RegisteredAt()).UpdatedAt(*s.UpdatedAt()).Status(*s.Status()).Records(*s.Records())
-	return *ret
-}
-
-type AccountCellDataBuilder struct {
+type AccountCellDataV2Builder struct {
 	id                       AccountId
 	account                  AccountChars
 	registered_at            Uint64
-	last_transfer_account_at Timestamp
-	last_edit_manager_at     Timestamp
-	last_edit_records_at     Timestamp
+	last_transfer_account_at Uint64
+	last_edit_manager_at     Uint64
+	last_edit_records_at     Uint64
 	status                   Uint8
 	records                  Records
 }
 
-func (s *AccountCellDataBuilder) Build() AccountCellData {
+func (s *AccountCellDataV2Builder) Build() AccountCellDataV2 {
 	b := new(bytes.Buffer)
 
 	totalSize := HeaderSizeUint * (8 + 1)
@@ -5648,98 +5728,98 @@ func (s *AccountCellDataBuilder) Build() AccountCellData {
 	b.Write(s.last_edit_records_at.AsSlice())
 	b.Write(s.status.AsSlice())
 	b.Write(s.records.AsSlice())
-	return AccountCellData{inner: b.Bytes()}
+	return AccountCellDataV2{inner: b.Bytes()}
 }
 
-func (s *AccountCellDataBuilder) Id(v AccountId) *AccountCellDataBuilder {
+func (s *AccountCellDataV2Builder) Id(v AccountId) *AccountCellDataV2Builder {
 	s.id = v
 	return s
 }
 
-func (s *AccountCellDataBuilder) Account(v AccountChars) *AccountCellDataBuilder {
+func (s *AccountCellDataV2Builder) Account(v AccountChars) *AccountCellDataV2Builder {
 	s.account = v
 	return s
 }
 
-func (s *AccountCellDataBuilder) RegisteredAt(v Uint64) *AccountCellDataBuilder {
+func (s *AccountCellDataV2Builder) RegisteredAt(v Uint64) *AccountCellDataV2Builder {
 	s.registered_at = v
 	return s
 }
 
-func (s *AccountCellDataBuilder) LastTransferAccountAt(v Timestamp) *AccountCellDataBuilder {
+func (s *AccountCellDataV2Builder) LastTransferAccountAt(v Uint64) *AccountCellDataV2Builder {
 	s.last_transfer_account_at = v
 	return s
 }
 
-func (s *AccountCellDataBuilder) LastEditManagerAt(v Timestamp) *AccountCellDataBuilder {
+func (s *AccountCellDataV2Builder) LastEditManagerAt(v Uint64) *AccountCellDataV2Builder {
 	s.last_edit_manager_at = v
 	return s
 }
 
-func (s *AccountCellDataBuilder) LastEditRecordsAt(v Timestamp) *AccountCellDataBuilder {
+func (s *AccountCellDataV2Builder) LastEditRecordsAt(v Uint64) *AccountCellDataV2Builder {
 	s.last_edit_records_at = v
 	return s
 }
 
-func (s *AccountCellDataBuilder) Status(v Uint8) *AccountCellDataBuilder {
+func (s *AccountCellDataV2Builder) Status(v Uint8) *AccountCellDataV2Builder {
 	s.status = v
 	return s
 }
 
-func (s *AccountCellDataBuilder) Records(v Records) *AccountCellDataBuilder {
+func (s *AccountCellDataV2Builder) Records(v Records) *AccountCellDataV2Builder {
 	s.records = v
 	return s
 }
 
-func NewAccountCellDataBuilder() *AccountCellDataBuilder {
-	return &AccountCellDataBuilder{id: AccountIdDefault(), account: AccountCharsDefault(), registered_at: Uint64Default(), last_transfer_account_at: TimestampDefault(), last_edit_manager_at: TimestampDefault(), last_edit_records_at: TimestampDefault(), status: Uint8Default(), records: RecordsDefault()}
+func NewAccountCellDataV2Builder() *AccountCellDataV2Builder {
+	return &AccountCellDataV2Builder{id: AccountIdDefault(), account: AccountCharsDefault(), registered_at: Uint64Default(), last_transfer_account_at: Uint64Default(), last_edit_manager_at: Uint64Default(), last_edit_records_at: Uint64Default(), status: Uint8Default(), records: RecordsDefault()}
 }
 
-type AccountCellData struct {
+type AccountCellDataV2 struct {
 	inner []byte
 }
 
-func AccountCellDataFromSliceUnchecked(slice []byte) *AccountCellData {
-	return &AccountCellData{inner: slice}
+func AccountCellDataV2FromSliceUnchecked(slice []byte) *AccountCellDataV2 {
+	return &AccountCellDataV2{inner: slice}
 }
-func (s *AccountCellData) AsSlice() []byte {
+func (s *AccountCellDataV2) AsSlice() []byte {
 	return s.inner
 }
 
-func AccountCellDataDefault() AccountCellData {
-	return *AccountCellDataFromSliceUnchecked([]byte{97, 0, 0, 0, 36, 0, 0, 0, 56, 0, 0, 0, 60, 0, 0, 0, 68, 0, 0, 0, 76, 0, 0, 0, 84, 0, 0, 0, 92, 0, 0, 0, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0})
+func AccountCellDataV2Default() AccountCellDataV2 {
+	return *AccountCellDataV2FromSliceUnchecked([]byte{97, 0, 0, 0, 36, 0, 0, 0, 56, 0, 0, 0, 60, 0, 0, 0, 68, 0, 0, 0, 76, 0, 0, 0, 84, 0, 0, 0, 92, 0, 0, 0, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0})
 }
 
-func AccountCellDataFromSlice(slice []byte, compatible bool) (*AccountCellData, error) {
+func AccountCellDataV2FromSlice(slice []byte, compatible bool) (*AccountCellDataV2, error) {
 	sliceLen := len(slice)
 	if uint32(sliceLen) < HeaderSizeUint {
-		errMsg := strings.Join([]string{"HeaderIsBroken", "AccountCellData", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint))}, " ")
+		errMsg := strings.Join([]string{"HeaderIsBroken", "AccountCellDataV2", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint))}, " ")
 		return nil, errors.New(errMsg)
 	}
 
 	totalSize := unpackNumber(slice)
 	if Number(sliceLen) != totalSize {
-		errMsg := strings.Join([]string{"TotalSizeNotMatch", "AccountCellData", strconv.Itoa(int(sliceLen)), "!=", strconv.Itoa(int(totalSize))}, " ")
+		errMsg := strings.Join([]string{"TotalSizeNotMatch", "AccountCellDataV2", strconv.Itoa(int(sliceLen)), "!=", strconv.Itoa(int(totalSize))}, " ")
 		return nil, errors.New(errMsg)
 	}
 
 	if uint32(sliceLen) == HeaderSizeUint && 8 == 0 {
-		return &AccountCellData{inner: slice}, nil
+		return &AccountCellDataV2{inner: slice}, nil
 	}
 
 	if uint32(sliceLen) < HeaderSizeUint*2 {
-		errMsg := strings.Join([]string{"TotalSizeNotMatch", "AccountCellData", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
+		errMsg := strings.Join([]string{"TotalSizeNotMatch", "AccountCellDataV2", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
 		return nil, errors.New(errMsg)
 	}
 
 	offsetFirst := unpackNumber(slice[HeaderSizeUint:])
 	if uint32(offsetFirst)%HeaderSizeUint != 0 || uint32(offsetFirst) < HeaderSizeUint*2 {
-		errMsg := strings.Join([]string{"OffsetsNotMatch", "AccountCellData", strconv.Itoa(int(offsetFirst % 4)), "!= 0", strconv.Itoa(int(offsetFirst)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
+		errMsg := strings.Join([]string{"OffsetsNotMatch", "AccountCellDataV2", strconv.Itoa(int(offsetFirst % 4)), "!= 0", strconv.Itoa(int(offsetFirst)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
 		return nil, errors.New(errMsg)
 	}
 
 	if sliceLen < int(offsetFirst) {
-		errMsg := strings.Join([]string{"HeaderIsBroken", "AccountCellData", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(offsetFirst))}, " ")
+		errMsg := strings.Join([]string{"HeaderIsBroken", "AccountCellDataV2", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(offsetFirst))}, " ")
 		return nil, errors.New(errMsg)
 	}
 
@@ -5780,17 +5860,17 @@ func AccountCellDataFromSlice(slice []byte, compatible bool) (*AccountCellData, 
 		return nil, err
 	}
 
-	_, err = TimestampFromSlice(slice[offsets[3]:offsets[4]], compatible)
+	_, err = Uint64FromSlice(slice[offsets[3]:offsets[4]], compatible)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = TimestampFromSlice(slice[offsets[4]:offsets[5]], compatible)
+	_, err = Uint64FromSlice(slice[offsets[4]:offsets[5]], compatible)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = TimestampFromSlice(slice[offsets[5]:offsets[6]], compatible)
+	_, err = Uint64FromSlice(slice[offsets[5]:offsets[6]], compatible)
 	if err != nil {
 		return nil, err
 	}
@@ -5801,6 +5881,326 @@ func AccountCellDataFromSlice(slice []byte, compatible bool) (*AccountCellData, 
 	}
 
 	_, err = RecordsFromSlice(slice[offsets[7]:offsets[8]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AccountCellDataV2{inner: slice}, nil
+}
+
+func (s *AccountCellDataV2) TotalSize() uint {
+	return uint(unpackNumber(s.inner))
+}
+func (s *AccountCellDataV2) FieldCount() uint {
+	var number uint = 0
+	if uint32(s.TotalSize()) == HeaderSizeUint {
+		return number
+	}
+	number = uint(unpackNumber(s.inner[HeaderSizeUint:]))/4 - 1
+	return number
+}
+func (s *AccountCellDataV2) Len() uint {
+	return s.FieldCount()
+}
+func (s *AccountCellDataV2) IsEmpty() bool {
+	return s.Len() == 0
+}
+func (s *AccountCellDataV2) CountExtraFields() uint {
+	return s.FieldCount() - 8
+}
+
+func (s *AccountCellDataV2) HasExtraFields() bool {
+	return 8 != s.FieldCount()
+}
+
+func (s *AccountCellDataV2) Id() *AccountId {
+	start := unpackNumber(s.inner[4:])
+	end := unpackNumber(s.inner[8:])
+	return AccountIdFromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *AccountCellDataV2) Account() *AccountChars {
+	start := unpackNumber(s.inner[8:])
+	end := unpackNumber(s.inner[12:])
+	return AccountCharsFromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *AccountCellDataV2) RegisteredAt() *Uint64 {
+	start := unpackNumber(s.inner[12:])
+	end := unpackNumber(s.inner[16:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *AccountCellDataV2) LastTransferAccountAt() *Uint64 {
+	start := unpackNumber(s.inner[16:])
+	end := unpackNumber(s.inner[20:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *AccountCellDataV2) LastEditManagerAt() *Uint64 {
+	start := unpackNumber(s.inner[20:])
+	end := unpackNumber(s.inner[24:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *AccountCellDataV2) LastEditRecordsAt() *Uint64 {
+	start := unpackNumber(s.inner[24:])
+	end := unpackNumber(s.inner[28:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *AccountCellDataV2) Status() *Uint8 {
+	start := unpackNumber(s.inner[28:])
+	end := unpackNumber(s.inner[32:])
+	return Uint8FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *AccountCellDataV2) Records() *Records {
+	var ret *Records
+	start := unpackNumber(s.inner[32:])
+	if s.HasExtraFields() {
+		end := unpackNumber(s.inner[36:])
+		ret = RecordsFromSliceUnchecked(s.inner[start:end])
+	} else {
+		ret = RecordsFromSliceUnchecked(s.inner[start:])
+	}
+	return ret
+}
+
+func (s *AccountCellDataV2) AsBuilder() AccountCellDataV2Builder {
+	ret := NewAccountCellDataV2Builder().Id(*s.Id()).Account(*s.Account()).RegisteredAt(*s.RegisteredAt()).LastTransferAccountAt(*s.LastTransferAccountAt()).LastEditManagerAt(*s.LastEditManagerAt()).LastEditRecordsAt(*s.LastEditRecordsAt()).Status(*s.Status()).Records(*s.Records())
+	return *ret
+}
+
+type AccountCellDataBuilder struct {
+	id                       AccountId
+	account                  AccountChars
+	registered_at            Uint64
+	last_transfer_account_at Uint64
+	last_edit_manager_at     Uint64
+	last_edit_records_at     Uint64
+	status                   Uint8
+	records                  Records
+	enable_sub_account       Uint8
+	renew_sub_account_price  Uint64
+}
+
+func (s *AccountCellDataBuilder) Build() AccountCellData {
+	b := new(bytes.Buffer)
+
+	totalSize := HeaderSizeUint * (10 + 1)
+	offsets := make([]uint32, 0, 10)
+
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.id.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.account.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.registered_at.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.last_transfer_account_at.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.last_edit_manager_at.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.last_edit_records_at.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.status.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.records.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.enable_sub_account.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.renew_sub_account_price.AsSlice()))
+
+	b.Write(packNumber(Number(totalSize)))
+
+	for i := 0; i < len(offsets); i++ {
+		b.Write(packNumber(Number(offsets[i])))
+	}
+
+	b.Write(s.id.AsSlice())
+	b.Write(s.account.AsSlice())
+	b.Write(s.registered_at.AsSlice())
+	b.Write(s.last_transfer_account_at.AsSlice())
+	b.Write(s.last_edit_manager_at.AsSlice())
+	b.Write(s.last_edit_records_at.AsSlice())
+	b.Write(s.status.AsSlice())
+	b.Write(s.records.AsSlice())
+	b.Write(s.enable_sub_account.AsSlice())
+	b.Write(s.renew_sub_account_price.AsSlice())
+	return AccountCellData{inner: b.Bytes()}
+}
+
+func (s *AccountCellDataBuilder) Id(v AccountId) *AccountCellDataBuilder {
+	s.id = v
+	return s
+}
+
+func (s *AccountCellDataBuilder) Account(v AccountChars) *AccountCellDataBuilder {
+	s.account = v
+	return s
+}
+
+func (s *AccountCellDataBuilder) RegisteredAt(v Uint64) *AccountCellDataBuilder {
+	s.registered_at = v
+	return s
+}
+
+func (s *AccountCellDataBuilder) LastTransferAccountAt(v Uint64) *AccountCellDataBuilder {
+	s.last_transfer_account_at = v
+	return s
+}
+
+func (s *AccountCellDataBuilder) LastEditManagerAt(v Uint64) *AccountCellDataBuilder {
+	s.last_edit_manager_at = v
+	return s
+}
+
+func (s *AccountCellDataBuilder) LastEditRecordsAt(v Uint64) *AccountCellDataBuilder {
+	s.last_edit_records_at = v
+	return s
+}
+
+func (s *AccountCellDataBuilder) Status(v Uint8) *AccountCellDataBuilder {
+	s.status = v
+	return s
+}
+
+func (s *AccountCellDataBuilder) Records(v Records) *AccountCellDataBuilder {
+	s.records = v
+	return s
+}
+
+func (s *AccountCellDataBuilder) EnableSubAccount(v Uint8) *AccountCellDataBuilder {
+	s.enable_sub_account = v
+	return s
+}
+
+func (s *AccountCellDataBuilder) RenewSubAccountPrice(v Uint64) *AccountCellDataBuilder {
+	s.renew_sub_account_price = v
+	return s
+}
+
+func NewAccountCellDataBuilder() *AccountCellDataBuilder {
+	return &AccountCellDataBuilder{id: AccountIdDefault(), account: AccountCharsDefault(), registered_at: Uint64Default(), last_transfer_account_at: Uint64Default(), last_edit_manager_at: Uint64Default(), last_edit_records_at: Uint64Default(), status: Uint8Default(), records: RecordsDefault(), enable_sub_account: Uint8Default(), renew_sub_account_price: Uint64Default()}
+}
+
+type AccountCellData struct {
+	inner []byte
+}
+
+func AccountCellDataFromSliceUnchecked(slice []byte) *AccountCellData {
+	return &AccountCellData{inner: slice}
+}
+func (s *AccountCellData) AsSlice() []byte {
+	return s.inner
+}
+
+func AccountCellDataDefault() AccountCellData {
+	return *AccountCellDataFromSliceUnchecked([]byte{114, 0, 0, 0, 44, 0, 0, 0, 64, 0, 0, 0, 68, 0, 0, 0, 76, 0, 0, 0, 84, 0, 0, 0, 92, 0, 0, 0, 100, 0, 0, 0, 101, 0, 0, 0, 105, 0, 0, 0, 106, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+}
+
+func AccountCellDataFromSlice(slice []byte, compatible bool) (*AccountCellData, error) {
+	sliceLen := len(slice)
+	if uint32(sliceLen) < HeaderSizeUint {
+		errMsg := strings.Join([]string{"HeaderIsBroken", "AccountCellData", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	totalSize := unpackNumber(slice)
+	if Number(sliceLen) != totalSize {
+		errMsg := strings.Join([]string{"TotalSizeNotMatch", "AccountCellData", strconv.Itoa(int(sliceLen)), "!=", strconv.Itoa(int(totalSize))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	if uint32(sliceLen) == HeaderSizeUint && 10 == 0 {
+		return &AccountCellData{inner: slice}, nil
+	}
+
+	if uint32(sliceLen) < HeaderSizeUint*2 {
+		errMsg := strings.Join([]string{"TotalSizeNotMatch", "AccountCellData", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	offsetFirst := unpackNumber(slice[HeaderSizeUint:])
+	if uint32(offsetFirst)%HeaderSizeUint != 0 || uint32(offsetFirst) < HeaderSizeUint*2 {
+		errMsg := strings.Join([]string{"OffsetsNotMatch", "AccountCellData", strconv.Itoa(int(offsetFirst % 4)), "!= 0", strconv.Itoa(int(offsetFirst)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	if sliceLen < int(offsetFirst) {
+		errMsg := strings.Join([]string{"HeaderIsBroken", "AccountCellData", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(offsetFirst))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	fieldCount := uint32(offsetFirst)/HeaderSizeUint - 1
+	if fieldCount < 10 {
+		return nil, errors.New("FieldCountNotMatch")
+	} else if !compatible && fieldCount > 10 {
+		return nil, errors.New("FieldCountNotMatch")
+	}
+
+	offsets := make([]uint32, fieldCount)
+
+	for i := 0; i < int(fieldCount); i++ {
+		offsets[i] = uint32(unpackNumber(slice[HeaderSizeUint:][int(HeaderSizeUint)*i:]))
+	}
+	offsets = append(offsets, uint32(totalSize))
+
+	for i := 0; i < len(offsets); i++ {
+		if i&1 != 0 && offsets[i-1] > offsets[i] {
+			return nil, errors.New("OffsetsNotMatch")
+		}
+	}
+
+	var err error
+
+	_, err = AccountIdFromSlice(slice[offsets[0]:offsets[1]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = AccountCharsFromSlice(slice[offsets[1]:offsets[2]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[2]:offsets[3]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[3]:offsets[4]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[4]:offsets[5]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[5]:offsets[6]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint8FromSlice(slice[offsets[6]:offsets[7]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = RecordsFromSlice(slice[offsets[7]:offsets[8]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint8FromSlice(slice[offsets[8]:offsets[9]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[9]:offsets[10]], compatible)
 	if err != nil {
 		return nil, err
 	}
@@ -5826,11 +6226,11 @@ func (s *AccountCellData) IsEmpty() bool {
 	return s.Len() == 0
 }
 func (s *AccountCellData) CountExtraFields() uint {
-	return s.FieldCount() - 8
+	return s.FieldCount() - 10
 }
 
 func (s *AccountCellData) HasExtraFields() bool {
-	return 8 != s.FieldCount()
+	return 10 != s.FieldCount()
 }
 
 func (s *AccountCellData) Id() *AccountId {
@@ -5851,22 +6251,22 @@ func (s *AccountCellData) RegisteredAt() *Uint64 {
 	return Uint64FromSliceUnchecked(s.inner[start:end])
 }
 
-func (s *AccountCellData) LastTransferAccountAt() *Timestamp {
+func (s *AccountCellData) LastTransferAccountAt() *Uint64 {
 	start := unpackNumber(s.inner[16:])
 	end := unpackNumber(s.inner[20:])
-	return TimestampFromSliceUnchecked(s.inner[start:end])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
 }
 
-func (s *AccountCellData) LastEditManagerAt() *Timestamp {
+func (s *AccountCellData) LastEditManagerAt() *Uint64 {
 	start := unpackNumber(s.inner[20:])
 	end := unpackNumber(s.inner[24:])
-	return TimestampFromSliceUnchecked(s.inner[start:end])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
 }
 
-func (s *AccountCellData) LastEditRecordsAt() *Timestamp {
+func (s *AccountCellData) LastEditRecordsAt() *Uint64 {
 	start := unpackNumber(s.inner[24:])
 	end := unpackNumber(s.inner[28:])
-	return TimestampFromSliceUnchecked(s.inner[start:end])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
 }
 
 func (s *AccountCellData) Status() *Uint8 {
@@ -5876,19 +6276,31 @@ func (s *AccountCellData) Status() *Uint8 {
 }
 
 func (s *AccountCellData) Records() *Records {
-	var ret *Records
 	start := unpackNumber(s.inner[32:])
+	end := unpackNumber(s.inner[36:])
+	return RecordsFromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *AccountCellData) EnableSubAccount() *Uint8 {
+	start := unpackNumber(s.inner[36:])
+	end := unpackNumber(s.inner[40:])
+	return Uint8FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *AccountCellData) RenewSubAccountPrice() *Uint64 {
+	var ret *Uint64
+	start := unpackNumber(s.inner[40:])
 	if s.HasExtraFields() {
-		end := unpackNumber(s.inner[36:])
-		ret = RecordsFromSliceUnchecked(s.inner[start:end])
+		end := unpackNumber(s.inner[44:])
+		ret = Uint64FromSliceUnchecked(s.inner[start:end])
 	} else {
-		ret = RecordsFromSliceUnchecked(s.inner[start:])
+		ret = Uint64FromSliceUnchecked(s.inner[start:])
 	}
 	return ret
 }
 
 func (s *AccountCellData) AsBuilder() AccountCellDataBuilder {
-	ret := NewAccountCellDataBuilder().Id(*s.Id()).Account(*s.Account()).RegisteredAt(*s.RegisteredAt()).LastTransferAccountAt(*s.LastTransferAccountAt()).LastEditManagerAt(*s.LastEditManagerAt()).LastEditRecordsAt(*s.LastEditRecordsAt()).Status(*s.Status()).Records(*s.Records())
+	ret := NewAccountCellDataBuilder().Id(*s.Id()).Account(*s.Account()).RegisteredAt(*s.RegisteredAt()).LastTransferAccountAt(*s.LastTransferAccountAt()).LastEditManagerAt(*s.LastEditManagerAt()).LastEditRecordsAt(*s.LastEditRecordsAt()).Status(*s.Status()).Records(*s.Records()).EnableSubAccount(*s.EnableSubAccount()).RenewSubAccountPrice(*s.RenewSubAccountPrice())
 	return *ret
 }
 
@@ -7415,7 +7827,7 @@ type PreAccountCellDataBuilder struct {
 	price            PriceConfig
 	quote            Uint64
 	invited_discount Uint32
-	created_at       Timestamp
+	created_at       Uint64
 }
 
 func (s *PreAccountCellDataBuilder) Build() PreAccountCellData {
@@ -7509,13 +7921,13 @@ func (s *PreAccountCellDataBuilder) InvitedDiscount(v Uint32) *PreAccountCellDat
 	return s
 }
 
-func (s *PreAccountCellDataBuilder) CreatedAt(v Timestamp) *PreAccountCellDataBuilder {
+func (s *PreAccountCellDataBuilder) CreatedAt(v Uint64) *PreAccountCellDataBuilder {
 	s.created_at = v
 	return s
 }
 
 func NewPreAccountCellDataBuilder() *PreAccountCellDataBuilder {
-	return &PreAccountCellDataBuilder{account: AccountCharsDefault(), refund_lock: ScriptDefault(), owner_lock_args: BytesDefault(), inviter_id: BytesDefault(), inviter_lock: ScriptOptDefault(), channel_lock: ScriptOptDefault(), price: PriceConfigDefault(), quote: Uint64Default(), invited_discount: Uint32Default(), created_at: TimestampDefault()}
+	return &PreAccountCellDataBuilder{account: AccountCharsDefault(), refund_lock: ScriptDefault(), owner_lock_args: BytesDefault(), inviter_id: BytesDefault(), inviter_lock: ScriptOptDefault(), channel_lock: ScriptOptDefault(), price: PriceConfigDefault(), quote: Uint64Default(), invited_discount: Uint32Default(), created_at: Uint64Default()}
 }
 
 type PreAccountCellData struct {
@@ -7633,7 +8045,7 @@ func PreAccountCellDataFromSlice(slice []byte, compatible bool) (*PreAccountCell
 		return nil, err
 	}
 
-	_, err = TimestampFromSlice(slice[offsets[9]:offsets[10]], compatible)
+	_, err = Uint64FromSlice(slice[offsets[9]:offsets[10]], compatible)
 	if err != nil {
 		return nil, err
 	}
@@ -7720,14 +8132,14 @@ func (s *PreAccountCellData) InvitedDiscount() *Uint32 {
 	return Uint32FromSliceUnchecked(s.inner[start:end])
 }
 
-func (s *PreAccountCellData) CreatedAt() *Timestamp {
-	var ret *Timestamp
+func (s *PreAccountCellData) CreatedAt() *Uint64 {
+	var ret *Uint64
 	start := unpackNumber(s.inner[40:])
 	if s.HasExtraFields() {
 		end := unpackNumber(s.inner[44:])
-		ret = TimestampFromSliceUnchecked(s.inner[start:end])
+		ret = Uint64FromSliceUnchecked(s.inner[start:end])
 	} else {
-		ret = TimestampFromSliceUnchecked(s.inner[start:])
+		ret = Uint64FromSliceUnchecked(s.inner[start:])
 	}
 	return ret
 }
@@ -8328,5 +8740,357 @@ func (s *OfferCellData) ChannelLock() *Script {
 
 func (s *OfferCellData) AsBuilder() OfferCellDataBuilder {
 	ret := NewOfferCellDataBuilder().Account(*s.Account()).Price(*s.Price()).Message(*s.Message()).InviterLock(*s.InviterLock()).ChannelLock(*s.ChannelLock())
+	return *ret
+}
+
+type SubAccountBuilder struct {
+	lock                    Script
+	id                      AccountId
+	account                 AccountChars
+	suffix                  Bytes
+	registered_at           Uint64
+	expired_at              Uint64
+	status                  Uint8
+	records                 Records
+	nonce                   Uint64
+	enable_sub_account      Uint8
+	renew_sub_account_price Uint64
+}
+
+func (s *SubAccountBuilder) Build() SubAccount {
+	b := new(bytes.Buffer)
+
+	totalSize := HeaderSizeUint * (11 + 1)
+	offsets := make([]uint32, 0, 11)
+
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.lock.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.id.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.account.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.suffix.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.registered_at.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.expired_at.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.status.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.records.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.nonce.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.enable_sub_account.AsSlice()))
+	offsets = append(offsets, totalSize)
+	totalSize += uint32(len(s.renew_sub_account_price.AsSlice()))
+
+	b.Write(packNumber(Number(totalSize)))
+
+	for i := 0; i < len(offsets); i++ {
+		b.Write(packNumber(Number(offsets[i])))
+	}
+
+	b.Write(s.lock.AsSlice())
+	b.Write(s.id.AsSlice())
+	b.Write(s.account.AsSlice())
+	b.Write(s.suffix.AsSlice())
+	b.Write(s.registered_at.AsSlice())
+	b.Write(s.expired_at.AsSlice())
+	b.Write(s.status.AsSlice())
+	b.Write(s.records.AsSlice())
+	b.Write(s.nonce.AsSlice())
+	b.Write(s.enable_sub_account.AsSlice())
+	b.Write(s.renew_sub_account_price.AsSlice())
+	return SubAccount{inner: b.Bytes()}
+}
+
+func (s *SubAccountBuilder) Lock(v Script) *SubAccountBuilder {
+	s.lock = v
+	return s
+}
+
+func (s *SubAccountBuilder) Id(v AccountId) *SubAccountBuilder {
+	s.id = v
+	return s
+}
+
+func (s *SubAccountBuilder) Account(v AccountChars) *SubAccountBuilder {
+	s.account = v
+	return s
+}
+
+func (s *SubAccountBuilder) Suffix(v Bytes) *SubAccountBuilder {
+	s.suffix = v
+	return s
+}
+
+func (s *SubAccountBuilder) RegisteredAt(v Uint64) *SubAccountBuilder {
+	s.registered_at = v
+	return s
+}
+
+func (s *SubAccountBuilder) ExpiredAt(v Uint64) *SubAccountBuilder {
+	s.expired_at = v
+	return s
+}
+
+func (s *SubAccountBuilder) Status(v Uint8) *SubAccountBuilder {
+	s.status = v
+	return s
+}
+
+func (s *SubAccountBuilder) Records(v Records) *SubAccountBuilder {
+	s.records = v
+	return s
+}
+
+func (s *SubAccountBuilder) Nonce(v Uint64) *SubAccountBuilder {
+	s.nonce = v
+	return s
+}
+
+func (s *SubAccountBuilder) EnableSubAccount(v Uint8) *SubAccountBuilder {
+	s.enable_sub_account = v
+	return s
+}
+
+func (s *SubAccountBuilder) RenewSubAccountPrice(v Uint64) *SubAccountBuilder {
+	s.renew_sub_account_price = v
+	return s
+}
+
+func NewSubAccountBuilder() *SubAccountBuilder {
+	return &SubAccountBuilder{lock: ScriptDefault(), id: AccountIdDefault(), account: AccountCharsDefault(), suffix: BytesDefault(), registered_at: Uint64Default(), expired_at: Uint64Default(), status: Uint8Default(), records: RecordsDefault(), nonce: Uint64Default(), enable_sub_account: Uint8Default(), renew_sub_account_price: Uint64Default()}
+}
+
+type SubAccount struct {
+	inner []byte
+}
+
+func SubAccountFromSliceUnchecked(slice []byte) *SubAccount {
+	return &SubAccount{inner: slice}
+}
+func (s *SubAccount) AsSlice() []byte {
+	return s.inner
+}
+
+func SubAccountDefault() SubAccount {
+	return *SubAccountFromSliceUnchecked([]byte{167, 0, 0, 0, 48, 0, 0, 0, 101, 0, 0, 0, 121, 0, 0, 0, 125, 0, 0, 0, 129, 0, 0, 0, 137, 0, 0, 0, 145, 0, 0, 0, 146, 0, 0, 0, 150, 0, 0, 0, 158, 0, 0, 0, 159, 0, 0, 0, 53, 0, 0, 0, 16, 0, 0, 0, 48, 0, 0, 0, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+}
+
+func SubAccountFromSlice(slice []byte, compatible bool) (*SubAccount, error) {
+	sliceLen := len(slice)
+	if uint32(sliceLen) < HeaderSizeUint {
+		errMsg := strings.Join([]string{"HeaderIsBroken", "SubAccount", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	totalSize := unpackNumber(slice)
+	if Number(sliceLen) != totalSize {
+		errMsg := strings.Join([]string{"TotalSizeNotMatch", "SubAccount", strconv.Itoa(int(sliceLen)), "!=", strconv.Itoa(int(totalSize))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	if uint32(sliceLen) == HeaderSizeUint && 11 == 0 {
+		return &SubAccount{inner: slice}, nil
+	}
+
+	if uint32(sliceLen) < HeaderSizeUint*2 {
+		errMsg := strings.Join([]string{"TotalSizeNotMatch", "SubAccount", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	offsetFirst := unpackNumber(slice[HeaderSizeUint:])
+	if uint32(offsetFirst)%HeaderSizeUint != 0 || uint32(offsetFirst) < HeaderSizeUint*2 {
+		errMsg := strings.Join([]string{"OffsetsNotMatch", "SubAccount", strconv.Itoa(int(offsetFirst % 4)), "!= 0", strconv.Itoa(int(offsetFirst)), "<", strconv.Itoa(int(HeaderSizeUint * 2))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	if sliceLen < int(offsetFirst) {
+		errMsg := strings.Join([]string{"HeaderIsBroken", "SubAccount", strconv.Itoa(int(sliceLen)), "<", strconv.Itoa(int(offsetFirst))}, " ")
+		return nil, errors.New(errMsg)
+	}
+
+	fieldCount := uint32(offsetFirst)/HeaderSizeUint - 1
+	if fieldCount < 11 {
+		return nil, errors.New("FieldCountNotMatch")
+	} else if !compatible && fieldCount > 11 {
+		return nil, errors.New("FieldCountNotMatch")
+	}
+
+	offsets := make([]uint32, fieldCount)
+
+	for i := 0; i < int(fieldCount); i++ {
+		offsets[i] = uint32(unpackNumber(slice[HeaderSizeUint:][int(HeaderSizeUint)*i:]))
+	}
+	offsets = append(offsets, uint32(totalSize))
+
+	for i := 0; i < len(offsets); i++ {
+		if i&1 != 0 && offsets[i-1] > offsets[i] {
+			return nil, errors.New("OffsetsNotMatch")
+		}
+	}
+
+	var err error
+
+	_, err = ScriptFromSlice(slice[offsets[0]:offsets[1]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = AccountIdFromSlice(slice[offsets[1]:offsets[2]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = AccountCharsFromSlice(slice[offsets[2]:offsets[3]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = BytesFromSlice(slice[offsets[3]:offsets[4]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[4]:offsets[5]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[5]:offsets[6]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint8FromSlice(slice[offsets[6]:offsets[7]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = RecordsFromSlice(slice[offsets[7]:offsets[8]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[8]:offsets[9]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint8FromSlice(slice[offsets[9]:offsets[10]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Uint64FromSlice(slice[offsets[10]:offsets[11]], compatible)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SubAccount{inner: slice}, nil
+}
+
+func (s *SubAccount) TotalSize() uint {
+	return uint(unpackNumber(s.inner))
+}
+func (s *SubAccount) FieldCount() uint {
+	var number uint = 0
+	if uint32(s.TotalSize()) == HeaderSizeUint {
+		return number
+	}
+	number = uint(unpackNumber(s.inner[HeaderSizeUint:]))/4 - 1
+	return number
+}
+func (s *SubAccount) Len() uint {
+	return s.FieldCount()
+}
+func (s *SubAccount) IsEmpty() bool {
+	return s.Len() == 0
+}
+func (s *SubAccount) CountExtraFields() uint {
+	return s.FieldCount() - 11
+}
+
+func (s *SubAccount) HasExtraFields() bool {
+	return 11 != s.FieldCount()
+}
+
+func (s *SubAccount) Lock() *Script {
+	start := unpackNumber(s.inner[4:])
+	end := unpackNumber(s.inner[8:])
+	return ScriptFromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *SubAccount) Id() *AccountId {
+	start := unpackNumber(s.inner[8:])
+	end := unpackNumber(s.inner[12:])
+	return AccountIdFromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *SubAccount) Account() *AccountChars {
+	start := unpackNumber(s.inner[12:])
+	end := unpackNumber(s.inner[16:])
+	return AccountCharsFromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *SubAccount) Suffix() *Bytes {
+	start := unpackNumber(s.inner[16:])
+	end := unpackNumber(s.inner[20:])
+	return BytesFromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *SubAccount) RegisteredAt() *Uint64 {
+	start := unpackNumber(s.inner[20:])
+	end := unpackNumber(s.inner[24:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *SubAccount) ExpiredAt() *Uint64 {
+	start := unpackNumber(s.inner[24:])
+	end := unpackNumber(s.inner[28:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *SubAccount) Status() *Uint8 {
+	start := unpackNumber(s.inner[28:])
+	end := unpackNumber(s.inner[32:])
+	return Uint8FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *SubAccount) Records() *Records {
+	start := unpackNumber(s.inner[32:])
+	end := unpackNumber(s.inner[36:])
+	return RecordsFromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *SubAccount) Nonce() *Uint64 {
+	start := unpackNumber(s.inner[36:])
+	end := unpackNumber(s.inner[40:])
+	return Uint64FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *SubAccount) EnableSubAccount() *Uint8 {
+	start := unpackNumber(s.inner[40:])
+	end := unpackNumber(s.inner[44:])
+	return Uint8FromSliceUnchecked(s.inner[start:end])
+}
+
+func (s *SubAccount) RenewSubAccountPrice() *Uint64 {
+	var ret *Uint64
+	start := unpackNumber(s.inner[44:])
+	if s.HasExtraFields() {
+		end := unpackNumber(s.inner[48:])
+		ret = Uint64FromSliceUnchecked(s.inner[start:end])
+	} else {
+		ret = Uint64FromSliceUnchecked(s.inner[start:])
+	}
+	return ret
+}
+
+func (s *SubAccount) AsBuilder() SubAccountBuilder {
+	ret := NewSubAccountBuilder().Lock(*s.Lock()).Id(*s.Id()).Account(*s.Account()).Suffix(*s.Suffix()).RegisteredAt(*s.RegisteredAt()).ExpiredAt(*s.ExpiredAt()).Status(*s.Status()).Records(*s.Records()).Nonce(*s.Nonce()).EnableSubAccount(*s.EnableSubAccount()).RenewSubAccountPrice(*s.RenewSubAccountPrice())
 	return *ret
 }

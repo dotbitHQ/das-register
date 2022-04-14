@@ -82,12 +82,24 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	var resp RespAccountSearch
 	resp.RegisterTxMap = make(map[tables.RegisterStatus]RegisterTx)
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	resp.Account = req.Account
+
+	// check sub account
+	isSubAccount := false
+	resp.Status, resp.IsSelf, isSubAccount = h.checkSubAccount(req, apiResp)
+	if isSubAccount {
+		if apiResp.ErrNo != api_code.ApiCodeSuccess {
+			return nil
+		}
+		apiResp.ApiRespOK(resp)
+		return nil
+	}
+
 	// account char set check
 	h.checkAccountCharSet(req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
-	resp.Account = req.Account
 
 	resp.Status, resp.IsSelf = h.checkAccountBase(req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -135,45 +147,45 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 
 func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_code.ApiResp) {
 	if !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "not has suffix .bit")
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "not has suffix .bit")
 		return
 	}
 
 	accountName := strings.TrimSuffix(req.Account, common.DasAccountSuffix)
 	if strings.Contains(accountName, ".") {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 		return
 	}
 	var accountCharStr string
 	for _, v := range req.AccountCharStr {
 		if v.Char == "" {
-			apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+			apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 			return
 		}
 		switch v.CharSetName {
 		case tables.AccountCharTypeEmoji:
 			if !strings.Contains(config.AccountCharSetEmoji, v.Char) {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
 		case tables.AccountCharTypeNumber:
 			if !strings.Contains(config.AccountCharSetNumber, v.Char) {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
 		case tables.AccountCharTypeEn:
 			if !strings.Contains(config.AccountCharSetEn, v.Char) {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
 		default:
-			apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, "char invalid")
+			apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 			return
 		}
 		accountCharStr += v.Char
 	}
 	if !strings.EqualFold(req.Account, accountCharStr) {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountFormatInvalid, fmt.Sprintf("diff account chars[%s]!=[%s]", accountCharStr, req.Account))
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, fmt.Sprintf("diff account chars[%s]!=[%s]", accountCharStr, req.Account))
 		return
 	}
 	return
@@ -302,6 +314,29 @@ func (h *HttpHandle) checkOtherAddressOrder(req *ReqAccountSearch, apiResp *api_
 		return
 	} else if order.Id > 0 {
 		status = tables.FormatRegisterStatusToSearchStatus(order.RegisterStatus)
+	}
+	return
+}
+
+func (h *HttpHandle) checkSubAccount(req *ReqAccountSearch, apiResp *api_code.ApiResp) (status tables.SearchStatus, isSelf, isSubAccount bool) {
+	count := strings.Count(req.Account, ".")
+	if count > 1 {
+		isSubAccount = true
+		accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+		acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
+		if err != nil {
+			log.Error("GetAccountInfoByAccountId err:", err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account fail")
+			return
+		} else if acc.Id > 0 {
+			status = acc.FormatAccountStatus()
+			if req.ChainType == acc.OwnerChainType && strings.EqualFold(req.Address, acc.Owner) {
+				isSelf = true
+			}
+			return
+		} else {
+			status = tables.SearchStatusSubAccountUnRegister
+		}
 	}
 	return
 }
