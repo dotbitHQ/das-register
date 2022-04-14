@@ -8,7 +8,7 @@
 
 # das-register
 
-Backend of DAS registration service. You can use this repo to build your own DAS registration website, just like https://da.systems do
+Backend of DAS registration service. You can use this repo to build your own DAS registration website (as like https://app.did.id)
 
 ## Prerequisites
 
@@ -40,9 +40,9 @@ make register
 ```
 
 ## Usage
-You need to run [das-pay](https://github.com/DeAccountSystems/das-pay) before you can run this service
+You need to run [das-pay](https://github.com/dotbitHQ/das-pay) before you can run this service
 ### Register
-* Use [register API](https://github.com/DeAccountSystems/das-register/blob/main/API.md#account-order-register) get the `order ID`
+* Use [register API](https://github.com/dotbitHQ/das-register/blob/main/API.md#account-order-register) get the `order ID`
 * The server `das-pay` is monitoring the balance change of the receiving address on chain, and wait for user to pay with the `order ID` attached to the payment
 * `Das-pay` will notify the `das-register` to start the registration process after the user's payment is completed
 * Wait for `das-register` to complete the entire registration process
@@ -73,12 +73,12 @@ Pay for the order                      |                       |
 ```
 
 ### Set Reverse Record
-`Das-register` will use user's das balance to set reverse record via API [reverse declare](https://github.com/DeAccountSystems/das-register/blob/main/API.md#reverse-declare)
+`Das-register` will use user's das balance to set reverse record via API [reverse declare](https://github.com/dotbitHQ/das-register/blob/main/API.md#reverse-declare)
 
 ### Others
-More APIs see [API.md](https://github.com/DeAccountSystems/das-register/blob/main/API.md)
+More APIs see [API.md](https://github.com/dotbitHQ/das-register/blob/main/API.md)
 
 ## Documents
-* [What is DAS](https://github.com/DeAccountSystems/das-contracts/blob/master/docs/en/Overview-of-DAS.md)
-* [What is a DAS transaction on CKB](https://github.com/DeAccountSystems/das-contracts/blob/master/docs/en/Data-Structure-and-Protocol/Transaction-Structure.md)
+* [What is DAS](https://github.com/dotbitHQ/das-contracts/blob/master/docs/en/Overview-of-DAS.md)
+* [What is a DAS transaction on CKB](https://github.com/dotbitHQ/das-contracts/blob/master/docs/en/Data-Structure-and-Protocol/Transaction-Structure.md)
 
