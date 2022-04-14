@@ -10,14 +10,21 @@ import (
 	"time"
 )
 
-func ParserWitnessData(witnessByte []byte) interface{} {
+func ParserWitnessAction(witnessByte []byte) string {
 	if len(witnessByte) <= common.WitnessDasTableTypeEndIndex+1 {
-		return parserDefaultWitness(witnessByte)
+		return ""
 	}
 	if string(witnessByte[0:common.WitnessDasCharLen]) != common.WitnessDas {
+		return ""
+	}
+	return common.Bytes2Hex(witnessByte[common.WitnessDasCharLen:common.WitnessDasTableTypeEndIndex])
+}
+
+func ParserWitnessData(witnessByte []byte) interface{} {
+	actionDataType := ParserWitnessAction(witnessByte)
+	if actionDataType == "" {
 		return parserDefaultWitness(witnessByte)
 	}
-	actionDataType := common.Bytes2Hex(witnessByte[common.WitnessDasCharLen:common.WitnessDasTableTypeEndIndex])
 
 	switch actionDataType {
 	case common.ActionDataTypeActionData:
@@ -65,6 +72,8 @@ func ParserWitnessData(witnessByte []byte) interface{} {
 		return ParserConfigCellReverseRecord(witnessByte)
 	case common.ConfigCellTypeArgsSubAccount:
 		return ParserConfigCellSubAccount(witnessByte)
+	case common.ConfigCellTypeArgsSubAccountWhiteList:
+		return ParserConfigCellSubAccountWhiteList(witnessByte)
 
 	case common.ConfigCellTypeArgsPreservedAccount00:
 		return ParserConfigCellUnavailable(witnessByte, "ConfigCellPreservedAccount00")
@@ -1109,6 +1118,28 @@ func ParserConfigCellSubAccount(witnessByte []byte) interface{} {
 			"edit_fee":                ConvertCapacity(editFee),
 			"renew_fee":               ConvertCapacity(renewFee),
 			"recycle_fee":             ConvertCapacity(recycleFee),
+		},
+	}
+}
+
+func ParserConfigCellSubAccountWhiteList(witnessByte []byte) interface{} {
+	slice := witnessByte[common.WitnessDasTableTypeEndIndex:]
+	dataLength, err := molecule.Bytes2GoU32(slice[:4])
+	if err != nil {
+		return parserDefaultWitness(witnessByte)
+	}
+	var whiteList []string
+	for i := 20; i <= len(slice[4:dataLength]); i += 20 {
+		whiteList = append(whiteList, common.Bytes2Hex(slice[4:dataLength][i-20:i]))
+	}
+
+	return map[string]interface{}{
+		"witness":      common.Bytes2Hex(witnessByte),
+		"witness_hash": common.Bytes2Hex(common.Blake2b(slice)),
+		"name":         "ConfigCellSubAccountWhiteList",
+		"data": map[string]interface{}{
+			"length":     dataLength,
+			"white_list": whiteList,
 		},
 	}
 }
