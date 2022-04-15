@@ -1,0 +1,50 @@
+server:
+  is_update: false # stop send tx or system update
+  net: 1
+  http_server_addr: ":8120"
+  http_server_internal_addr: ":8119"
+  pay_server_address: "" # for send register tx
+  pay_private: ""
+  parser_url: "http://127.0.0.1:9118/v1" # das-database server
+  tx_tool_switch: true # open send register tx
+origins: # cross domain
+  - ""
+pay_address_map: # receiver's address
+  "ckb": ""
+  "eth": ""
+  "tron": ""
+  "bsc": ""
+  "polygon": ""
+chain:
+  ckb_url: "http://127.0.0.1:8114"
+  index_url: "http://127.0.0.1:8116"
+  current_block_number: 0 # 0-start from the latest block number, 4872287-start from  the earliest block number
+  confirm_num: 4
+  concurrency_num: 100
+db:
+  mysql:
+    addr: "127.0.0.1:3306"
+    user: "root"
+    password: ""
+    db_name: "das_register_db"
+    max_open_conn: 100
+    max_idle_conn: 50
+  parser_mysql:
+    addr: "127.0.0.1:3306"
+    user: "root"
+    password: ""
+    db_name: "das_database"
+    max_open_conn: 100
+    max_idle_conn: 50
+cache:
+  redis:
+    addr: ""
+    password: ""
+    db_num: 0
+das:
+  account_min_length: 4
+  account_max_length: 42
+  open_account_min_length: 4
+  open_account_max_length: 9
+  max_register_years: 20
+  premium: "0.1"
