@@ -1,6 +1,6 @@
 server:
   is_update: false # stop send tx or system update
-  net: 1
+  net: 1 # 1 mainnet 2 testnet
   http_server_addr: ":8120"
   http_server_internal_addr: ":8119"
   pay_server_address: "" # for send register tx

@@ -36,7 +36,7 @@ mysql -uroot -p
 # compile and run
 cd das-register
 make register
-./das_register --config=conf/config.yaml
+./das_register --config=config/config.yaml
 ```
 
 ## Usage
