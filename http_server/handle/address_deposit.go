@@ -71,11 +71,13 @@ func (h *HttpHandle) doAddressDeposit(req *ReqAddressDeposit, apiResp *api_code.
 		} else {
 			log.Info("tronAddr:", tronAddr)
 		}
+		chainType = common.ChainTypeTron
 	case common.DasAlgorithmIdEd25519:
 		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{64}$", req.Address); !ok {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "address invalid")
 			return nil
 		}
+		chainType = common.ChainTypeMixin
 	default:
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "algorithm_id invalid")
 		return nil
