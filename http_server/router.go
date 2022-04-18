@@ -64,6 +64,7 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/balance/pay", api_code.DoMonitorLog(api_code.MethodBalancePay), h.h.BalancePay)
 		v1.POST("/balance/withdraw", api_code.DoMonitorLog(api_code.MethodBalanceWithdraw), h.h.BalanceWithdraw)
 		v1.POST("/balance/transfer", api_code.DoMonitorLog(api_code.MethodBalanceTransfer), h.h.BalanceTransfer)
+		v1.POST("/balance/deposit", api_code.DoMonitorLog(api_code.MethodBalanceDeposit), h.h.BalanceDeposit)
 		v1.POST("/account/edit/manager", api_code.DoMonitorLog(api_code.MethodEditManager), h.h.EditManager)
 		v1.POST("/account/edit/owner", api_code.DoMonitorLog(api_code.MethodEditOwner), h.h.EditOwner)
 		v1.POST("/account/edit/records", api_code.DoMonitorLog(api_code.MethodEditRecords), h.h.EditRecords)

@@ -70,7 +70,12 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 	var resp RespAccountMine
 	resp.List = make([]AccountData, 0)
 
+	action := "AccountMine"
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	if h.rc.SearchLimitExist(req.ChainType, req.Address, action) {
+		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
+		return nil
+	}
 
 	list, err := h.dbDao.SearchAccountListWithPage(req.ChainType, req.Address, req.Keyword, req.GetLimit(), req.GetOffset())
 	if err != nil {
@@ -95,6 +100,8 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 		return fmt.Errorf("GetAccountsCount err: %s", err.Error())
 	}
 	resp.Total = count
+
+	_ = h.rc.SetSearchLimit(req.ChainType, req.Address, action)
 
 	apiResp.ApiRespOK(resp)
 	return nil

@@ -70,6 +70,7 @@ const (
 	MethodTransactionSend  = "das_transactionSend"
 	MethodBalanceWithdraw  = "das_balanceWithdraw"
 	MethodBalanceTransfer  = "das_balanceTransfer"
+	MethodBalanceDeposit   = "das_balanceDeposit"
 	MethodEditManager      = "das_editManager"
 	MethodEditOwner        = "das_transferAccount"
 	MethodEditRecords      = "das_editRecords"
