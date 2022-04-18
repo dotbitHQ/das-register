@@ -65,9 +65,11 @@ func (h *HttpHandle) doAddressDeposit(req *ReqAddressDeposit, apiResp *api_code.
 		chainType = common.ChainTypeEth
 		is712 = true
 	case common.DasAlgorithmIdTron:
-		if _, err := common.TronBase58ToHex(req.Address); err != nil {
+		if tronAddr, err := common.TronBase58ToHex(req.Address); err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "address invalid")
 			return nil
+		} else {
+			log.Info("tronAddr:", tronAddr)
 		}
 	case common.DasAlgorithmIdEd25519:
 		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{64}$", req.Address); !ok {
@@ -84,6 +86,7 @@ func (h *HttpHandle) doAddressDeposit(req *ReqAddressDeposit, apiResp *api_code.
 		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
 	}
+	log.Info("doAddressDeposit:", req.Address, common.Bytes2Hex(lockScript.Args))
 
 	if config.Cfg.Server.Net == common.DasNetTypeMainNet {
 		addr, err := address.ConvertScriptToAddress(address.Mainnet, lockScript)
