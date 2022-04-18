@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"errors"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
 	"strings"
@@ -12,22 +13,16 @@ func (r *RedisCache) getSearchLimitKey(chainType common.ChainType, address, acti
 	return strings.ToLower(key)
 }
 
-func (r *RedisCache) SetSearchLimit(chainType common.ChainType, address, action string) error {
-	if r.red == nil {
-		return fmt.Errorf("redis is nil")
-	}
-	key := r.getSearchLimitKey(chainType, address, action)
-	return r.red.Set(key, 1, time.Millisecond*600).Err()
-}
+var ErrDistributedLockPreemption = errors.New("distributed lock preemption")
 
-func (r *RedisCache) SearchLimitExist(chainType common.ChainType, address, action string) bool {
-	if r.red == nil {
-		return false
-	}
+func (r *RedisCache) LockWithRedis(chainType common.ChainType, address, action string) error {
 	key := r.getSearchLimitKey(chainType, address, action)
-	res, _ := r.red.Exists(key).Result()
-	if res == 1 {
-		return true
+	ret := r.red.SetNX(key, "", time.Millisecond*600)
+	if err := ret.Err(); err != nil {
+		return fmt.Errorf("redis set order nx-->%s", err.Error())
 	}
-	return false
+	if !ret.Val() {
+		return ErrDistributedLockPreemption
+	}
+	return nil
 }

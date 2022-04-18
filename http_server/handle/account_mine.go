@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"das_register_server/cache"
 	"das_register_server/http_server/api_code"
 	"encoding/json"
 	"fmt"
@@ -58,7 +59,6 @@ func (h *HttpHandle) AccountMine(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
-	// 业务
 	if err = h.doAccountMine(&req, &apiResp); err != nil {
 		log.Error("doAccountMine err:", err.Error(), funcName, clientIp)
 	}
@@ -72,9 +72,12 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 
 	action := "AccountMine"
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
-	if h.rc.SearchLimitExist(req.ChainType, req.Address, action) {
-		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
-		return nil
+
+	if err := h.rc.LockWithRedis(req.ChainType, req.Address, action); err != nil {
+		if err == cache.ErrDistributedLockPreemption {
+			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
+			return nil
+		}
 	}
 
 	list, err := h.dbDao.SearchAccountListWithPage(req.ChainType, req.Address, req.Keyword, req.GetLimit(), req.GetOffset())
@@ -100,8 +103,6 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 		return fmt.Errorf("GetAccountsCount err: %s", err.Error())
 	}
 	resp.Total = count
-
-	_ = h.rc.SetSearchLimit(req.ChainType, req.Address, action)
 
 	apiResp.ApiRespOK(resp)
 	return nil
