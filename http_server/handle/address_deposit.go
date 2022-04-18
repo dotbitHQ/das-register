@@ -52,13 +52,13 @@ func (h *HttpHandle) doAddressDeposit(req *ReqAddressDeposit, apiResp *api_code.
 	is712 := false
 	switch req.AlgorithmId {
 	case common.DasAlgorithmIdEth:
-		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{40}$", req.Address); ok {
+		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{40}$", req.Address); !ok {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "address invalid")
 			return nil
 		}
 		chainType = common.ChainTypeEth
 	case common.DasAlgorithmIdEth712:
-		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{40}$", req.Address); ok {
+		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{40}$", req.Address); !ok {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "address invalid")
 			return nil
 		}
@@ -70,7 +70,7 @@ func (h *HttpHandle) doAddressDeposit(req *ReqAddressDeposit, apiResp *api_code.
 			return nil
 		}
 	case common.DasAlgorithmIdEd25519:
-		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{64}$", req.Address); ok {
+		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{64}$", req.Address); !ok {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "address invalid")
 			return nil
 		}
