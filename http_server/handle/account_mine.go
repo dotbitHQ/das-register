@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
+	"time"
 )
 
 type ReqAccountMine struct {
@@ -73,7 +74,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 	action := "AccountMine"
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
 
-	if err := h.rc.LockWithRedis(req.ChainType, req.Address, action); err != nil {
+	if err := h.rc.LockWithRedis(req.ChainType, req.Address, action, time.Millisecond*600); err != nil {
 		if err == cache.ErrDistributedLockPreemption {
 			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
 			return nil
