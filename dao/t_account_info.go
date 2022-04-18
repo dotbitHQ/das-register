@@ -17,15 +17,21 @@ func (d *DbDao) SearchAccountList(chainType common.ChainType, address string) (l
 	return
 }
 
-func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address string, limit, offset int) (list []tables.TableAccountInfo, err error) {
-	err = d.parserDb.Where(" owner_chain_type=? AND owner=? ", chainType, address).
-		Or(" manager_chain_type=? AND manager=? ", chainType, address).
-		Order(" account ").
-		Limit(limit).Offset(offset).
-		Find(&list).Error
-	if err == gorm.ErrRecordNotFound {
-		err = nil
+func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, keyword string, limit, offset int) (list []tables.TableAccountInfo, err error) {
+	if keyword == "" {
+		err = d.parserDb.Where(" owner_chain_type=? AND owner=? ", chainType, address).
+			Or(" manager_chain_type=? AND manager=? ", chainType, address).
+			Order(" account ").
+			Limit(limit).Offset(offset).
+			Find(&list).Error
+	} else {
+		err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND account LIKE ? ",
+			chainType, address, chainType, address, "%"+keyword+"%").
+			Order(" account ").
+			Limit(limit).Offset(offset).
+			Find(&list).Error
 	}
+
 	return
 }
 

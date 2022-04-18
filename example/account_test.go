@@ -16,7 +16,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"83ab69378b33b61b1b443f3eff151fd9","sign_list":[{"sign_type":6,"sign_msg":"0x220d0945769b66d2874e3f5433720c20f379d18f51e3acf5fea32924fdf1884111d48025a4178062de739dd882666389103438deb7e3a765711c58c5d2d6ad0901"}],"mm_json":null}`
+	str := `{"sign_key":"16e457d1cb5829a73ad4eac51ab2242f","sign_list":[{"sign_type":4,"sign_msg":"0x1d2869ca0fee2218757139a96b6ebbed60a61d3821e525bb46ebb172c385d6e44e22f4e8c63596756aabffbf1a67a5d470bbead5ba255409c47ab81e80e51f261c"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
@@ -72,9 +72,9 @@ func TestEditOwner(t *testing.T) {
 	url := TestUrl + "/account/edit/owner"
 
 	var req handle.ReqEditOwner
-	req.ChainType = common.ChainTypeMixin
-	req.Address = "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58"
-	req.Account = "1234567871.bit"
+	req.ChainType = common.ChainTypeTron
+	req.Address = "TQoLh9evwUmZKxpD1uhFttsZk3EBs8BksV"
+	req.Account = "account2022011906.bit"
 	req.RawParam.ReceiverChainType = common.ChainTypeMixin
 	req.RawParam.ReceiverAddress = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
 	req.EvmChainId = 97
@@ -97,9 +97,9 @@ func TestEditRecords(t *testing.T) {
 	url := TestUrl + "/account/edit/records"
 
 	var req handle.ReqEditRecords
-	req.ChainType = common.ChainTypeMixin
-	req.Address = "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58"
-	req.Account = "1234567873.bit"
+	req.ChainType = common.ChainTypeTron
+	req.Address = "TQoLh9evwUmZKxpD1uhFttsZk3EBs8BksV"
+	req.Account = "account2022011906.bit"
 	req.RawParam.Records = []handle.ReqRecord{{
 		Key:   "twitter",
 		Type:  "profile",

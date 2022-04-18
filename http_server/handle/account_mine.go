@@ -15,6 +15,7 @@ type ReqAccountMine struct {
 	ChainType common.ChainType `json:"chain_type"`
 	Address   string           `json:"address"`
 	Pagination
+	Keyword string `json:"keyword"`
 }
 
 type RespAccountMine struct {
@@ -71,7 +72,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
 
-	list, err := h.dbDao.SearchAccountListWithPage(req.ChainType, req.Address, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.SearchAccountListWithPage(req.ChainType, req.Address, req.Keyword, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account list err")
 		return fmt.Errorf("SearchAccountList err: %s", err.Error())
