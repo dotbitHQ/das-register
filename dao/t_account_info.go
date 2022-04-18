@@ -35,11 +35,19 @@ func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, k
 	return
 }
 
-func (d *DbDao) GetAccountsCount(chainType common.ChainType, address string) (count int64, err error) {
-	err = d.parserDb.Model(tables.TableAccountInfo{}).
-		Where(" owner_chain_type=? AND owner=? ", chainType, address).
-		Or(" manager_chain_type=? AND manager=? ", chainType, address).
-		Count(&count).Error
+func (d *DbDao) GetAccountsCount(chainType common.ChainType, address, keyword string) (count int64, err error) {
+	if keyword == "" {
+		err = d.parserDb.Model(tables.TableAccountInfo{}).
+			Where(" owner_chain_type=? AND owner=? ", chainType, address).
+			Or(" manager_chain_type=? AND manager=? ", chainType, address).
+			Count(&count).Error
+	} else {
+		err = d.parserDb.Model(tables.TableAccountInfo{}).
+			Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND account LIKE ? ",
+				chainType, address, chainType, address, "%"+keyword+"%").
+			Count(&count).Error
+	}
+
 	return
 }
 

@@ -89,7 +89,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 		})
 	}
 
-	count, err := h.dbDao.GetAccountsCount(req.ChainType, req.Address)
+	count, err := h.dbDao.GetAccountsCount(req.ChainType, req.Address, req.Keyword)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "get account count err")
 		return fmt.Errorf("GetAccountsCount err: %s", err.Error())
