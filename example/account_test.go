@@ -9,6 +9,7 @@ import (
 	"github.com/parnurzeal/gorequest"
 	"github.com/scorpiotzh/toolib"
 	"testing"
+	"time"
 )
 
 const (
@@ -233,10 +234,13 @@ func TestAccountList(t *testing.T) {
 	req.Size = 10
 	var data handle.RespAccountMine
 	for i := 0; i < 3; i++ {
-		req.Keyword = fmt.Sprintf("%d", i)
-		if err := doReq(url, req, &data); err != nil {
-			t.Fatal(err)
-		}
-		fmt.Println(toolib.JsonString(data))
+		go func(index int) {
+			req.Keyword = fmt.Sprintf("%d", index)
+			if err := doReq(url, req, &data); err != nil {
+				t.Fatal(err)
+			}
+			fmt.Println(toolib.JsonString(data))
+		}(i)
 	}
+	time.Sleep(time.Second * 2)
 }
