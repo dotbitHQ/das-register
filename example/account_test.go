@@ -223,3 +223,20 @@ func TestReverseLatest(t *testing.T) {
 	}
 	fmt.Println(toolib.JsonString(data))
 }
+
+func TestAccountList(t *testing.T) {
+	url := TestUrl + "/account/mine"
+	var req handle.ReqAccountMine
+	req.ChainType = common.ChainTypeEth
+	req.Address = "0x15a33588908cf8edb27d1abe3852bf287abd3891"
+	req.Keyword = "zz"
+	req.Size = 10
+	var data handle.RespAccountMine
+	for i := 0; i < 3; i++ {
+		req.Keyword = fmt.Sprintf("%d", i)
+		if err := doReq(url, req, &data); err != nil {
+			t.Fatal(err)
+		}
+		fmt.Println(toolib.JsonString(data))
+	}
+}
