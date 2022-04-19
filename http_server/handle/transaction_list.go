@@ -66,7 +66,6 @@ func (h *HttpHandle) TransactionList(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
-	// 业务
 	if err = h.doTransactionList(&req, &apiResp); err != nil {
 		log.Error("doTransactionList err:", err.Error(), funcName, clientIp)
 	}

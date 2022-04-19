@@ -25,6 +25,7 @@ type ReqBalanceDeposit struct {
 }
 
 type RespBalanceDeposit struct {
+	SignInfo
 }
 
 func (h *HttpHandle) RpcBalanceDeposit(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -177,6 +178,8 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 	var si SignInfo
 	si.SignKey = signKey
 	si.SignList = signList
+
+	resp.SignInfo = si
 
 	apiResp.ApiRespOK(resp)
 	return nil

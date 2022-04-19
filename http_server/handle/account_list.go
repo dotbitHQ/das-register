@@ -66,7 +66,6 @@ func (h *HttpHandle) AccountList(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
-	// 业务
 	if err = h.doAccountList(&req, &apiResp); err != nil {
 		log.Error("doAccountList err:", err.Error(), funcName, clientIp)
 	}

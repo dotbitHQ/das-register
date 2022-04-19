@@ -63,7 +63,6 @@ func (h *HttpHandle) BalanceTransfer(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
-	// 业务
 	if err = h.doBalanceTransfer(&req, &apiResp); err != nil {
 		log.Error("doBalanceTransfer err:", err.Error(), funcName, clientIp)
 	}

@@ -40,7 +40,6 @@ func (h *HttpHandle) TokenList(ctx *gin.Context) {
 	)
 	log.Info("ApiReq:", funcName, clientIp)
 
-	// 业务
 	if err = h.doTokenList(&apiResp); err != nil {
 		log.Error("doTokenList err:", err.Error(), funcName, clientIp)
 	}
