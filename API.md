@@ -1,4 +1,4 @@
- * [Query API LIST](#query-api-list)
+* [Query API LIST](#query-api-list)
     * [Token List](#token-list)
     * [Config Info](#config-info)
     * [Account List](#account-list)
@@ -15,13 +15,15 @@
     * [Account Search](#account-search)
     * [Account Registering List](#account-registering-list)
     * [Account Order Detail](#account-order-detail)
- * [OPERATE API LIST](#operate-api-list)
+    * [Address Deposit](#address-deposit)
+* [OPERATE API LIST](#operate-api-list)
     * [Reverse Declare](#reverse-declare)
     * [Reverse Redeclare](#reverse-redeclare)
     * [Reverse Retract](#reverse-retract)
     * [Transaction Send](#transaction-send)
     * [Balance Withdraw](#balance-withdraw)
     * [Balance Transfer](#balance-transfer)
+    * [Balance Deposit](#balance-deposit)
     * [Account Edit Manager](#account-edit-manager)
     * [Account Edit Owner](#account-edit-owner)
     * [Account Edit Records](#account-edit-records)
@@ -30,8 +32,8 @@
     * [Account Order Register](#account-order-register)
     * [Account Order Change](#account-order-change)
     * [Account Order Pay Hash](#account-order-pay-hash)
-    * [Account Register](#account-register)  
- * [NODE RPC](#node-rpc)
+    * [Account Register](#account-register)
+* [NODE RPC](#node-rpc)
     * [Node Ckb Rpc](#node-ckb-rpc)
 
 ### Query API LIST
@@ -160,7 +162,7 @@ curl -X POST http://127.0.0.1:8120/v1/token/list
     "edit_manager_throttle": 300,
     "transfer_throttle": 300,
     "income_cell_min_transfer_value": 11600000000,
-    "premium": "0.1", 
+    "premium": "0.1",
     "timestamp_on_chain": 1647589995
   }
 }
@@ -302,7 +304,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/account/detail -d'{"account":"king.bit"}'
 ```
-
 
 #### Account Records
 
@@ -593,7 +594,6 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/list -d'{"chain_type":1,"addre
 curl -X POST http://127.0.0.1:8120/v1/rewards/mine -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","page":1,"size":2}'
 ```
 
-
 #### Withdraw List
 
 **Request**
@@ -640,7 +640,6 @@ curl -X POST http://127.0.0.1:8120/v1/rewards/mine -d'{"chain_type":1,"address":
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","page":1,"size":2}'
 ```
-
 
 #### Account Search
 
@@ -714,7 +713,6 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
 curl -X POST http://127.0.0.1:8120/v1/account/search -d'{"account":"aaaa.bit","chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account_char_str":[{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}]}'
 ```
 
-
 #### Account Registering List
 
 **Request**
@@ -751,7 +749,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/search -d'{"account":"aaaa.bit","c
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad"}'
 ```
-
 
 #### Account Order Detail
 
@@ -797,6 +794,39 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
 
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/account/order/detail -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"xasdaaxaaa.bit","action":"apply_register"}'
+```
+
+#### Address Deposit
+
+**Request**
+
+* path: /address/deposit
+* param:
+    * algorithm_id: 3-evm, 5-712, 4-tron, 6-Ed25519
+
+```json
+{
+  "algorithm_id": 6,
+  "address": "0x111..."
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "ckb_address": ""
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8120/v1/address/deposit -d'{"algorithm_id":6,"address":"0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"}'
 ```
 
 ### OPERATE API LIST
@@ -1044,6 +1074,46 @@ curl -X POST http://127.0.0.1:8120/v1/balance/withdraw -d'{"evm_chain_id":5,"cha
 curl -X POST http://127.0.0.1:8120/v1/balance/transfer -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad"}'
 ```
 
+#### Balance Deposit
+
+**Request**
+
+* path: /balance/deposit
+* param:
+
+```json
+{
+  "from_ckb_address": "",
+  "to_ckb_address": "",
+  "amount": ""
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "sign_key": "",
+    "sign_list": [
+      {
+        "sign_type": 6,
+        "sign_msg": ""
+      }
+    ],
+    "mm_json": {}
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8120/v1/balance/deposit -d'{"from_ckb_address":"","to_ckb_address":"","amount":20000000000}'
+```
+
 #### Account Edit Manager
 
 **Request**
@@ -1089,7 +1159,6 @@ curl -X POST http://127.0.0.1:8120/v1/balance/transfer -d'{"chain_type":1,"addre
 curl -X POST http://127.0.0.1:8120/v1/account/edit/manager -d'{"evm_chain_id":5,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"0001.bit","raw_param":{"manager_chain_type":1,"manager_address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad"}}'
 ```
 
-
 #### Account Edit Owner
 
 **Request**
@@ -1134,7 +1203,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/manager -d'{"evm_chain_id":5,
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/account/edit/owner -d'{"evm_chain_id":5,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"0001.bit","raw_param":{"receiver_chain_type":1,"receiver_address":"0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"}}'
 ```
-
 
 #### Account Edit Records
 
@@ -1189,7 +1257,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/owner -d'{"evm_chain_id":5,"c
 curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"11111111.bit","raw_param":{"records":[{"type":"profile","key":"twitter","label":"","value":"111","ttl":"300","action":"add"}]}}'
 ```
 
-
 #### Account Order Renew
 
 **Request**
@@ -1233,7 +1300,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,
 curl -X POST http://127.0.0.1:8120/v1/account/order/renew -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"0001.bit","pay_chain_type":0,"pay_token_id":"ckb_das","pay_type":"","pay_address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","renew_years":1}'
 ```
 
-
 #### Balance Pay
 
 **Request**
@@ -1274,7 +1340,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/renew -d'{"chain_type":1,"ad
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","order_id":"d2ccdcee9a7c163efb50d4a808a3d3f1"}'
 ```
-
 
 #### Account Order Register
 
@@ -1379,7 +1444,6 @@ curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_t
 curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"asxasadasx.bit","pay_chain_type":0,"pay_token_id":"ckb_das","pay_address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","pay_type":"","register_years":1,"inviter_account":"","channel_account":"","account_char_str":[{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"x"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"d"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"x"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}]}'
 ```
 
-
 #### Account Order Change
 
 **Request**
@@ -1425,7 +1489,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"chain_type":1,
 curl -X POST http://127.0.0.1:8120/v1/account/order/change -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"asxasadasx.bit","pay_chain_type":0,"pay_token_id":"ckb_das","pay_address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","pay_type":"","register_years":2,"inviter_account":"","channel_account":""}'
 ```
 
-
 #### Account Order Pay Hash
 
 **Request**
@@ -1467,8 +1530,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/change -d'{"chain_type":1,"a
 curl -X POST http://127.0.0.1:8120/v1/account/order/pay/hash -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"asxasadasx.bit","order_id":"17b05429826dc39016a6f9e4de9c55ba","pay_hash":"0xfcc6eca382311be8702862f36c0863e27c4f63beedd9ff786b8413558be14559"}'
 ```
 
-
-#### Account Register 
+#### Account Register
 
 **Request**
 
@@ -1476,25 +1538,48 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/pay/hash -d'{"chain_type":1,
 * path: /account/register
 * param:
 
-
 ```json
 {
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "1234.bit",
   "account_char_str": [
-     {"char_set_name":1,"char":"1"},
-     {"char_set_name":1,"char":"2"},
-     {"char_set_name":1,"char":"3"},
-     {"char_set_name":1,"char":"4"},
-     {"char_set_name":2,"char":"."},
-     {"char_set_name":2,"char":"b"},
-     {"char_set_name":2,"char":"i"},
-     {"char_set_name":2,"char":"t"}
-  ], 
-   "register_years": 1,
-   "inviter_account": "",
-   "channel_account": ""
+    {
+      "char_set_name": 1,
+      "char": "1"
+    },
+    {
+      "char_set_name": 1,
+      "char": "2"
+    },
+    {
+      "char_set_name": 1,
+      "char": "3"
+    },
+    {
+      "char_set_name": 1,
+      "char": "4"
+    },
+    {
+      "char_set_name": 2,
+      "char": "."
+    },
+    {
+      "char_set_name": 2,
+      "char": "b"
+    },
+    {
+      "char_set_name": 2,
+      "char": "i"
+    },
+    {
+      "char_set_name": 2,
+      "char": "t"
+    }
+  ],
+  "register_years": 1,
+  "inviter_account": "",
+  "channel_account": ""
 }
 ```
 

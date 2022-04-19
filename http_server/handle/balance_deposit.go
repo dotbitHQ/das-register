@@ -116,6 +116,10 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 		if oID == common.DasAlgorithmIdEth712 {
 			toTypeScript = balanceContract.ToScript(nil)
 		}
+		if req.Amount < common.DasLockWithBalanceTypeOccupiedCkb {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("amount < %d", common.DasLockWithBalanceTypeOccupiedCkb))
+			return nil
+		}
 	}
 
 	fee := uint64(1e4)
