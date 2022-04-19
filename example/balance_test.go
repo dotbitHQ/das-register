@@ -25,7 +25,7 @@ func TestBalanceDeposit(t *testing.T) {
 	var req handle.ReqBalanceDeposit
 	req.FromCkbAddress = "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qgrzk3ntzys3nuwmvnar2lrs54l9pat6wy3qv26xdvgjzx03mdj05dtuwzjhu5840fcjyg4hdja"
 	req.ToCkbAddress = "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qg9zk3ntzys3nuwmvnar2lrs54l9pat6wy3q526xdvgjzx03mdj05dtuwzjhu5840fcjy2c9u8d"
-	req.Amount = 100 * common.OneCkb
+	req.Amount = 116 * common.OneCkb
 
 	url := TestUrl + "/balance/deposit"
 

@@ -108,10 +108,8 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 
 	var fromTypeScript, toTypeScript *types.Script
 	if dasContract.IsSameTypeId(fromAddress.Script.CodeHash) {
-		oID, _, _, _, _, _ := core.FormatDasLockToHexAddress(fromAddress.Script.Args)
-		if oID == common.DasAlgorithmIdEth712 {
-			fromTypeScript = balanceContract.ToScript(nil)
-		}
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "from a das address")
+		return nil
 	}
 	if dasContract.IsSameTypeId(toAddress.Script.CodeHash) {
 		oID, _, _, _, _, _ := core.FormatDasLockToHexAddress(toAddress.Script.Args)
@@ -138,11 +136,13 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 		}
 	}
 
+	action := tables.DasActionBalanceDeposit
 	txParams, err := h.buildBalanceDepositTx(&paramBuildBalanceDepositTx{
 		liveCellList:   liveCell,
 		total:          total,
 		amount:         req.Amount,
 		fee:            fee,
+		action:         action,
 		toLockScript:   toAddress.Script,
 		toTypeScript:   toTypeScript,
 		fromLockScript: fromAddress.Script,
@@ -168,7 +168,9 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 	log.Info("buildTx:", txBuilder.TxString())
 
 	var sic SignInfoCache
-	sic.Action = tables.DasActionTransferBalance
+	sic.Action = action
+	sic.ChainType = common.ChainTypeCkb
+	sic.Address = common.Bytes2Hex(fromAddress.Script.Args)
 	sic.BuilderTx = txBuilder.DasTxBuilderTransaction
 	signKey := sic.SignKey()
 	cacheStr := toolib.JsonString(&sic)
@@ -192,6 +194,7 @@ type paramBuildBalanceDepositTx struct {
 	total          uint64
 	amount         uint64
 	fee            uint64
+	action         string
 	toLockScript   *types.Script
 	toTypeScript   *types.Script
 	fromLockScript *types.Script
@@ -230,7 +233,7 @@ func (h *HttpHandle) buildBalanceDepositTx(p *paramBuildBalanceDepositTx) (*txbu
 	}
 
 	// witness
-	actionWitness, err := witness.GenActionDataWitness(tables.DasActionTransferBalance, nil)
+	actionWitness, err := witness.GenActionDataWitness(p.action, nil)
 	if err != nil {
 		return nil, fmt.Errorf("GenActionDataWitness err: %s", err.Error())
 	}
