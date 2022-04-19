@@ -120,7 +120,8 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 		}
 	}
 
-	liveCell, total, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), h.dasCache, fromAddress.Script, fromTypeScript, req.Amount, common.DasLockWithBalanceTypeOccupiedCkb)
+	fee := uint64(1e4)
+	liveCell, total, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), h.dasCache, fromAddress.Script, fromTypeScript, req.Amount+fee, common.DasLockWithBalanceTypeOccupiedCkb)
 	if err != nil {
 		if err == core.ErrRejectedOutPoint {
 			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, err.Error())
@@ -141,6 +142,7 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 		liveCellList:   liveCell,
 		total:          total,
 		amount:         req.Amount,
+		fee:            fee,
 		toLockScript:   toAddress.Script,
 		toTypeScript:   toTypeScript,
 		fromLockScript: fromAddress.Script,
@@ -189,6 +191,7 @@ type paramBuildBalanceDepositTx struct {
 	liveCellList   []*indexer.LiveCell
 	total          uint64
 	amount         uint64
+	fee            uint64
 	toLockScript   *types.Script
 	toTypeScript   *types.Script
 	fromLockScript *types.Script
@@ -217,14 +220,15 @@ func (h *HttpHandle) buildBalanceDepositTx(p *paramBuildBalanceDepositTx) (*txbu
 	txParams.OutputsData = append(txParams.OutputsData, []byte{})
 
 	// change
-	if change := p.total - p.amount; change > 0 {
+	if change := p.total - p.amount - p.fee; change > 0 {
 		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
-			Capacity: p.amount,
+			Capacity: change,
 			Lock:     p.fromLockScript,
 			Type:     p.fromTypeScript,
 		})
 		txParams.OutputsData = append(txParams.OutputsData, []byte{})
 	}
+
 	// witness
 	actionWitness, err := witness.GenActionDataWitness(tables.DasActionTransferBalance, nil)
 	if err != nil {
