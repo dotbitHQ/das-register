@@ -136,7 +136,7 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 		}
 	}
 
-	action := tables.DasActionBalanceDeposit
+	action := tables.DasActionTransferBalance
 	txParams, err := h.buildBalanceDepositTx(&paramBuildBalanceDepositTx{
 		liveCellList:   liveCell,
 		total:          total,

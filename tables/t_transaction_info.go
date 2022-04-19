@@ -65,7 +65,6 @@ const (
 	ActionCreateSubAccount TxAction = 24
 
 	DasActionTransferBalance = "transfer_balance"
-	DasActionBalanceDeposit  = "balance_deposit"
 	DasActionSaleAccount     = "sale_account"
 	DasActionOfferAccepted   = "offer_accepted"
 	DasActionEditOfferAdd    = "offer_edit_add"
