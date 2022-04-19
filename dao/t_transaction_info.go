@@ -18,6 +18,7 @@ var (
 		common.DasActionRenewAccount,
 		tables.DasActionOfferAccepted,
 		common.DasActionEditSubAccount,
+		tables.DasActionBalanceDeposit,
 	}
 )
 
