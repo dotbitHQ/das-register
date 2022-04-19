@@ -4,7 +4,6 @@ import (
 	"das_register_server/http_server/handle"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/sign"
 	"github.com/scorpiotzh/toolib"
 	"testing"
 )
@@ -24,7 +23,7 @@ func TestAddressDeposit(t *testing.T) {
 
 func TestBalanceDeposit(t *testing.T) {
 	var req handle.ReqBalanceDeposit
-	req.FromCkbAddress = "ckt1qyqdpc0e57dtjdscy89u8vclenhqjn904ngqrq78am"
+	req.FromCkbAddress = "ckt1qyqvsej8jggu4hmr45g4h8d9pfkpd0fayfksz44t9q"
 	req.ToCkbAddress = "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qg9zk3ntzys3nuwmvnar2lrs54l9pat6wy3q526xdvgjzx03mdj05dtuwzjhu5840fcjy2c9u8d"
 	req.Amount = 116 * common.OneCkb
 
@@ -36,13 +35,13 @@ func TestBalanceDeposit(t *testing.T) {
 	}
 	fmt.Println(toolib.JsonString(data))
 
-	private := ""
-	for i, v := range data.SignList {
-		signData, err := sign.EthSignature(common.Hex2Bytes(v.SignMsg), private)
-		if err != nil {
-			t.Fatal(err)
-		}
-		data.SignList[i].SignMsg = common.Bytes2Hex(signData)
-	}
-	fmt.Println(toolib.JsonString(data))
+	//private := ""
+	//for i, v := range data.SignList {
+	//	signData, err := sign.EthSignature(common.Hex2Bytes(v.SignMsg), private)
+	//	if err != nil {
+	//		t.Fatal(err)
+	//	}
+	//	data.SignList[i].SignMsg = common.Bytes2Hex(signData)
+	//}
+	//fmt.Println(toolib.JsonString(data))
 }

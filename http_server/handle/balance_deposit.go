@@ -158,6 +158,7 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "BuildTransaction err: "+err.Error())
 		return fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
 	}
+	txBuilder.ServerSignGroup = []int{}
 
 	signList, err := txBuilder.GenerateDigestListFromTx([]int{})
 	if err != nil {
