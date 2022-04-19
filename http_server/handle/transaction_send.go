@@ -116,25 +116,27 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		return fmt.Errorf("SendTransaction err: %s", err.Error())
 	} else {
 		resp.Hash = hash.Hex()
-		address := core.FormatAddressToHex(sic.ChainType, sic.Address)
-		// operate limit
-		_ = h.rc.SetApiLimit(sic.ChainType, address, sic.Action)
-		_ = h.rc.SetAccountLimit(sic.Account, time.Minute*2)
+		if sic.Address != "" {
+			address := core.FormatAddressToHex(sic.ChainType, sic.Address)
+			// operate limit
+			_ = h.rc.SetApiLimit(sic.ChainType, address, sic.Action)
+			_ = h.rc.SetAccountLimit(sic.Account, time.Minute*2)
 
-		// cache tx inputs
-		h.dasCache.AddCellInputByAction("", sic.BuilderTx.Transaction.Inputs)
-		// pending tx
-		pending := tables.TableRegisterPendingInfo{
-			Account:        sic.Account,
-			Action:         sic.Action,
-			ChainType:      sic.ChainType,
-			Address:        address,
-			Capacity:       sic.Capacity,
-			Outpoint:       common.OutPoint2String(hash.Hex(), 0),
-			BlockTimestamp: uint64(time.Now().UnixNano() / 1e6),
-		}
-		if err = h.dbDao.CreatePending(&pending); err != nil {
-			log.Error("CreatePending err: ", err.Error(), toolib.JsonString(pending))
+			// cache tx inputs
+			h.dasCache.AddCellInputByAction("", sic.BuilderTx.Transaction.Inputs)
+			// pending tx
+			pending := tables.TableRegisterPendingInfo{
+				Account:        sic.Account,
+				Action:         sic.Action,
+				ChainType:      sic.ChainType,
+				Address:        address,
+				Capacity:       sic.Capacity,
+				Outpoint:       common.OutPoint2String(hash.Hex(), 0),
+				BlockTimestamp: uint64(time.Now().UnixNano() / 1e6),
+			}
+			if err = h.dbDao.CreatePending(&pending); err != nil {
+				log.Error("CreatePending err: ", err.Error(), toolib.JsonString(pending))
+			}
 		}
 	}
 
