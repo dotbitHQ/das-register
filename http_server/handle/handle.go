@@ -55,20 +55,9 @@ func Initialize(p HttpHandleParams) *HttpHandle {
 	return &hh
 }
 
-// 获取IP
 func GetClientIp(ctx *gin.Context) string {
 	clientIP := fmt.Sprintf("%v", ctx.Request.Header.Get("X-Real-IP"))
 	return fmt.Sprintf("(%s)(%s)", clientIP, ctx.Request.RemoteAddr)
-}
-
-// post 请求绑定参数
-func shouldBindJSON(ctx *gin.Context, req interface{}) (*api_code.ApiResp, error) {
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		resp := api_code.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
-		return &resp, err
-	} else {
-		return &api_code.ApiResp{}, nil
-	}
 }
 
 func (h *HttpHandle) checkSystemUpgrade(apiResp *api_code.ApiResp) error {

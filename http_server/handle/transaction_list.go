@@ -78,7 +78,6 @@ func (h *HttpHandle) doTransactionList(req *ReqTransactionList, apiResp *api_cod
 	var resp RespTransactionList
 	resp.List = make([]DataTransaction, 0)
 
-	// 交易列表
 	list, err := h.dbDao.GetTransactionList(req.ChainType, req.Address, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search tx list err")

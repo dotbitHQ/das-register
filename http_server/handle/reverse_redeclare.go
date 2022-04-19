@@ -115,7 +115,7 @@ func (h *HttpHandle) doReverseRedeclare(req *ReqReverseRedeclare, apiResp *api_c
 			return fmt.Errorf("SearchAccount err: %s", err.Error())
 		}
 	}
-	if acc.Id == 0 { // 只允许添加注册过的账号
+	if acc.Id == 0 {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
 		return fmt.Errorf("account not exist: %s", req.Account)
 	}

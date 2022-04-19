@@ -121,7 +121,6 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 		}
 	}
 
-	// 交易构造
 	feeAmount := uint64(1e4)
 	transferAmount := totalAmount - feeAmount
 	var reqBuild reqBuildTx
