@@ -63,8 +63,10 @@ const (
 
 	ActionEnableSubAccount TxAction = 23
 	ActionCreateSubAccount TxAction = 24
+	ActionBalanceDeposit   TxAction = 25
 
 	DasActionTransferBalance = "transfer_balance"
+	DasActionBalanceDeposit  = "balance_deposit"
 	DasActionSaleAccount     = "sale_account"
 	DasActionOfferAccepted   = "offer_accepted"
 	DasActionEditOfferAdd    = "offer_edit_add"
@@ -120,6 +122,8 @@ func FormatTxAction(action string) TxAction {
 		return ActionOfferAccepted
 	case DasActionOrderRefund:
 		return ActionOrderRefund
+	case DasActionBalanceDeposit:
+		return ActionBalanceDeposit
 	case common.DasActionEnableSubAccount:
 		return ActionEnableSubAccount
 	case common.DasActionCreateSubAccount:
