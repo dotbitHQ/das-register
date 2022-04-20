@@ -15,6 +15,7 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -354,17 +355,42 @@ func (h *HttpHandle) getOrderAmount(args, account, inviterAccount string, years 
 func checkRegisterChainTypeAndAddress(chainType common.ChainType, address string) bool {
 	switch chainType {
 	case common.ChainTypeTron:
-		if strings.HasPrefix(address, common.TronPreFix) || strings.HasPrefix(address, common.TronBase58PreFix) {
+		if strings.HasPrefix(address, common.TronPreFix) {
+			if _, err := common.TronHexToBase58(address); err != nil {
+				log.Error("TronHexToBase58 err:", err.Error(), address)
+				return false
+			}
+			return true
+		} else if strings.HasPrefix(address, common.TronBase58PreFix) {
+			if _, err := common.TronBase58ToHex(address); err != nil {
+				log.Error("TronBase58ToHex err:", err.Error(), address)
+				return false
+			}
 			return true
 		}
 	case common.ChainTypeEth:
-		if strings.HasPrefix(address, common.HexPreFix) && len(address) == 42 {
+		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{40}$", address); ok {
 			return true
 		}
 	case common.ChainTypeMixin:
-		if strings.HasPrefix(address, common.HexPreFix) && len(address) == 66 {
+		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{64}$", address); ok {
 			return true
 		}
 	}
 	return false
+	//switch chainType {
+	//case common.ChainTypeTron:
+	//	if strings.HasPrefix(address, common.TronPreFix) || strings.HasPrefix(address, common.TronBase58PreFix) {
+	//		return true
+	//	}
+	//case common.ChainTypeEth:
+	//	if strings.HasPrefix(address, common.HexPreFix) && len(address) == 42 {
+	//		return true
+	//	}
+	//case common.ChainTypeMixin:
+	//	if strings.HasPrefix(address, common.HexPreFix) && len(address) == 66 {
+	//		return true
+	//	}
+	//}
+	//return false
 }

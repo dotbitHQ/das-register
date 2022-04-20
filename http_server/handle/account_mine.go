@@ -74,10 +74,12 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 	action := "AccountMine"
 	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
 
-	if err := h.rc.LockWithRedis(req.ChainType, req.Address, action, time.Millisecond*600); err != nil {
-		if err == cache.ErrDistributedLockPreemption {
-			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
-			return nil
+	if req.Keyword != "" {
+		if err := h.rc.LockWithRedis(req.ChainType, req.Address, action, time.Millisecond*600); err != nil {
+			if err == cache.ErrDistributedLockPreemption {
+				apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
+				return nil
+			}
 		}
 	}
 
