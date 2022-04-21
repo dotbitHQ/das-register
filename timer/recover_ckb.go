@@ -74,7 +74,7 @@ func (t *TxTimer) doRecoverCkb() error {
 	changeCapacity = changeCapacity - sizeInBlock - 5000
 	txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
 
-	if hash, err := txBuilder.SendTransaction(); err != nil {
+	if hash, err := txBuilder.SendTransactionWithCheck(false); err != nil {
 		return fmt.Errorf("SendTransaction err: %s", err.Error())
 	} else {
 		log.Info("doRecoverCkb:", hash.String())
