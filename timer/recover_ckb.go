@@ -21,7 +21,7 @@ func (t *TxTimer) doRecoverCkb() error {
 		ArgsLen:    0,
 		Filter: &indexer.CellsFilter{
 			Script:              nil,
-			OutputDataLenRange:  &[2]uint64{0, 1},
+			OutputDataLenRange:  &[2]uint64{32, 33},
 			OutputCapacityRange: nil,
 			BlockRange:          nil,
 		},
