@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"das_register_server/internal"
@@ -114,10 +115,17 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return fmt.Errorf("sync block number")
 	}
 
-	if exi := h.rc.RegisterLimitExist(req.ChainType, req.Address, req.Account, "1"); exi {
-		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
-		return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
+	if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "register", req.Account, time.Second*30); err != nil {
+		if err == cache.ErrDistributedLockPreemption {
+			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
+			return nil
+		}
 	}
+
+	//if exi := h.rc.RegisterLimitExist(req.ChainType, req.Address, req.Account, "1"); exi {
+	//	apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
+	//	return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
+	//}
 
 	// order check
 	if err := h.checkOrderInfo(&req.ReqOrderRegisterBase, apiResp); err != nil {
@@ -173,7 +181,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 	// cache
-	_ = h.rc.SetRegisterLimit(req.ChainType, req.Address, req.Account, "1", time.Second*30)
+	// _ = h.rc.SetRegisterLimit(req.ChainType, req.Address, req.Account, "1", time.Second*30)
 	apiResp.ApiRespOK(resp)
 	return nil
 }
