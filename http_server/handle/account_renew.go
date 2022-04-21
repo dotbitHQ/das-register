@@ -14,6 +14,7 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -74,6 +75,9 @@ func (h *HttpHandle) doAccountRenew(req *ReqAccountRenew, apiResp *api_code.ApiR
 	var resp RespAccountRenew
 
 	if req.Address == "" || req.Account == "" {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		return nil
+	} else if !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}

@@ -1601,6 +1601,39 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/pay/hash -d'{"chain_type":1,
 curl -X POST http://127.0.0.1:8119/v1/account/register -d'{"chain_type":1,"address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad","account":"1234567887.bit","account_char_str":[{"char_set_name":1,"char":"1"},{"char_set_name":1,"char":"2"},{"char_set_name":1,"char":"3"},{"char_set_name":1,"char":"4"},{"char_set_name":1,"char":"5"},{"char_set_name":1,"char":"6"},{"char_set_name":1,"char":"7"},{"char_set_name":1,"char":"8"},{"char_set_name":1,"char":"8"},{"char_set_name":1,"char":"7"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}],"register_years":1,"inviter_account":"","channel_account":""}'
 ```
 
+#### Account Renew
+
+**Request**
+
+* (Internal Service Api)
+* path: /account/renew
+* param:
+
+```json
+{
+  "chain_type": 1,
+  "address": "0x111...",
+  "account": "121134.bit",
+  "renew_years": 1
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "order_id": "97ef7068d2c6534092dc496808e8b760"
+  }
+}
+```
+
+```curl
+curl -X POST http://127.0.0.1:8119/v1/account/renew -d'{"chain_type":1,"address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad","account":"1234567887.bit","renew_years":1}'
+```
+
 ### NODE RPC
 
 #### Node Ckb Rpc

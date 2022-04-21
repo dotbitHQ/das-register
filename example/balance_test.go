@@ -4,7 +4,7 @@ import (
 	"das_register_server/http_server/handle"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/sign"
+	"github.com/nervosnetwork/ckb-sdk-go/crypto/secp256k1"
 	"github.com/scorpiotzh/toolib"
 	"testing"
 )
@@ -38,11 +38,19 @@ func TestBalanceDeposit(t *testing.T) {
 
 	private := ""
 	for i, v := range data.SignList {
-		signData, err := sign.EthSignature(common.Hex2Bytes(v.SignMsg), private)
+		key, err := secp256k1.HexToKey(private)
 		if err != nil {
 			t.Fatal(err)
 		}
-		data.SignList[i].SignMsg = common.Bytes2Hex(signData)
+		signed, err := key.Sign(common.Hex2Bytes(v.SignMsg))
+		if err != nil {
+			t.Fatal(err)
+		}
+		//signData, err := sign.EthSignature(common.Hex2Bytes(v.SignMsg), private)
+		//if err != nil {
+		//	t.Fatal(err)
+		//}
+		data.SignList[i].SignMsg = common.Bytes2Hex(signed)
 	}
 	fmt.Println(toolib.JsonString(data))
 }
