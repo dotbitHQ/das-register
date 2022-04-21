@@ -108,7 +108,7 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 		return fmt.Errorf("sync block number")
 	}
 
-	if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "change", req.Account, time.Second*30); err != nil {
+	if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "change", req.Account, time.Second*10); err != nil {
 		if err == cache.ErrDistributedLockPreemption {
 			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
 			return nil

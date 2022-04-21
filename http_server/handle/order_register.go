@@ -115,7 +115,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return fmt.Errorf("sync block number")
 	}
 
-	if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "register", req.Account, time.Second*30); err != nil {
+	if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "register", req.Account, time.Second*10); err != nil {
 		if err == cache.ErrDistributedLockPreemption {
 			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
 			return nil
