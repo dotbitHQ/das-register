@@ -49,6 +49,7 @@ func (t *TxTimer) Run() error {
 	tickerRejected := time.NewTicker(time.Minute * 3)
 	tickerExpired := time.NewTicker(time.Minute * 30)
 	tickerRecover := time.NewTicker(time.Minute * 10)
+	tickerRefundApply := time.NewTicker(time.Minute * 20)
 	t.wg.Add(1)
 
 	go func() {
@@ -86,6 +87,12 @@ func (t *TxTimer) Run() error {
 					log.Error("doRecoverCkb err: ", err.Error())
 				}
 				log.Info("doRecoverCkb end ...")
+			case <-tickerRefundApply.C:
+				log.Info("doRefundApply start ...")
+				if err := t.doRefundApply(); err != nil {
+					log.Error("doRefundApply err: ", err.Error())
+				}
+				log.Info("doRefundApply end ...")
 			case <-t.ctx.Done():
 				log.Info("timer done")
 				t.wg.Done()
