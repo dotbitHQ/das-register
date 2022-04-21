@@ -31,7 +31,7 @@ func (t *TxTimer) doRefundApply() error {
 		ArgsLen:    0,
 		Filter: &indexer.CellsFilter{
 			Script:              applyContract.ToScript(nil),
-			OutputDataLenRange:  nil,
+			OutputDataLenRange:  &[2]uint64{48, 49},
 			OutputCapacityRange: nil,
 			BlockRange:          nil,
 		},
