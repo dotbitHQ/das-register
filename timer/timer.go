@@ -5,6 +5,7 @@ import (
 	"das_register_server/dao"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/core"
+	"github.com/DeAccountSystems/das-lib/txbuilder"
 	"github.com/scorpiotzh/mylog"
 	"sync"
 	"time"
@@ -13,17 +14,19 @@ import (
 var log = mylog.NewLogger("timer", mylog.LevelDebug)
 
 type TxTimer struct {
-	ctx     context.Context
-	wg      *sync.WaitGroup
-	dbDao   *dao.DbDao
-	dasCore *core.DasCore
+	ctx           context.Context
+	wg            *sync.WaitGroup
+	dbDao         *dao.DbDao
+	dasCore       *core.DasCore
+	txBuilderBase *txbuilder.DasTxBuilderBase
 }
 
 type TxTimerParam struct {
-	DbDao   *dao.DbDao
-	Ctx     context.Context
-	Wg      *sync.WaitGroup
-	DasCore *core.DasCore
+	DbDao         *dao.DbDao
+	Ctx           context.Context
+	Wg            *sync.WaitGroup
+	DasCore       *core.DasCore
+	TxBuilderBase *txbuilder.DasTxBuilderBase
 }
 
 func NewTxTimer(p TxTimerParam) *TxTimer {
@@ -32,6 +35,7 @@ func NewTxTimer(p TxTimerParam) *TxTimer {
 	t.wg = p.Wg
 	t.dbDao = p.DbDao
 	t.dasCore = p.DasCore
+	t.txBuilderBase = p.TxBuilderBase
 	return &t
 }
 
@@ -44,6 +48,7 @@ func (t *TxTimer) Run() error {
 	//pendingLimit := 10
 	tickerRejected := time.NewTicker(time.Minute * 3)
 	tickerExpired := time.NewTicker(time.Minute * 30)
+	tickerRecover := time.NewTicker(time.Minute * 10)
 	t.wg.Add(1)
 
 	go func() {
@@ -75,6 +80,12 @@ func (t *TxTimer) Run() error {
 					log.Error("checkExpired err: ", err.Error())
 				}
 				log.Info("checkExpired end ...")
+			case <-tickerRecover.C:
+				log.Info("doRecoverCkb start ...")
+				if err := t.doRecoverCkb(); err != nil {
+					log.Error("doRecoverCkb err: ", err.Error())
+				}
+				log.Info("doRecoverCkb end ...")
 			case <-t.ctx.Done():
 				log.Info("timer done")
 				t.wg.Done()
