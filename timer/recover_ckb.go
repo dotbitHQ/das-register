@@ -2,9 +2,11 @@ package timer
 
 import (
 	"das_register_server/config"
+	"das_register_server/tables"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
 	"github.com/DeAccountSystems/das-lib/txbuilder"
+	"github.com/DeAccountSystems/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
@@ -65,6 +67,13 @@ func (t *TxTimer) doRecoverCkb() error {
 	txParams.OutputsData = append(txParams.OutputsData, []byte{})
 
 	//
+	actionWitness, err := witness.GenActionDataWitness(tables.DasActionRefundPay, nil)
+	if err != nil {
+		return fmt.Errorf("GenActionDataWitness err: %s", err.Error())
+	}
+	txParams.Witnesses = append(txParams.Witnesses, actionWitness)
+
+	//
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(t.txBuilderBase, nil)
 	if err := txBuilder.BuildTransaction(&txParams); err != nil {
 		return fmt.Errorf("BuildTransaction err: %s", err.Error())
@@ -74,7 +83,7 @@ func (t *TxTimer) doRecoverCkb() error {
 	changeCapacity = changeCapacity - sizeInBlock - 5000
 	txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
 
-	if hash, err := txBuilder.SendTransactionWithCheck(false); err != nil {
+	if hash, err := txBuilder.SendTransaction(); err != nil {
 		return fmt.Errorf("SendTransaction err: %s", err.Error())
 	} else {
 		log.Info("doRecoverCkb:", hash.String())

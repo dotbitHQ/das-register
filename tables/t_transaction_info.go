@@ -67,6 +67,7 @@ const (
 
 	DasActionTransferBalance = "transfer_balance"
 	DasActionBalanceDeposit  = "balance_deposit"
+	DasActionRefundPay       = "refund_pay"
 	DasActionSaleAccount     = "sale_account"
 	DasActionOfferAccepted   = "offer_accepted"
 	DasActionEditOfferAdd    = "offer_edit_add"
