@@ -44,7 +44,7 @@ func (t *TxTimer) doRecoverCkb() error {
 		})
 		total += v.Output.Capacity
 	}
-
+	log.Info("doRecoverCkb:", total, len(liveCells.Objects))
 	// outputs
 	capacity := 500 * common.OneCkb
 	if total < capacity*2 {
