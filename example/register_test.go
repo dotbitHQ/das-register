@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
 	"github.com/DeAccountSystems/das-lib/sign"
-	"github.com/ethereum/go-ethereum/signer/core"
+	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 	"github.com/scorpiotzh/toolib"
 )
 
@@ -22,7 +22,7 @@ func doSignList(si *handle.SignInfo) error {
 			}
 			si.SignList[i].SignMsg = common.Bytes2Hex(data)
 		case common.DasAlgorithmIdEth712:
-			var obj3 core.TypedData
+			var obj3 apitypes.TypedData
 			mmJson := toolib.JsonString(si.MMJson)
 			_ = json.Unmarshal([]byte(mmJson), &obj3)
 			mmHash, signature, err := sign.EIP712Signature(obj3, privateEth)
