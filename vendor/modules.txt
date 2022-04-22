@@ -1,6 +1,6 @@
 # github.com/Andrew-M-C/go.emoji v0.0.0-20211011074904-61cf526972e1
 github.com/Andrew-M-C/go.emoji/official
-# github.com/DeAccountSystems/das-lib v0.0.0-20220414025926-78cc84c3140f
+# github.com/DeAccountSystems/das-lib v0.0.0-20220422104817-1dfcfd30ca61
 ## explicit
 github.com/DeAccountSystems/das-lib/common
 github.com/DeAccountSystems/das-lib/core
@@ -13,25 +13,29 @@ github.com/DeAccountSystems/das-lib/witness
 github.com/StackExchange/wmi
 # github.com/VictoriaMetrics/fastcache v1.6.0
 github.com/VictoriaMetrics/fastcache
-# github.com/btcsuite/btcd v0.20.1-beta
-github.com/btcsuite/btcd/btcec
+# github.com/btcsuite/btcd/btcec/v2 v2.1.2
+github.com/btcsuite/btcd/btcec/v2
+github.com/btcsuite/btcd/btcec/v2/ecdsa
 # github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 github.com/btcsuite/btcutil/base58
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
-# github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d
+# github.com/cpuguy83/go-md2man/v2 v2.0.1
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/deckarep/golang-set v0.0.0-20180603214616-504e848d77ea
+# github.com/deckarep/golang-set v1.8.0
 github.com/deckarep/golang-set
+# github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1
+github.com/decred/dcrd/dcrec/secp256k1/v4
+github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
 # github.com/edsrzf/mmap-go v1.0.0
 github.com/edsrzf/mmap-go
-# github.com/elazarl/goproxy v0.0.0-20211114080932-d06c3be7c11b
+# github.com/elazarl/goproxy v0.0.0-20220417044921-416226498f94
 ## explicit
-# github.com/ethereum/go-ethereum v1.10.13 => github.com/pranksteess/go-ethereum v1.10.15-0.20211214035109-e01bfb488ddb
+# github.com/ethereum/go-ethereum v1.10.17
 ## explicit
 github.com/ethereum/go-ethereum
 github.com/ethereum/go-ethereum/accounts
@@ -69,6 +73,7 @@ github.com/ethereum/go-ethereum/crypto/secp256k1
 github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1/include
 github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1/src
 github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1/src/modules/recovery
+github.com/ethereum/go-ethereum/eth/tracers/logger
 github.com/ethereum/go-ethereum/ethdb
 github.com/ethereum/go-ethereum/ethdb/leveldb
 github.com/ethereum/go-ethereum/ethdb/memorydb
@@ -88,19 +93,20 @@ github.com/ethereum/go-ethereum/p2p/netutil
 github.com/ethereum/go-ethereum/p2p/rlpx
 github.com/ethereum/go-ethereum/params
 github.com/ethereum/go-ethereum/rlp
+github.com/ethereum/go-ethereum/rlp/internal/rlpstruct
 github.com/ethereum/go-ethereum/rpc
 github.com/ethereum/go-ethereum/signer/core
 github.com/ethereum/go-ethereum/signer/core/apitypes
 github.com/ethereum/go-ethereum/signer/storage
 github.com/ethereum/go-ethereum/trie
-# github.com/fsnotify/fsnotify v1.4.9
+# github.com/fsnotify/fsnotify v1.5.3
 ## explicit
 github.com/fsnotify/fsnotify
 # github.com/gballet/go-libpcsclite v0.0.0-20190607065134-2772fd86a8ff
 github.com/gballet/go-libpcsclite
 # github.com/gin-contrib/sse v0.1.0
 github.com/gin-contrib/sse
-# github.com/gin-gonic/gin v1.7.2
+# github.com/gin-gonic/gin v1.7.7
 ## explicit
 github.com/gin-gonic/gin
 github.com/gin-gonic/gin/binding
@@ -135,7 +141,7 @@ github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
 # github.com/golang/snappy v0.0.4
 github.com/golang/snappy
-# github.com/google/uuid v1.1.5
+# github.com/google/uuid v1.2.0
 github.com/google/uuid
 # github.com/gorilla/websocket v1.4.2
 github.com/gorilla/websocket
@@ -146,7 +152,7 @@ github.com/hashicorp/golang-lru/simplelru
 github.com/holiman/bloomfilter/v2
 # github.com/holiman/uint256 v1.2.0
 github.com/holiman/uint256
-# github.com/huin/goupnp v1.0.2
+# github.com/huin/goupnp v1.0.3-0.20220313090229-ca81a64b4204
 github.com/huin/goupnp
 github.com/huin/goupnp/dcps/internetgateway1
 github.com/huin/goupnp/dcps/internetgateway2
@@ -154,7 +160,7 @@ github.com/huin/goupnp/httpu
 github.com/huin/goupnp/scpd
 github.com/huin/goupnp/soap
 github.com/huin/goupnp/ssdp
-# github.com/jackpal/go-nat-pmp v1.0.2-0.20160603034137-1fa385a6f458
+# github.com/jackpal/go-nat-pmp v1.0.2
 github.com/jackpal/go-nat-pmp
 # github.com/jinzhu/gorm v1.9.16
 github.com/jinzhu/gorm
@@ -164,7 +170,7 @@ github.com/jinzhu/inflection
 github.com/jinzhu/now
 # github.com/json-iterator/go v1.1.9
 github.com/json-iterator/go
-# github.com/karalabe/usb v0.0.0-20211005121534-4c5740d64559
+# github.com/karalabe/usb v0.0.2
 github.com/karalabe/usb
 github.com/karalabe/usb/hidapi
 github.com/karalabe/usb/hidapi/hidapi
@@ -213,7 +219,7 @@ github.com/pkg/errors
 github.com/prometheus/tsdb/fileutil
 # github.com/rjeczalik/notify v0.9.1
 github.com/rjeczalik/notify
-# github.com/russross/blackfriday/v2 v2.0.1
+# github.com/russross/blackfriday/v2 v2.1.0
 github.com/russross/blackfriday/v2
 # github.com/scorpiotzh/mylog v1.0.9
 ## explicit
@@ -227,8 +233,6 @@ github.com/shirou/gopsutil/internal/common
 # github.com/shopspring/decimal v1.3.1
 ## explicit
 github.com/shopspring/decimal
-# github.com/shurcooL/sanitized_anchor_name v1.0.0
-github.com/shurcooL/sanitized_anchor_name
 # github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4
 github.com/status-im/keycard-go/derivationpath
 # github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
@@ -255,7 +259,7 @@ github.com/tyler-smith/go-bip39
 github.com/tyler-smith/go-bip39/wordlists
 # github.com/ugorji/go/codec v1.1.7
 github.com/ugorji/go/codec
-# github.com/urfave/cli/v2 v2.3.0
+# github.com/urfave/cli/v2 v2.4.4
 ## explicit
 github.com/urfave/cli/v2
 # go.uber.org/atomic v1.7.0
@@ -285,7 +289,7 @@ golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.6
+# golang.org/x/text v0.3.7
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
 # google.golang.org/protobuf v1.26.0
@@ -340,3 +344,4 @@ gorm.io/gorm/utils
 # moul.io/http2curl v1.0.0
 ## explicit
 moul.io/http2curl
+# github.com/ethereum/go-ethereum v1.9.14 => github.com/ethereum/go-ethereum v1.10.17

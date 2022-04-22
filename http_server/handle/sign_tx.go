@@ -7,7 +7,7 @@ import (
 	"github.com/DeAccountSystems/das-lib/common"
 	"github.com/DeAccountSystems/das-lib/sign"
 	"github.com/DeAccountSystems/das-lib/txbuilder"
-	"github.com/ethereum/go-ethereum/signer/core"
+	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
@@ -91,7 +91,7 @@ func (h *HttpHandle) doSignTx(req *ReqSignTx, apiResp *api_code.ApiResp) error {
 			signData = sign.Ed25519Signature(common.Hex2Bytes(req.Private), common.Hex2Bytes(v.SignMsg))
 			signData = append(signData, []byte{1}...)
 		case common.DasAlgorithmIdEth712:
-			var obj3 core.TypedData
+			var obj3 apitypes.TypedData
 			mmJson := req.MMJson.String()
 
 			log.Info("old mmJson:", mmJson)
