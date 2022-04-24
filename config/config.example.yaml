@@ -5,7 +5,7 @@ server:
   http_server_internal_addr: ":8119"
   pay_server_address: "" # for send register tx
   pay_private: ""
-  parser_url: "http://127.0.0.1:9118/v1" # das-database server
+  parser_url: "http://127.0.0.1:8118/v1" # das-database server
   tx_tool_switch: true # open send register tx
 origins: # cross domain
   - ""
@@ -26,14 +26,14 @@ db:
     addr: "127.0.0.1:3306" # 172.17.0.1: docker 182.17.0.1: docker-compose
     user: "root"
     password: "123456"
-    db_name: "das_register_db"
+    db_name: "bit_register_db"
     max_open_conn: 100
     max_idle_conn: 50
   parser_mysql:
     addr: "127.0.0.1:3306" # 172.17.0.1: docker 182.17.0.1: docker-compose
     user: "root"
     password: "123456"
-    db_name: "das_database"
+    db_name: "bit_database"
     max_open_conn: 100
     max_idle_conn: 50
 cache:
