@@ -23,22 +23,22 @@ chain:
   concurrency_num: 100
 db:
   mysql:
-    addr: "127.0.0.1:3306"
+    addr: "127.0.0.1:3306" # 172.17.0.1: docker 182.17.0.1: docker-compose
     user: "root"
-    password: ""
+    password: "123456"
     db_name: "das_register_db"
     max_open_conn: 100
     max_idle_conn: 50
   parser_mysql:
-    addr: "127.0.0.1:3306"
+    addr: "127.0.0.1:3306" # 172.17.0.1: docker 182.17.0.1: docker-compose
     user: "root"
-    password: ""
+    password: "123456"
     db_name: "das_database"
     max_open_conn: 100
     max_idle_conn: 50
 cache:
   redis:
-    addr: ""
+    addr: "127.0.0.1:6379" # 172.17.0.1: docker 182.17.0.1: docker-compose
     password: ""
     db_num: 0
 das:

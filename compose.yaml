@@ -1,0 +1,65 @@
+version: '3'
+networks:
+  mynetwork:
+    ipam:
+      driver: default
+      config:
+        - subnet: 182.17.0.0/16
+          gateway: 182.17.0.1
+
+services:
+  bit-database:
+    image: slagga/bit-database:latest
+    restart: always
+    working_dir: /app
+    entrypoint: [ "/app/bit-database", "--config", "/app/config/config.yaml" ]
+    ports:
+      - "8118:8118"
+      - "9118:9118"
+    volumes:
+      - $PWD/config/config.yaml:/app/config/config.yaml
+    depends_on:
+      - mysql
+    networks:
+      - mynetwork
+
+  mysql:
+    image: mysql/mysql-server:8.0
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - $PWD/mysql-data:/var/lib/mysql
+      - $PWD/tables/das_register_db.sql:/docker-entrypoint-initdb.d/das_register_db.sql
+    environment:
+      MYSQL_DATABASE: bit_database
+      MYSQL_ROOT_PASSWORD: 123456
+      TZ: Asia/Shanghai
+      # This allows ip ranges from 182.17.0.1 to 182.17.255.255 to connect to root
+      MYSQL_ROOT_HOST: "182.17.%.%"
+    networks:
+      - mynetwork
+
+  bit-register:
+    image: slagga/bit-register:latest
+    restart: always
+    working_dir: /app
+    entrypoint: [ "/app/bit-register", "--config", "/app/config/config.yaml" ]
+    ports:
+      - "8119:8119"
+      - "8120:8120"
+    volumes:
+      - $PWD/config/config.yaml:/app/config/config.yaml
+    depends_on:
+      - bit-database
+      - redis
+    networks:
+      - mynetwork
+
+  redis:
+    image: redis:5.0
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - mynetwork

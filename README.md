@@ -39,6 +39,15 @@ make register
 ./das_register --config=config/config.yaml
 ```
 
+## Docker Install & Run
+```bash
+# if you already have a mysql database installed, just run
+docker run -dp 8119-8120:8119-8120 -v $PWD/config/config.yaml:/app/config/config.yaml --name bit-register-server slagga/bit-register
+
+# if not, you need docker-compose to automate the installation
+docker-compose up -d
+```
+
 ## Usage
 You need to run [das-pay](https://github.com/dotbitHQ/das-pay) before you can run this service
 ### Register
