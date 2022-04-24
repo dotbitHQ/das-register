@@ -88,23 +88,24 @@ func runServer(ctx *cli.Context) error {
 		return fmt.Errorf("initDasCore err: %s", err.Error())
 	}
 
-	// service timer
-	txTimer := timer.NewTxTimer(timer.TxTimerParam{
-		Ctx:     ctxServer,
-		Wg:      &wgServer,
-		DbDao:   dbDao,
-		DasCore: dasCore,
-	})
-	if err = txTimer.Run(); err != nil {
-		return fmt.Errorf("txTimer.Run() err: %s", err.Error())
-	}
-	log.Info("timer ok")
-
 	// tx builder
 	txBuilderBase, serverScript, err := initTxBuilder(dasCore)
 	if err != nil {
 		return fmt.Errorf("initTxBuilder err: %s", err.Error())
 	}
+
+	// service timer
+	txTimer := timer.NewTxTimer(timer.TxTimerParam{
+		Ctx:           ctxServer,
+		Wg:            &wgServer,
+		DbDao:         dbDao,
+		DasCore:       dasCore,
+		TxBuilderBase: txBuilderBase,
+	})
+	if err = txTimer.Run(); err != nil {
+		return fmt.Errorf("txTimer.Run() err: %s", err.Error())
+	}
+	log.Info("timer ok")
 
 	// tx timer
 	txTool := txtool.TxTool{

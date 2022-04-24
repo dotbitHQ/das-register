@@ -166,7 +166,7 @@ func (b *BlockParser) parsingBlockData(block *types.Block) error {
 		blockTimestamp := block.Header.Timestamp
 
 		if builder, err := witness.ActionDataBuilderFromTx(tx); err != nil {
-			log.Warn("ActionDataBuilderFromTx err:", err.Error())
+			//log.Warn("ActionDataBuilderFromTx err:", err.Error())
 		} else {
 			if handle, ok := b.mapTransactionHandle[builder.Action]; ok {
 				// transaction parse by action

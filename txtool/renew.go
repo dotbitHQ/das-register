@@ -58,6 +58,15 @@ func (t *TxTool) DoOrderRenewTx(order *tables.TableDasOrderInfo) error {
 	if err := txBuilder.BuildTransaction(txParams); err != nil {
 		return fmt.Errorf("BuildTransaction err: %s", err.Error())
 	}
+
+	sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
+	changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity
+	if sizeInBlock > 10000 {
+		changeCapacity = changeCapacity + 10000 - sizeInBlock - 1000
+		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
+	}
+	log.Info("changeCapacity:", sizeInBlock, changeCapacity)
+
 	// update order
 	if err := t.DbDao.UpdatePayStatus(order.OrderId, tables.TxStatusSending, tables.TxStatusOk); err != nil {
 		return fmt.Errorf("UpdatePayStatus err: %s", err.Error())

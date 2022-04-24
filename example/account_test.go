@@ -17,7 +17,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"3ccd7d128bdfc90dc621e24123efcc4a","sign_list":[{"sign_type":0,"sign_msg":"0xba4622743db7dc230419583412f76a6b6f8551c5bc4d092ed6c48d673c1f508e08cd8888f8ef02a5e58933c4f12be556acd778dc5aaf4c5bdba4561c4b7a956c00"}],"mm_json":null}`
+	str := `{"sign_key":"5903ab4a9314a1c2b78bc5e11d156e05","sign_list":[{"sign_type":5,"sign_msg":"0x1425b3786233654d51e7035196a01c4b801e52bee05139891c41333467e2db344f9bc368d265c6efb3f0e35b4bec576f25c01290a6d10194ca63950319ab05161cbba2833e11e42bb7222a6a912eaf32757cbab68099fcaaf9db674a01e872343b0000000000000005"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
@@ -98,9 +98,9 @@ func TestEditRecords(t *testing.T) {
 	url := TestUrl + "/account/edit/records"
 
 	var req handle.ReqEditRecords
-	req.ChainType = common.ChainTypeTron
-	req.Address = "TQoLh9evwUmZKxpD1uhFttsZk3EBs8BksV"
-	req.Account = "account2022011906.bit"
+	req.ChainType = common.ChainTypeEth
+	req.Address = "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"
+	req.Account = "0001.bit"
 	req.RawParam.Records = []handle.ReqRecord{{
 		Key:   "twitter",
 		Type:  "profile",

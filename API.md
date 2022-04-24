@@ -33,6 +33,7 @@
     * [Account Order Change](#account-order-change)
     * [Account Order Pay Hash](#account-order-pay-hash)
     * [Account Register](#account-register)
+    * [Account Renew](#account-renew)
 * [NODE RPC](#node-rpc)
     * [Node Ckb Rpc](#node-ckb-rpc)
 

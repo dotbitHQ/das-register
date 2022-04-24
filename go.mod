@@ -3,11 +3,11 @@ module das_register_server
 go 1.15
 
 require (
-	github.com/DeAccountSystems/das-lib v0.0.0-20220414025926-78cc84c3140f
-	github.com/elazarl/goproxy v0.0.0-20211114080932-d06c3be7c11b // indirect
-	github.com/ethereum/go-ethereum v1.10.13
-	github.com/fsnotify/fsnotify v1.4.9
-	github.com/gin-gonic/gin v1.7.2
+	github.com/DeAccountSystems/das-lib v0.0.0-20220422104817-1dfcfd30ca61
+	github.com/elazarl/goproxy v0.0.0-20220417044921-416226498f94 // indirect
+	github.com/ethereum/go-ethereum v1.10.17
+	github.com/fsnotify/fsnotify v1.5.3
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/minio/blake2b-simd v0.0.0-20160723061019-3f5f724cb5b1
 	github.com/nervosnetwork/ckb-sdk-go v0.101.3
@@ -15,9 +15,9 @@ require (
 	github.com/scorpiotzh/mylog v1.0.9
 	github.com/scorpiotzh/toolib v1.1.3
 	github.com/shopspring/decimal v1.3.1
-	github.com/urfave/cli/v2 v2.3.0
+	github.com/urfave/cli/v2 v2.4.4
 	gorm.io/gorm v1.22.1
 	moul.io/http2curl v1.0.0 // indirect
 )
 
-replace github.com/ethereum/go-ethereum v1.10.13 => github.com/pranksteess/go-ethereum v1.10.15-0.20211214035109-e01bfb488ddb
+replace github.com/ethereum/go-ethereum v1.9.14 => github.com/ethereum/go-ethereum v1.10.17
