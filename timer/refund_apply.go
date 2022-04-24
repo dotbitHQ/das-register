@@ -1,10 +1,12 @@
 package timer
 
 import (
+	"bytes"
 	"das_register_server/config"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
 	"github.com/DeAccountSystems/das-lib/core"
+	"github.com/DeAccountSystems/das-lib/molecule"
 	"github.com/DeAccountSystems/das-lib/txbuilder"
 	"github.com/DeAccountSystems/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
@@ -17,14 +19,29 @@ func (t *TxTimer) doRefundApply() error {
 	if err != nil {
 		return fmt.Errorf("address.Parse err: %s", err.Error())
 	}
+
 	applyContract, err := core.GetDasContractInfo(common.DasContractNameApplyRegisterCellType)
 	if err != nil {
 		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
+
+	builder, err := t.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsApply)
+	if err != nil {
+		return fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+	}
+	applyMaxWaitingBlockNumber, err := molecule.Bytes2GoU32(builder.ConfigCellApply.ApplyMaxWaitingBlockNumber().RawData())
+	if err != nil {
+		return fmt.Errorf("ApplyMaxWaitingBlockNumber err: %s", err.Error())
+	}
+	if applyMaxWaitingBlockNumber < 5760 {
+		applyMaxWaitingBlockNumber = 5760
+	}
+
 	blockNumber, err := t.dasCore.Client().GetTipBlockNumber(t.ctx)
 	if err != nil {
 		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
 	}
+
 	searchKey := indexer.SearchKey{
 		Script:     addrParse.Script,
 		ScriptType: indexer.ScriptTypeLock,
@@ -45,7 +62,7 @@ func (t *TxTimer) doRefundApply() error {
 		return fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
 	}
 	for _, v := range liveCells.Objects {
-		if v.BlockNumber+10000 > blockNumber {
+		if v.BlockNumber+uint64(applyMaxWaitingBlockNumber) > blockNumber {
 			break
 		}
 
@@ -100,5 +117,75 @@ func (t *TxTimer) doRefundApply() error {
 			log.Info("doRefundApply ok:", hash)
 		}
 	}
+	return nil
+}
+
+var preBlockNumber uint64
+
+func (t *TxTimer) doRefundPre() error {
+	addrParse, err := address.Parse(config.Cfg.Server.PayServerAddress)
+	if err != nil {
+		return fmt.Errorf("address.Parse err: %s", err.Error())
+	}
+
+	asContract, err := core.GetDasContractInfo(common.DasContractNameAlwaysSuccess)
+	if err != nil {
+		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+	}
+	preContract, err := core.GetDasContractInfo(common.DasContractNamePreAccountCellType)
+	if err != nil {
+		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+	}
+
+	blockNumber, err := t.dasCore.Client().GetTipBlockNumber(t.ctx)
+	if err != nil {
+		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
+	}
+	preMaxWaitingBlockNumber := uint64(5760)
+
+	searchKey := indexer.SearchKey{
+		Script:     asContract.ToScript(nil),
+		ScriptType: indexer.ScriptTypeLock,
+		ArgsLen:    0,
+		Filter: &indexer.CellsFilter{
+			Script:              preContract.ToScript(nil),
+			OutputDataLenRange:  nil,
+			OutputCapacityRange: nil,
+			BlockRange:          nil,
+		},
+	}
+	log.Info("doRefundPre:", preBlockNumber, blockNumber)
+	if preBlockNumber > 0 && preBlockNumber < blockNumber {
+		searchKey.Filter.BlockRange = &[2]uint64{preBlockNumber, blockNumber - preMaxWaitingBlockNumber}
+	}
+
+	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 10, "")
+	if err != nil {
+		return fmt.Errorf("GetCells err: %s", err.Error())
+	}
+	if len(liveCells.Objects) == 0 {
+		preBlockNumber = 0
+		return nil
+	}
+
+	for _, v := range liveCells.Objects {
+		preBlockNumber = v.BlockNumber
+		res, err := t.dasCore.Client().GetTransaction(t.ctx, v.OutPoint.TxHash)
+		if err != nil {
+			return fmt.Errorf("GetTransaction err: %s", err.Error())
+		}
+		preBuilder, err := witness.PreAccountCellDataBuilderFromTx(res.Transaction, common.DataTypeNew)
+		if err != nil {
+			continue
+		} else {
+			refundLock, _ := preBuilder.RefundLock()
+			if bytes.Compare(addrParse.Script.Args, refundLock.Args().RawData()) != 0 {
+				continue
+			}
+			log.Info("doRefundPre:", common.OutPointStruct2String(v.OutPoint))
+			// todo do refund
+		}
+	}
+
 	return nil
 }
