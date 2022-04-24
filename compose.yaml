@@ -17,7 +17,7 @@ services:
       - "8118:8118"
       - "9118:9118"
     volumes:
-      - $PWD/config/config.yaml:/app/config/config.yaml
+      - $PWD/config/config.database.yaml:/app/config/config.yaml
     depends_on:
       - mysql
     networks:
