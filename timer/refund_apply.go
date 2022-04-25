@@ -179,13 +179,62 @@ func (t *TxTimer) doRefundPre() error {
 			continue
 		} else {
 			refundLock, _ := preBuilder.RefundLock()
-			if bytes.Compare(addrParse.Script.Args, refundLock.Args().RawData()) != 0 {
+			refundLockScript := molecule.MoleculeScript2CkbScript(refundLock)
+			if bytes.Compare(addrParse.Script.Args, refundLockScript.Args) != 0 {
 				continue
 			}
 			log.Info("doRefundPre:", common.OutPointStruct2String(v.OutPoint))
-			// todo do refund
+
+			// do refund
+			var txParams txbuilder.BuildTransactionParams
+			txParams.Inputs = append(txParams.Inputs, &types.CellInput{
+				PreviousOutput: v.OutPoint,
+			})
+
+			fee := uint64(1e4)
+			capacity := v.Output.Capacity - fee
+			txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
+				Capacity: capacity,
+				Lock:     refundLockScript,
+				Type:     nil,
+			})
+			txParams.OutputsData = append(txParams.OutputsData, []byte{})
+
+			// witness action
+			actionWitness, err := witness.GenActionDataWitness(common.DasActionRefundPreRegister, nil)
+			if err != nil {
+				return fmt.Errorf("GenActionDataWitness err: %s", err.Error())
+			}
+			txParams.Witnesses = append(txParams.Witnesses, actionWitness)
+
+			// cell deps
+			timeCell, err := t.dasCore.GetTimeCell()
+			if err != nil {
+				return fmt.Errorf("GetTimeCell err: %s", err.Error())
+			}
+			heightCell, err := t.dasCore.GetHeightCell()
+			if err != nil {
+				return fmt.Errorf("GetHeightCell err: %s", err.Error())
+			}
+
+			txParams.CellDeps = append(txParams.CellDeps,
+				preContract.ToCellDep(),
+				timeCell.ToCellDep(),
+				heightCell.ToCellDep(),
+			)
+
+			txBuilder := txbuilder.NewDasTxBuilderFromBase(t.txBuilderBase, nil)
+			if err := txBuilder.BuildTransaction(&txParams); err != nil {
+				return fmt.Errorf("BuildTransaction err: %s", err.Error())
+			}
+			if hash, err := txBuilder.SendTransaction(); err != nil {
+				return fmt.Errorf("SendTransaction err: %s", err.Error())
+			} else {
+				log.Info("doRefundApply ok:", hash)
+			}
 		}
 	}
+	preBlockNumber++
 
 	return nil
 }
