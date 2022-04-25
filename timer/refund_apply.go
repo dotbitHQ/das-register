@@ -207,6 +207,12 @@ func (t *TxTimer) doRefundPre() error {
 			}
 			txParams.Witnesses = append(txParams.Witnesses, actionWitness)
 
+			witnessPre, _, _ := preBuilder.GenWitness(&witness.PreAccountCellParam{
+				OldIndex: 0,
+				Action:   common.DasActionRefundPreRegister,
+			})
+			txParams.Witnesses = append(txParams.Witnesses, witnessPre)
+
 			// cell deps
 			timeCell, err := t.dasCore.GetTimeCell()
 			if err != nil {
@@ -230,7 +236,7 @@ func (t *TxTimer) doRefundPre() error {
 			if hash, err := txBuilder.SendTransaction(); err != nil {
 				return fmt.Errorf("SendTransaction err: %s", err.Error())
 			} else {
-				log.Info("doRefundApply ok:", hash)
+				log.Info("doRefundPre ok:", hash)
 			}
 		}
 	}
