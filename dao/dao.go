@@ -2,6 +2,7 @@ package dao
 
 import (
 	"das_register_server/config"
+	"das_register_server/tables"
 	"fmt"
 	"github.com/scorpiotzh/toolib"
 	"gorm.io/gorm"
@@ -17,6 +18,20 @@ func NewGormDB(dbMysql, parserMysql config.DbMysql) (*DbDao, error) {
 	if err != nil {
 		return nil, fmt.Errorf("toolib.NewGormDB err: %s", err.Error())
 	}
+
+	// AutoMigrate will create tables, missing foreign keys, constraints, columns and indexes.
+	// It will change existing column’s type if its size, precision, nullable changed.
+	// It WON’T delete unused columns to protect your data.
+	if err = db.AutoMigrate(
+		&tables.TableBlockParserInfo{},
+		&tables.TableDasOrderInfo{},
+		&tables.TableDasOrderPayInfo{},
+		&tables.TableDasOrderTxInfo{},
+		&tables.TableRegisterPendingInfo{},
+	); err != nil {
+		return nil, err
+	}
+
 	parserDb, err := toolib.NewGormDB(parserMysql.Addr, parserMysql.User, parserMysql.Password, parserMysql.DbName, parserMysql.MaxOpenConn, parserMysql.MaxIdleConn)
 	if err != nil {
 		return nil, fmt.Errorf("toolib.NewGormDB err: %s", err.Error())

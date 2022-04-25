@@ -30,9 +30,8 @@ services:
       - "3306:3306"
     volumes:
       - $PWD/mysql-data:/var/lib/mysql
-      - $PWD/tables/das_register_db.sql:/docker-entrypoint-initdb.d/das_register_db.sql
+      - $PWD/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
-      MYSQL_DATABASE: bit_database
       MYSQL_ROOT_PASSWORD: 123456
       TZ: Asia/Shanghai
       # This allows ip ranges from 182.17.0.1 to 182.17.255.255 to connect to root
