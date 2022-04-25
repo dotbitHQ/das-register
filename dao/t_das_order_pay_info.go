@@ -16,3 +16,12 @@ func (d *DbDao) CreateOrderPayInfo(orderPay *tables.TableDasOrderPayInfo) error 
 	}
 	return d.db.Create(&orderPay).Error
 }
+
+func (d *DbDao) UpdatePayToRefund(orderId string) error {
+	return d.db.Model(tables.TableDasOrderPayInfo{}).
+		Where("order_id=? AND `status`=? AND refund_status=?",
+			orderId, tables.OrderTxStatusConfirm, tables.TxStatusDefault).
+		Updates(map[string]interface{}{
+			"refund_status": tables.TxStatusSending,
+		}).Error
+}

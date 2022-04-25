@@ -244,3 +244,17 @@ func (t *TxTimer) doRefundPre() error {
 
 	return nil
 }
+
+func (t *TxTimer) doCheckClosedAndUnRefund() error {
+	list, err := t.dbDao.GetClosedAndUnRefundOrders()
+	if err != nil {
+		return fmt.Errorf("GetClosedAndUnRefundOrders err: %s", err.Error())
+	}
+	for _, v := range list {
+		log.Info("doCheckClosedAndUnRefund:", v.OrderId)
+		if err := t.dbDao.UpdatePayToRefund(v.OrderId); err != nil {
+			return fmt.Errorf("UpdatePayToRefund err: %s", err.Error())
+		}
+	}
+	return nil
+}

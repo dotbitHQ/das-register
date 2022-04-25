@@ -48,8 +48,9 @@ func (t *TxTimer) Run() error {
 	//pendingLimit := 10
 	tickerRejected := time.NewTicker(time.Minute * 3)
 	tickerExpired := time.NewTicker(time.Minute * 30)
-	tickerRecover := time.NewTicker(time.Minute * 10)
-	tickerRefundApply := time.NewTicker(time.Minute * 20)
+	tickerRecover := time.NewTicker(time.Minute * 30)
+	tickerRefundApply := time.NewTicker(time.Minute * 15)
+	tickerClosedAndUnRefund := time.NewTicker(time.Minute * 20)
 	t.wg.Add(1)
 
 	go func() {
@@ -96,6 +97,12 @@ func (t *TxTimer) Run() error {
 					log.Error("doRefundPre err: %s", err.Error())
 				}
 				log.Info("doRefundApply end ...")
+			case <-tickerClosedAndUnRefund.C:
+				log.Info("doCheckClosedAndUnRefund start ...")
+				if err := t.doCheckClosedAndUnRefund(); err != nil {
+					log.Error("doCheckClosedAndUnRefund err: %s", err.Error())
+				}
+				log.Info("doCheckClosedAndUnRefund start ...")
 			case <-t.ctx.Done():
 				log.Info("timer done")
 				t.wg.Done()
