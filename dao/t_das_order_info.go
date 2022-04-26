@@ -304,7 +304,7 @@ func (d *DbDao) DoExpiredOrder(orderId string) error {
 }
 
 func (d *DbDao) GetClosedAndUnRefundOrders() (list []tables.TableDasOrderInfo, err error) {
-	sql := fmt.Sprintf("SELECT o.order_id,o.pay_status,o.pre_register_status FROM %s o JOIN %s p ON o.order_id=p.order_id AND o.action=? AND AND o.order_type=? AND o.order_status=? AND o.register_status<? AND p.`status`=? AND p.refund_status=?", tables.TableNameDasOrderInfo, tables.TableNameDasOrderPayInfo)
+	sql := fmt.Sprintf("SELECT o.order_id,o.pay_status,o.pre_register_status FROM %s o JOIN %s p ON o.order_id=p.order_id AND o.action=? AND o.order_type=? AND o.order_status=? AND o.register_status<? AND p.`status`=? AND p.refund_status=?", tables.TableNameDasOrderInfo, tables.TableNameDasOrderPayInfo)
 	err = d.db.Raw(sql, common.DasActionApplyRegister, tables.OrderTypeSelf, tables.OrderStatusClosed, tables.RegisterStatusProposal, tables.OrderTxStatusConfirm, tables.TxStatusDefault).Find(&list).Error
 	return
 }
