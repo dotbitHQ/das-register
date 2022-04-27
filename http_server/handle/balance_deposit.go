@@ -112,8 +112,12 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 		return nil
 	}
 	if dasContract.IsSameTypeId(toAddress.Script.CodeHash) {
-		oID, _, _, _, _, _ := core.FormatDasLockToHexAddress(toAddress.Script.Args)
-		if oID == common.DasAlgorithmIdEth712 {
+		ownerHex, _, err := h.dasCore.Daf().ArgsToHex(toAddress.Script.Args)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "ArgsToHex err")
+			return fmt.Errorf("ArgsToHex err: %s", err.Error())
+		}
+		if ownerHex.DasAlgorithmId == common.DasAlgorithmIdEth712 {
 			toTypeScript = balanceContract.ToScript(nil)
 		}
 		if req.Amount < common.DasLockWithBalanceTypeOccupiedCkb {

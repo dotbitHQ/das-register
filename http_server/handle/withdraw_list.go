@@ -76,7 +76,16 @@ func (h *HttpHandle) doWithdrawList(req *ReqWithdrawList, apiResp *api_code.ApiR
 	var resp RespWithdrawList
 	resp.List = make([]WithdrawListData, 0)
 
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	list, err := h.dbDao.GetTransactionListByAction(req.ChainType, req.Address, common.DasActionWithdrawFromWallet, req.GetLimit(), req.GetOffset())
 	if err != nil {

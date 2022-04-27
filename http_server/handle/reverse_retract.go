@@ -70,7 +70,16 @@ func (h *HttpHandle) ReverseRetract(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doReverseRetract(req *ReqReverseRetract, apiResp *api_code.ApiResp) error {
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
@@ -99,11 +108,10 @@ func (h *HttpHandle) doReverseRetract(req *ReqReverseRetract, apiResp *api_code.
 	}
 
 	// das lock
-
-	dasLock, dasType, err := h.dasCore.FormatAddressToDasLockScript(req.ChainType, req.Address, true)
+	dasLock, dasType, err := h.dasCore.Daf().HexToScript(addressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "format das lock err")
-		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
+		return fmt.Errorf("HexToScript err: %s", err.Error())
 	}
 
 	// config cell check

@@ -86,8 +86,16 @@ func (h *HttpHandle) EditRecords(ctx *gin.Context) {
 
 func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiResp) error {
 	var resp RespEditRecords
-
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "account is invalid")
@@ -264,7 +272,21 @@ func (h *HttpHandle) buildEditRecordsTx(req *reqBuildTx, p *editRecordsParams) (
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
-	lockArgs := core.FormatOwnerManagerAddressToArgs(p.account.OwnerChainType, p.account.ManagerChainType, p.account.Owner, p.account.Manager)
+
+	lockArgs, err := h.dasCore.Daf().HexToArgs(core.DasAddressHex{
+		DasAlgorithmId: p.account.OwnerChainType.ToDasAlgorithmId(true),
+		AddressHex:     p.account.Owner,
+		IsMulti:        false,
+		ChainType:      p.account.OwnerChainType,
+	}, core.DasAddressHex{
+		DasAlgorithmId: p.account.ManagerChainType.ToDasAlgorithmId(true),
+		AddressHex:     p.account.Manager,
+		IsMulti:        false,
+		ChainType:      p.account.ManagerChainType,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("HexToArgs err: %s", err.Error())
+	}
 
 	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 		Capacity: capacity,

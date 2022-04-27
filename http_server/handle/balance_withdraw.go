@@ -75,7 +75,17 @@ func (h *HttpHandle) BalanceWithdraw(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_code.ApiResp) error {
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
+
 	var resp RespBalanceWithdraw
 
 	// amount
@@ -111,8 +121,12 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("amount [%s] is invalid", req.Amount))
 				return fmt.Errorf("amount not enough: %s", req.Amount)
 			}
-			oId, _, _, _, _, _ := core.FormatDasLockToHexAddress(parseAddress.Script.Args)
-			if oId == common.DasAlgorithmIdEth712 {
+			ownerHex, _, err := h.dasCore.Daf().ArgsToHex(parseAddress.Script.Args)
+			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "ArgsToHex err")
+				return fmt.Errorf("ArgsToHex err: %s", err.Error())
+			}
+			if ownerHex.DasAlgorithmId == common.DasAlgorithmIdEth712 {
 				balContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
 				if err != nil {
 					apiResp.ApiRespErr(api_code.ApiCodeError500, "get balance type id fail")
@@ -133,10 +147,10 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 	}
 
 	// das-lock
-	dasLockScript, dasTypeScript, err := h.dasCore.FormatAddressToDasLockScript(req.ChainType, req.Address, true)
+	dasLockScript, dasTypeScript, err := h.dasCore.Daf().HexToScript(addressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")
-		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
+		return fmt.Errorf("HexToScript err: %s", err.Error())
 	}
 
 	// check balance

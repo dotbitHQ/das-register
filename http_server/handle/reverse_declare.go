@@ -73,7 +73,16 @@ func (h *HttpHandle) ReverseDeclare(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.ApiResp) error {
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
@@ -83,11 +92,6 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
 		return fmt.Errorf("sync block number")
 	}
-
-	//if req.ChainType == common.ChainTypeMixin {
-	//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "chain type not supported")
-	//	return nil
-	//}
 
 	if exi := h.rc.ApiLimitExist(req.ChainType, req.Address, common.DasActionDeclareReverseRecord); exi {
 		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
@@ -120,14 +124,13 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 			return fmt.Errorf("SearchAccount err: %s", err.Error())
 		}
 	}
-	if acc.Id == 0 { // 只允许添加注册过的账号
+	if acc.Id == 0 {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
 		return fmt.Errorf("account not exist: %s", req.Account)
 	}
 
 	// balance check
-
-	dasLock, dasType, err := h.dasCore.FormatAddressToDasLockScript(req.ChainType, req.Address, true)
+	dasLock, dasType, err := h.dasCore.Daf().HexToScript(addressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "format das lock err")
 		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())

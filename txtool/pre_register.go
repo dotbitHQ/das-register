@@ -50,9 +50,14 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 		return fmt.Errorf("getOrderInviterChannelScript err: %s", err.Error())
 	}
 	// owner lock args
-	ownerScript, _, err := t.DasCore.FormatAddressToDasLockScript(order.ChainType, order.Address, true)
+	ownerLockScript, _, err := t.DasCore.Daf().HexToScript(core.DasAddressHex{
+		DasAlgorithmId: order.ChainType.ToDasAlgorithmId(true),
+		AddressHex:     order.Address,
+		IsMulti:        true,
+		ChainType:      order.ChainType,
+	})
 	if err != nil {
-		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
+		return fmt.Errorf("NormalToScript err: %s", err.Error())
 	}
 	p := preRegisterTxParams{
 		order:         order,
@@ -60,7 +65,7 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 		inviterId:     inviterId,
 		inviterScript: inviterScript,
 		channelScript: channelScript,
-		ownerLockArgs: ownerScript.Args,
+		ownerLockArgs: ownerLockScript.Args,
 		refundLock:    t.ServerScript,
 		accountChars:  orderContent.AccountCharStr,
 		registerYears: orderContent.RegisterYears,
@@ -124,11 +129,16 @@ func (t *TxTool) getAccountScript(accountId []byte) (*types.Script, error) {
 	if err != nil {
 		return nil, fmt.Errorf("GetAccountInfoByAccountId err: %s", err.Error())
 	} else if acc.Id > 0 {
-		script, _, err := t.DasCore.FormatAddressToDasLockScript(acc.OwnerChainType, acc.Owner, true)
+		ownerLockScript, _, err := t.DasCore.Daf().HexToScript(core.DasAddressHex{
+			DasAlgorithmId: acc.OwnerChainType.ToDasAlgorithmId(true),
+			AddressHex:     acc.Owner,
+			IsMulti:        true,
+			ChainType:      acc.OwnerChainType,
+		})
 		if err != nil {
 			return nil, fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
 		}
-		return script, nil
+		return ownerLockScript, nil
 	}
 	return nil, nil
 }

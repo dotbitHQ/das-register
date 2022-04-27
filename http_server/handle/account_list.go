@@ -74,9 +74,18 @@ func (h *HttpHandle) AccountList(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doAccountList(req *ReqAccountList, apiResp *api_code.ApiResp) error {
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
-	var resp RespAccountList
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
+	var resp RespAccountList
 	resp.List = make([]AccountData, 0)
 
 	list, err := h.dbDao.SearchAccountList(req.ChainType, req.Address)
