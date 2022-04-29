@@ -98,6 +98,10 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 		return fmt.Errorf("manager NormalToHex err: %s", err.Error())
 	}
 	req.RawParam.ManagerChainType, req.RawParam.ManagerAddress = managerHex.ChainType, managerHex.AddressHex
+	if !checkChainType(req.RawParam.ManagerChainType) {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] inavlid", req.RawParam.ManagerChainType))
+		return nil
+	}
 	//
 	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "account is invalid")

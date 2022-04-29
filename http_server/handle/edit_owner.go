@@ -99,6 +99,10 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 		return fmt.Errorf("owner NormalToHex err: %s", err.Error())
 	}
 	req.RawParam.ReceiverChainType, req.RawParam.ReceiverAddress = ownerHex.ChainType, ownerHex.AddressHex
+	if !checkChainType(req.RawParam.ReceiverChainType) {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] inavlid", req.RawParam.ReceiverChainType))
+		return nil
+	}
 	//
 	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "account is invalid")
