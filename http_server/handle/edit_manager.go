@@ -77,9 +77,27 @@ func (h *HttpHandle) EditManager(ctx *gin.Context) {
 
 func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiResp) error {
 	var resp RespEditManager
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
-	req.RawParam.ManagerAddress = core.FormatAddressToHex(req.RawParam.ManagerChainType, req.RawParam.ManagerAddress)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
+	managerHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.RawParam.ManagerChainType,
+		AddressNormal: req.RawParam.ManagerAddress,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "manager address NormalToHex err")
+		return fmt.Errorf("manager NormalToHex err: %s", err.Error())
+	}
+	req.RawParam.ManagerChainType, req.RawParam.ManagerAddress = managerHex.ChainType, managerHex.AddressHex
 	//
 	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "account is invalid")
@@ -230,7 +248,21 @@ func (h *HttpHandle) buildEditManagerTx(req *reqBuildTx, p *editManagerParams) (
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
-	lockArgs := core.FormatOwnerManagerAddressToArgs(p.account.OwnerChainType, p.managerChainType, p.account.Owner, p.managerAddress)
+
+	lockArgs, err := h.dasCore.Daf().HexToArgs(core.DasAddressHex{
+		DasAlgorithmId: p.account.OwnerChainType.ToDasAlgorithmId(true),
+		AddressHex:     p.account.Owner,
+		IsMulti:        false,
+		ChainType:      p.account.OwnerChainType,
+	}, core.DasAddressHex{
+		DasAlgorithmId: p.managerChainType.ToDasAlgorithmId(true),
+		AddressHex:     p.managerAddress,
+		IsMulti:        false,
+		ChainType:      p.managerChainType,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("HexToArgs err: %s", err.Error())
+	}
 
 	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 		Capacity: capacity,

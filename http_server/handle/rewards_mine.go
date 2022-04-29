@@ -76,7 +76,16 @@ func (h *HttpHandle) doRewardsMine(req *ReqRewardsMine, apiResp *api_code.ApiRes
 	var resp RespRewardsMine
 	resp.List = make([]RewardsData, 0)
 
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	list, err := h.dbDao.GetMyRewards(req.ChainType, req.Address, tables.ServiceTypeRegister, tables.RewardTypeInviter, req.GetLimit(), req.GetOffset())
 	if err != nil {

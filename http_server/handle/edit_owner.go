@@ -78,9 +78,27 @@ func (h *HttpHandle) EditOwner(ctx *gin.Context) {
 func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) error {
 	var resp RespEditOwner
 
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
-	req.RawParam.ReceiverAddress = core.FormatAddressToHex(req.RawParam.ReceiverChainType, req.RawParam.ReceiverAddress)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
+	ownerHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.RawParam.ReceiverChainType,
+		AddressNormal: req.RawParam.ReceiverAddress,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "owner address NormalToHex err")
+		return fmt.Errorf("owner NormalToHex err: %s", err.Error())
+	}
+	req.RawParam.ReceiverChainType, req.RawParam.ReceiverAddress = ownerHex.ChainType, ownerHex.AddressHex
 	//
 	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "account is invalid")
@@ -231,8 +249,17 @@ func (h *HttpHandle) buildEditOwnerTx(req *reqBuildTx, p *editOwnerParams) (*txb
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
-	lockArgs := core.FormatOwnerManagerAddressToArgs(p.ownerChainType, p.ownerChainType, p.ownerAddress, p.ownerAddress)
 
+	ownerHex := core.DasAddressHex{
+		DasAlgorithmId: p.ownerChainType.ToDasAlgorithmId(true),
+		AddressHex:     p.ownerAddress,
+		IsMulti:        false,
+		ChainType:      p.ownerChainType,
+	}
+	lockArgs, err := h.dasCore.Daf().HexToArgs(ownerHex, ownerHex)
+	if err != nil {
+		return nil, fmt.Errorf("HexToArgs err: %s", err.Error())
+	}
 	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 		Capacity: capacity,
 		Lock:     contractDas.ToScript(lockArgs),

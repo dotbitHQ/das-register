@@ -81,11 +81,17 @@ func (h *HttpHandle) doAccountRenew(req *ReqAccountRenew, apiResp *api_code.ApiR
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
-	if ok := checkRegisterChainTypeAndAddress(req.ChainType, req.Address); !ok {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type and address [%s-%s] invalid", req.ChainType.String(), req.Address))
-		return nil
+
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
 	}
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())

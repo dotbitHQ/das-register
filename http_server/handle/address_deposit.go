@@ -5,11 +5,11 @@ import (
 	"das_register_server/http_server/api_code"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
+	"github.com/DeAccountSystems/das-lib/core"
 	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
-	"regexp"
 )
 
 type ReqAddressDeposit struct {
@@ -48,45 +48,21 @@ func (h *HttpHandle) AddressDeposit(ctx *gin.Context) {
 func (h *HttpHandle) doAddressDeposit(req *ReqAddressDeposit, apiResp *api_code.ApiResp) error {
 	var resp RespAddressDeposit
 
-	chainType := common.ChainTypeEth
-	is712 := false
-	switch req.AlgorithmId {
-	case common.DasAlgorithmIdEth:
-		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{40}$", req.Address); !ok {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "address invalid")
-			return nil
-		}
-		chainType = common.ChainTypeEth
-	case common.DasAlgorithmIdEth712:
-		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{40}$", req.Address); !ok {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "address invalid")
-			return nil
-		}
-		chainType = common.ChainTypeEth
-		is712 = true
-	case common.DasAlgorithmIdTron:
-		if tronAddr, err := common.TronBase58ToHex(req.Address); err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "address invalid")
-			return nil
-		} else {
-			log.Info("tronAddr:", tronAddr)
-		}
-		chainType = common.ChainTypeTron
-	case common.DasAlgorithmIdEd25519:
-		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{64}$", req.Address); !ok {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "address invalid")
-			return nil
-		}
-		chainType = common.ChainTypeMixin
-	default:
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "algorithm_id invalid")
-		return nil
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.AlgorithmId.ToChainType(),
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
 	}
+	addressHex.DasAlgorithmId = req.AlgorithmId
 
-	lockScript, _, err := h.dasCore.FormatAddressToDasLockScript(chainType, req.Address, is712)
+	lockScript, _, err := h.dasCore.Daf().HexToScript(addressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
-		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
+		return fmt.Errorf("HexToScript err: %s", err.Error())
 	}
 	log.Info("doAddressDeposit:", req.Address, common.Bytes2Hex(lockScript.Args))
 

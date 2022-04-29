@@ -92,7 +92,16 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
 		return nil
 	}
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
@@ -125,8 +134,14 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 
 func (h *HttpHandle) doRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiResp, resp *RespOrderRenew) {
 	// pay amount
-	args := common.Bytes2Hex(core.FormatOwnerManagerAddressToArgs(req.ChainType, req.ChainType, req.Address, req.Address))
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(args, req.Account, "", req.RenewYears, true, req.PayTokenId)
+	addrHex := core.DasAddressHex{
+		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
+		AddressHex:     req.Address,
+		IsMulti:        false,
+		ChainType:      req.ChainType,
+	}
+	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(common.Bytes2Hex(args), req.Account, "", req.RenewYears, true, req.PayTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

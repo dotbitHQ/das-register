@@ -81,7 +81,17 @@ func (h *HttpHandle) AccountSearch(ctx *gin.Context) {
 func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.ApiResp) error {
 	var resp RespAccountSearch
 	resp.RegisterTxMap = make(map[tables.RegisterStatus]RegisterTx)
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
+
 	resp.Account = req.Account
 
 	// check sub account
@@ -109,7 +119,17 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 		return nil
 	}
 	// account price
-	args := core.FormatOwnerManagerAddressToArgs(req.ChainType, req.ChainType, req.Address, req.Address)
+	hexAddress := core.DasAddressHex{
+		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
+		AddressHex:     req.Address,
+		IsMulti:        false,
+		ChainType:      req.ChainType,
+	}
+	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
+		return fmt.Errorf("HexToArgs err: %s", err.Error())
+	}
 	baseAmount, accountPrice, err := h.getAccountPrice(common.Bytes2Hex(args), req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")

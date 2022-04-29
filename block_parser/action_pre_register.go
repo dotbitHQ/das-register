@@ -5,7 +5,6 @@ import (
 	"das_register_server/tables"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/core"
 	"github.com/DeAccountSystems/das-lib/witness"
 	"github.com/shopspring/decimal"
 )
@@ -48,8 +47,12 @@ func (b *BlockParser) ActionPreRegister(req FuncTransactionHandleReq) (resp Func
 		account := builder.Account
 		accountId := common.Bytes2Hex(common.GetAccountIdByAccount(account))
 		owner, _ := builder.OwnerLockArgsStr()
-		_, _, oct, _, oa, _ := core.FormatDasLockToHexAddress(common.Hex2Bytes(owner))
 
+		ownerHex, _, err := b.DasCore.Daf().ArgsToHex(common.Hex2Bytes(owner))
+		if err != nil {
+			resp.Err = fmt.Errorf("ArgsToHex err: %s", err.Error())
+			return
+		}
 		acc, err := b.DbDao.GetAccountInfoByAccountId(accountId)
 		orderStatus := tables.OrderStatusDefault
 		if err != nil {
@@ -66,8 +69,8 @@ func (b *BlockParser) ActionPreRegister(req FuncTransactionHandleReq) (resp Func
 			AccountId:         accountId,
 			Account:           account,
 			Action:            common.DasActionApplyRegister,
-			ChainType:         oct,
-			Address:           oa,
+			ChainType:         ownerHex.ChainType,
+			Address:           ownerHex.AddressHex,
 			Timestamp:         int64(req.BlockTimestamp),
 			PayTokenId:        "",
 			PayType:           "",

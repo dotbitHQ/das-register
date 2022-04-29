@@ -99,12 +99,17 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
 		return nil
 	}
-	if ok := checkRegisterChainTypeAndAddress(req.ChainType, req.Address); !ok {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type and address [%s-%s] invalid", req.ChainType.String(), req.Address))
-		return nil
-	}
 
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
@@ -219,8 +224,19 @@ func (h *HttpHandle) checkOrderInfo(req *ReqOrderRegisterBase, apiResp *api_code
 
 func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
 	// pay amount
-	args := common.Bytes2Hex(core.FormatOwnerManagerAddressToArgs(req.ChainType, req.ChainType, req.Address, req.Address))
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(args, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	addrHex := core.DasAddressHex{
+		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
+		AddressHex:     req.Address,
+		IsMulti:        false,
+		ChainType:      req.ChainType,
+	}
+	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
+	if err != nil {
+		log.Error("HexToArgs err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
+		return
+	}
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

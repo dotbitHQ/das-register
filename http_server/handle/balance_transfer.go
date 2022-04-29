@@ -77,18 +77,33 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support this chain type")
 		return nil
 	}
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	// das-lock
-	toLock, toType, err := h.dasCore.FormatAddressToDasLockScript(req.ChainType, req.Address, true)
+	toLock, toType, err := h.dasCore.Daf().HexToScript(addressHex)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")
-		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToScript err")
+		return fmt.Errorf("HexToScript err: %s", err.Error())
 	}
 
-	fromLock, _, err := h.dasCore.FormatAddressToDasLockScript(req.ChainType, req.Address, false)
+	fromLock, _, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
+		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(false),
+		AddressHex:     req.Address,
+		IsMulti:        false,
+		ChainType:      req.ChainType,
+	})
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")
-		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToScript err")
+		return fmt.Errorf("HexToScript err: %s", err.Error())
 	}
 	liveCells, totalAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, fromLock, nil, 0, 0)
 	if err != nil {
