@@ -98,6 +98,11 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
+	if !checkChainType(req.ChainType) {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", req.ChainType))
+		return nil
+	}
+
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
 	}
