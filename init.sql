@@ -1,3 +1,3 @@
 # create databases
-CREATE DATABASE IF NOT EXISTS `bit_database`;
-CREATE DATABASE IF NOT EXISTS `bit_register`;
+CREATE DATABASE IF NOT EXISTS `das_database`;
+CREATE DATABASE IF NOT EXISTS `das_register`;

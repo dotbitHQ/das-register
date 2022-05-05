@@ -1,5 +1,5 @@
-CREATE DATABASE `bit_register`;
-USE `bit_register`;
+CREATE DATABASE `das_register`;
+USE `das_register`;
 
 -- DROP TABLE IF EXISTS `t_block_parser_info`;
 -- DROP TABLE IF EXISTS `t_register_pending_info`;

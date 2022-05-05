@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY . ./
 
-RUN go build -ldflags -s -v -o bit-register cmd/main.go
+RUN go build -ldflags -s -v -o das-register cmd/main.go
 
 ##
 ## Deploy
@@ -28,9 +28,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /app
 
-COPY --from=build /app/bit-register /app/bit-register
+COPY --from=build /app/das-register /app/das-register
 COPY --from=build /app/config/config.yaml /app/config/config.yaml
 
 EXPOSE 8119 8120
 
-ENTRYPOINT ["/app/bit-register", "--config", "/app/config/config.yaml"]
+ENTRYPOINT ["/app/das-register", "--config", "/app/config/config.yaml"]
