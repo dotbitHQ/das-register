@@ -1,11 +1,13 @@
    * [Prerequisites](#prerequisites)
    * [Install &amp; Run](#install--run)
+      * [Source Compile](#source-compile)
+      * [Docker](#docker)
    * [Usage](#usage)
       * [Register](#register)
       * [Set Reverse Record](#set-reverse-record)
       * [Others](#others)
    * [Documents](#documents)
-
+   
 # das-register
 
 Backend of DAS registration service. You can use this repo to build your own DAS registration website (as like https://app.did.id)
@@ -14,7 +16,7 @@ Backend of DAS registration service. You can use this repo to build your own DAS
 
 * Ubuntu 18.04 or newer
 * MYSQL >= 8.0
-* Redis >= 5.0 (for cache)  
+* Redis >= 5.0 (for cache) 
 * GO version >= 1.15.0
 * [CKB Node](https://github.com/nervosnetwork/ckb)
 * [CKB Indexer](https://github.com/nervosnetwork/ckb-indexer)
@@ -24,6 +26,7 @@ Backend of DAS registration service. You can use this repo to build your own DAS
 
 ## Install & Run
 
+### Source Compile
 ```bash
 # get the code
 git clone https://github.com/DeAccountSystems/das-register.git
@@ -39,22 +42,20 @@ make register
 ./das_register --config=config/config.yaml
 ```
 
-## Docker Install & Run
+### Docker
 * docker >= 20.10
 * docker-compose >= 2.2.2
 
-if you already have a mysql database installed, just run
 ```bash
-docker run -dp 8119-8120:8119-8120 -v $PWD/config/config.yaml:/app/config/config.yaml --name das-register-server slagga/das-register
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+docker-compose up -d
 ```
 
-if not, you need docker-compose to automate the installation
+_if you already have a mysql installed, just run_
 ```bash
-curl -SL https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
-
-sudo chmod +x /usr/local/bin/docker-compose
-
-docker-compose up -d
+docker run -dp 8119-8120:8119-8120 -v $PWD/config/config.yaml:/app/config/config.yaml --name das-register-server slagga/das-register
 ```
 
 ## Usage
@@ -68,7 +69,7 @@ You need to run [das-pay](https://github.com/dotbitHQ/das-pay) before you can ru
 ```
    +---------+                 +----------------+        +-----------+
    |   user  |                 |  das_register  |        |  das pay  |
-   +----+----+                 +-------+--------+        +-----+-----+
+   +----|----+                 +-------|--------+        +-----|-----+
         |                              |                       |
         |                              |                       |
         +----- Get order id ---------->+                       |
