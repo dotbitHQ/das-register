@@ -82,7 +82,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	var resp RespAccountSearch
 	resp.RegisterTxMap = make(map[tables.RegisterStatus]RegisterTx)
 
-	if req.ChainType == common.ChainTypeCkb && req.Address == "" {
+	if req.ChainType == common.ChainTypeCkb || req.Address == "" {
 
 	} else {
 		addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
@@ -124,7 +124,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	}
 	// account price
 	argsStr := ""
-	if req.ChainType == common.ChainTypeCkb && req.Address == "" {
+	if req.ChainType == common.ChainTypeCkb || req.Address == "" {
 
 	} else {
 		hexAddress := core.DasAddressHex{
