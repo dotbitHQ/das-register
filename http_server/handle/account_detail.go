@@ -162,9 +162,32 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		resp.ExpiredAt = int64(acc.ExpiredAt) * 1e3
 		resp.RegisteredAt = int64(acc.RegisteredAt) * 1e3
 		resp.OwnerChainType = acc.OwnerChainType
-		resp.Owner = core.FormatHexAddressToNormal(acc.OwnerChainType, acc.Owner)
+
+		ownerNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
+			DasAlgorithmId: acc.OwnerAlgorithmId,
+			AddressHex:     acc.Owner,
+			IsMulti:        false,
+			ChainType:      acc.OwnerChainType,
+		})
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "owner address HexToNormal err")
+			return fmt.Errorf("HexToNormal err: %s", err.Error())
+		}
+
+		resp.Owner = ownerNormal.AddressNormal
 		resp.ManagerChainType = acc.ManagerChainType
-		resp.Manager = core.FormatHexAddressToNormal(acc.ManagerChainType, acc.Manager)
+
+		managerNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
+			DasAlgorithmId: acc.ManagerAlgorithmId,
+			AddressHex:     acc.Manager,
+			IsMulti:        false,
+			ChainType:      acc.ManagerChainType,
+		})
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "manager address HexToNormal err")
+			return fmt.Errorf("HexToNormal err: %s", err.Error())
+		}
+		resp.Manager = managerNormal.AddressNormal
 		resp.ConfirmProposalHash = acc.ConfirmProposalHash
 		resp.EnableSubAccount = acc.EnableSubAccount
 		resp.RenewSubAccountPrice = acc.RenewSubAccountPrice

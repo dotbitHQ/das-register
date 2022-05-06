@@ -93,9 +93,9 @@ func (t *TxTimer) Run() error {
 				if err := t.doRefundApply(); err != nil {
 					log.Error("doRefundApply err: ", err.Error())
 				}
-				if err := t.doRefundPre(); err != nil {
-					log.Error("doRefundPre err: %s", err.Error())
-				}
+				//if err := t.doRefundPre(); err != nil {
+				//	log.Error("doRefundPre err: %s", err.Error())
+				//}
 				log.Info("doRefundApply end ...")
 			case <-tickerClosedAndUnRefund.C:
 				log.Info("doCheckClosedAndUnRefund start ...")

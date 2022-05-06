@@ -67,7 +67,16 @@ func (h *HttpHandle) BalanceInfo(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiResp) error {
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	var resp RespBalanceInfo
 
 	if req.TransferAddress != "" {
@@ -92,10 +101,15 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 	}
 	// not 712
 	if req.ChainType == common.ChainTypeEth {
-		dasLockScript, dasTypeScript, err := h.dasCore.FormatAddressToDasLockScript(req.ChainType, req.Address, false)
+		dasLockScript, dasTypeScript, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
+			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(false),
+			AddressHex:     req.Address,
+			IsMulti:        false,
+			ChainType:      req.ChainType,
+		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")
-			return fmt.Errorf("FormatAddressToDasLockScript not 712 err: %s", err.Error())
+			return fmt.Errorf("HexToScript not 712 err: %s", err.Error())
 		}
 		_, dasLockAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, dasLockScript, dasTypeScript, 0, 0)
 		if err != nil {
@@ -106,7 +120,12 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 	}
 
 	// 712
-	dasLockScript, dasTypeScript, err := h.dasCore.FormatAddressToDasLockScript(req.ChainType, req.Address, true)
+	dasLockScript, dasTypeScript, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
+		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
+		AddressHex:     req.Address,
+		IsMulti:        false,
+		ChainType:      req.ChainType,
+	})
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")
 		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())

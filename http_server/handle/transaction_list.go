@@ -74,7 +74,16 @@ func (h *HttpHandle) TransactionList(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doTransactionList(req *ReqTransactionList, apiResp *api_code.ApiResp) error {
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	var resp RespTransactionList
 	resp.List = make([]DataTransaction, 0)
 

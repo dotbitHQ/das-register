@@ -77,3 +77,11 @@ func (h *HttpHandle) checkSystemUpgrade(apiResp *api_code.ApiResp) error {
 	}
 	return nil
 }
+
+func checkChainType(chainType common.ChainType) bool {
+	switch chainType {
+	case common.ChainTypeTron, common.ChainTypeMixin, common.ChainTypeEth:
+		return true
+	}
+	return false
+}

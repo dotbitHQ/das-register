@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/core"
 	"github.com/DeAccountSystems/das-lib/txbuilder"
 	"github.com/DeAccountSystems/das-lib/witness"
 	"github.com/gin-gonic/gin"
@@ -117,9 +116,9 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 	} else {
 		resp.Hash = hash.Hex()
 		if sic.Address != "" {
-			address := core.FormatAddressToHex(sic.ChainType, sic.Address)
+
 			// operate limit
-			_ = h.rc.SetApiLimit(sic.ChainType, address, sic.Action)
+			_ = h.rc.SetApiLimit(sic.ChainType, sic.Address, sic.Action)
 			_ = h.rc.SetAccountLimit(sic.Account, time.Minute*2)
 
 			// cache tx inputs
@@ -129,7 +128,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 				Account:        sic.Account,
 				Action:         sic.Action,
 				ChainType:      sic.ChainType,
-				Address:        address,
+				Address:        sic.Address,
 				Capacity:       sic.Capacity,
 				Outpoint:       common.OutPoint2String(hash.Hex(), 0),
 				BlockTimestamp: uint64(time.Now().UnixNano() / 1e6),

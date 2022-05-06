@@ -26,7 +26,7 @@ func SendLarkOrderNotify(p *SendLarkOrderNotifyParam) {
 > pay token id: %s
 > amount: %s
 > time: %s`
-	address := fmt.Sprintf("(%s)%s", p.ChainType.String(), p.Address)
+	address := fmt.Sprintf("(%s)%s", p.ChainType.ToString(), p.Address)
 	amount := p.Amount
 	switch p.PayTokenId {
 	case tables.TokenIdBnb, tables.TokenIdEth, tables.TokenIdMatic:

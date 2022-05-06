@@ -69,12 +69,20 @@ func (h *HttpHandle) OrderPayHash(ctx *gin.Context) {
 
 func (h *HttpHandle) doOrderPayHash(req *ReqOrderPayHash, apiResp *api_code.ApiResp) error {
 	var resp RespOrderPayHash
-	req.Address = core.FormatAddressToHex(req.ChainType, req.Address)
-
 	if req.Address == "" || req.Account == "" || req.OrderId == "" || req.PayHash == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
+	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ChainType:     req.ChainType,
+		AddressNormal: req.Address,
+		Is712:         true,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+		return fmt.Errorf("NormalToHex err: %s", err.Error())
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	order, err := h.dbDao.GetOrderByOrderId(req.OrderId)
 	if err != nil {
