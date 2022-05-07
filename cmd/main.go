@@ -213,7 +213,7 @@ func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
 	env := core.InitEnvOpt(config.Cfg.Server.Net, common.DasContractNameConfigCellType, common.DasContractNameAccountCellType,
 		common.DasContractNameBalanceCellType, common.DasContractNameDispatchCellType, common.DasContractNameApplyRegisterCellType,
 		common.DasContractNamePreAccountCellType, common.DasContractNameProposalCellType, common.DasContractNameReverseRecordCellType,
-		common.DasContractNameIncomeCellType, common.DasContractNameAlwaysSuccess)
+		common.DasContractNameIncomeCellType, common.DasContractNameAlwaysSuccess, common.DASContractNameEip712LibCellType)
 	ops := []core.DasCoreOption{
 		core.WithClient(ckbClient),
 		core.WithDasContractArgs(env.ContractArgs),
