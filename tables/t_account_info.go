@@ -34,6 +34,7 @@ const (
 	AccountStatusNormal          AccountStatus = 0
 	AccountStatusOnSale          AccountStatus = 1
 	AccountStatusOnAuction       AccountStatus = 2
+	AccountStatusOnCross         AccountStatus = 3
 	TableNameAccountInfo                       = "t_account_info"
 )
 
@@ -60,6 +61,7 @@ const (
 	SearchStatusOnAuction            SearchStatus = 9
 	SearchStatusUnAvailableAccount   SearchStatus = 13
 	SearchStatusSubAccountUnRegister SearchStatus = 14
+	SearchStatusOnCross              SearchStatus = 15
 )
 
 func (t *TableAccountInfo) IsExpired() bool {
@@ -81,6 +83,8 @@ func (t *TableAccountInfo) FormatAccountStatus() SearchStatus {
 		return SearchStatusOnSale
 	case AccountStatusOnAuction:
 		return SearchStatusOnAuction
+	case AccountStatusOnCross:
+		return SearchStatusOnCross
 	default:
 		return SearchStatusRegisterAble
 	}
