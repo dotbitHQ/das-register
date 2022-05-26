@@ -217,28 +217,6 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 
 	// account not exist
 	apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, fmt.Sprintf("account [%s] not exist", req.Account))
-
-	// not open
-	//accLen := common.GetAccountLength(req.Account)
-	//if accLen < config.Cfg.Das.AccountMinLength || accLen > config.Cfg.Das.AccountMaxLength {
-	//	resp.Status = tables.SearchStatusRegisterNotOpen
-	//	apiResp.ApiRespOK(resp)
-	//	return nil
-	//} else if accLen >= config.Cfg.Das.OpenAccountMinLength && accLen <= config.Cfg.Das.OpenAccountMaxLength {
-	//	configRelease, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsRelease)
-	//	if err != nil {
-	//		resp.Status = tables.SearchStatusRegisterNotOpen
-	//		apiResp.ApiRespOK(resp)
-	//		return nil
-	//	}
-	//	luckyNumber, _ := configRelease.LuckyNumber()
-	//	if resNum, _ := Blake256AndFourBytesBigEndian([]byte(req.Account)); resNum > luckyNumber {
-	//		resp.Status = tables.SearchStatusRegisterNotOpen
-	//		apiResp.ApiRespOK(resp)
-	//		return nil
-	//	}
-	//}
-	//apiResp.ApiRespOK(resp)
 	return nil
 }
 
