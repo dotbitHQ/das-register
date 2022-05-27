@@ -20,6 +20,7 @@ var (
 		common.DasActionEditSubAccount,
 		tables.DasActionBalanceDeposit,
 		common.DasActionLockAccountForCrossChain,
+		common.DasActionUnlockAccountForCrossChain,
 	}
 )
 
