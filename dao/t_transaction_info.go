@@ -19,6 +19,7 @@ var (
 		tables.DasActionOfferAccepted,
 		common.DasActionEditSubAccount,
 		tables.DasActionBalanceDeposit,
+		common.DasActionLockAccountForCrossChain,
 	}
 )
 
