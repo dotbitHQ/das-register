@@ -44,15 +44,14 @@ func (t *TxTimer) Run() error {
 		return fmt.Errorf("doUpdateTokenMap init token err: %s", err.Error())
 	}
 	tickerToken := time.NewTicker(time.Second * 50)
-	//tickerPending := time.NewTicker(time.Minute)
-	//pendingLimit := 10
 	tickerRejected := time.NewTicker(time.Minute * 3)
+
 	tickerExpired := time.NewTicker(time.Minute * 30)
 	tickerRecover := time.NewTicker(time.Minute * 30)
 	tickerRefundApply := time.NewTicker(time.Minute * 15)
 	tickerClosedAndUnRefund := time.NewTicker(time.Minute * 20)
-	t.wg.Add(1)
 
+	t.wg.Add(5)
 	go func() {
 		for {
 			select {
@@ -62,32 +61,41 @@ func (t *TxTimer) Run() error {
 					log.Error("doUpdateTokenMap err:", err)
 				}
 				log.Info("doUpdateTokenMap end ...")
-			//case <-tickerPending.C:
-			//	log.Info("checkPending start ...", pendingLimit)
-			//	if limit, err := t.checkPending(pendingLimit); err != nil {
-			//		log.Error("checkPending err: ", err.Error())
-			//	} else if limit > pendingLimit {
-			//		pendingLimit = limit
-			//	}
-			//	log.Info("checkPending end ...", pendingLimit)
 			case <-tickerRejected.C:
 				log.Info("checkRejected start ...")
 				if err := t.checkRejected(); err != nil {
 					log.Error("checkRejected err: ", err.Error())
 				}
 				log.Info("checkRejected end ...")
+
+			case <-t.ctx.Done():
+				log.Info("timer done")
+				t.wg.Done()
+				return
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			select {
 			case <-tickerExpired.C:
 				log.Info("checkExpired start ...")
 				if err := t.checkExpired(); err != nil {
 					log.Error("checkExpired err: ", err.Error())
 				}
 				log.Info("checkExpired end ...")
-			case <-tickerRecover.C:
-				log.Info("doRecoverCkb start ...")
-				if err := t.doRecoverCkb(); err != nil {
-					log.Error("doRecoverCkb err: ", err.Error())
-				}
-				log.Info("doRecoverCkb end ...")
+			case <-t.ctx.Done():
+				log.Info("timer done")
+				t.wg.Done()
+				return
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			select {
 			case <-tickerRefundApply.C:
 				log.Info("doRefundApply start ...")
 				if err := t.doRefundApply(); err != nil {
@@ -97,6 +105,34 @@ func (t *TxTimer) Run() error {
 					log.Error("doRefundPre err: %s", err.Error())
 				}
 				log.Info("doRefundApply end ...")
+			case <-t.ctx.Done():
+				log.Info("timer done")
+				t.wg.Done()
+				return
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			select {
+			case <-tickerRecover.C:
+				log.Info("doRecoverCkb start ...")
+				if err := t.doRecoverCkb(); err != nil {
+					log.Error("doRecoverCkb err: ", err.Error())
+				}
+				log.Info("doRecoverCkb end ...")
+			case <-t.ctx.Done():
+				log.Info("timer done")
+				t.wg.Done()
+				return
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			select {
 			case <-tickerClosedAndUnRefund.C:
 				log.Info("doCheckClosedAndUnRefund start ...")
 				if err := t.doCheckClosedAndUnRefund(); err != nil {
@@ -110,5 +146,6 @@ func (t *TxTimer) Run() error {
 			}
 		}
 	}()
+
 	return nil
 }

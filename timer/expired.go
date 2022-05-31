@@ -13,5 +13,17 @@ func (t *TxTimer) checkExpired() error {
 			return fmt.Errorf("DoExpiredOrder err: %s", err.Error())
 		}
 	}
+
+	list, err = t.dbDao.GetNeedExpiredOrders2()
+	if err != nil {
+		return fmt.Errorf("GetNeedExpiredOrders2 err: %s", err.Error())
+	}
+	for _, v := range list {
+		log.Info("DoExpiredOrder:", v.OrderId)
+		if err := t.dbDao.DoExpiredOrder(v.OrderId); err != nil {
+			return fmt.Errorf("DoExpiredOrder err: %s", err.Error())
+		}
+	}
+
 	return nil
 }

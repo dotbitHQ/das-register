@@ -294,6 +294,13 @@ func (d *DbDao) GetNeedExpiredOrders() (list []ExpiredOrder, err error) {
 	return
 }
 
+func (d *DbDao) GetNeedExpiredOrders2() (list []ExpiredOrder, err error) {
+	sql := fmt.Sprintf("SELECT order_id FROM %s WHERE order_type=? AND register_status=? AND order_status=? AND `timestamp`<?", tables.TableNameDasOrderInfo)
+	timestamp := time.Now().Add(-time.Hour*24*7).UnixNano() / 1e6
+	err = d.db.Raw(sql, tables.OrderTypeSelf, tables.RegisterStatusConfirmPayment, tables.OrderStatusDefault, timestamp).Find(&list).Error
+	return
+}
+
 func (d *DbDao) DoExpiredOrder(orderId string) error {
 	return d.db.Model(tables.TableDasOrderInfo{}).
 		Where("order_id=? AND order_type=? AND register_status=? AND order_status=?",
