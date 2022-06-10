@@ -147,6 +147,9 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 	} else if req.RawParam.ManagerChainType == acc.ManagerChainType && strings.EqualFold(req.RawParam.ManagerAddress, acc.Manager) {
 		apiResp.ApiRespErr(api_code.ApiCodeSameLock, "same address")
 		return nil
+	} else if acc.ParentAccountId != "" {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
+		return nil
 	}
 
 	if (req.ChainType == common.ChainTypeMixin && req.RawParam.ManagerChainType != common.ChainTypeMixin) ||

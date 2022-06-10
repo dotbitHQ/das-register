@@ -148,6 +148,9 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 	} else if req.RawParam.ReceiverChainType == acc.OwnerChainType && strings.EqualFold(req.RawParam.ReceiverAddress, acc.Owner) {
 		apiResp.ApiRespErr(api_code.ApiCodeSameLock, "same address")
 		return nil
+	} else if acc.ParentAccountId != "" {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
+		return nil
 	}
 
 	if (req.ChainType == common.ChainTypeMixin && req.RawParam.ReceiverChainType != common.ChainTypeMixin) ||

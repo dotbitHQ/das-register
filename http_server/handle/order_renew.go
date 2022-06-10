@@ -233,5 +233,8 @@ func (h *HttpHandle) checkRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiRe
 	} else if acc.Id == 0 {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
 		return
+	} else if acc.ParentAccountId != "" {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
+		return
 	}
 }

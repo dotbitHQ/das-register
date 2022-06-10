@@ -138,6 +138,9 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 	} else if req.ChainType != acc.ManagerChainType || !strings.EqualFold(req.Address, acc.Manager) {
 		apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "edit records permission denied")
 		return nil
+	} else if acc.ParentAccountId != "" {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
+		return nil
 	}
 
 	// check records
