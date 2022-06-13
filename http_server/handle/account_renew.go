@@ -118,6 +118,9 @@ func (h *HttpHandle) doAccountRenew(req *ReqAccountRenew, apiResp *api_code.ApiR
 	} else if acc.ParentAccountId != "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("account is invalid"))
 		return nil
+	} else if acc.Status == tables.AccountStatusOnCross {
+		apiResp.ApiRespErr(api_code.ApiCodeOnCross, "account on cross")
+		return nil
 	}
 
 	// renew account
