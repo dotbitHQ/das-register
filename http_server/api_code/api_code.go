@@ -43,6 +43,8 @@ const (
 	ApiCodeAccountStatusOnSaleOrAuction ApiCode = 30031
 	ApiCodePayTypeInvalid               ApiCode = 30032
 	ApiCodeSameOrderInfo                ApiCode = 30033
+	ApiCodeSigErr                       ApiCode = 30034 // contracte -31
+	ApiCodeOnCross                      ApiCode = 30035
 )
 
 const (

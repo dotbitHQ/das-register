@@ -236,5 +236,8 @@ func (h *HttpHandle) checkRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiRe
 	} else if acc.ParentAccountId != "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
 		return
+	} else if acc.Status == tables.AccountStatusOnCross {
+		apiResp.ApiRespErr(api_code.ApiCodeOnCross, "account on cross")
+		return
 	}
 }
