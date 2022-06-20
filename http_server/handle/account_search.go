@@ -215,7 +215,7 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 		}
 		accountCharStr += v.Char
 	}
-	if strings.HasSuffix(accountCharStr, common.DasAccountSuffix) {
+	if !strings.HasSuffix(accountCharStr, common.DasAccountSuffix) {
 		accountCharStr += common.DasAccountSuffix
 	}
 	if !strings.EqualFold(req.Account, accountCharStr) {
