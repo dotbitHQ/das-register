@@ -244,3 +244,5 @@ func TestAccountList(t *testing.T) {
 	}
 	time.Sleep(time.Second * 2)
 }
+
+//curl -X POST http://127.0.0.1:8119/v1/account/register -d'{"chain_type":1,"address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad","account":"tzh20220620-01.bit","register_years":1,"inviter_account":"","channel_account":""}'
