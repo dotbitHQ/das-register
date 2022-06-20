@@ -215,6 +215,9 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 		}
 		accountCharStr += v.Char
 	}
+	if strings.HasSuffix(accountCharStr, common.DasAccountSuffix) {
+		accountCharStr += common.DasAccountSuffix
+	}
 	if !strings.EqualFold(req.Account, accountCharStr) {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, fmt.Sprintf("diff account chars[%s]!=[%s]", accountCharStr, req.Account))
 		return
