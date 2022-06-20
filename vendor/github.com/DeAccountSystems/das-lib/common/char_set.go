@@ -42,7 +42,9 @@ func AccountCharsToAccount(accountChars *molecule.AccountChars) string {
 }
 
 func AccountToAccountChars(account string) ([]AccountCharSet, error) {
-	account = account[:strings.Index(account, ".")]
+	if index := strings.Index(account, "."); index > 0 {
+		account = account[:index]
+	}
 
 	chars := []rune(account)
 	var list []AccountCharSet
