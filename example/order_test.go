@@ -14,21 +14,21 @@ func TestAccountSearch(t *testing.T) {
 	req.Account = "7aaaaaaa.bit"
 	req.ChainType = common.ChainTypeEth
 	req.Address = "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
-	req.AccountCharStr = []tables.AccountCharSet{
+	req.AccountCharStr = []common.AccountCharSet{
 		//{CharSetName: tables.AccountCharTypeEn, Char: "a"},
 		//{CharSetName: tables.AccountCharTypeNumber, Char: "1"},
-		{CharSetName: tables.AccountCharTypeNumber, Char: "7"},
-		{CharSetName: tables.AccountCharTypeEn, Char: "a"},
-		{CharSetName: tables.AccountCharTypeEn, Char: "a"},
-		{CharSetName: tables.AccountCharTypeEn, Char: "a"},
-		{CharSetName: tables.AccountCharTypeEn, Char: "a"},
-		{CharSetName: tables.AccountCharTypeEn, Char: "a"},
-		{CharSetName: tables.AccountCharTypeEn, Char: "a"},
-		{CharSetName: tables.AccountCharTypeEn, Char: "a"},
-		{CharSetName: tables.AccountCharTypeEn, Char: "."},
-		{CharSetName: tables.AccountCharTypeEn, Char: "b"},
-		{CharSetName: tables.AccountCharTypeEn, Char: "i"},
-		{CharSetName: tables.AccountCharTypeEn, Char: "t"},
+		{CharSetName: common.AccountCharTypeNumber, Char: "7"},
+		{CharSetName: common.AccountCharTypeEn, Char: "a"},
+		{CharSetName: common.AccountCharTypeEn, Char: "a"},
+		{CharSetName: common.AccountCharTypeEn, Char: "a"},
+		{CharSetName: common.AccountCharTypeEn, Char: "a"},
+		{CharSetName: common.AccountCharTypeEn, Char: "a"},
+		{CharSetName: common.AccountCharTypeEn, Char: "a"},
+		{CharSetName: common.AccountCharTypeEn, Char: "a"},
+		{CharSetName: common.AccountCharTypeEn, Char: "."},
+		{CharSetName: common.AccountCharTypeEn, Char: "b"},
+		{CharSetName: common.AccountCharTypeEn, Char: "i"},
+		{CharSetName: common.AccountCharTypeEn, Char: "t"},
 	}
 
 	url := TestUrl + "/account/search"
@@ -49,22 +49,22 @@ func TestOrderRegister(t *testing.T) {
 			ChainType: common.ChainTypeMixin,
 			Address:   "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58",
 			Account:   "1234567873.bit",
-			AccountCharStr: []tables.AccountCharSet{
-				{CharSetName: tables.AccountCharTypeNumber, Char: "1"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "2"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "3"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "4"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "5"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "6"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "7"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "8"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "7"},
-				{CharSetName: tables.AccountCharTypeNumber, Char: "3"},
-				//{CharSetName: tables.AccountCharTypeEn, Char: "a"},
-				{CharSetName: tables.AccountCharTypeEn, Char: "."},
-				{CharSetName: tables.AccountCharTypeEn, Char: "b"},
-				{CharSetName: tables.AccountCharTypeEn, Char: "i"},
-				{CharSetName: tables.AccountCharTypeEn, Char: "t"},
+			AccountCharStr: []common.AccountCharSet{
+				{CharSetName: common.AccountCharTypeNumber, Char: "1"},
+				{CharSetName: common.AccountCharTypeNumber, Char: "2"},
+				{CharSetName: common.AccountCharTypeNumber, Char: "3"},
+				{CharSetName: common.AccountCharTypeNumber, Char: "4"},
+				{CharSetName: common.AccountCharTypeNumber, Char: "5"},
+				{CharSetName: common.AccountCharTypeNumber, Char: "6"},
+				{CharSetName: common.AccountCharTypeNumber, Char: "7"},
+				{CharSetName: common.AccountCharTypeNumber, Char: "8"},
+				{CharSetName: common.AccountCharTypeNumber, Char: "7"},
+				{CharSetName: common.AccountCharTypeNumber, Char: "3"},
+				//{CharSetName: common.AccountCharTypeEn, Char: "a"},
+				{CharSetName: common.AccountCharTypeEn, Char: "."},
+				{CharSetName: common.AccountCharTypeEn, Char: "b"},
+				{CharSetName: common.AccountCharTypeEn, Char: "i"},
+				{CharSetName: common.AccountCharTypeEn, Char: "t"},
 			},
 		},
 		ReqOrderRegisterBase: handle.ReqOrderRegisterBase{
@@ -172,9 +172,4 @@ func TestRegisteringList(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(data)
-}
-
-func TestAccountCharSet(t *testing.T) {
-	account := "0123456789abcdefghijklmnopqrstuvwxyz.bit"
-	fmt.Println(handle.AccountToCharSet(account))
 }

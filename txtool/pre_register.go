@@ -186,7 +186,7 @@ type preRegisterTxParams struct {
 	channelScript *types.Script
 	ownerLockArgs []byte
 	refundLock    *types.Script
-	accountChars  []tables.AccountCharSet
+	accountChars  []common.AccountCharSet
 	registerYears int
 }
 

@@ -133,30 +133,17 @@ const (
 	TxStatusOk      TxStatus = 2
 )
 
-type AccountCharType uint32
-
-const (
-	AccountCharTypeEmoji  AccountCharType = 0
-	AccountCharTypeNumber AccountCharType = 1
-	AccountCharTypeEn     AccountCharType = 2
-)
-
-type AccountCharSet struct {
-	CharSetName AccountCharType `json:"char_set_name"`
-	Char        string          `json:"char"`
-}
-
 type TableOrderContent struct {
-	AccountCharStr []AccountCharSet `json:"account_char_str"`
-	InviterAccount string           `json:"inviter_account"`
-	ChannelAccount string           `json:"channel_account"`
-	RegisterYears  int              `json:"register_years"`
-	AmountTotalUSD decimal.Decimal  `json:"amount_total_usd"`
-	AmountTotalCKB decimal.Decimal  `json:"amount_total_ckb"`
-	RenewYears     int              `json:"renew_years"`
+	AccountCharStr []common.AccountCharSet `json:"account_char_str"`
+	InviterAccount string                  `json:"inviter_account"`
+	ChannelAccount string                  `json:"channel_account"`
+	RegisterYears  int                     `json:"register_years"`
+	AmountTotalUSD decimal.Decimal         `json:"amount_total_usd"`
+	AmountTotalCKB decimal.Decimal         `json:"amount_total_ckb"`
+	RenewYears     int                     `json:"renew_years"`
 }
 
-func AccountCharSetListToMoleculeAccountChars(list []AccountCharSet) molecule.AccountChars {
+func AccountCharSetListToMoleculeAccountChars(list []common.AccountCharSet) molecule.AccountChars {
 	accountChars := molecule.NewAccountCharsBuilder()
 	for _, item := range list {
 		if item.Char == "." {

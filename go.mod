@@ -3,7 +3,7 @@ module das_register_server
 go 1.15
 
 require (
-	github.com/DeAccountSystems/das-lib v0.0.0-20220531040850-ea68b195348f
+	github.com/DeAccountSystems/das-lib v0.0.0-20220620073333-2bfd187fd410
 	github.com/elazarl/goproxy v0.0.0-20220417044921-416226498f94 // indirect
 	github.com/ethereum/go-ethereum v1.10.17
 	github.com/fsnotify/fsnotify v1.5.3
@@ -12,7 +12,7 @@ require (
 	github.com/minio/blake2b-simd v0.0.0-20160723061019-3f5f724cb5b1
 	github.com/nervosnetwork/ckb-sdk-go v0.101.3
 	github.com/parnurzeal/gorequest v0.2.16
-	github.com/scorpiotzh/mylog v1.0.9
+	github.com/scorpiotzh/mylog v1.0.10
 	github.com/scorpiotzh/toolib v1.1.3
 	github.com/shopspring/decimal v1.3.1
 	github.com/urfave/cli/v2 v2.4.4

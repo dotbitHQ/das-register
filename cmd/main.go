@@ -232,7 +232,6 @@ func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
 	dasCore.RunAsyncDasContract(time.Minute * 3)   // contract outpoint
 	dasCore.RunAsyncDasConfigCell(time.Minute * 5) // config cell outpoint
 	dasCore.RunAsyncDasSoScript(time.Minute * 7)   // so
-	config.InitAccountCharSetEmoji(dasCore)        // init emoji
 
 	log.Info("das contract ok")
 

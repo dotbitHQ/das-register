@@ -3,20 +3,16 @@ package config
 import (
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/core"
 	"github.com/fsnotify/fsnotify"
 	"github.com/scorpiotzh/mylog"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
-	"strings"
 )
 
 var (
-	Cfg                  CfgServer
-	AccountCharSetEmoji  string
-	AccountCharSetNumber = "0123456789"
-	AccountCharSetEn     = "abcdefghijklmnopqrstuvwxyz."
-	log                  = mylog.NewLogger("config", mylog.LevelDebug)
+	Cfg                 CfgServer
+	AccountCharSetEmoji string
+	log                 = mylog.NewLogger("config", mylog.LevelDebug)
 )
 
 func InitCfg(configFilePath string) error {
@@ -101,16 +97,4 @@ type DbMysql struct {
 	DbName      string `json:"db_name" yaml:"db_name"`
 	MaxOpenConn int    `json:"max_open_conn" yaml:"max_open_conn"`
 	MaxIdleConn int    `json:"max_idle_conn" yaml:"max_idle_conn"`
-}
-
-func InitAccountCharSetEmoji(dc *core.DasCore) {
-	if dc == nil {
-		return
-	}
-	builder, err := dc.ConfigCellDataBuilderByTypeArgsList(common.ConfigCellTypeArgsCharSetEmoji)
-	if err != nil {
-		log.Error("ConfigCellDataBuilderByTypeArgsList err: ", err.Error())
-	} else {
-		AccountCharSetEmoji = strings.Join(builder.ConfigCellEmojis, "")
-	}
 }

@@ -19,7 +19,7 @@ type ReqAccountSearch struct {
 	ChainType      common.ChainType        `json:"chain_type"`
 	Address        string                  `json:"address"`
 	Account        string                  `json:"account"`
-	AccountCharStr []tables.AccountCharSet `json:"account_char_str"`
+	AccountCharStr []common.AccountCharSet `json:"account_char_str"`
 }
 
 type RespAccountSearch struct {
@@ -194,18 +194,18 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 			return
 		}
 		switch v.CharSetName {
-		case tables.AccountCharTypeEmoji:
-			if !strings.Contains(config.AccountCharSetEmoji, v.Char) {
+		case common.AccountCharTypeEmoji:
+			if _, ok := common.CharSetTypeEmojiMap[v.Char]; !ok {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
-		case tables.AccountCharTypeNumber:
-			if !strings.Contains(config.AccountCharSetNumber, v.Char) {
+		case common.AccountCharTypeNumber:
+			if !strings.Contains(common.CharSetTypeNumber, v.Char) {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
-		case tables.AccountCharTypeEn:
-			if !strings.Contains(config.AccountCharSetEn, v.Char) {
+		case common.AccountCharTypeEn:
+			if !strings.Contains(common.CharSetTypeEn, v.Char) && v.Char != "." {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}

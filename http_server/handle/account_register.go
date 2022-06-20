@@ -14,7 +14,6 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -83,8 +82,13 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	}
 
 	if len(req.AccountCharStr) == 0 {
-		req.AccountCharStr = AccountToCharSet(req.Account)
-		log.Info("AccountToCharSet:", toolib.JsonString(req.AccountCharStr))
+		accountChars, err := common.AccountToAccountChars(req.Account)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
+			return nil
+		}
+		req.AccountCharStr = accountChars
+		log.Info("AccountToAccountChars:", toolib.JsonString(req.AccountCharStr))
 	}
 
 	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
@@ -169,24 +173,6 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 
 	apiResp.ApiRespOK(resp)
 	return nil
-}
-
-func AccountToCharSet(account string) (accountChars []tables.AccountCharSet) {
-	chars := []rune(account)
-	for _, v := range chars {
-		char := string(v)
-		charSetName := tables.AccountCharTypeEmoji
-		if strings.Contains(config.AccountCharSetEn, char) {
-			charSetName = tables.AccountCharTypeEn
-		} else if strings.Contains(config.AccountCharSetNumber, char) {
-			charSetName = tables.AccountCharTypeNumber
-		}
-		accountChars = append(accountChars, tables.AccountCharSet{
-			CharSetName: charSetName,
-			Char:        char,
-		})
-	}
-	return
 }
 
 func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *api_code.ApiResp, resp *RespAccountRegister) {
