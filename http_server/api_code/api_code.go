@@ -81,6 +81,7 @@ const (
 	MethodOrderRegister    = "das_submitRegisterOrder"
 	MethodOrderChange      = "das_changeOrder"
 	MethodOrderPayHash     = "das_doOrderPayHash"
+	MethodEditScript       = "das_editScript"
 
 	MethodCkbRpc = "das_ckbRpc"
 )

@@ -25,6 +25,7 @@ type ConfigCellDataBuilder struct {
 	ConfigCellRecordKeys             []string
 	ConfigCellEmojis                 []string
 	ConfigCellCharSetEn              []string
+	ConfigCellCharSetDigit           []string
 	ConfigCellUnavailableAccountMap  map[string]struct{}
 	ConfigCellPreservedAccountMap    map[string]struct{}
 	ConfigCellSubAccountWhiteListMap map[string]struct{}
@@ -143,7 +144,7 @@ func ConfigCellDataBuilderRefByTypeArgs(builder *ConfigCellDataBuilder, tx *type
 		if err != nil {
 			return fmt.Errorf("char set emoji err: %s", err.Error())
 		}
-		fmt.Println(strings.Split(string(configCellDataBys[4:dataLength]), string([]byte{0x00})))
+		builder.ConfigCellCharSetDigit = strings.Split(string(configCellDataBys[4:dataLength]), string([]byte{0x00}))
 	case common.ConfigCellTypeArgsCharSetEn:
 		dataLength, err := molecule.Bytes2GoU32(configCellDataBys[:4])
 		if err != nil {
