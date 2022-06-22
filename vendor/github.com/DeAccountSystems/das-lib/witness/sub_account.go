@@ -400,18 +400,56 @@ func (p *SubAccountParam) NewSubAccountWitness() ([]byte, error) {
 	return witness, nil
 }
 
-func ConvertSubAccountCellOutputData(data []byte) (smtRoot []byte, profit uint64) {
-	if len(data) == 32 {
-		smtRoot = data
-	} else if len(data) == 40 {
-		smtRoot = data[:32]
-		profit, _ = molecule.Bytes2GoU64(data[32:])
+// ===================== outputs data ====================
+
+type SubAccountCellDataDetail struct {
+	SmtRoot          []byte // 32
+	DasProfit        uint64 // 8
+	OwnerProfit      uint64 // 8
+	CustomScriptArgs []byte // 33
+}
+
+func ConvertSubAccountCellOutputData(data []byte) (detail SubAccountCellDataDetail) {
+	if len(data) >= 32 {
+		detail.SmtRoot = data[:32]
+	}
+	if len(data) >= 40 {
+		detail.DasProfit, _ = molecule.Bytes2GoU64(data[32:40])
+	}
+	if len(data) >= 48 {
+		detail.OwnerProfit, _ = molecule.Bytes2GoU64(data[40:48])
+	}
+	if len(data) >= 81 {
+		detail.CustomScriptArgs = data[48:81]
 	}
 	return
 }
 
-func BuildSubAccountCellOutputData(smtRoot []byte, profit uint64) []byte {
-	data := molecule.GoU64ToMoleculeU64(profit)
-	smtRoot = append(smtRoot, data.RawData()...)
-	return smtRoot
+func BuildSubAccountCellOutputData(detail SubAccountCellDataDetail) []byte {
+	dasProfit := molecule.GoU64ToMoleculeU64(detail.DasProfit)
+
+	data := append(detail.SmtRoot, dasProfit.RawData()...)
+	if detail.DasProfit > 0 || len(detail.CustomScriptArgs) > 0 {
+		ownerProfit := molecule.GoU64ToMoleculeU64(detail.OwnerProfit)
+		data = append(data, ownerProfit.RawData()...)
+		data = append(data, detail.CustomScriptArgs...)
+	}
+	return data
 }
+
+//
+//func ConvertSubAccountCellOutputData(data []byte) (smtRoot []byte, profit uint64) {
+//	if len(data) == 32 {
+//		smtRoot = data
+//	} else if len(data) == 40 {
+//		smtRoot = data[:32]
+//		profit, _ = molecule.Bytes2GoU64(data[32:])
+//	}
+//	return
+//}
+//
+//func BuildSubAccountCellOutputData(smtRoot []byte, profit uint64) []byte {
+//	data := molecule.GoU64ToMoleculeU64(profit)
+//	smtRoot = append(smtRoot, data.RawData()...)
+//	return smtRoot
+//}

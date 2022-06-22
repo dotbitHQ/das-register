@@ -45,6 +45,7 @@ const (
 	ApiCodeSameOrderInfo                ApiCode = 30033
 	ApiCodeSigErr                       ApiCode = 30034 // contracte -31
 	ApiCodeOnCross                      ApiCode = 30035
+	ApiCodeSubAccountNotEnabled         ApiCode = 30036
 )
 
 const (

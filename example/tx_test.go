@@ -33,3 +33,7 @@ func TestPrice(t *testing.T) {
 	priceCapacity = (priceCapacity / common.PercentRateBase) * (common.PercentRateBase - invitedDiscount)
 	fmt.Println(priceCapacity)
 }
+
+func TestHex2Bytes(t *testing.T) {
+	fmt.Println(len(common.Hex2Bytes("")))
+}
