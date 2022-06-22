@@ -203,7 +203,7 @@ func (h *HttpHandle) buildEditScript(req *reqBuildTx, p *editScriptParams) (*txb
 	txParams.OutputsData = append(txParams.OutputsData, subAccountOutputData)
 
 	// action witness
-	actionWitness, err := witness.GenActionDataWitness(common.DasActionEditManager, nil)
+	actionWitness, err := witness.GenActionDataWitnessV2(common.DasActionCreateSubAccount, nil, common.ParamOwner)
 	if err != nil {
 		return nil, fmt.Errorf("GenActionDataWitness err: %s", err.Error())
 	}
