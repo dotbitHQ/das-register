@@ -118,41 +118,41 @@ func (d *DbDao) GetAccountsCount(chainType common.ChainType, address, keyword st
 	default:
 		//case tables.CategoryDefault:
 		if keyword == "" {
-			err = d.parserDb.Where(" owner_chain_type=? AND owner=? ", chainType, address).
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" owner_chain_type=? AND owner=? ", chainType, address).
 				Or(" manager_chain_type=? AND manager=? ", chainType, address).
 				Count(&count).Error
 		} else {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND account LIKE ? ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND account LIKE ? ",
 				chainType, address, chainType, address, "%"+keyword+"%").
 				Count(&count).Error
 		}
 	case tables.CategoryMainAccount:
 		if keyword == "" {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND parent_account_id='' ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND parent_account_id='' ",
 				chainType, address, chainType, address).
 				Count(&count).Error
 		} else {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND parent_account_id='' AND account LIKE ? ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND parent_account_id='' AND account LIKE ? ",
 				chainType, address, chainType, address, "%"+keyword+"%").
 				Count(&count).Error
 		}
 	case tables.CategorySubAccount:
 		if keyword == "" {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND parent_account_id!='' ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND parent_account_id!='' ",
 				chainType, address, chainType, address).
 				Count(&count).Error
 		} else {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND parent_account_id!='' AND account LIKE ? ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND parent_account_id!='' AND account LIKE ? ",
 				chainType, address, chainType, address, "%"+keyword+"%").
 				Count(&count).Error
 		}
 	case tables.CategoryOnSale:
 		if keyword == "" {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND status=? ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND status=? ",
 				chainType, address, chainType, address, tables.AccountStatusOnSale).
 				Count(&count).Error
 		} else {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND status=? AND account LIKE ? ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND status=? AND account LIKE ? ",
 				chainType, address, chainType, address, tables.AccountStatusOnSale, "%"+keyword+"%").
 				Count(&count).Error
 		}
@@ -160,22 +160,22 @@ func (d *DbDao) GetAccountsCount(chainType common.ChainType, address, keyword st
 		expiredAt := time.Now().Unix()
 		expiredAt30Days := time.Now().Add(time.Hour * 24 * 30).Unix()
 		if keyword == "" {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND expired_at>=? AND expired_at<=? ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND expired_at>=? AND expired_at<=? ",
 				chainType, address, chainType, address, expiredAt, expiredAt30Days).
 				Count(&count).Error
 		} else {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND expired_at>=? AND expired_at<=? AND account LIKE ? ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND expired_at>=? AND expired_at<=? AND account LIKE ? ",
 				chainType, address, chainType, address, expiredAt, expiredAt30Days, "%"+keyword+"%").
 				Count(&count).Error
 		}
 	case tables.CategoryToBeRecycled:
 		expiredAt := time.Now().Unix()
 		if keyword == "" {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND expired_at<=? ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) AND expired_at<=? ",
 				chainType, address, chainType, address, expiredAt).
 				Count(&count).Error
 		} else {
-			err = d.parserDb.Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) expired_at<=? AND account LIKE ? ",
+			err = d.parserDb.Model(tables.TableAccountInfo{}).Where(" ((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?)) expired_at<=? AND account LIKE ? ",
 				chainType, address, chainType, address, expiredAt, "%"+keyword+"%").
 				Count(&count).Error
 		}
