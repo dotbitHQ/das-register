@@ -161,15 +161,6 @@ type editScriptParams struct {
 func (h *HttpHandle) buildEditScript(req *reqBuildTx, p *editScriptParams) (*txbuilder.BuildTransactionParams, error) {
 	var txParams txbuilder.BuildTransactionParams
 
-	builderConfigCell, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsAccount)
-	if err != nil {
-		return nil, fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
-	}
-	commonFee, err := builderConfigCell.AccountCommonFee()
-	if err != nil {
-		return nil, fmt.Errorf("AccountCommonFee err: %s", err.Error())
-	}
-
 	// inputs
 	accOutPoint := common.String2OutPointStruct(p.acc.Outpoint)
 	txParams.Inputs = append(txParams.Inputs, &types.CellInput{
@@ -194,7 +185,7 @@ func (h *HttpHandle) buildEditScript(req *reqBuildTx, p *editScriptParams) (*txb
 		return nil, fmt.Errorf("GetTransaction err: %s", err.Error())
 	}
 	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
-		Capacity: txAcc.Transaction.Outputs[accOutPoint.Index].Capacity - commonFee,
+		Capacity: txAcc.Transaction.Outputs[accOutPoint.Index].Capacity,
 		Lock:     txAcc.Transaction.Outputs[accOutPoint.Index].Lock,
 		Type:     txAcc.Transaction.Outputs[accOutPoint.Index].Type,
 	})

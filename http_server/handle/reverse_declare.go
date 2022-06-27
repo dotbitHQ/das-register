@@ -217,9 +217,13 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	if err := txBuilder.BuildTransaction(txParams); err != nil {
 		return nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
 	}
+
 	var skipGroups []int
 	if req.Action == common.DasActionConfigSubAccountCustomScript {
 		skipGroups = []int{1}
+		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
+		changeCapacity := txBuilder.Transaction.Outputs[1].Capacity - sizeInBlock - 1000
+		txBuilder.Transaction.Outputs[1].Capacity = changeCapacity
 	}
 	signList, err := txBuilder.GenerateDigestListFromTx(skipGroups)
 	if err != nil {
