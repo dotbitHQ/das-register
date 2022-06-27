@@ -252,6 +252,8 @@ func TestTimestamp(t *testing.T) {
 	fmt.Println(time.Now().Unix(), time.Now().UnixNano())
 }
 
+// curl -X POST http://127.0.0.1:8119/v1/sign/tx -d'{"chain_id":5,"private":"","SignInfo":{}}'
+
 func TestEditScript(t *testing.T) {
 	args := common.Bytes2Hex(make([]byte, 33))
 	fmt.Println(args)
@@ -273,5 +275,5 @@ func TestEditScript(t *testing.T) {
 	if err := doReq(url, req, &data); err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(data)
+	fmt.Println(toolib.JsonString(&data))
 }

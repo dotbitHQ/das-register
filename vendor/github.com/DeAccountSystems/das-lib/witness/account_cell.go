@@ -42,6 +42,7 @@ type AccountCellParam struct {
 	Records               []AccountCellRecord
 	EnableSubAccount      uint8
 	RenewSubAccountPrice  uint64
+	IsCustomScript        bool
 }
 
 func AccountCellDataBuilderFromTx(tx *types.Transaction, dataType common.DataType) (*AccountCellDataBuilder, error) {
@@ -203,8 +204,26 @@ func (a *AccountCellDataBuilder) getNewAccountCellDataBuilder() *molecule.Accoun
 func (a *AccountCellDataBuilder) GenWitness(p *AccountCellParam) ([]byte, []byte, error) {
 
 	switch p.Action {
-	case common.DasActionRenewAccount, common.DasActionCreateSubAccount,
-		common.DasActionConfigSubAccountCreatingScript:
+	case common.DasActionCreateSubAccount:
+		if p.IsCustomScript {
+			oldDataEntityOpt := a.getOldDataEntityOpt(p)
+			tmp := molecule.NewDataBuilder().Dep(*oldDataEntityOpt).Build()
+			witness := GenDasDataWitness(common.ActionDataTypeAccountCell, &tmp)
+			return witness, nil, nil
+		}
+		oldDataEntityOpt := a.getOldDataEntityOpt(p)
+		newBuilder := a.getNewAccountCellDataBuilder()
+		newAccountCellData := newBuilder.Build()
+		newAccountCellDataBytes := molecule.GoBytes2MoleculeBytes(newAccountCellData.AsSlice())
+
+		newDataEntity := molecule.NewDataEntityBuilder().Entity(newAccountCellDataBytes).
+			Version(DataEntityVersion3).Index(molecule.GoU32ToMoleculeU32(p.NewIndex)).Build()
+		newDataEntityOpt := molecule.NewDataEntityOptBuilder().Set(newDataEntity).Build()
+
+		tmp := molecule.NewDataBuilder().Old(*oldDataEntityOpt).New(newDataEntityOpt).Build()
+		witness := GenDasDataWitness(common.ActionDataTypeAccountCell, &tmp)
+		return witness, common.Blake2b(newAccountCellData.AsSlice()), nil
+	case common.DasActionRenewAccount, common.DasActionConfigSubAccountCreatingScript:
 		oldDataEntityOpt := a.getOldDataEntityOpt(p)
 		newBuilder := a.getNewAccountCellDataBuilder()
 		newAccountCellData := newBuilder.Build()
