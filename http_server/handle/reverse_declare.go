@@ -225,11 +225,16 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 
 	log.Info("buildTx:", txBuilder.TxString())
 
-	mmJsonObj, err := txBuilder.BuildMMJsonObj(req.EvmChainId)
-	if req.Action != tables.DasActionTransferBalance && err != nil {
-		return nil, fmt.Errorf("txBuilder.BuildMMJsonObj err: %s", err.Error())
-	} else {
-		log.Info("BuildTx:", mmJsonObj.String())
+	var mmJsonObj *common.MMJsonObj
+	switch req.Action {
+	case common.DasActionConfigSubAccountCreatingScript:
+	default:
+		mmJsonObj, err = txBuilder.BuildMMJsonObj(req.EvmChainId)
+		if req.Action != tables.DasActionTransferBalance && err != nil {
+			return nil, fmt.Errorf("txBuilder.BuildMMJsonObj err: %s", err.Error())
+		} else {
+			log.Info("BuildTx:", mmJsonObj.String())
+		}
 	}
 
 	var sic SignInfoCache
