@@ -118,8 +118,9 @@ func (h *HttpHandle) doSignTx(req *ReqSignTx, apiResp *api_code.ApiResp) error {
 			chainIdData := common.Hex2Bytes(fmt.Sprintf("%016s", hexChainId))
 			signData = append(signData, chainIdData...)
 		default:
-			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not support sign type [%d]", v.SignType))
-			return nil
+			//apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not support sign type [%d]", v.SignType))
+			//return nil
+			signData = []byte{}
 		}
 		resp.SignList = append(resp.SignList, txbuilder.SignData{
 			SignType: v.SignType,

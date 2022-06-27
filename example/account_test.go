@@ -18,7 +18,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"5903ab4a9314a1c2b78bc5e11d156e05","sign_list":[{"sign_type":5,"sign_msg":"0x1425b3786233654d51e7035196a01c4b801e52bee05139891c41333467e2db344f9bc368d265c6efb3f0e35b4bec576f25c01290a6d10194ca63950319ab05161cbba2833e11e42bb7222a6a912eaf32757cbab68099fcaaf9db674a01e872343b0000000000000005"}],"mm_json":null}`
+	str := `{"sign_key":"5bcbcce10daea71470280e51d2eab07a","sign_list":[{"sign_type":3,"sign_msg":"0xda225fd1d7b3f23d22624c9431040068528d0dd7fd5f8fc31bf1909b6e8bb9292556cfe98f3709327d08d179f09e35eeb944784124628ea042bfb9d44121cba901"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
@@ -252,7 +252,7 @@ func TestTimestamp(t *testing.T) {
 	fmt.Println(time.Now().Unix(), time.Now().UnixNano())
 }
 
-// curl -X POST http://127.0.0.1:8119/v1/sign/tx -d'{"chain_id":5,"private":"","SignInfo":{}}'
+// curl -X POST http://127.0.0.1:8119/v1/sign/tx -d'{"chain_id":5,"private":"",}'
 
 func TestEditScript(t *testing.T) {
 	args := common.Bytes2Hex(make([]byte, 33))
