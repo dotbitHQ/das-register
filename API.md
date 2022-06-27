@@ -222,6 +222,12 @@ curl -X POST http://127.0.0.1:8120/v1/account/list -d'{"chain_type":1,"address":
 * path: /account/mine
     * get user's accounts by pagination
 * param:
+  * CategoryDefault      Category = 0
+  * CategoryMainAccount  Category = 1
+  * CategorySubAccount   Category = 2
+  * CategoryOnSale       Category = 3
+  * CategoryExpireSoon   Category = 4
+  * CategoryToBeRecycled Category = 5
 
 ```json
 
@@ -229,7 +235,9 @@ curl -X POST http://127.0.0.1:8120/v1/account/list -d'{"chain_type":1,"address":
   "chain_type": 1,
   "address": "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
   "page": 1,
-  "size": 2
+  "size": 2,
+  "keyword": "",
+  "category": 0
 }
 ```
 
