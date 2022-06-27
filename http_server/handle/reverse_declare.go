@@ -217,8 +217,11 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	if err := txBuilder.BuildTransaction(txParams); err != nil {
 		return nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
 	}
-
-	signList, err := txBuilder.GenerateDigestListFromTx([]int{})
+	var skipGroups []int
+	if req.Action == common.DasActionConfigSubAccountCreatingScript {
+		skipGroups = []int{1}
+	}
+	signList, err := txBuilder.GenerateDigestListFromTx(skipGroups)
 	if err != nil {
 		return nil, fmt.Errorf("txBuilder.GenerateDigestListFromTx err: %s", err.Error())
 	}
