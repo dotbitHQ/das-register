@@ -89,3 +89,16 @@ func (t *TableAccountInfo) FormatAccountStatus() SearchStatus {
 		return SearchStatusRegisterAble
 	}
 }
+
+// ============= account category ===============
+
+type Category int
+
+const (
+	CategoryDefault      Category = 0
+	CategoryMainAccount  Category = 1
+	CategorySubAccount   Category = 2
+	CategoryOnSale       Category = 3
+	CategoryExpireSoon   Category = 4
+	CategoryToBeRecycled Category = 5
+)

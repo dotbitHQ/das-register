@@ -3,6 +3,7 @@ package handle
 import (
 	"das_register_server/cache"
 	"das_register_server/http_server/api_code"
+	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
@@ -17,7 +18,8 @@ type ReqAccountMine struct {
 	ChainType common.ChainType `json:"chain_type"`
 	Address   string           `json:"address"`
 	Pagination
-	Keyword string `json:"keyword"`
+	Keyword  string          `json:"keyword"`
+	Category tables.Category `json:"category"`
 }
 
 type RespAccountMine struct {
@@ -92,7 +94,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 		}
 	}
 
-	list, err := h.dbDao.SearchAccountListWithPage(req.ChainType, req.Address, req.Keyword, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.SearchAccountListWithPage(req.ChainType, req.Address, req.Keyword, req.GetLimit(), req.GetOffset(), req.Category)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account list err")
 		return fmt.Errorf("SearchAccountList err: %s", err.Error())
@@ -109,7 +111,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 		})
 	}
 
-	count, err := h.dbDao.GetAccountsCount(req.ChainType, req.Address, req.Keyword)
+	count, err := h.dbDao.GetAccountsCount(req.ChainType, req.Address, req.Keyword, req.Category)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "get account count err")
 		return fmt.Errorf("GetAccountsCount err: %s", err.Error())
