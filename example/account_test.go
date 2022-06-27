@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DeAccountSystems/das-lib/common"
+	"github.com/DeAccountSystems/das-lib/core"
 	"github.com/parnurzeal/gorequest"
 	"github.com/scorpiotzh/toolib"
 	"testing"
@@ -249,4 +250,28 @@ func TestAccountList(t *testing.T) {
 
 func TestTimestamp(t *testing.T) {
 	fmt.Println(time.Now().Unix(), time.Now().UnixNano())
+}
+
+func TestEditScript(t *testing.T) {
+	args := common.Bytes2Hex(make([]byte, 33))
+	fmt.Println(args)
+	url := TestUrl + "/account/edit/script"
+	req := handle.ReqEditScript{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeEth,
+				ChainId:  "",
+				Key:      "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+			},
+		},
+		Account:          "00acc2022042902.bit",
+		CustomScriptArgs: args,
+		EvmChainId:       5,
+	}
+	var data handle.RespEditScript
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(data)
 }
