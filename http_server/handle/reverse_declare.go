@@ -7,10 +7,10 @@ import (
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
-	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/core"
-	"github.com/DeAccountSystems/das-lib/txbuilder"
-	"github.com/DeAccountSystems/das-lib/witness"
+	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/txbuilder"
+	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
@@ -218,7 +218,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		return nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
 	}
 	var skipGroups []int
-	if req.Action == common.DasActionConfigSubAccountCreatingScript {
+	if req.Action == common.DasActionConfigSubAccountCustomScript {
 		skipGroups = []int{1}
 	}
 	signList, err := txBuilder.GenerateDigestListFromTx(skipGroups)
@@ -230,7 +230,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 
 	var mmJsonObj *common.MMJsonObj
 	switch req.Action {
-	case common.DasActionConfigSubAccountCreatingScript:
+	case common.DasActionConfigSubAccountCustomScript:
 	default:
 		mmJsonObj, err = txBuilder.BuildMMJsonObj(req.EvmChainId)
 		if req.Action != tables.DasActionTransferBalance && err != nil {

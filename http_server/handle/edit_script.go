@@ -7,10 +7,10 @@ import (
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
-	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/core"
-	"github.com/DeAccountSystems/das-lib/txbuilder"
-	"github.com/DeAccountSystems/das-lib/witness"
+	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/txbuilder"
+	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
@@ -116,7 +116,7 @@ func (h *HttpHandle) doEditScript(req *ReqEditScript, apiResp *api_code.ApiResp)
 	}
 	// build tx
 	reqBuild := reqBuildTx{
-		Action:     common.DasActionConfigSubAccountCreatingScript,
+		Action:     common.DasActionConfigSubAccountCustomScript,
 		ChainType:  hexAddress.ChainType,
 		Address:    hexAddress.AddressHex,
 		Account:    req.Account,
@@ -212,7 +212,7 @@ func (h *HttpHandle) buildEditScript(req *reqBuildTx, p *editScriptParams) (*txb
 	txParams.OutputsData = append(txParams.OutputsData, subAccountOutputData)
 
 	// action witness
-	actionWitness, err := witness.GenActionDataWitnessV2(common.DasActionConfigSubAccountCreatingScript, nil, common.ParamOwner)
+	actionWitness, err := witness.GenActionDataWitnessV2(common.DasActionConfigSubAccountCustomScript, nil, common.ParamOwner)
 	if err != nil {
 		return nil, fmt.Errorf("GenActionDataWitness err: %s", err.Error())
 	}
@@ -230,7 +230,7 @@ func (h *HttpHandle) buildEditScript(req *reqBuildTx, p *editScriptParams) (*txb
 	accWitness, _, err := builder.GenWitness(&witness.AccountCellParam{
 		OldIndex: 0,
 		NewIndex: 0,
-		Action:   common.DasActionConfigSubAccountCreatingScript,
+		Action:   common.DasActionConfigSubAccountCustomScript,
 	})
 	txParams.Witnesses = append(txParams.Witnesses, accWitness)
 

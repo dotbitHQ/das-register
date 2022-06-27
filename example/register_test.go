@@ -4,8 +4,8 @@ import (
 	"das_register_server/http_server/handle"
 	"encoding/json"
 	"fmt"
-	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/sign"
+	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 	"github.com/scorpiotzh/toolib"
 )

@@ -20,8 +20,8 @@ Backend of DAS registration service. You can use this repo to build your own DAS
 * GO version >= 1.15.0
 * [CKB Node](https://github.com/nervosnetwork/ckb)
 * [CKB Indexer](https://github.com/nervosnetwork/ckb-indexer)
-* [das-database](https://github.com/DeAccountSystems/das-database)
-* [das-pay](https://github.com/DeAccountSystems/das-pay)
+* [das-database](https://github.com/dotbitHQ/das-database)
+* [das-pay](https://github.com/dotbitHQ/das-pay)
 
 
 ## Install & Run
@@ -29,7 +29,7 @@ Backend of DAS registration service. You can use this repo to build your own DAS
 ### Source Compile
 ```bash
 # get the code
-git clone https://github.com/DeAccountSystems/das-register.git
+git clone https://github.com/dotbitHQ/das-register.git
 
 # edit config/config.yaml before init mysql database
 mysql -uroot -p

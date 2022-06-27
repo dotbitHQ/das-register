@@ -1,14 +1,5 @@
 # github.com/Andrew-M-C/go.emoji v1.0.1
 github.com/Andrew-M-C/go.emoji/official
-# github.com/DeAccountSystems/das-lib v0.0.0-20220627075714-96ec54c17144
-## explicit
-github.com/DeAccountSystems/das-lib/common
-github.com/DeAccountSystems/das-lib/core
-github.com/DeAccountSystems/das-lib/dascache
-github.com/DeAccountSystems/das-lib/molecule
-github.com/DeAccountSystems/das-lib/sign
-github.com/DeAccountSystems/das-lib/txbuilder
-github.com/DeAccountSystems/das-lib/witness
 # github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6
 github.com/StackExchange/wmi
 # github.com/btcsuite/btcd/btcec/v2 v2.1.2
@@ -25,6 +16,15 @@ github.com/decred/dcrd/dcrec/secp256k1/v4
 github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
+# github.com/dotbitHQ/das-lib v0.0.0-20220627090951-5b3398fd1c30
+## explicit
+github.com/dotbitHQ/das-lib/common
+github.com/dotbitHQ/das-lib/core
+github.com/dotbitHQ/das-lib/dascache
+github.com/dotbitHQ/das-lib/molecule
+github.com/dotbitHQ/das-lib/sign
+github.com/dotbitHQ/das-lib/txbuilder
+github.com/dotbitHQ/das-lib/witness
 # github.com/elazarl/goproxy v0.0.0-20220417044921-416226498f94
 ## explicit
 # github.com/ethereum/go-ethereum v1.10.17

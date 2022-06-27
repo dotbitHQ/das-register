@@ -4,7 +4,7 @@ import (
 	"crypto/ed25519"
 	"das_register_server/http_server/handle"
 	"fmt"
-	"github.com/DeAccountSystems/das-lib/common"
+	"github.com/dotbitHQ/das-lib/common"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"testing"

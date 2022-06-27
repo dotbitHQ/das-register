@@ -5,7 +5,7 @@ import (
 	"das_register_server/http_server/api_code"
 	"encoding/json"
 	"fmt"
-	"github.com/DeAccountSystems/das-lib/common"
+	"github.com/dotbitHQ/das-lib/common"
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 	"net/http"

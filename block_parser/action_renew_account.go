@@ -4,8 +4,8 @@ import (
 	"das_register_server/notify"
 	"das_register_server/tables"
 	"fmt"
-	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/witness"
+	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/shopspring/decimal"
 )
 

@@ -3,7 +3,7 @@ package example
 import (
 	"das_register_server/http_server/handle"
 	"fmt"
-	"github.com/DeAccountSystems/das-lib/common"
+	"github.com/dotbitHQ/das-lib/common"
 	"github.com/nervosnetwork/ckb-sdk-go/crypto/secp256k1"
 	"github.com/scorpiotzh/toolib"
 	"testing"

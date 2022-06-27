@@ -4,7 +4,7 @@ import (
 	"das_register_server/http_server/handle"
 	"das_register_server/tables"
 	"fmt"
-	"github.com/DeAccountSystems/das-lib/common"
+	"github.com/dotbitHQ/das-lib/common"
 	"github.com/parnurzeal/gorequest"
 	"testing"
 )

@@ -3,8 +3,8 @@ package example
 import (
 	"context"
 	"fmt"
-	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/sign"
+	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/nervosnetwork/ckb-sdk-go/rpc"
 	"testing"

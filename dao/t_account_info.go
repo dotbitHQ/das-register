@@ -2,7 +2,7 @@ package dao
 
 import (
 	"das_register_server/tables"
-	"github.com/DeAccountSystems/das-lib/common"
+	"github.com/dotbitHQ/das-lib/common"
 	"gorm.io/gorm"
 	"time"
 )

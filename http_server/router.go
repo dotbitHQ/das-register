@@ -4,7 +4,7 @@ import (
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"encoding/json"
-	"github.com/DeAccountSystems/das-lib/common"
+	"github.com/dotbitHQ/das-lib/common"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"

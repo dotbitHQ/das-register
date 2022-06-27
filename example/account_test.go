@@ -5,8 +5,8 @@ import (
 	"das_register_server/http_server/handle"
 	"encoding/json"
 	"fmt"
-	"github.com/DeAccountSystems/das-lib/common"
-	"github.com/DeAccountSystems/das-lib/core"
+	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/core"
 	"github.com/parnurzeal/gorequest"
 	"github.com/scorpiotzh/toolib"
 	"testing"
@@ -18,7 +18,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"df0239059e1f92656000acebeb179671","sign_list":[{"sign_type":3,"sign_msg":"0x4087e8a8f475a8131f1c5ae485c869a08026d1a0f94677e649943f18b84cd55f4841488c982f0148b680a2b39880e9200c1b06c070ef0eb5aeac00e988f5657c00"},{"sign_type":0,"sign_msg":"0x0"}],"mm_json":null}`
+	str := `{"sign_key":"390157986908afcbca8a2e194135aa4f","sign_list":[{"sign_type":3,"sign_msg":"0x74dfa31ce6f113a0b2d269ffd59c648a20a2fc7ba9ddc5bd75c792b9127e989231753086332b90abb2944218395584c1b61ba898959be22ef371c39d1f1084a700"},{"sign_type":0,"sign_msg":"0x0"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
