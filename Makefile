@@ -10,7 +10,6 @@ register:
 
 update:
 	go mod tidy
-	go mod vendor
 
 # cli
 CLI_BINARY_NAME=das_reward_cli
