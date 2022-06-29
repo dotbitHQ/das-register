@@ -18,7 +18,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"89a23e9066a9067ce0ea221d60315def","sign_list":[{"sign_type":3,"sign_msg":"0x4792148b0d0db9f14a79db20c7b432c5e3d62e378414fbf37b0419b154a6ed8a7dd5f51eddcef4f847e073c4f5645775b6b37aea563007f2a47354f6e7ba380001"},{"sign_type":0,"sign_msg":"0x0"}],"mm_json":null}`
+	str := `{"sign_key":"c2cbc3ad5d8925bb9453bae19bef2139","sign_list":[{"sign_type":3,"sign_msg":"0x250a469706d374758974aa193ee6a5fec42799ceb0cee1e154283adf52d359d569116ce9b96217d5dd545cde8fa642e5fe4683792dc2c86715dc4123373d5d0f01"},{"sign_type":0,"sign_msg":"0x0"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
@@ -256,6 +256,7 @@ func TestTimestamp(t *testing.T) {
 
 func TestEditScript(t *testing.T) {
 	args := common.Bytes2Hex(make([]byte, 33))
+	args = "0x01f15f519ecb226cd763b2bcbcab093e63f89100c07ac0caebc032c788b187ec99"
 	fmt.Println(args)
 	url := TestUrl + "/account/edit/script"
 	req := handle.ReqEditScript{
@@ -267,7 +268,7 @@ func TestEditScript(t *testing.T) {
 				Key:      "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
 			},
 		},
-		Account:          "00acc2022042902.bit",
+		Account:          "0001.bit",
 		CustomScriptArgs: args,
 		EvmChainId:       5,
 	}
