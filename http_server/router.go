@@ -72,7 +72,7 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/order/register", api_code.DoMonitorLog(api_code.MethodOrderRegister), h.h.OrderRegister)
 		v1.POST("/account/order/change", api_code.DoMonitorLog(api_code.MethodOrderChange), h.h.OrderChange)
 		v1.POST("/account/order/pay/hash", api_code.DoMonitorLog(api_code.MethodOrderPayHash), h.h.OrderPayHash)
-		v1.POST("/account/edit/script", api_code.DoMonitorLog(api_code.MethodEditScript), h.h.EditScript)
+		//v1.POST("/account/edit/script", api_code.DoMonitorLog(api_code.MethodEditScript), h.h.EditScript)
 
 		// node rpc
 		v1.POST("/node/ckb/rpc", api_code.DoMonitorLog(api_code.MethodCkbRpc), h.h.CkbRpc)

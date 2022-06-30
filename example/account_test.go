@@ -18,7 +18,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"c2cbc3ad5d8925bb9453bae19bef2139","sign_list":[{"sign_type":3,"sign_msg":"0x250a469706d374758974aa193ee6a5fec42799ceb0cee1e154283adf52d359d569116ce9b96217d5dd545cde8fa642e5fe4683792dc2c86715dc4123373d5d0f01"},{"sign_type":0,"sign_msg":"0x0"}],"mm_json":null}`
+	str := `{"sign_key":"fc3136523ce5b477369c9d93aee1b18d","sign_list":[{"sign_type":3,"sign_msg":"0xb5aa114fb5f97c208806712fd50cbb35cd3b7ffc9350aa6a55884d68e46427ea34be33d793c12e67035003758ba8835630126af86e5f62c072ba217145571ad500"},{"sign_type":0,"sign_msg":"0x0"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
@@ -268,7 +268,7 @@ func TestEditScript(t *testing.T) {
 				Key:      "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
 			},
 		},
-		Account:          "0001.bit",
+		Account:          "00acc2022042902.bit",
 		CustomScriptArgs: args,
 		EvmChainId:       5,
 	}
