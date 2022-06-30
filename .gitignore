@@ -14,6 +14,7 @@
 # Dependency directories (remove the comment below to include it)
 vendor/
 .idea
+das_register
 
 # temp file
 config/config.yaml

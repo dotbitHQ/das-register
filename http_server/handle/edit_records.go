@@ -173,7 +173,7 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 		if err != nil {
 			ttl = 300
 		}
-		p.records = append(p.records, witness.AccountCellRecord{
+		p.records = append(p.records, witness.Record{
 			Key:   v.Key,
 			Type:  v.Type,
 			Label: v.Label,
@@ -208,7 +208,7 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 
 type editRecordsParams struct {
 	account *tables.TableAccountInfo
-	records []witness.AccountCellRecord
+	records []witness.Record
 }
 
 func (h *HttpHandle) buildEditRecordsTx(req *reqBuildTx, p *editRecordsParams) (*txbuilder.BuildTransactionParams, error) {

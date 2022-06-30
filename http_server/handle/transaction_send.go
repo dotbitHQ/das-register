@@ -94,7 +94,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		if err != nil {
 			log.Error("AccountCellDataBuilderFromTx err: %s", err.Error())
 		} else {
-			log.Info("edit records:", sic.Account, sic.ChainType, sic.Address, toolib.JsonString(builder.RecordList()))
+			log.Info("edit records:", sic.Account, sic.ChainType, sic.Address, toolib.JsonString(builder.Records))
 		}
 	}
 
