@@ -105,10 +105,17 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToScript err")
 		return fmt.Errorf("HexToScript err: %s", err.Error())
 	}
-	liveCells, totalAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, fromLock, nil, 0, 0)
+	liveCells, totalAmount, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+		DasCache:          nil,
+		LockScript:        fromLock,
+		CapacityNeed:      0,
+		CapacityForChange: 0,
+		SearchOrder:       indexer.SearchOrderDesc,
+	})
+	//liveCells, totalAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, fromLock, nil, 0, 0)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "check balance err: "+err.Error())
-		return fmt.Errorf("GetSatisfiedCapacityLiveCell err: %s", err.Error())
+		return fmt.Errorf("GetBalanceCells err: %s", err.Error())
 	} else if totalAmount <= common.DasLockWithBalanceTypeOccupiedCkb { // 余额不足
 		if req.TransferAddress != "" {
 			parseAddress, err := address.Parse(req.TransferAddress)
@@ -121,10 +128,17 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 				return fmt.Errorf("full address: %s", req.TransferAddress)
 			}
 			fromLock = parseAddress.Script
-			liveCells, totalAmount, err = core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, fromLock, nil, 0, 0)
+			liveCells, totalAmount, err = h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+				DasCache:          nil,
+				LockScript:        fromLock,
+				CapacityNeed:      0,
+				CapacityForChange: 0,
+				SearchOrder:       indexer.SearchOrderDesc,
+			})
+			//liveCells, totalAmount, err = core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, fromLock, nil, 0, 0)
 			if err != nil {
 				apiResp.ApiRespErr(api_code.ApiCodeError500, "check balance err: "+err.Error())
-				return fmt.Errorf("GetSatisfiedCapacityLiveCell err: %s", err.Error())
+				return fmt.Errorf("GetBalanceCells err: %s", err.Error())
 			}
 			if totalAmount <= common.DasLockWithBalanceTypeOccupiedCkb { // 余额不足
 				apiResp.ApiRespErr(api_code.ApiCodeInsufficientBalance, "insufficient balance")

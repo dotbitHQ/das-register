@@ -183,9 +183,16 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 	feeCapacity := uint64(1e4)
 	splitCapacity := 1000 * common.OneCkb
 	needCapacity := feeCapacity + incomeCell.incomeCell.Capacity
-	liveCell, totalCapacity, err := core.GetSatisfiedCapacityLiveCellWithOrder(t.DasCore.Client(), t.DasCache, t.ServerScript, nil, needCapacity+splitCapacity, common.MinCellOccupiedCkb, indexer.SearchOrderAsc)
+	liveCell, totalCapacity, err := t.DasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+		DasCache:          t.DasCache,
+		LockScript:        t.ServerScript,
+		CapacityNeed:      needCapacity + splitCapacity,
+		CapacityForChange: common.MinCellOccupiedCkb,
+		SearchOrder:       indexer.SearchOrderAsc,
+	})
+	//liveCell, totalCapacity, err := core.GetSatisfiedCapacityLiveCellWithOrder(t.DasCore.Client(), t.DasCache, t.ServerScript, nil, needCapacity+splitCapacity, common.MinCellOccupiedCkb, indexer.SearchOrderAsc)
 	if err != nil {
-		return nil, fmt.Errorf("GetSatisfiedCapacityLiveCell err: %s", err.Error())
+		return nil, fmt.Errorf("GetBalanceCells err: %s", err.Error())
 	}
 
 	// inputs

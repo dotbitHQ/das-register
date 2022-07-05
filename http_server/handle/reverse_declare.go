@@ -144,7 +144,14 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 	preparedFeeCapacity, _ := configCellBuilder.RecordPreparedFeeCapacity()
 	needCapacity := baseCapacity + preparedFeeCapacity
 	feeCapacity, _ := configCellBuilder.RecordCommonFee()
-	liveCells, totalCapacity, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), h.dasCache, dasLock, dasType, needCapacity+feeCapacity, common.DasLockWithBalanceTypeOccupiedCkb)
+	liveCells, totalCapacity, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+		DasCache:          h.dasCache,
+		LockScript:        dasLock,
+		CapacityNeed:      needCapacity + feeCapacity,
+		CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
+		SearchOrder:       indexer.SearchOrderDesc,
+	})
+	//liveCells, totalCapacity, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), h.dasCache, dasLock, dasType, needCapacity+feeCapacity, common.DasLockWithBalanceTypeOccupiedCkb)
 	if err != nil {
 		if err == core.ErrRejectedOutPoint {
 			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, core.ErrRejectedOutPoint.Error())
@@ -155,7 +162,7 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 		} else {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "get capacity err")
 		}
-		return fmt.Errorf("GetSatisfiedCapacityLiveCell err: %s", err.Error())
+		return fmt.Errorf("GetBalanceCells err: %s", err.Error())
 	}
 
 	// build tx

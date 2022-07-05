@@ -127,7 +127,14 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 	}
 
 	fee := uint64(1e4)
-	liveCell, total, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), h.dasCache, fromAddress.Script, fromTypeScript, req.Amount+fee, common.DasLockWithBalanceTypeOccupiedCkb)
+	liveCell, total, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+		DasCache:          h.dasCache,
+		LockScript:        fromAddress.Script,
+		CapacityNeed:      req.Amount + fee,
+		CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
+		SearchOrder:       indexer.SearchOrderDesc,
+	})
+	//liveCell, total, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), h.dasCache, fromAddress.Script, fromTypeScript, req.Amount+fee, common.DasLockWithBalanceTypeOccupiedCkb)
 	if err != nil {
 		if err == core.ErrRejectedOutPoint {
 			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, err.Error())
@@ -140,7 +147,7 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 			return nil
 		} else {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
-			return fmt.Errorf("GetSatisfiedCapacityLiveCell err: %s", err.Error())
+			return fmt.Errorf("GetBalanceCells err: %s", err.Error())
 		}
 	}
 
