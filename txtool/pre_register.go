@@ -296,9 +296,17 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	// search balance
 	feeCapacity := uint64(1112663)
 	needCapacity := feeCapacity + preOutputs.Capacity - applyCapacity
-	liveCell, totalCapacity, err := core.GetSatisfiedCapacityLiveCellWithOrder(t.DasCore.Client(), t.DasCache, t.ServerScript, nil, needCapacity, common.MinCellOccupiedCkb, indexer.SearchOrderAsc)
+
+	liveCell, totalCapacity, err := t.DasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+		DasCache:          t.DasCache,
+		LockScript:        t.ServerScript,
+		CapacityNeed:      needCapacity,
+		CapacityForChange: common.MinCellOccupiedCkb,
+		SearchOrder:       indexer.SearchOrderAsc,
+	})
+	//liveCell, totalCapacity, err := core.GetSatisfiedCapacityLiveCellWithOrder(t.DasCore.Client(), t.DasCache, t.ServerScript, nil, needCapacity, common.MinCellOccupiedCkb, indexer.SearchOrderAsc)
 	if err != nil {
-		return nil, fmt.Errorf("GetSatisfiedCapacityLiveCell err: %s", err.Error())
+		return nil, fmt.Errorf("GetBalanceCells err: %s", err.Error())
 	}
 	if change := totalCapacity - needCapacity; change > 0 {
 		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{

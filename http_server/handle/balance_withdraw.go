@@ -171,7 +171,7 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 		} else {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "check balance err: "+err.Error())
 		}
-		return fmt.Errorf("GetSatisfiedCapacityLiveCell err: %s [%s]", err.Error(), req.ReceiverAddress)
+		return fmt.Errorf("GetBalanceCells err: %s [%s]", err.Error(), req.ReceiverAddress)
 	}
 	if req.WithdrawAll {
 		withdrawAmount = totalAmount - fee
