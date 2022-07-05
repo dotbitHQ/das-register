@@ -160,7 +160,14 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 	if req.WithdrawAll {
 		allAmount = uint64(0)
 	}
-	liveCell, totalAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), h.dasCache, dasLockScript, dasTypeScript, allAmount, common.DasLockWithBalanceTypeOccupiedCkb)
+	liveCell, totalAmount, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+		DasCache:          h.dasCache,
+		LockScript:        dasLockScript,
+		CapacityNeed:      allAmount,
+		CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
+		SearchOrder:       indexer.SearchOrderDesc,
+	})
+	//liveCell, totalAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), h.dasCache, dasLockScript, dasTypeScript, allAmount, common.DasLockWithBalanceTypeOccupiedCkb)
 	if err != nil {
 		if err == core.ErrRejectedOutPoint {
 			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, core.ErrRejectedOutPoint.Error())
