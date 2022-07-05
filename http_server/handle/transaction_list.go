@@ -103,7 +103,7 @@ func (h *HttpHandle) doTransactionList(req *ReqTransactionList, apiResp *api_cod
 			Timestamp:   v.BlockTimestamp,
 		})
 	}
-	// 总记录数
+	//
 	count, err := h.dbDao.GetTransactionListTotal(req.ChainType, req.Address)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search tx count err")

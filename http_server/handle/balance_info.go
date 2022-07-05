@@ -101,7 +101,7 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 	}
 	// not 712
 	if req.ChainType == common.ChainTypeEth {
-		dasLockScript, dasTypeScript, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
+		dasLockScript, _, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
 			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(false),
 			AddressHex:     req.Address,
 			IsMulti:        false,
@@ -111,7 +111,14 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")
 			return fmt.Errorf("HexToScript not 712 err: %s", err.Error())
 		}
-		_, dasLockAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, dasLockScript, dasTypeScript, 0, 0)
+		_, dasLockAmount, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+			DasCache:          nil,
+			LockScript:        dasLockScript,
+			CapacityNeed:      0,
+			CapacityForChange: 0,
+			SearchOrder:       indexer.SearchOrderDesc,
+		})
+		//_, dasLockAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, dasLockScript, dasTypeScript, 0, 0)
 		if err != nil {
 			*apiResp = api_code.ApiRespErr(api_code.ApiCodeError500, "get das balance err")
 			return fmt.Errorf("GetSatisfiedCapacityLiveCell not 712 err: %s", err.Error())
@@ -120,7 +127,7 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 	}
 
 	// 712
-	dasLockScript, dasTypeScript, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
+	dasLockScript, _, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
 		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
 		AddressHex:     req.Address,
 		IsMulti:        false,
@@ -130,7 +137,14 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")
 		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
 	}
-	_, dasLockAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, dasLockScript, dasTypeScript, 0, 0)
+	_, dasLockAmount, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+		DasCache:          nil,
+		LockScript:        dasLockScript,
+		CapacityNeed:      0,
+		CapacityForChange: 0,
+		SearchOrder:       indexer.SearchOrderDesc,
+	})
+	//_, dasLockAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, dasLockScript, dasTypeScript, 0, 0)
 	if err != nil {
 		*apiResp = api_code.ApiRespErr(api_code.ApiCodeError500, "get 712 das balance err")
 		return fmt.Errorf("GetSatisfiedCapacityLiveCell err: %s", err.Error())
