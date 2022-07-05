@@ -240,4 +240,16 @@ func (h *HttpHandle) checkRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiRe
 		apiResp.ApiRespErr(api_code.ApiCodeOnCross, "account on cross")
 		return
 	}
+	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(
+		common.ConfigCellTypeArgsAccount,
+	)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error()))
+		return
+	}
+	expirationGracePeriod, _ := builder.ExpirationGracePeriod()
+	if int64(acc.ExpiredAt+uint64(expirationGracePeriod)) <= time.Now().Unix() {
+		apiResp.ApiRespErr(api_code.ApiCodeAfterGracePeriod, "after the grace period")
+		return
+	}
 }
