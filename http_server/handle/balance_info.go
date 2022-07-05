@@ -118,7 +118,6 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 			CapacityForChange: 0,
 			SearchOrder:       indexer.SearchOrderDesc,
 		})
-		//_, dasLockAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, dasLockScript, dasTypeScript, 0, 0)
 		if err != nil {
 			*apiResp = api_code.ApiRespErr(api_code.ApiCodeError500, "get das balance err")
 			return fmt.Errorf("GetBalanceCells not 712 err: %s", err.Error())
@@ -144,7 +143,6 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 		CapacityForChange: 0,
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
-	//_, dasLockAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, dasLockScript, dasTypeScript, 0, 0)
 	if err != nil {
 		*apiResp = api_code.ApiRespErr(api_code.ApiCodeError500, "get 712 das balance err")
 		return fmt.Errorf("GetBalanceCells err: %s", err.Error())
