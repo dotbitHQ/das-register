@@ -128,7 +128,7 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 	}
 
 	// account limit
-	_ = h.rc.SetAccountLimit(req.Account, time.Minute*2)
+	_ = h.rc.SetAccountLimit(req.Account, time.Minute)
 	apiResp.ApiRespOK(resp)
 	return nil
 }

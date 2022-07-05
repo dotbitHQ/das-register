@@ -138,7 +138,6 @@ func (t *TxTool) buildOrderApplyTx(p *applyTxParams) (*txbuilder.BuildTransactio
 		CapacityForChange: common.MinCellOccupiedCkb,
 		SearchOrder:       indexer.SearchOrderAsc,
 	})
-	//liveCell, totalCapacity, err := core.GetSatisfiedCapacityLiveCellWithOrder(t.DasCore.Client(), t.DasCache, t.ServerScript, nil, needCapacity+splitCapacity, common.MinCellOccupiedCkb, indexer.SearchOrderAsc)
 	if err != nil {
 		return nil, fmt.Errorf("GetBalanceCells err: %s", err.Error())
 	}

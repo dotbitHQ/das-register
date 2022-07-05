@@ -112,7 +112,6 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 		CapacityForChange: 0,
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
-	//liveCells, totalAmount, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, fromLock, nil, 0, 0)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "check balance err: "+err.Error())
 		return fmt.Errorf("GetBalanceCells err: %s", err.Error())
@@ -135,7 +134,6 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 				CapacityForChange: 0,
 				SearchOrder:       indexer.SearchOrderDesc,
 			})
-			//liveCells, totalAmount, err = core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), nil, fromLock, nil, 0, 0)
 			if err != nil {
 				apiResp.ApiRespErr(api_code.ApiCodeError500, "check balance err: "+err.Error())
 				return fmt.Errorf("GetBalanceCells err: %s", err.Error())

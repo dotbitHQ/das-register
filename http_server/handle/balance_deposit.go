@@ -134,7 +134,6 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 		CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
-	//liveCell, total, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), h.dasCache, fromAddress.Script, fromTypeScript, req.Amount+fee, common.DasLockWithBalanceTypeOccupiedCkb)
 	if err != nil {
 		if err == core.ErrRejectedOutPoint {
 			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, err.Error())

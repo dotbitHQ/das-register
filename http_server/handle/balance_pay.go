@@ -122,7 +122,6 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 		CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
-	//liveCells, totalCapacity, err := core.GetSatisfiedCapacityLiveCell(h.dasCore.Client(), h.dasCache, dasLock, dasType, needCapacity, common.DasLockWithBalanceTypeOccupiedCkb)
 	if err != nil {
 		if err == core.ErrRejectedOutPoint {
 			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, err.Error())
