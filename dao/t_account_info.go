@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"das_register_server/config"
 	"das_register_server/tables"
 	"github.com/dotbitHQ/das-lib/common"
 	"gorm.io/gorm"
@@ -35,7 +36,11 @@ func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, k
 		db = db.Where("expired_at>=? AND expired_at<=?", expiredAt, expiredAt30Days)
 	case tables.CategoryToBeRecycled:
 		expiredAt := time.Now().Unix()
-		db = db.Where("expired_at<=?", expiredAt)
+		recycledAt := time.Now().Add(-time.Hour * 24 * 90).Unix()
+		if config.Cfg.Server.Net != common.DasNetTypeMainNet {
+			recycledAt = time.Now().Add(-time.Hour * 24 * 3).Unix()
+		}
+		db = db.Where("expired_at<=? AND expired_at>=?", expiredAt, recycledAt)
 	}
 
 	if keyword != "" {
@@ -63,7 +68,11 @@ func (d *DbDao) GetAccountsCount(chainType common.ChainType, address, keyword st
 		db = db.Where("expired_at>=? AND expired_at<=?", expiredAt, expiredAt30Days)
 	case tables.CategoryToBeRecycled:
 		expiredAt := time.Now().Unix()
-		db = db.Where("expired_at<=?", expiredAt)
+		recycledAt := time.Now().Add(-time.Hour * 24 * 90).Unix()
+		if config.Cfg.Server.Net != common.DasNetTypeMainNet {
+			recycledAt = time.Now().Add(-time.Hour * 24 * 3).Unix()
+		}
+		db = db.Where("expired_at<=? AND expired_at>=?", expiredAt, recycledAt)
 	}
 
 	if keyword != "" {
