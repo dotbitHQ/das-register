@@ -121,22 +121,15 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("amount [%s] is invalid", req.Amount))
 				return fmt.Errorf("amount not enough: %s", req.Amount)
 			}
-			ownerHex, _, err := h.dasCore.Daf().ArgsToHex(parseAddress.Script.Args)
+			balContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
 			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeError500, "ArgsToHex err")
-				return fmt.Errorf("ArgsToHex err: %s", err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "get balance type id fail")
+				return fmt.Errorf("GetDasContractInfo: %s", err.Error())
 			}
-			if ownerHex.DasAlgorithmId == common.DasAlgorithmIdEth712 {
-				balContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
-				if err != nil {
-					apiResp.ApiRespErr(api_code.ApiCodeError500, "get balance type id fail")
-					return fmt.Errorf("GetDasContractInfo: %s", err.Error())
-				}
-				toTypeScript = &types.Script{
-					CodeHash: balContract.ContractTypeId,
-					HashType: types.HashTypeType,
-					Args:     nil,
-				}
+			toTypeScript = &types.Script{
+				CodeHash: balContract.ContractTypeId,
+				HashType: types.HashTypeType,
+				Args:     nil,
 			}
 		}
 	} else {
