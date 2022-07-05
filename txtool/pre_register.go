@@ -84,7 +84,7 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 	preOrder, err := t.DbDao.GetPreRegisteredOrderByAccountId(order.AccountId)
 	if err != nil {
 		return fmt.Errorf("GetPreRegisteredOrderByAccountId err: %s", err.Error())
-	} else if preOrder.Id > 0 { // refund
+	} else if preOrder.Id > 0 && time.Now().Unix() < (preOrder.Timestamp/1e3)+2592000 { // refund
 		log.Info("UpdateOrderToRefund:", order.OrderId)
 		if err := t.DbDao.UpdateOrderToRefund(order.OrderId); err != nil {
 			return fmt.Errorf("UpdateOrderToRefund err: %s [%s]", err.Error(), order.OrderId)
