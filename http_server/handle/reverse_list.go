@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/http_server/api_code"
+	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -90,6 +91,16 @@ func (h *HttpHandle) doReverseList(req *ReqReverseList, apiResp *api_code.ApiRes
 		return fmt.Errorf("SearchLatestReverse err: %s", err.Error())
 	}
 	for _, v := range list {
+		// account
+		acc, err := h.dbDao.GetAccountInfoByAccountId(v.AccountId)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
+			return fmt.Errorf("SearchAccount err: %s", err.Error())
+		}
+		if acc.Id == 0 || acc.Status == tables.AccountStatusOnCross {
+			continue
+		}
+
 		hash, index := common.String2OutPoint(v.Outpoint)
 		resp.List = append(resp.List, ReverseListData{
 			Account:     v.Account,

@@ -10,8 +10,8 @@ func (d *DbDao) SearchAccountReverseRecords(account, address string) (record tab
 	return
 }
 
-func (d *DbDao) SearchRecordsByAccount(account string) (list []tables.TableRecordsInfo, err error) {
-	err = d.parserDb.Where(" account=? ", account).Find(&list).Error
+func (d *DbDao) SearchRecordsByAccount(accountId string) (list []tables.TableRecordsInfo, err error) {
+	err = d.parserDb.Where(" account_id=? ", accountId).Find(&list).Error
 	if err == gorm.ErrRecordNotFound {
 		err = nil
 	}
