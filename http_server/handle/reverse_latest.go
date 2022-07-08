@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/http_server/api_code"
+	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -93,7 +94,6 @@ func (h *HttpHandle) doReverseLatest(req *ReqReverseLatest, apiResp *api_code.Ap
 	}
 
 	// account
-
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(reverse.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
@@ -103,6 +103,9 @@ func (h *HttpHandle) doReverseLatest(req *ReqReverseLatest, apiResp *api_code.Ap
 		}
 	}
 	if acc.Id == 0 {
+		apiResp.ApiRespOK(resp)
+		return nil
+	} else if acc.Status == tables.AccountStatusOnCross {
 		apiResp.ApiRespOK(resp)
 		return nil
 	} else {
@@ -119,7 +122,6 @@ func (h *HttpHandle) doReverseLatest(req *ReqReverseLatest, apiResp *api_code.Ap
 	}
 
 	// records
-
 	record, err := h.dbDao.SearchAccountReverseRecords(acc.Account, req.Address)
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {

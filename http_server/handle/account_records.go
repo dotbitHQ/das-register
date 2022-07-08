@@ -2,8 +2,10 @@ package handle
 
 import (
 	"das_register_server/http_server/api_code"
+	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
+	"github.com/dotbitHQ/das-lib/common"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
@@ -69,9 +71,24 @@ func (h *HttpHandle) AccountRecords(ctx *gin.Context) {
 
 func (h *HttpHandle) doAccountRecords(req *ReqAccountRecords, apiResp *api_code.ApiResp) error {
 	var resp RespAccountRecords
-
 	resp.Records = make([]RespAccountRecordsData, 0)
-	list, err := h.dbDao.SearchRecordsByAccount(req.Account)
+
+	// account
+	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
+		return fmt.Errorf("SearchAccount err: %s", err.Error())
+	}
+	if acc.Id == 0 {
+		apiResp.ApiRespOK(resp)
+		return nil
+	} else if acc.Status == tables.AccountStatusOnCross {
+		apiResp.ApiRespOK(resp)
+		return nil
+	}
+
+	list, err := h.dbDao.SearchRecordsByAccount(accountId)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search records err")
 		return fmt.Errorf("SearchRecordsByAccount err: %s", err.Error())
