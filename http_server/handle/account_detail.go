@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/blake2b-simd"
 	"github.com/scorpiotzh/toolib"
@@ -37,6 +38,7 @@ type RespAccountDetail struct {
 	EnableSubAccount     tables.EnableSubAccount `json:"enable_sub_account"`
 	RenewSubAccountPrice uint64                  `json:"renew_sub_account_price"`
 	Nonce                uint64                  `json:"nonce"`
+	CustomScript         string                  `json:"custom_script"`
 }
 
 func (h *HttpHandle) RpcAccountDetail(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -192,6 +194,21 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		resp.EnableSubAccount = acc.EnableSubAccount
 		resp.RenewSubAccountPrice = acc.RenewSubAccountPrice
 		resp.Nonce = acc.Nonce
+
+		// check custom-script
+		if acc.EnableSubAccount == tables.AccountEnableStatusOn {
+			subAccLiveCell, err := h.dasCore.GetSubAccountCell(acc.AccountId)
+			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+				return nil
+			}
+			detailSub := witness.ConvertSubAccountCellOutputData(subAccLiveCell.OutputData)
+			defaultCS := make([]byte, 33)
+			if len(detailSub.CustomScriptArgs) > 0 && bytes.Compare(defaultCS, detailSub.CustomScriptArgs) != 0 {
+				resp.CustomScript = common.Bytes2Hex(detailSub.CustomScriptArgs)
+			}
+		}
+
 		apiResp.ApiRespOK(resp)
 		return nil
 	}

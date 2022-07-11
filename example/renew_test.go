@@ -14,7 +14,7 @@ func TestRenew(t *testing.T) {
 	//fmt.Println(list,len(list))
 
 	for _, v := range list {
-		a := fmt.Sprintf(`curl -X POST http://127.0.0.1:8119/v1/account/renew -d'{"chain_type":1,"address":"0x15a33588908cf8edb27d1abe3852bf287abd3891","account":"%s","renew_years":2}'`, strings.TrimSpace(v))
+		a := fmt.Sprintf(`curl -X POST http://127.0.0.1:8119/v1/account/renew -d'{"chain_type":1,"address":"0x15a33588908cf8edb27d1abe3852bf287abd3891","account":"%s","renew_years":1}'`, strings.TrimSpace(v))
 		fmt.Println(a)
 	}
 
