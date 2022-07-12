@@ -66,6 +66,7 @@ const (
 	ActionBalanceDeposit            TxAction = 25
 	ActionRecycleExpiredAccount     TxAction = 26
 	ActionForceRecoverAccountStatus TxAction = 27
+	ActionCrossRefund               TxAction = 28
 
 	DasActionTransferBalance = "transfer_balance"
 	DasActionBalanceDeposit  = "balance_deposit"
@@ -75,6 +76,7 @@ const (
 	DasActionEditOfferAdd    = "offer_edit_add"
 	DasActionEditOfferSub    = "offer_edit_sub"
 	DasActionOrderRefund     = "order_refund"
+	DasActionCrossRefund     = "cross_refund"
 )
 
 func FormatTxAction(action string) TxAction {
@@ -135,6 +137,8 @@ func FormatTxAction(action string) TxAction {
 		return ActionRecycleExpiredAccount
 	case common.DasActionForceRecoverAccountStatus:
 		return ActionForceRecoverAccountStatus
+	case DasActionCrossRefund:
+		return ActionCrossRefund
 	}
 	return ActionUndefined
 }
@@ -191,6 +195,8 @@ func FormatActionType(actionType TxAction) string {
 		return common.DasActionRecycleExpiredAccount
 	case ActionForceRecoverAccountStatus:
 		return common.DasActionForceRecoverAccountStatus
+	case ActionCrossRefund:
+		return DasActionCrossRefund
 	}
 	return ""
 }
