@@ -248,6 +248,10 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	accountId := common.GetAccountIdByAccount(p.order.Account)
 	accountChars := tables.AccountCharSetListToMoleculeAccountChars(p.accountChars)
 
+	// char type
+	var accountCharTypeMap = make(map[common.AccountCharType]struct{})
+	common.GetAccountCharType(accountCharTypeMap, p.accountChars)
+
 	// witness
 	var preBuilder witness.PreAccountCellDataBuilder
 	preWitness, preData, err := preBuilder.GenWitness(&witness.PreAccountCellParam{
@@ -385,13 +389,23 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		priceConfig.ToCellDep(),
 		applyConfig.ToCellDep(),
 		accountConfig.ToCellDep(),
-		emojiConfig.ToCellDep(),
-		digitConfig.ToCellDep(),
-		enConfig.ToCellDep(),
+		//emojiConfig.ToCellDep(),
+		//digitConfig.ToCellDep(),
+		//enConfig.ToCellDep(),
 		releaseConfig.ToCellDep(),
 		unavailableConfig.ToCellDep(),
 		PreservedAccountConfig.ToCellDep(),
 	)
+	for k, _ := range accountCharTypeMap {
+		switch k {
+		case common.AccountCharTypeEmoji:
+			txParams.CellDeps = append(txParams.CellDeps, emojiConfig.ToCellDep())
+		case common.AccountCharTypeNumber:
+			txParams.CellDeps = append(txParams.CellDeps, digitConfig.ToCellDep())
+		case common.AccountCharTypeEn:
+			txParams.CellDeps = append(txParams.CellDeps, enConfig.ToCellDep())
+		}
+	}
 
 	return &txParams, nil
 }
