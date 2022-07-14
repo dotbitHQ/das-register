@@ -62,10 +62,20 @@ const (
 	SearchStatusUnAvailableAccount   SearchStatus = 13
 	SearchStatusSubAccountUnRegister SearchStatus = 14
 	SearchStatusOnCross              SearchStatus = 15
+	SearchStatusOnDutch              SearchStatus = 16
 )
 
 func (t *TableAccountInfo) IsExpired() bool {
 	if int64(t.ExpiredAt) <= time.Now().Unix() {
+		return true
+	}
+	return false
+}
+
+func (t *TableAccountInfo) IsOnDutch() bool {
+	gracePeriod := int64(t.ExpiredAt + 3600*24*90)
+	dutchAuction := int64(3600 * 24 * 30)
+	if gracePeriod <= time.Now().Unix() && gracePeriod+dutchAuction >= time.Now().Unix() {
 		return true
 	}
 	return false
@@ -76,6 +86,10 @@ func (t *TableAccountInfo) TableName() string {
 }
 
 func (t *TableAccountInfo) FormatAccountStatus() SearchStatus {
+	if t.IsOnDutch() {
+		return SearchStatusOnDutch
+	}
+
 	switch t.Status {
 	case AccountStatusNormal:
 		return SearchStatusRegistered
