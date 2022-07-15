@@ -469,3 +469,105 @@ ApiCodeSystemUpgrade   ApiCode = 30019 // 系统升级
   ]
 }
 ```
+
+#### 15、dutch info
+
+* post: /dutch/info
+* req:
+
+```json
+{
+  "account": "0001.bit"
+}
+```  
+
+* resp:
+    * price unit: wei, 1-eth = 1000000000000000000-wei
+
+```json
+{
+  "current_time": 1660123590,
+  "current_price": 82967661049448721547264,
+  "premium_list": [
+    {
+      "time": 1657790790,
+      "price": 92186290054943033262080
+    },
+    {
+      "time": 1657790790,
+      "price": 92186290054943033262080
+    },
+    {
+      "time": 1660382790,
+      "price": 4609314502747152
+    }
+  ]
+}
+```
+
+#### 16、dutch auction
+
+* post: /dutch/auction
+* req:
+
+```json
+{
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "chain_id": "1",
+    "key": "0x111..."
+  },
+  "account": "0001.bit",
+  "time": 1660123590,
+  "price": 82967661049448721547264
+}
+```  
+
+* resp:
+
+```json
+{
+  "account": "0001.bit",
+  "data": "",
+  "gnosis_signatures": [
+    {
+      "data": "",
+      "signer": ""
+    }
+  ],
+  "nonce": 0
+}
+```
+
+#### 17、dutch auction list
+
+* post: /dutch/auction/list
+* req:
+
+```json
+{
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "chain_id": "1",
+    "key": "0x111..."
+  }
+}
+```
+
+* resp:
+  * 1-pending 2-confirm 3-success 4-failed 5-refunding 6-refunded
+
+```json
+{
+  "auction_list": [
+    {
+      "account": "0001.bit",
+      "time": 1657790790,
+      "price": 92186290054943033262080,
+      "status": 1
+    }
+  ]
+}
+```

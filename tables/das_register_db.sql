@@ -126,24 +126,25 @@ CREATE TABLE `t_das_order_pay_info`
 -- t_dutch_auction_info
 CREATE TABLE `t_dutch_auction_info`
 (
-    `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
-    `hash`          VARCHAR(255)    NOT NULL DEFAULT '' COLLATE utf8mb4_0900_ai_ci COMMENT '',
-    `chain_type`    SMALLINT        NOT NULL DEFAULT '0' COMMENT '',
-    `address`       VARCHAR(255)    NOT NULL DEFAULT '' COLLATE utf8mb4_0900_ai_ci COMMENT '',
-    `account`       VARCHAR(255)    NOT NULL DEFAULT '' COLLATE utf8mb4_0900_ai_ci COMMENT '',
-    `account_id`    VARCHAR(255)    NOT NULL DEFAULT '' COLLATE utf8mb4_0900_ai_ci COMMENT '',
-    `status`        SMALLINT        NOT NULL DEFAULT '0' COMMENT '0-default 1-confirm',
-    `price`         DECIMAL(60)     NOT NULL DEFAULT '0' COMMENT '',
-    `timestamp`     BIGINT          NOT NULL DEFAULT '0' COMMENT '',
-    `refund_hash`   VARCHAR(255)    NOT NULL DEFAULT '' COLLATE utf8mb4_0900_ai_ci COMMENT '',
-    `refund_status` SMALLINT        NOT NULL DEFAULT '0' COMMENT '1-ing 2-ok',
-    `created_at`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '',
-    `updated_at`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '',
+    `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+    `hash`           VARCHAR(255)    NOT NULL DEFAULT '' COLLATE utf8mb4_0900_ai_ci COMMENT '',
+    `chain_type`     SMALLINT        NOT NULL DEFAULT '0' COMMENT '',
+    `address`        VARCHAR(255)    NOT NULL DEFAULT '' COLLATE utf8mb4_0900_ai_ci COMMENT '',
+    `account`        VARCHAR(255)    NOT NULL DEFAULT '' COLLATE utf8mb4_0900_ai_ci COMMENT '',
+    `account_id`     VARCHAR(255)    NOT NULL DEFAULT '' COLLATE utf8mb4_0900_ai_ci COMMENT '',
+    `price`          DECIMAL(60)     NOT NULL DEFAULT '0' COMMENT '',
+    `timestamp`      BIGINT          NOT NULL DEFAULT '0' COMMENT '',
+    `refund_hash`    VARCHAR(255)    NOT NULL DEFAULT '' COLLATE utf8mb4_0900_ai_ci COMMENT '',
+    `status`         SMALLINT        NOT NULL DEFAULT '0' COMMENT '0-default 1-pending 2-confirm 3-success 4-failed 5-refunding 6-refunded',
+    `auction_status` SMALLINT        NOT NULL DEFAULT '0' COMMENT '0-opened 1-closed',
+    `created_at`     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '',
+    `updated_at`     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_hash` (`hash`),
     KEY `k_refund_hash` (`refund_hash`),
     KEY `k_address` (`chain_type`, `address`),
-    KEY `k_account_id` (account_id)
+    KEY `k_account_id` (account_id),
+    KEY `k_auction_status` (auction_status)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT ='dutch auction info';
