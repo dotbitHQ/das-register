@@ -67,6 +67,9 @@ const (
 	MethodRegisteringList   = "das_registeringAccounts"
 	MethodOrderDetail       = "das_orderDetail"
 	MethodAddressDeposit    = "das_addressDeposit"
+	MethodDutchInfo         = "das_dutchInfo"
+	MethodDutchAuction      = "das_dutchAuction"
+	MethodDutchAuctionList  = "das_dutchAuctionList"
 
 	MethodReverseDeclare   = "das_reverseDeclare"
 	MethodReverseRedeclare = "das_reverseRedeclare"
