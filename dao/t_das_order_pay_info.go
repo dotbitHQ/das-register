@@ -6,7 +6,7 @@ import (
 )
 
 func (d *DbDao) GetPayInfoByOrderId(orderId string) (pay tables.TableDasOrderPayInfo, err error) {
-	err = d.db.Where("order_id=?", orderId).Order("id DESC").Limit(1).Find(&pay).Error
+	err = d.db.Where("order_id=? and `status`!=?", orderId, tables.OrderTxStatusRejected).Order("id DESC").Limit(1).Find(&pay).Error
 	return
 }
 
