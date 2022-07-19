@@ -358,12 +358,16 @@ func (h *HttpHandle) getOrderAmount(args, account, inviterAccount string, years 
 		decDiscount := decimal.NewFromInt(int64(discount)).Div(decimal.NewFromInt(common.PercentRateBase))
 		accountPrice = accountPrice.Mul(decimal.NewFromInt(1).Sub(decDiscount))
 	}
-	amountTotalUSD = baseAmount.Add(accountPrice)
+	amountTotalUSD = accountPrice
 
 	log.Info("before Premium:", account, isRenew, amountTotalUSD, baseAmount, accountPrice)
 	if config.Cfg.Das.Premium.Cmp(decimal.Zero) == 1 {
 		amountTotalUSD = amountTotalUSD.Mul(config.Cfg.Das.Premium.Add(decimal.NewFromInt(1)))
 	}
+	if config.Cfg.Das.Discount.Cmp(decimal.Zero) == 1 {
+		amountTotalUSD = amountTotalUSD.Mul(config.Cfg.Das.Discount)
+	}
+	amountTotalUSD = amountTotalUSD.Add(baseAmount)
 	log.Info("after Premium:", account, isRenew, amountTotalUSD, baseAmount, accountPrice)
 
 	amountTotalUSD = amountTotalUSD.Mul(decimal.NewFromInt(100)).Ceil().DivRound(decimal.NewFromInt(100), 2)
