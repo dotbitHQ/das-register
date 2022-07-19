@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	TestUrl = "https://test-register-api.da.systems/v1"
+	TestUrl = "https://test-register-api.did.id/v1"
 )
 
 func TestTransactionSend(t *testing.T) {
@@ -100,13 +100,13 @@ func TestEditRecords(t *testing.T) {
 
 	var req handle.ReqEditRecords
 	req.ChainType = common.ChainTypeEth
-	req.Address = "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"
-	req.Account = "0001.bit"
+	req.Address = "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
+	req.Account = "tzh20220718.bit"
 	req.RawParam.Records = []handle.ReqRecord{{
-		Key:   "twitter",
-		Type:  "profile",
-		Label: "33",
-		Value: "121",
+		Key:   "60",
+		Type:  "address",
+		Label: "",
+		Value: "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
 		TTL:   "300",
 	}}
 	req.EvmChainId = 5
