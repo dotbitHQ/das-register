@@ -187,6 +187,7 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 		return
 	}
+	accountCharTypeMap := map[common.AccountCharType]bool{}
 	var accountCharStr string
 	for _, v := range req.AccountCharStr {
 		if v.Char == "" {
@@ -199,21 +200,74 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
-		case common.AccountCharTypeNumber:
-			if !strings.Contains(common.CharSetTypeNumber, v.Char) {
+		case common.AccountCharTypeDigit:
+			if _, ok := common.CharSetTypeDigitMap[v.Char]; !ok {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
 		case common.AccountCharTypeEn:
-			if !strings.Contains(common.CharSetTypeEn, v.Char) && v.Char != "." {
+			if _, ok := common.CharSetTypeEnMap[v.Char]; !ok {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
+			accountCharTypeMap[common.AccountCharTypeEn] = true
+		case common.AccountCharTypeHanS:
+			if _, ok := common.CharSetTypeHanSMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+			accountCharTypeMap[common.AccountCharTypeHanS] = true
+		case common.AccountCharTypeHanT:
+			if _, ok := common.CharSetTypeHanTMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+			accountCharTypeMap[common.AccountCharTypeHanT] = true
+		case common.AccountCharTypeJp:
+			if _, ok := common.CharSetTypeJpMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+			accountCharTypeMap[common.AccountCharTypeJp] = true
+		case common.AccountCharTypeKr:
+			if _, ok := common.CharSetTypeKrMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+			accountCharTypeMap[common.AccountCharTypeKr] = true
+		case common.AccountCharTypeVn:
+			if _, ok := common.CharSetTypeVnMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+			accountCharTypeMap[common.AccountCharTypeVn] = true
+		case common.AccountCharTypeRu:
+			if _, ok := common.CharSetTypeRuMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+			accountCharTypeMap[common.AccountCharTypeRu] = true
+		case common.AccountCharTypeTh:
+			if _, ok := common.CharSetTypeThMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+			accountCharTypeMap[common.AccountCharTypeTh] = true
+		case common.AccountCharTypeTr:
+			if _, ok := common.CharSetTypeTrMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+			accountCharTypeMap[common.AccountCharTypeTr] = true
 		default:
 			apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 			return
 		}
 		accountCharStr += v.Char
+	}
+	if len(accountCharTypeMap) > 1 {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountCharCanNotBeMixed, "char can't be mixed")
+		return
 	}
 	if !strings.HasSuffix(accountCharStr, common.DasAccountSuffix) {
 		accountCharStr += common.DasAccountSuffix

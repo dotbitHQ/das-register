@@ -32,6 +32,7 @@ const (
 	ApiCodeAccountIsExpired             ApiCode = 30010
 	ApiCodePermissionDenied             ApiCode = 30011
 	ApiCodeAccountContainsInvalidChar   ApiCode = 30015
+	ApiCodeAccountCharCanNotBeMixed     ApiCode = 30016
 	ApiCodeReservedAccount              ApiCode = 30017
 	ApiCodeInviterAccountNotExist       ApiCode = 30018
 	ApiCodeSystemUpgrade                ApiCode = 30019

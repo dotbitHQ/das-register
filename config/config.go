@@ -10,9 +10,8 @@ import (
 )
 
 var (
-	Cfg                 CfgServer
-	AccountCharSetEmoji string
-	log                 = mylog.NewLogger("config", mylog.LevelDebug)
+	Cfg CfgServer
+	log = mylog.NewLogger("config", mylog.LevelDebug)
 )
 
 func InitCfg(configFilePath string) error {
