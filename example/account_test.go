@@ -18,7 +18,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"fc3136523ce5b477369c9d93aee1b18d","sign_list":[{"sign_type":3,"sign_msg":"0xb5aa114fb5f97c208806712fd50cbb35cd3b7ffc9350aa6a55884d68e46427ea34be33d793c12e67035003758ba8835630126af86e5f62c072ba217145571ad500"},{"sign_type":0,"sign_msg":"0x0"}],"mm_json":null}`
+	str := `{"sign_key":"102424b2c6cf7d47212cc917c7941bf6","sign_list":[{"sign_type":5,"sign_msg":"0xfecf358206bc9ec5a5791021cf7ea2f8d12d2175676bcb7fc4291a196d89dbd52ecabc91c1451421d5d8343b9cb329bd3f0024b5b2407737647585089654ded91cef950e46fb9d6d633eab8373cbca930580b7e55b1866628a77fa409fd92d562b0000000000000005"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
