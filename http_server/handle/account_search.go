@@ -209,8 +209,8 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
-		case common.AccountCharTypeJp:
-			if _, ok := common.CharSetTypeJpMap[v.Char]; !ok {
+		case common.AccountCharTypeJa:
+			if _, ok := common.CharSetTypeJaMap[v.Char]; !ok {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}

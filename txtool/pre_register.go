@@ -369,7 +369,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
 	}
-	jpConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetJp)
+	jaConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetJa)
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
 	}
@@ -418,8 +418,8 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 			txParams.CellDeps = append(txParams.CellDeps, digitConfig.ToCellDep())
 		case common.AccountCharTypeEn:
 			txParams.CellDeps = append(txParams.CellDeps, enConfig.ToCellDep())
-		case common.AccountCharTypeJp:
-			txParams.CellDeps = append(txParams.CellDeps, jpConfig.ToCellDep())
+		case common.AccountCharTypeJa:
+			txParams.CellDeps = append(txParams.CellDeps, jaConfig.ToCellDep())
 		case common.AccountCharTypeRu:
 			txParams.CellDeps = append(txParams.CellDeps, ruConfig.ToCellDep())
 		case common.AccountCharTypeTr:
