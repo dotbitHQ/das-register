@@ -214,28 +214,18 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
-		case common.AccountCharTypeKo:
-			if _, ok := common.CharSetTypeKoMap[v.Char]; !ok {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
-				return
-			}
-		case common.AccountCharTypeVi:
-			if _, ok := common.CharSetTypeViMap[v.Char]; !ok {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
-				return
-			}
 		case common.AccountCharTypeRu:
 			if _, ok := common.CharSetTypeRuMap[v.Char]; !ok {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
-		case common.AccountCharTypeTh:
-			if _, ok := common.CharSetTypeThMap[v.Char]; !ok {
+		case common.AccountCharTypeTr:
+			if _, ok := common.CharSetTypeTrMap[v.Char]; !ok {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
-		case common.AccountCharTypeTr:
-			if _, ok := common.CharSetTypeTrMap[v.Char]; !ok {
+		case common.AccountCharTypeVi:
+			if _, ok := common.CharSetTypeViMap[v.Char]; !ok {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
@@ -248,7 +238,7 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 	var accountCharTypeMap = make(map[common.AccountCharType]struct{})
 	common.GetAccountCharTypeExclude(accountCharTypeMap, req.AccountCharStr)
 	if len(accountCharTypeMap) > 1 {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountCharCanNotBeMixed, "char can't be mixed")
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 		return
 	}
 	if !strings.HasSuffix(accountCharStr, common.DasAccountSuffix) {

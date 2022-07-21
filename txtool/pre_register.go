@@ -373,19 +373,11 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
 	}
-	krConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetKo)
-	if err != nil {
-		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
-	}
 	vnConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetVi)
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
 	}
 	ruConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetRu)
-	if err != nil {
-		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
-	}
-	thConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetTh)
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
 	}
@@ -428,16 +420,12 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 			txParams.CellDeps = append(txParams.CellDeps, enConfig.ToCellDep())
 		case common.AccountCharTypeJp:
 			txParams.CellDeps = append(txParams.CellDeps, jpConfig.ToCellDep())
-		case common.AccountCharTypeKo:
-			txParams.CellDeps = append(txParams.CellDeps, krConfig.ToCellDep())
-		case common.AccountCharTypeVi:
-			txParams.CellDeps = append(txParams.CellDeps, vnConfig.ToCellDep())
 		case common.AccountCharTypeRu:
 			txParams.CellDeps = append(txParams.CellDeps, ruConfig.ToCellDep())
-		case common.AccountCharTypeTh:
-			txParams.CellDeps = append(txParams.CellDeps, thConfig.ToCellDep())
 		case common.AccountCharTypeTr:
 			txParams.CellDeps = append(txParams.CellDeps, trConfig.ToCellDep())
+		case common.AccountCharTypeVi:
+			txParams.CellDeps = append(txParams.CellDeps, vnConfig.ToCellDep())
 		}
 	}
 
