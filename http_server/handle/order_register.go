@@ -238,7 +238,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	}
 	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
 	if err != nil {
-		log.Error("HexToArgs err: %s", err.Error())
+		log.Error("HexToArgs err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 		return
 	}
