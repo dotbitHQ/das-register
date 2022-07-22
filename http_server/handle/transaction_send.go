@@ -92,7 +92,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 	if sic.Action == common.DasActionEditRecords {
 		builder, err := witness.AccountCellDataBuilderFromTx(txBuilder.Transaction, common.DataTypeNew)
 		if err != nil {
-			log.Error("AccountCellDataBuilderFromTx err: %s", err.Error())
+			log.Error("AccountCellDataBuilderFromTx err: ", err.Error())
 		} else {
 			log.Info("edit records:", sic.Account, sic.ChainType, sic.Address, toolib.JsonString(builder.Records))
 		}
