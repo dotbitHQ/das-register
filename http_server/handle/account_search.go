@@ -237,7 +237,8 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 	}
 	var accountCharTypeMap = make(map[common.AccountCharType]struct{})
 	common.GetAccountCharTypeExclude(accountCharTypeMap, req.AccountCharStr)
-	if len(accountCharTypeMap) > 2 {
+	delete(accountCharTypeMap, common.AccountCharTypeTh)
+	if len(accountCharTypeMap) > 1 {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 		return
 	}
