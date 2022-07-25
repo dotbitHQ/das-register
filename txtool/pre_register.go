@@ -249,7 +249,8 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	accountChars := tables.AccountCharSetListToMoleculeAccountChars(p.accountChars)
 
 	// char type
-	accountCharTypeMap := common.GetAccountCharType(p.accountChars)
+	var accountCharTypeMap = make(map[common.AccountCharType]struct{})
+	common.GetAccountCharType(accountCharTypeMap, p.accountChars)
 
 	// witness
 	var preBuilder witness.PreAccountCellDataBuilder
