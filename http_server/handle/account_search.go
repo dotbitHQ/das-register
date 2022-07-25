@@ -235,17 +235,17 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 		}
 		accountCharStr += v.Char
 	}
-	var accountCharTypeMap = make(map[common.AccountCharType]struct{})
-	common.GetAccountCharTypeExclude(accountCharTypeMap, req.AccountCharStr)
-	if len(accountCharTypeMap) > 1 {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
-		return
-	}
+
 	if !strings.HasSuffix(accountCharStr, common.DasAccountSuffix) {
 		accountCharStr += common.DasAccountSuffix
 	}
 	if !strings.EqualFold(req.Account, accountCharStr) {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, fmt.Sprintf("diff account chars[%s]!=[%s]", accountCharStr, req.Account))
+		return
+	}
+
+	if isDiff := common.CheckAccountCharTypeDiff(req.AccountCharStr); isDiff {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 		return
 	}
 	return
