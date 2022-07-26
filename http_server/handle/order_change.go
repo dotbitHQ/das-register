@@ -15,7 +15,6 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -268,13 +267,13 @@ func (h *HttpHandle) oldOrderCheck(req *ReqOrderChange, apiResp *api_code.ApiRes
 		return
 	}
 
-	if strings.EqualFold(contentData.InviterAccount, req.InviterAccount) &&
-		strings.EqualFold(contentData.ChannelAccount, req.ChannelAccount) &&
-		req.RegisterYears == contentData.RegisterYears &&
-		req.PayTokenId == order.PayTokenId {
-		apiResp.ApiRespErr(api_code.ApiCodeSameOrderInfo, "order info not change")
-		return
-	}
+	//if strings.EqualFold(contentData.InviterAccount, req.InviterAccount) &&
+	//	strings.EqualFold(contentData.ChannelAccount, req.ChannelAccount) &&
+	//	req.RegisterYears == contentData.RegisterYears &&
+	//	req.PayTokenId == order.PayTokenId {
+	//	apiResp.ApiRespErr(api_code.ApiCodeSameOrderInfo, "order info not change")
+	//	return
+	//}
 	oldOrderContent = &contentData
 	return
 }
