@@ -3,12 +3,14 @@ package example
 import (
 	"das_register_server/http_server/api_code"
 	"das_register_server/http_server/handle"
+	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/parnurzeal/gorequest"
 	"github.com/scorpiotzh/toolib"
+	"github.com/shopspring/decimal"
 	"testing"
 	"time"
 )
@@ -277,4 +279,23 @@ func TestEditScript(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(toolib.JsonString(&data))
+}
+
+func TestOrderRegister2(t *testing.T) {
+	str := `{"chain_type":1,"address":"0x020881e3f5b7832e752d16fe2710ee855a6977dc","account":"faksjfd3lakj.bit","account_char_str":[{"char_set_name":2,"char":"f"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"k"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"j"},{"char_set_name":2,"char":"f"},{"char_set_name":2,"char":"d"},{"char_set_name":1,"char":"3"},{"char_set_name":2,"char":"l"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"k"},{"char_set_name":2,"char":"j"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}],"register_years":1,"inviter_account":"xiand.bit","channel_account":"cryptofans.bit","pay_chain_type":0,"pay_address":"0x020881e3f5b7832e752d16fe2710ee855a6977dc","pay_token_id":"ckb_das","pay_type":""}`
+	var req handle.ReqOrderRegister
+	json.Unmarshal([]byte(str), &req)
+	fmt.Println(req.ChannelAccount)
+
+	orderContent := tables.TableOrderContent{
+		AccountCharStr: req.AccountCharStr,
+		InviterAccount: req.InviterAccount,
+		ChannelAccount: req.ChannelAccount,
+		RegisterYears:  req.RegisterYears,
+		AmountTotalUSD: decimal.Zero,
+		AmountTotalCKB: decimal.Zero,
+	}
+
+	contentDataStr, _ := json.Marshal(&orderContent)
+	fmt.Println(string(contentDataStr))
 }
