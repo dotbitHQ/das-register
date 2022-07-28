@@ -53,6 +53,11 @@ func DoMonitorLog(method string) gin.HandlerFunc {
 				if resp.ErrNo != ApiCodeSuccess {
 					log.Warn("DoMonitorLog:", method, resp.ErrNo, resp.ErrMsg)
 				}
+				if method == MethodTransactionStatus && resp.ErrNo == ApiCodeTransactionNotExist {
+					resp.ErrNo = ApiCodeSuccess
+				} else if method == MethodOrderDetail && resp.ErrNo == ApiCodeOrderNotExist {
+					resp.ErrNo = ApiCodeSuccess
+				}
 				pushLog := ReqPushLog{
 					Index:   config.Cfg.Server.PushLogIndex,
 					Method:  method,
