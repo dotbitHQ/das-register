@@ -199,13 +199,33 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
-		case common.AccountCharTypeNumber:
-			if !strings.Contains(common.CharSetTypeNumber, v.Char) {
+		case common.AccountCharTypeDigit:
+			if _, ok := common.CharSetTypeDigitMap[v.Char]; !ok {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
 		case common.AccountCharTypeEn:
-			if !strings.Contains(common.CharSetTypeEn, v.Char) && v.Char != "." {
+			if _, ok := common.CharSetTypeEnMap[v.Char]; v.Char != "." && !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+		case common.AccountCharTypeJa:
+			if _, ok := common.CharSetTypeJaMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+		case common.AccountCharTypeRu:
+			if _, ok := common.CharSetTypeRuMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+		case common.AccountCharTypeTr:
+			if _, ok := common.CharSetTypeTrMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				return
+			}
+		case common.AccountCharTypeVi:
+			if _, ok := common.CharSetTypeViMap[v.Char]; !ok {
 				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 				return
 			}
@@ -215,11 +235,17 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 		}
 		accountCharStr += v.Char
 	}
+
 	if !strings.HasSuffix(accountCharStr, common.DasAccountSuffix) {
 		accountCharStr += common.DasAccountSuffix
 	}
 	if !strings.EqualFold(req.Account, accountCharStr) {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, fmt.Sprintf("diff account chars[%s]!=[%s]", accountCharStr, req.Account))
+		return
+	}
+
+	if isDiff := common.CheckAccountCharTypeDiff(req.AccountCharStr); isDiff {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
 		return
 	}
 	return

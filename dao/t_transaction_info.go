@@ -21,6 +21,7 @@ var (
 		tables.DasActionBalanceDeposit,
 		common.DasActionLockAccountForCrossChain,
 		common.DasActionUnlockAccountForCrossChain,
+		common.DasActionConfigSubAccountCustomScript,
 	}
 )
 

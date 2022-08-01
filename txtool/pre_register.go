@@ -344,18 +344,6 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
 	}
-	emojiConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetEmoji)
-	if err != nil {
-		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
-	}
-	digitConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetDigit)
-	if err != nil {
-		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
-	}
-	enConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetEn)
-	if err != nil {
-		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
-	}
 	releaseConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsRelease)
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
@@ -368,7 +356,36 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
 	}
-	//
+
+	emojiConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetEmoji)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
+	digitConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetDigit)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
+	enConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetEn)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
+	jaConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetJa)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
+	vnConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetVi)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
+	ruConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetRu)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
+	trConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetTr)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
+
 	bys, err := blake2b.Blake160([]byte(strings.TrimSuffix(p.order.Account, common.DasAccountSuffix)))
 	if err != nil {
 		return nil, fmt.Errorf("blake2b.Blake160 err: %s", err.Error())
@@ -389,9 +406,6 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		priceConfig.ToCellDep(),
 		applyConfig.ToCellDep(),
 		accountConfig.ToCellDep(),
-		//emojiConfig.ToCellDep(),
-		//digitConfig.ToCellDep(),
-		//enConfig.ToCellDep(),
 		releaseConfig.ToCellDep(),
 		unavailableConfig.ToCellDep(),
 		PreservedAccountConfig.ToCellDep(),
@@ -400,10 +414,18 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		switch k {
 		case common.AccountCharTypeEmoji:
 			txParams.CellDeps = append(txParams.CellDeps, emojiConfig.ToCellDep())
-		case common.AccountCharTypeNumber:
+		case common.AccountCharTypeDigit:
 			txParams.CellDeps = append(txParams.CellDeps, digitConfig.ToCellDep())
 		case common.AccountCharTypeEn:
 			txParams.CellDeps = append(txParams.CellDeps, enConfig.ToCellDep())
+		case common.AccountCharTypeJa:
+			txParams.CellDeps = append(txParams.CellDeps, jaConfig.ToCellDep())
+		case common.AccountCharTypeRu:
+			txParams.CellDeps = append(txParams.CellDeps, ruConfig.ToCellDep())
+		case common.AccountCharTypeTr:
+			txParams.CellDeps = append(txParams.CellDeps, trConfig.ToCellDep())
+		case common.AccountCharTypeVi:
+			txParams.CellDeps = append(txParams.CellDeps, vnConfig.ToCellDep())
 		}
 	}
 

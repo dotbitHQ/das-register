@@ -3,22 +3,24 @@ package example
 import (
 	"das_register_server/http_server/api_code"
 	"das_register_server/http_server/handle"
+	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/parnurzeal/gorequest"
 	"github.com/scorpiotzh/toolib"
+	"github.com/shopspring/decimal"
 	"testing"
 	"time"
 )
 
 const (
-	TestUrl = "https://test-register-api.da.systems/v1"
+	TestUrl = "https://test-register-api.did.id/v1"
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"fc3136523ce5b477369c9d93aee1b18d","sign_list":[{"sign_type":3,"sign_msg":"0xb5aa114fb5f97c208806712fd50cbb35cd3b7ffc9350aa6a55884d68e46427ea34be33d793c12e67035003758ba8835630126af86e5f62c072ba217145571ad500"},{"sign_type":0,"sign_msg":"0x0"}],"mm_json":null}`
+	str := `{"sign_key":"102424b2c6cf7d47212cc917c7941bf6","sign_list":[{"sign_type":5,"sign_msg":"0xfecf358206bc9ec5a5791021cf7ea2f8d12d2175676bcb7fc4291a196d89dbd52ecabc91c1451421d5d8343b9cb329bd3f0024b5b2407737647585089654ded91cef950e46fb9d6d633eab8373cbca930580b7e55b1866628a77fa409fd92d562b0000000000000005"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
@@ -100,13 +102,13 @@ func TestEditRecords(t *testing.T) {
 
 	var req handle.ReqEditRecords
 	req.ChainType = common.ChainTypeEth
-	req.Address = "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"
-	req.Account = "0001.bit"
+	req.Address = "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
+	req.Account = "tzh20220718.bit"
 	req.RawParam.Records = []handle.ReqRecord{{
-		Key:   "twitter",
-		Type:  "profile",
-		Label: "33",
-		Value: "121",
+		Key:   "60",
+		Type:  "address",
+		Label: "",
+		Value: "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
 		TTL:   "300",
 	}}
 	req.EvmChainId = 5
@@ -277,4 +279,23 @@ func TestEditScript(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(toolib.JsonString(&data))
+}
+
+func TestOrderRegister2(t *testing.T) {
+	str := `{"chain_type":1,"address":"0x020881e3f5b7832e752d16fe2710ee855a6977dc","account":"faksjfd3lakj.bit","account_char_str":[{"char_set_name":2,"char":"f"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"k"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"j"},{"char_set_name":2,"char":"f"},{"char_set_name":2,"char":"d"},{"char_set_name":1,"char":"3"},{"char_set_name":2,"char":"l"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"k"},{"char_set_name":2,"char":"j"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}],"register_years":1,"inviter_account":"xiand.bit","channel_account":"cryptofans.bit","pay_chain_type":0,"pay_address":"0x020881e3f5b7832e752d16fe2710ee855a6977dc","pay_token_id":"ckb_das","pay_type":""}`
+	var req handle.ReqOrderRegister
+	json.Unmarshal([]byte(str), &req)
+	fmt.Println(req.ChannelAccount)
+
+	orderContent := tables.TableOrderContent{
+		AccountCharStr: req.AccountCharStr,
+		InviterAccount: req.InviterAccount,
+		ChannelAccount: req.ChannelAccount,
+		RegisterYears:  req.RegisterYears,
+		AmountTotalUSD: decimal.Zero,
+		AmountTotalCKB: decimal.Zero,
+	}
+
+	contentDataStr, _ := json.Marshal(&orderContent)
+	fmt.Println(string(contentDataStr))
 }

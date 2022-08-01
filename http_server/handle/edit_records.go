@@ -165,6 +165,11 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 				apiResp.ApiRespErr(api_code.ApiCodeRecordInvalid, fmt.Sprintf("record [%s] is invalid", record))
 				return nil
 			}
+		} else if v.Type == "address" {
+			if ok, _ := regexp.MatchString("^(0|[1-9][0-9]*)$", v.Key); !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeRecordInvalid, fmt.Sprintf("record [%s] is invalid", record))
+				return nil
+			}
 		} else if _, ok := mapRecordKey[record]; !ok {
 			apiResp.ApiRespErr(api_code.ApiCodeRecordInvalid, fmt.Sprintf("record [%s] is invalid", record))
 			return nil
