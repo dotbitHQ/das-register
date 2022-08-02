@@ -253,8 +253,15 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	common.GetAccountCharType(accountCharTypeMap, p.accountChars)
 
 	// witness
+	var initialRecords []witness.Record
 	if p.order.CoinType != "" {
-		// todo
+		initialRecords = append(initialRecords, witness.Record{
+			Key:   p.order.CoinType,
+			Type:  "address",
+			Label: "",
+			Value: p.order.Address,
+			TTL:   300,
+		})
 	}
 	var preBuilder witness.PreAccountCellDataBuilder
 	preWitness, preData, err := preBuilder.GenWitness(&witness.PreAccountCellParam{
@@ -270,6 +277,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		RefundLock:      p.refundLock,
 		Price:           *price,
 		AccountChars:    accountChars,
+		InitialRecords:  initialRecords,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GenWitness err: %s", err.Error())
