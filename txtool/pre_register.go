@@ -385,6 +385,14 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
 	}
+	koConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetKo)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
+	thConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsCharSetTh)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
 
 	bys, err := blake2b.Blake160([]byte(strings.TrimSuffix(p.order.Account, common.DasAccountSuffix)))
 	if err != nil {
@@ -426,6 +434,10 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 			txParams.CellDeps = append(txParams.CellDeps, trConfig.ToCellDep())
 		case common.AccountCharTypeVi:
 			txParams.CellDeps = append(txParams.CellDeps, vnConfig.ToCellDep())
+		case common.AccountCharTypeKo:
+			txParams.CellDeps = append(txParams.CellDeps, koConfig.ToCellDep())
+		case common.AccountCharTypeTh:
+			txParams.CellDeps = append(txParams.CellDeps, thConfig.ToCellDep())
 		}
 	}
 

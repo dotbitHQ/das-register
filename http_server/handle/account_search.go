@@ -196,41 +196,51 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 		switch v.CharSetName {
 		case common.AccountCharTypeEmoji:
 			if _, ok := common.CharSetTypeEmojiMap[v.Char]; !ok {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "emoji char invalid")
 				return
 			}
 		case common.AccountCharTypeDigit:
 			if _, ok := common.CharSetTypeDigitMap[v.Char]; !ok {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "digit char invalid")
 				return
 			}
 		case common.AccountCharTypeEn:
 			if _, ok := common.CharSetTypeEnMap[v.Char]; v.Char != "." && !ok {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "en char invalid")
 				return
 			}
 		case common.AccountCharTypeJa:
 			if _, ok := common.CharSetTypeJaMap[v.Char]; !ok {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "ja char invalid")
 				return
 			}
 		case common.AccountCharTypeRu:
 			if _, ok := common.CharSetTypeRuMap[v.Char]; !ok {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "ru char invalid")
 				return
 			}
 		case common.AccountCharTypeTr:
 			if _, ok := common.CharSetTypeTrMap[v.Char]; !ok {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "tr char invalid")
 				return
 			}
 		case common.AccountCharTypeVi:
 			if _, ok := common.CharSetTypeViMap[v.Char]; !ok {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "vi char invalid")
+				return
+			}
+		case common.AccountCharTypeTh:
+			if _, ok := common.CharSetTypeThMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "th char invalid")
+				return
+			}
+		case common.AccountCharTypeKo:
+			if _, ok := common.CharSetTypeKoMap[v.Char]; !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "ko char invalid")
 				return
 			}
 		default:
-			apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+			apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, fmt.Sprintf("%d char invalid", v.CharSetName))
 			return
 		}
 		accountCharStr += v.Char
