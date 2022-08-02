@@ -124,7 +124,7 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 	//}
 
 	// order check
-	if err := h.checkOrderInfo(&req.ReqOrderRegisterBase, apiResp); err != nil {
+	if err := h.checkOrderInfo(req.CoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
 		return fmt.Errorf("checkOrderInfo err: %s", err.Error())
 	}
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {

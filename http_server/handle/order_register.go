@@ -16,6 +16,7 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"regexp"
 	"time"
 )
 
@@ -137,7 +138,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 	//}
 
 	// order check
-	if err := h.checkOrderInfo(&req.ReqOrderRegisterBase, apiResp); err != nil {
+	if err := h.checkOrderInfo(req.CoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
 		return fmt.Errorf("checkOrderInfo err: %s", err.Error())
 	}
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -195,7 +196,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 	return nil
 }
 
-func (h *HttpHandle) checkOrderInfo(req *ReqOrderRegisterBase, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) checkOrderInfo(coinType string, req *ReqOrderRegisterBase, apiResp *api_code.ApiResp) error {
 	if req.RegisterYears <= 0 || req.RegisterYears > config.Cfg.Das.MaxRegisterYears {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("register years[%d] invalid", req.RegisterYears))
 		return nil
@@ -222,6 +223,12 @@ func (h *HttpHandle) checkOrderInfo(req *ReqOrderRegisterBase, apiResp *api_code
 			//apiResp.ApiRespErr(api_code.ApiCodeChannelAccountNotExist, "channel account not exist")
 			//return nil
 			req.ChannelAccount = ""
+		}
+	}
+	if coinType != "" {
+		if ok, _ := regexp.MatchString("^(0|[1-9][0-9]*)$", coinType); !ok {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("record [%s] is invalid", coinType))
+			return nil
 		}
 	}
 	return nil
