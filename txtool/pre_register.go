@@ -253,6 +253,9 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	common.GetAccountCharType(accountCharTypeMap, p.accountChars)
 
 	// witness
+	if p.order.CoinType != "" {
+		// todo
+	}
 	var preBuilder witness.PreAccountCellDataBuilder
 	preWitness, preData, err := preBuilder.GenWitness(&witness.PreAccountCellParam{
 		NewIndex:        0,

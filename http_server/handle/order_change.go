@@ -27,6 +27,7 @@ type ReqOrderChange struct {
 	PayTokenId   tables.PayTokenId `json:"pay_token_id"`
 	PayAddress   string            `json:"pay_address"`
 	PayType      tables.PayType    `json:"pay_type"`
+	CoinType     string            `json:"coin_type"`
 
 	ReqOrderRegisterBase
 }
@@ -208,6 +209,7 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 		PreRegisterStatus: tables.TxStatusDefault,
 		RegisterStatus:    tables.RegisterStatusConfirmPayment,
 		OrderStatus:       tables.OrderStatusDefault,
+		CoinType:          req.CoinType,
 	}
 	order.CreateOrderId()
 	resp.OrderId = order.OrderId

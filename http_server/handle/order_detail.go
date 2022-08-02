@@ -35,6 +35,7 @@ type RespOrderDetail struct {
 	ChannelAccount string            `json:"channel_account"`
 	RegisterYears  int               `json:"register_years"`
 	CodeUrl        string            `json:"code_url"` // wx pay code
+	CoinType       string            `json:"coin_type"`
 }
 
 func (h *HttpHandle) RpcOrderDetail(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -114,6 +115,7 @@ func (h *HttpHandle) doOrderDetail(req *ReqOrderDetail, apiResp *api_code.ApiRes
 	resp.PayAmount = order.PayAmount
 	resp.Timestamp = order.Timestamp
 	resp.Status = order.PayStatus
+	resp.CoinType = order.CoinType
 
 	if req.Action == common.DasActionApplyRegister {
 		var contentData tables.TableOrderContent
