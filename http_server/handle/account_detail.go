@@ -152,14 +152,12 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 	if err != nil && err != gorm.ErrRecordNotFound {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
 		return fmt.Errorf("SearchAccount err: %s", err.Error())
-	} else if acc.Id == 0 {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, fmt.Sprintf("account [%s] not exist", req.Account))
-		return nil
 	}
 
 	// check sub account
 	count := strings.Count(req.Account, ".")
-	if count == 1 {
+
+	if count == 1 && acc.Id > 0 {
 		accOutpoint := common.String2OutPointStruct(acc.Outpoint)
 		accTx, er := h.dasCore.Client().GetTransaction(h.ctx, accOutpoint.TxHash)
 		if er != nil {
