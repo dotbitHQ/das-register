@@ -228,7 +228,13 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 			return nil, fmt.Errorf("PriceInvitedDiscount err: %s", err.Error())
 		}
 	}
-	accountLength := common.GetAccountLength(p.order.Account)
+	//accountLength := common.GetAccountLength(p.order.Account)
+	accContent, err := p.order.GetContent()
+	if err != nil {
+		return nil, fmt.Errorf("GetContent err: %s", err.Error())
+	}
+	accountLength := uint8(len(accContent.AccountCharStr) - 4)
+
 	price := priceBuilder.PriceConfig(accountLength)
 	if price == nil {
 		return nil, fmt.Errorf("PriceConfig is nil")

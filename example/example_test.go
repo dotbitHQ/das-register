@@ -82,3 +82,7 @@ func TestSelect(t *testing.T) {
 		}
 	}
 }
+
+func TestAccount(t *testing.T) {
+	fmt.Println(common.GetAccountLength("ให้บริการ.bit"))
+}

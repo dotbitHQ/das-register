@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
@@ -117,12 +118,12 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 		return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
 	}
 
-	h.checkRenewOrder(req, apiResp)
+	acc := h.checkRenewOrder(req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
 
-	h.doRenewOrder(req, apiResp, &resp)
+	h.doRenewOrder(acc, req, apiResp, &resp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -133,7 +134,11 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 	return nil
 }
 
-func (h *HttpHandle) doRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiResp, resp *RespOrderRenew) {
+func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRenew, apiResp *api_code.ApiResp, resp *RespOrderRenew) {
+	if acc == nil {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "acc is nil")
+		return
+	}
 	// pay amount
 	addrHex := core.DasAddressHex{
 		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
@@ -142,7 +147,29 @@ func (h *HttpHandle) doRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiResp,
 		ChainType:      req.ChainType,
 	}
 	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(common.Bytes2Hex(args), req.Account, "", req.RenewYears, true, req.PayTokenId)
+
+	//
+	accOutpoint := common.String2OutPointStruct(acc.Outpoint)
+	accTx, err := h.dasCore.Client().GetTransaction(h.ctx, accOutpoint.TxHash)
+	if err != nil {
+		log.Error("GetTransaction err: ", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		return
+	}
+	mapAcc, err := witness.AccountIdCellDataBuilderFromTx(accTx.Transaction, common.DataTypeNew)
+	if err != nil {
+		log.Error("GetTransaction err: ", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		return
+	}
+	accBuilder, ok := mapAcc[acc.AccountId]
+	if !ok {
+		log.Error("mapAcc is nil")
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "mapAcc is nil")
+		return
+	}
+
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(uint8(accBuilder.AccountChars.Len()), common.Bytes2Hex(args), req.Account, "", req.RenewYears, true, req.PayTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
@@ -219,37 +246,38 @@ func (h *HttpHandle) doRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiResp,
 	}()
 }
 
-func (h *HttpHandle) checkRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiResp) {
+func (h *HttpHandle) checkRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiResp) *tables.TableAccountInfo {
 	if req.RenewYears < 1 || req.RenewYears > config.Cfg.Das.MaxRegisterYears {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("renew years[%d] invalid", req.RenewYears))
-		return
+		return nil
 	}
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
 		log.Error("GetAccountInfoByAccountId err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account fail")
-		return
+		return nil
 	} else if acc.Id == 0 {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
-		return
+		return nil
 	} else if acc.ParentAccountId != "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
-		return
+		return nil
 	} else if acc.Status == tables.AccountStatusOnCross {
 		apiResp.ApiRespErr(api_code.ApiCodeOnCross, "account on cross")
-		return
+		return nil
 	}
 	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(
 		common.ConfigCellTypeArgsAccount,
 	)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error()))
-		return
+		return nil
 	}
 	expirationGracePeriod, _ := builder.ExpirationGracePeriod()
 	if int64(acc.ExpiredAt+uint64(expirationGracePeriod)) <= time.Now().Unix() {
 		apiResp.ApiRespErr(api_code.ApiCodeAfterGracePeriod, "after the grace period")
-		return
+		return nil
 	}
+	return &acc
 }

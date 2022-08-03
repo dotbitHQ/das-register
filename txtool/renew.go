@@ -117,11 +117,6 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 	if err != nil {
 		return nil, fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
 	}
-	accountLength := common.GetAccountLength(p.order.Account)
-	_, renewPrice, _ := priceBuilder.AccountPrice(accountLength)
-	priceCapacity := (renewPrice / quote) * common.OneCkb
-	priceCapacity = priceCapacity * uint64(p.renewYears)
-	log.Info("buildOrderRenewTx:", priceCapacity, renewPrice, p.renewYears, quote)
 
 	// inputs
 	accOutpoint := common.String2OutPointStruct(p.account.Outpoint)
@@ -134,14 +129,23 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 	if err != nil {
 		return nil, fmt.Errorf("GetTransaction err: %s", err.Error())
 	}
-	mapAcc, err := witness.AccountCellDataBuilderMapFromTx(accTx.Transaction, common.DataTypeNew)
+	mapAcc, err := witness.AccountIdCellDataBuilderFromTx(accTx.Transaction, common.DataTypeNew)
 	if err != nil {
 		return nil, fmt.Errorf("AccountCellDataBuilderMapFromTx err: %s", err.Error())
 	}
-	accBuilder, ok := mapAcc[p.order.Account]
+	accBuilder, ok := mapAcc[p.account.AccountId]
 	if !ok {
 		return nil, fmt.Errorf("account map builder is nil [%s]", p.account.Outpoint)
 	}
+
+	//accountLength := common.GetAccountLength(p.order.Account)
+	accountLength := uint8(accBuilder.AccountChars.Len())
+
+	_, renewPrice, _ := priceBuilder.AccountPrice(accountLength)
+	priceCapacity := (renewPrice / quote) * common.OneCkb
+	priceCapacity = priceCapacity * uint64(p.renewYears)
+	log.Info("buildOrderRenewTx:", priceCapacity, renewPrice, p.renewYears, quote)
+
 	// renew years
 	newExpiredAt := int64(accBuilder.ExpiredAt) + int64(p.renewYears)*common.OneYearSec
 	byteExpiredAt := molecule.Go64ToBytes(newExpiredAt)

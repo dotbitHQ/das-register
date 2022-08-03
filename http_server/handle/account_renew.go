@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
@@ -124,7 +125,7 @@ func (h *HttpHandle) doAccountRenew(req *ReqAccountRenew, apiResp *api_code.ApiR
 	}
 
 	// renew account
-	h.doInternalRenewOrder(req, apiResp, &resp)
+	h.doInternalRenewOrder(acc, req, apiResp, &resp)
 
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
@@ -134,10 +135,30 @@ func (h *HttpHandle) doAccountRenew(req *ReqAccountRenew, apiResp *api_code.ApiR
 	return nil
 }
 
-func (h *HttpHandle) doInternalRenewOrder(req *ReqAccountRenew, apiResp *api_code.ApiResp, resp *RespAccountRenew) {
+func (h *HttpHandle) doInternalRenewOrder(acc tables.TableAccountInfo, req *ReqAccountRenew, apiResp *api_code.ApiResp, resp *RespAccountRenew) {
+	accOutpoint := common.String2OutPointStruct(acc.Outpoint)
+	accTx, err := h.dasCore.Client().GetTransaction(h.ctx, accOutpoint.TxHash)
+	if err != nil {
+		log.Error("GetTransaction err: ", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		return
+	}
+	mapAcc, err := witness.AccountIdCellDataBuilderFromTx(accTx.Transaction, common.DataTypeNew)
+	if err != nil {
+		log.Error("GetTransaction err: ", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		return
+	}
+	accBuilder, ok := mapAcc[acc.AccountId]
+	if !ok {
+		log.Error("mapAcc is nil")
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "mapAcc is nil")
+		return
+	}
+	//
 	payTokenId := tables.TokenIdCkbInternal
 	// pay amount
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount("", req.Account, "", req.RenewYears, true, payTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(uint8(accBuilder.AccountChars.Len()), "", req.Account, "", req.RenewYears, true, payTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

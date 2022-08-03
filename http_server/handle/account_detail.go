@@ -83,13 +83,20 @@ func (h *HttpHandle) AccountDetail(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) getAccountPrice(args, account string, isRenew bool) (baseAmount, accountPrice decimal.Decimal, err error) {
+func (h *HttpHandle) getAccountPrice(accLen uint8, args, account string, isRenew bool) (baseAmount, accountPrice decimal.Decimal, err error) {
 	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(common.ConfigCellTypeArgsPrice, common.ConfigCellTypeArgsAccount)
 	if err != nil {
 		err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
 		return
 	}
-	accLen := common.GetAccountLength(account)
+	//accLen := common.GetAccountLength(account)
+	//if accLen == 0 {
+	//	accLen = common.GetAccountLength(account)
+	//}
+	if accLen == 0 {
+		err = fmt.Errorf("accLen is 0")
+		return
+	}
 	newPrice, renewPrice, err := builder.AccountPrice(accLen)
 	if err != nil {
 		err = fmt.Errorf("AccountPrice err: %s", err.Error())
@@ -139,24 +146,44 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 	resp.Account = req.Account
 	resp.Status = tables.SearchStatusRegisterAble
 
-	// check sub account
-	count := strings.Count(req.Account, ".")
-	if count == 1 {
-		// price
-		var err error
-		resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice("", req.Account, true)
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
-			return fmt.Errorf("getAccountPrice err: %s", err.Error())
-		}
-	}
-
 	// acc
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
 		return fmt.Errorf("SearchAccount err: %s", err.Error())
+	} else if acc.Id == 0 {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, fmt.Sprintf("account [%s] not exist", req.Account))
+		return nil
+	}
+
+	// check sub account
+	count := strings.Count(req.Account, ".")
+	if count == 1 {
+		accOutpoint := common.String2OutPointStruct(acc.Outpoint)
+		accTx, er := h.dasCore.Client().GetTransaction(h.ctx, accOutpoint.TxHash)
+		if er != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, er.Error())
+			return fmt.Errorf("GetTransaction err: %s", er.Error())
+		}
+		mapAcc, er := witness.AccountIdCellDataBuilderFromTx(accTx.Transaction, common.DataTypeNew)
+		if er != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, er.Error())
+			return fmt.Errorf("AccountIdCellDataBuilderFromTx err: %s", er.Error())
+		}
+		accBuilder, ok := mapAcc[acc.AccountId]
+		if !ok {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "mapAcc is nil")
+			return fmt.Errorf("AccountCellDataBuilderMapFromTx mapAcc is nil")
+		}
+
+		// price
+		var err error
+		resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(uint8(accBuilder.AccountChars.Len()), "", req.Account, true)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
+			return fmt.Errorf("getAccountPrice err: %s", err.Error())
+		}
 	}
 
 	if acc.Id > 0 {

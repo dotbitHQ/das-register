@@ -141,7 +141,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 		argsStr = common.Bytes2Hex(args)
 	}
 
-	baseAmount, accountPrice, err := h.getAccountPrice(argsStr, req.Account, false)
+	baseAmount, accountPrice, err := h.getAccountPrice(uint8(len(req.AccountCharStr)-4), argsStr, req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
@@ -288,7 +288,8 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 			return
 		}
 		// accLen
-		accLen := common.GetAccountLength(req.Account)
+		//accLen := common.GetAccountLength(req.Account)
+		accLen := uint8(len(req.AccountCharStr) - 4)
 		log.Info("account len:", accLen, req.Account)
 		if accLen < config.Cfg.Das.AccountMinLength || accLen > config.Cfg.Das.AccountMaxLength {
 			apiResp.ApiRespErr(api_code.ApiCodeAccountLenInvalid, fmt.Sprintf("account len err:%d [%s]", accLen, accountName))
