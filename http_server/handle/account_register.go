@@ -82,7 +82,8 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	}
 
 	if len(req.AccountCharStr) == 0 {
-		accountChars, err := common.AccountToAccountChars(req.Account)
+		accountChars, err := h.dasCore.GetAccountCharSetList(req.Account)
+		//accountChars, err := common.AccountToAccountChars(req.Account)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 			return nil
