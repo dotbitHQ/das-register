@@ -162,7 +162,11 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 		return
 	}
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(uint8(len(oldOrderContent.AccountCharStr)-4), common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	accLen := uint8(len(oldOrderContent.AccountCharStr))
+	if tables.EndWithDotBitChar(oldOrderContent.AccountCharStr) {
+		accLen -= 4
+	}
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

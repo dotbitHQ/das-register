@@ -191,7 +191,11 @@ func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *a
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 		return
 	}
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(uint8(len(req.ReqAccountSearch.AccountCharStr)-4), common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, payTokenId)
+	accLen := uint8(len(req.ReqAccountSearch.AccountCharStr))
+	if tables.EndWithDotBitChar(req.ReqAccountSearch.AccountCharStr) {
+		accLen -= 4
+	}
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, payTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
