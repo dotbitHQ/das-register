@@ -299,3 +299,11 @@ func TestOrderRegister2(t *testing.T) {
 	contentDataStr, _ := json.Marshal(&orderContent)
 	fmt.Println(string(contentDataStr))
 }
+
+func TestEndWithDotBitChar(t *testing.T) {
+	str := `[{"char_set_name":9,"char":"บั๋"},{"char_set_name":9,"char":"บั๋"},{"char_set_name":9,"char":"บั๋"},{"char_set_name":9,"char":"บั๋"},{"char_set_name":9,"char":"บั๋"},{"char_set_name":9,"char":"บั๋"},{"char_set_name":9,"char":"บั๋"}]`
+
+	var list []common.AccountCharSet
+	json.Unmarshal([]byte(str), &list)
+	fmt.Println(tables.EndWithDotBitChar(list))
+}

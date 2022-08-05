@@ -143,6 +143,17 @@ type TableOrderContent struct {
 	RenewYears     int                     `json:"renew_years"`
 }
 
+func EndWithDotBitChar(list []common.AccountCharSet) bool {
+	if len(list) <= 4 {
+		return false
+	}
+	accLen := len(list)
+	if list[accLen-4].Char == "." && list[accLen-3].Char == "b" && list[accLen-2].Char == "i" && list[accLen-1].Char == "t" {
+		return true
+	}
+	return false
+}
+
 func AccountCharSetListToMoleculeAccountChars(list []common.AccountCharSet) molecule.AccountChars {
 	accountChars := molecule.NewAccountCharsBuilder()
 	for _, item := range list {

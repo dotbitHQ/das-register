@@ -184,13 +184,13 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 
 	accountName := strings.TrimSuffix(req.Account, common.DasAccountSuffix)
 	if strings.Contains(accountName, ".") {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid.")
 		return
 	}
 	var accountCharStr string
 	for _, v := range req.AccountCharStr {
 		if v.Char == "" {
-			apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+			apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid nil")
 			return
 		}
 		switch v.CharSetName {
@@ -255,7 +255,7 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 	}
 
 	if isDiff := common.CheckAccountCharTypeDiff(req.AccountCharStr); isDiff {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid")
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "diff char type")
 		return
 	}
 	return
@@ -289,7 +289,10 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 		}
 		// accLen
 		//accLen := common.GetAccountLength(req.Account)
-		accLen := uint8(len(req.AccountCharStr) - 4)
+		accLen := uint8(len(req.AccountCharStr))
+		if tables.EndWithDotBitChar(req.AccountCharStr) {
+			accLen -= 4
+		}
 		log.Info("account len:", accLen, req.Account)
 		if accLen < config.Cfg.Das.AccountMinLength || accLen > config.Cfg.Das.AccountMaxLength {
 			apiResp.ApiRespErr(api_code.ApiCodeAccountLenInvalid, fmt.Sprintf("account len err:%d [%s]", accLen, accountName))

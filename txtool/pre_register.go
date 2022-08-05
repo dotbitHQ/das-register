@@ -233,7 +233,10 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	if err != nil {
 		return nil, fmt.Errorf("GetContent err: %s", err.Error())
 	}
-	accountLength := uint8(len(accContent.AccountCharStr) - 4)
+	accountLength := uint8(len(accContent.AccountCharStr))
+	if tables.EndWithDotBitChar(accContent.AccountCharStr) {
+		accountLength -= 4
+	}
 
 	price := priceBuilder.PriceConfig(accountLength)
 	if price == nil {
