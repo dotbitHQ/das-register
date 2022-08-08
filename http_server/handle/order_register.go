@@ -17,7 +17,6 @@ import (
 	"github.com/shopspring/decimal"
 	"net/http"
 	"regexp"
-	"strings"
 	"time"
 )
 
@@ -29,6 +28,7 @@ type ReqOrderRegister struct {
 	PayAddress   string            `json:"pay_address"`
 	PayTokenId   tables.PayTokenId `json:"pay_token_id"`
 	PayType      tables.PayType    `json:"pay_type"`
+	CoinType     string            `json:"coin_type"`
 }
 
 type ReqOrderRegisterBase struct {
@@ -138,7 +138,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 	//}
 
 	// order check
-	if err := h.checkOrderInfo(&req.ReqOrderRegisterBase, apiResp); err != nil {
+	if err := h.checkOrderInfo(req.CoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
 		return fmt.Errorf("checkOrderInfo err: %s", err.Error())
 	}
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -196,7 +196,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 	return nil
 }
 
-func (h *HttpHandle) checkOrderInfo(req *ReqOrderRegisterBase, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) checkOrderInfo(coinType string, req *ReqOrderRegisterBase, apiResp *api_code.ApiResp) error {
 	if req.RegisterYears <= 0 || req.RegisterYears > config.Cfg.Das.MaxRegisterYears {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("register years[%d] invalid", req.RegisterYears))
 		return nil
@@ -223,6 +223,12 @@ func (h *HttpHandle) checkOrderInfo(req *ReqOrderRegisterBase, apiResp *api_code
 			//apiResp.ApiRespErr(api_code.ApiCodeChannelAccountNotExist, "channel account not exist")
 			//return nil
 			req.ChannelAccount = ""
+		}
+	}
+	if coinType != "" {
+		if ok, _ := regexp.MatchString("^(0|[1-9][0-9]*)$", coinType); !ok {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("record [%s] is invalid", coinType))
+			return nil
 		}
 	}
 	return nil
@@ -292,6 +298,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		PreRegisterStatus: tables.TxStatusDefault,
 		OrderStatus:       tables.OrderStatusDefault,
 		RegisterStatus:    tables.RegisterStatusConfirmPayment,
+		CoinType:          req.CoinType,
 	}
 	order.CreateOrderId()
 	resp.OrderId = order.OrderId
@@ -388,47 +395,4 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 		log.Info("amountTotalPayToken:", amountTotalPayToken.String())
 	}
 	return
-}
-
-func checkRegisterChainTypeAndAddress(chainType common.ChainType, address string) bool {
-	switch chainType {
-	case common.ChainTypeTron:
-		if strings.HasPrefix(address, common.TronPreFix) {
-			if _, err := common.TronHexToBase58(address); err != nil {
-				log.Error("TronHexToBase58 err:", err.Error(), address)
-				return false
-			}
-			return true
-		} else if strings.HasPrefix(address, common.TronBase58PreFix) {
-			if _, err := common.TronBase58ToHex(address); err != nil {
-				log.Error("TronBase58ToHex err:", err.Error(), address)
-				return false
-			}
-			return true
-		}
-	case common.ChainTypeEth:
-		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{40}$", address); ok {
-			return true
-		}
-	case common.ChainTypeMixin:
-		if ok, _ := regexp.MatchString("^0x[0-9a-fA-F]{64}$", address); ok {
-			return true
-		}
-	}
-	return false
-	//switch chainType {
-	//case common.ChainTypeTron:
-	//	if strings.HasPrefix(address, common.TronPreFix) || strings.HasPrefix(address, common.TronBase58PreFix) {
-	//		return true
-	//	}
-	//case common.ChainTypeEth:
-	//	if strings.HasPrefix(address, common.HexPreFix) && len(address) == 42 {
-	//		return true
-	//	}
-	//case common.ChainTypeMixin:
-	//	if strings.HasPrefix(address, common.HexPreFix) && len(address) == 66 {
-	//		return true
-	//	}
-	//}
-	//return false
 }

@@ -60,7 +60,7 @@ func (b *BlockParser) ActionConfirmProposal(req FuncTransactionHandleReq) (resp 
 	for k, v := range builderPreMap {
 		accountIds = append(accountIds, k)
 		accounts = append(accounts, v.Account)
-		inviterId, _ := v.InviterId()
+		inviterId := v.InviterId
 		inviterIds = append(inviterIds, inviterId)
 	}
 	// inviters
@@ -100,7 +100,7 @@ func doDiscordNotify(inviters []tables.TableAccountInfo, builderPreMap map[strin
 	for k, v := range builderPreMap {
 		account := v.Account
 		invitedBy := ""
-		inviterId, _ := v.InviterId()
+		inviterId := v.InviterId
 		if acc, ok := inviterMap[inviterId]; ok {
 			invitedBy = acc.Account
 		}

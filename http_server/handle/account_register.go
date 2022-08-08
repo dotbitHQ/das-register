@@ -118,7 +118,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	}
 
 	// order check
-	if err := h.checkOrderInfo(&req.ReqOrderRegisterBase, apiResp); err != nil {
+	if err := h.checkOrderInfo("", &req.ReqOrderRegisterBase, apiResp); err != nil {
 		return fmt.Errorf("checkOrderInfo err: %s", err.Error())
 	}
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
