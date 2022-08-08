@@ -46,7 +46,7 @@ func (b *BlockParser) ActionPreRegister(req FuncTransactionHandleReq) (resp Func
 		}
 		account := builder.Account
 		accountId := common.Bytes2Hex(common.GetAccountIdByAccount(account))
-		owner, _ := builder.OwnerLockArgsStr()
+		owner := builder.OwnerLockArgs
 
 		ownerHex, _, err := b.DasCore.Daf().ArgsToHex(common.Hex2Bytes(owner))
 		if err != nil {

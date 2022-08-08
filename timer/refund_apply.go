@@ -178,7 +178,10 @@ func (t *TxTimer) doRefundPre() error {
 		if err != nil {
 			continue
 		} else {
-			refundLock, _ := preBuilder.RefundLock()
+			refundLock := preBuilder.RefundLock
+			if refundLock == nil {
+				continue
+			}
 			refundLockScript := molecule.MoleculeScript2CkbScript(refundLock)
 			if bytes.Compare(addrParse.Script.Args, refundLockScript.Args) != 0 {
 				continue
