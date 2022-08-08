@@ -32,6 +32,7 @@ func (t *TxTool) Run() {
 	tickerPreRegister := time.NewTicker(time.Second * 6)
 	tickerRenew := time.NewTicker(time.Second * 7)
 	t.Wg.Add(1)
+	errCountApply, errCountPre, errCountRenew := 0, 0, 0
 	go func() {
 		for {
 			select {
@@ -40,7 +41,12 @@ func (t *TxTool) Run() {
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderApplyTx(); err != nil {
 						log.Error("doOrderApplyTx err: ", err.Error())
-						notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionApplyRegister, notify.GetLarkTextNotifyStr("doOrderApplyTx", "", err.Error()))
+						errCountApply++
+						if errCountApply < 50 {
+							notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionApplyRegister, notify.GetLarkTextNotifyStr("doOrderApplyTx", "", err.Error()))
+						}
+					} else {
+						errCountApply = 0
 					}
 				}
 				log.Info("doOrderApplyTx end ...")
@@ -49,7 +55,12 @@ func (t *TxTool) Run() {
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderPreRegisterTx(); err != nil {
 						log.Error("doOrderPreRegisterTx err: ", err.Error())
-						notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister, notify.GetLarkTextNotifyStr("doOrderPreRegisterTx", "", err.Error()))
+						errCountPre++
+						if errCountPre < 50 {
+							notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister, notify.GetLarkTextNotifyStr("doOrderPreRegisterTx", "", err.Error()))
+						}
+					} else {
+						errCountPre = 0
 					}
 				}
 				log.Info("doOrderPreRegisterTx end ...")
@@ -58,7 +69,12 @@ func (t *TxTool) Run() {
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderRenewTx(); err != nil {
 						log.Error("doOrderRenewTx err: ", err.Error())
-						notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionRenewAccount, notify.GetLarkTextNotifyStr("doOrderRenewTx", "", err.Error()))
+						errCountRenew++
+						if errCountRenew < 50 {
+							notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionRenewAccount, notify.GetLarkTextNotifyStr("doOrderRenewTx", "", err.Error()))
+						}
+					} else {
+						errCountRenew = 0
 					}
 				}
 				log.Info("doOrderRenewTx end ...")
