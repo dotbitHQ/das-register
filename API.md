@@ -16,6 +16,7 @@
     * [Account Registering List](#account-registering-list)
     * [Account Order Detail](#account-order-detail)
     * [Address Deposit](#address-deposit)
+    * [Character Set List](#character-set-list)
 * [OPERATE API LIST](#operate-api-list)
     * [Reverse Declare](#reverse-declare)
     * [Reverse Redeclare](#reverse-redeclare)
@@ -836,6 +837,41 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/detail -d'{"chain_type":1,"a
 
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/address/deposit -d'{"algorithm_id":6,"address":"0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"}'
+```
+
+#### Character Set List
+
+**Request**
+
+* path: /character/set/list
+* param:
+
+```json
+{}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "emoji_list": ["",""],
+    "digit_list": ["",""],
+    "en_list": ["",""],
+    "ko_list": ["",""],
+    "vi_list": ["",""],
+    "th_list": ["",""],
+    "tr_list": ["",""]
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8120/v1/character/set/list -d'{}'
 ```
 
 ### OPERATE API LIST

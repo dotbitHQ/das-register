@@ -10,6 +10,7 @@ import (
 )
 
 type ReqCharacterSetList struct {
+	CharType common.AccountCharType `json:"char_type"`
 }
 
 type RespCharacterSetList struct {
