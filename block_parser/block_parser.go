@@ -187,12 +187,10 @@ func (b *BlockParser) parsingBlockData(block *types.Block) error {
 						notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "Block Parse", notify.GetLarkTextNotifyStr("TransactionHandle", txHash, resp.Err.Error()))
 					}
 					return resp.Err
-				} else {
-					b.errCountHandle = 0
 				}
 			}
-
 		}
 	}
+	b.errCountHandle = 0
 	return nil
 }
