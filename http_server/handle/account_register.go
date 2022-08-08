@@ -20,6 +20,7 @@ import (
 type ReqAccountRegister struct {
 	ReqAccountSearch
 	ReqOrderRegisterBase
+	CoinType string `json:"coin_type"`
 
 	//PayChainType common.ChainType  `json:"pay_chain_type"`
 	//PayAddress   string            `json:"pay_address"`
@@ -241,6 +242,7 @@ func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *a
 		PreRegisterStatus: tables.TxStatusDefault,
 		OrderStatus:       tables.OrderStatusDefault,
 		RegisterStatus:    tables.RegisterStatusConfirmPayment,
+		CoinType:          req.CoinType,
 	}
 	order.CreateOrderId()
 	resp.OrderId = order.OrderId
