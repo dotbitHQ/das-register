@@ -274,7 +274,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	}
 	if addr, err := common.FormatAddressByCoinType(coinType, p.order.Address); err == nil {
 		initialRecords = append(initialRecords, witness.Record{
-			Key:   p.order.CoinType,
+			Key:   coinType,
 			Type:  "address",
 			Label: "",
 			Value: addr,
