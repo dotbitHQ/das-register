@@ -263,18 +263,25 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 
 	// witness
 	var initialRecords []witness.Record
-	if p.order.CoinType != "" {
-		if addr, err := common.FormatAddressByCoinType(p.order.CoinType, p.order.Address); err == nil {
-			initialRecords = append(initialRecords, witness.Record{
-				Key:   p.order.CoinType,
-				Type:  "address",
-				Label: "",
-				Value: addr,
-				TTL:   300,
-			})
-		} else {
-			log.Error("buildOrderPreRegisterTx FormatAddressByCoinType err: ", err.Error())
+	coinType := p.order.CoinType
+	if coinType == "" {
+		switch p.order.ChainType {
+		case common.ChainTypeEth:
+			coinType = string(common.CoinTypeEth)
+		case common.ChainTypeTron:
+			coinType = string(common.CoinTypeTrx)
 		}
+	}
+	if addr, err := common.FormatAddressByCoinType(coinType, p.order.Address); err == nil {
+		initialRecords = append(initialRecords, witness.Record{
+			Key:   p.order.CoinType,
+			Type:  "address",
+			Label: "",
+			Value: addr,
+			TTL:   300,
+		})
+	} else {
+		log.Error("buildOrderPreRegisterTx FormatAddressByCoinType err: ", err.Error())
 	}
 	var preBuilder witness.PreAccountCellDataBuilder
 	preWitness, preData, err := preBuilder.GenWitness(&witness.PreAccountCellParam{
