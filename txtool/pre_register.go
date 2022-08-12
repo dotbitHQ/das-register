@@ -424,6 +424,10 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
 	}
+	recordConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsRecordNamespace)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
 
 	bys, err := blake2b.Blake160([]byte(strings.TrimSuffix(p.order.Account, common.DasAccountSuffix)))
 	if err != nil {
@@ -448,6 +452,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		releaseConfig.ToCellDep(),
 		unavailableConfig.ToCellDep(),
 		PreservedAccountConfig.ToCellDep(),
+		recordConfig.ToCellDep(),
 	)
 	for k, _ := range accountCharTypeMap {
 		switch k {
