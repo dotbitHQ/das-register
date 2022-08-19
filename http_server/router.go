@@ -88,7 +88,7 @@ func (h *HttpServer) initRouter() {
 		internalV1.POST("/order/info", h.h.OrderInfo)
 		internalV1.POST("/account/register", h.h.AccountRegister)
 		internalV1.POST("/account/renew", h.h.AccountRenew)
-		internalV1.POST("/order/detail", api_code.DoMonitorLog(api_code.MethodOrderDetail), h.h.DasOrderDetail)
+		internalV1.POST("/order/detail", h.h.DasOrderDetail)
 
 	}
 }
