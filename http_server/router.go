@@ -56,6 +56,7 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/order/detail", api_code.DoMonitorLog(api_code.MethodOrderDetail), h.h.OrderDetail)
 		v1.POST("/address/deposit", api_code.DoMonitorLog(api_code.MethodAddressDeposit), cacheHandleLong, h.h.AddressDeposit)
 		v1.POST("/character/set/list", api_code.DoMonitorLog(api_code.MethodCharacterSetList), cacheHandleLong, h.h.CharacterSetList)
+		v1.POST("/order/detail", api_code.DoMonitorLog(api_code.MethodOrderDetail), cacheHandleShort, h.h.DasOrderDetail)
 
 		// operate
 		v1.POST("/reverse/declare", api_code.DoMonitorLog(api_code.MethodReverseDeclare), h.h.ReverseDeclare)
