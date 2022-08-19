@@ -139,6 +139,14 @@ func (d *DbDao) GetOrderByOrderId(orderId string) (order tables.TableDasOrderInf
 	return
 }
 
+func (d *DbDao) GetOrderListByOrderIds(orderIds []string) (list []tables.TableDasOrderInfo, err error) {
+	if len(orderIds) == 0 {
+		return
+	}
+	err = d.db.Where("order_id IN(?)", orderIds).Find(&list).Error
+	return
+}
+
 func (d *DbDao) DoActionApplyRegister(orderId, hash string) error {
 	return d.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(tables.TableDasOrderTxInfo{}).

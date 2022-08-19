@@ -11,16 +11,19 @@ import (
 )
 
 type ReqDasOrderDetail struct {
-	OrderId string `json:"order_id"`
+	OrderIdList []string `json:"order_id_list"`
 }
 
 type RespDasOrderDetail struct {
+	OrderDetailList []DasOrderDetail `json:"order_detail_list"`
+}
+
+type DasOrderDetail struct {
 	OrderId        string                `json:"order_id"`
 	OrderStatus    tables.OrderStatus    `json:"order_status"`
 	Action         common.DasAction      `json:"action"`
 	Account        string                `json:"account"`
 	AccountId      string                `json:"account_id"`
-	PayStatus      tables.TxStatus       `json:"pay_status"`
 	RegisterStatus tables.RegisterStatus `json:"register_status"`
 }
 
@@ -50,19 +53,25 @@ func (h *HttpHandle) DasOrderDetail(ctx *gin.Context) {
 
 func (h *HttpHandle) doDasOrderDetail(req *ReqDasOrderDetail, apiResp *api_code.ApiResp) error {
 	var resp RespDasOrderDetail
+	resp.OrderDetailList = make([]DasOrderDetail, 0)
 
-	order, err := h.dbDao.GetOrderByOrderId(req.OrderId)
+	list, err := h.dbDao.GetOrderListByOrderIds(req.OrderIdList)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
-		return fmt.Errorf("GetOrderByOrderId err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order list fail")
+		return fmt.Errorf("GetOrderListByOrderIds err: %s", err.Error())
 	}
-	resp.OrderId = order.OrderId
-	resp.OrderStatus = order.OrderStatus
-	resp.Action = order.Action
-	resp.Account = order.Account
-	resp.AccountId = order.AccountId
-	resp.PayStatus = order.PayStatus
-	resp.RegisterStatus = order.RegisterStatus
+
+	for _, v := range list {
+		tmp := DasOrderDetail{
+			OrderId:        v.OrderId,
+			OrderStatus:    v.OrderStatus,
+			Action:         v.Action,
+			Account:        v.Account,
+			AccountId:      v.AccountId,
+			RegisterStatus: v.RegisterStatus,
+		}
+		resp.OrderDetailList = append(resp.OrderDetailList, tmp)
+	}
 
 	apiResp.ApiRespOK(resp)
 	return nil
