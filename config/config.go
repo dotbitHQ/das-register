@@ -22,7 +22,10 @@ func InitCfg(configFilePath string) error {
 	if err := toolib.UnmarshalYamlFile(configFilePath, &Cfg); err != nil {
 		return fmt.Errorf("UnmarshalYamlFile err:%s", err.Error())
 	}
+	private := Cfg.Server.PayPrivate
+	Cfg.Server.PayPrivate = ""
 	log.Info("config file：", toolib.JsonString(Cfg))
+	Cfg.Server.PayPrivate = private
 	return nil
 }
 
@@ -35,7 +38,10 @@ func AddCfgFileWatcher(configFilePath string) (*fsnotify.Watcher, error) {
 		if err := toolib.UnmarshalYamlFile(configFilePath, &Cfg); err != nil {
 			log.Error("UnmarshalYamlFile err:", err.Error())
 		}
+		private := Cfg.Server.PayPrivate
+		Cfg.Server.PayPrivate = ""
 		log.Info("update config file：", toolib.JsonString(Cfg))
+		Cfg.Server.PayPrivate = private
 	})
 }
 
