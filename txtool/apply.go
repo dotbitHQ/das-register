@@ -146,10 +146,14 @@ func (t *TxTool) buildOrderApplyTx(p *applyTxParams) (*txbuilder.BuildTransactio
 		if err != nil {
 			return nil, fmt.Errorf("SplitOutputCell err: %s", err.Error())
 		}
-		for _, cell := range changeList {
-			txParams.Outputs = append(txParams.Outputs, cell)
+		for i := len(changeList); i > 0; i-- {
+			txParams.Outputs = append(txParams.Outputs, changeList[i-1])
 			txParams.OutputsData = append(txParams.OutputsData, []byte{})
 		}
+		//for _, cell := range changeList {
+		//	txParams.Outputs = append(txParams.Outputs, cell)
+		//	txParams.OutputsData = append(txParams.OutputsData, []byte{})
+		//}
 	}
 
 	// inputs

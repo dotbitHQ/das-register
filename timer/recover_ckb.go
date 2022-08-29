@@ -28,7 +28,7 @@ func (t *TxTimer) doRecoverCkb() error {
 			BlockRange:          nil,
 		},
 	}
-	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 50, "")
+	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 200, "")
 	if err != nil {
 		return fmt.Errorf("GetCells err: %s", err.Error())
 	}

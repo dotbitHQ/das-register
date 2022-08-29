@@ -185,7 +185,7 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 
 	// search balance
 	feeCapacity := uint64(1e4)
-	splitCapacity := 1000 * common.OneCkb
+	splitCapacity := 3000 * common.OneCkb
 	needCapacity := feeCapacity + incomeCell.incomeCell.Capacity
 	liveCell, totalCapacity, err := t.DasCore.GetBalanceCells(&core.ParamGetBalanceCells{
 		DasCache:          t.DasCache,
@@ -207,14 +207,18 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 
 	// change
 	if change := totalCapacity - needCapacity; change > 0 {
-		changeList, err := core.SplitOutputCell(change, 500*common.OneCkb, 2, t.ServerScript, nil)
+		changeList, err := core.SplitOutputCell(change, 1000*common.OneCkb, 3, t.ServerScript, nil)
 		if err != nil {
 			return nil, fmt.Errorf("SplitOutputCell err: %s", err.Error())
 		}
-		for _, cell := range changeList {
-			txParams.Outputs = append(txParams.Outputs, cell)
+		for i := len(changeList); i > 0; i-- {
+			txParams.Outputs = append(txParams.Outputs, changeList[i-1])
 			txParams.OutputsData = append(txParams.OutputsData, []byte{})
 		}
+		//for _, cell := range changeList {
+		//	txParams.Outputs = append(txParams.Outputs, cell)
+		//	txParams.OutputsData = append(txParams.OutputsData, []byte{})
+		//}
 	}
 
 	// cell deps
