@@ -26,8 +26,9 @@ type RespRewardsMine struct {
 }
 
 type RewardsData struct {
-	Invitee string          `json:"invitee"`
-	Reward  decimal.Decimal `json:"reward"`
+	Invitee        string          `json:"invitee"`
+	InvitationTime uint64          `json:"invitation_time"`
+	Reward         decimal.Decimal `json:"reward"`
 }
 
 func (h *HttpHandle) RpcRewardsMine(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -96,8 +97,9 @@ func (h *HttpHandle) doRewardsMine(req *ReqRewardsMine, apiResp *api_code.ApiRes
 	for _, v := range list {
 		reward, _ := decimal.NewFromString(fmt.Sprintf("%d", v.Reward))
 		resp.List = append(resp.List, RewardsData{
-			Invitee: v.InviteeAccount,
-			Reward:  reward,
+			Invitee:        v.InviteeAccount,
+			InvitationTime: v.BlockTimestamp,
+			Reward:         reward,
 		})
 	}
 
