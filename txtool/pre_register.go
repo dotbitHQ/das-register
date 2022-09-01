@@ -44,6 +44,20 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 	} else if orderTxApply.Id == 0 {
 		return fmt.Errorf("order apply register tx is nil: %s", order.OrderId)
 	}
+	// check apply
+	applyOutpoint := common.String2OutPointStruct(fmt.Sprintf("%s-0", orderTxApply.Hash))
+	applyRes, err := t.DasCore.Client().GetLiveCell(t.Ctx, applyOutpoint, false) //unknown live
+	if err != nil {
+		return fmt.Errorf("check apply GetLiveCell err: %s", err.Error())
+	}
+	log.Info("DoOrderPreRegisterTx:", applyRes.Status, order.OrderId)
+	if applyRes.Status != "live" {
+		if err := t.DbDao.UpdateOrderRedoApply(order.OrderId); err != nil {
+			return fmt.Errorf("UpdateOrderRedoApply err: %s", err.Error())
+		}
+		return nil
+	}
+
 	// inviter channel
 	inviterScript, channelScript, inviterId, err := t.getOrderInviterChannelScript(&orderContent)
 	if err != nil {

@@ -323,3 +323,13 @@ func (d *DbDao) GetClosedAndUnRefundOrders() (list []tables.TableDasOrderInfo, e
 	err = d.db.Raw(sql, common.DasActionApplyRegister, tables.OrderTypeSelf, tables.OrderStatusClosed, tables.RegisterStatusProposal, tables.OrderTxStatusConfirm, tables.TxStatusDefault).Find(&list).Error
 	return
 }
+
+func (d *DbDao) UpdateOrderRedoApply(orderId string) error {
+	return d.db.Model(tables.TableDasOrderInfo{}).
+		Where("order_id=? AND order_status=? AND pay_status=? AND pre_register_status=?",
+			orderId, tables.OrderStatusDefault, tables.TxStatusOk, tables.TxStatusSending).
+		Updates(map[string]interface{}{
+			"pay_status":          tables.TxStatusSending,
+			"pre_register_status": tables.TxStatusDefault,
+		}).Error
+}
