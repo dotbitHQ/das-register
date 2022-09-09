@@ -223,12 +223,12 @@ curl -X POST http://127.0.0.1:8120/v1/account/list -d'{"chain_type":1,"address":
 * path: /account/mine
     * get user's accounts by pagination
 * param:
-  * CategoryDefault      Category = 0
-  * CategoryMainAccount  Category = 1
-  * CategorySubAccount   Category = 2
-  * CategoryOnSale       Category = 3
-  * CategoryExpireSoon   Category = 4
-  * CategoryToBeRecycled Category = 5
+    * CategoryDefault Category = 0
+    * CategoryMainAccount Category = 1
+    * CategorySubAccount Category = 2
+    * CategoryOnSale Category = 3
+    * CategoryExpireSoon Category = 4
+    * CategoryToBeRecycled Category = 5
 
 ```json
 
@@ -795,7 +795,9 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
     "inviter_account": "",
     "channel_account": "",
     "register_years": 1,
-    "code_url": ""
+    "code_url": "",
+    "coin_type": "",
+    "cross_coin_type": ""
   }
 }
 ```
@@ -857,13 +859,34 @@ curl -X POST http://127.0.0.1:8120/v1/address/deposit -d'{"algorithm_id":6,"addr
   "err_no": 0,
   "err_msg": "",
   "data": {
-    "emoji_list": ["",""],
-    "digit_list": ["",""],
-    "en_list": ["",""],
-    "ko_list": ["",""],
-    "vi_list": ["",""],
-    "th_list": ["",""],
-    "tr_list": ["",""]
+    "emoji_list": [
+      "",
+      ""
+    ],
+    "digit_list": [
+      "",
+      ""
+    ],
+    "en_list": [
+      "",
+      ""
+    ],
+    "ko_list": [
+      "",
+      ""
+    ],
+    "vi_list": [
+      "",
+      ""
+    ],
+    "th_list": [
+      "",
+      ""
+    ],
+    "tr_list": [
+      "",
+      ""
+    ]
   }
 }
 ```
@@ -1462,7 +1485,9 @@ curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_t
       "char_set_name": 2,
       "char": "t"
     }
-  ]
+  ],
+  "coin_type": "",
+  "cross_coin_type": ""
 }
 ```
 
@@ -1507,7 +1532,9 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"chain_type":1,
   "pay_type": "",
   "register_years": 2,
   "inviter_account": "",
-  "channel_account": ""
+  "channel_account": "",
+  "coin_type": "",
+  "cross_coin_type": ""
 }
 ```
 
