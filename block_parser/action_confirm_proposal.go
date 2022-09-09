@@ -162,7 +162,7 @@ func (b *BlockParser) doLarkNotify(inviters []tables.TableAccountInfo, builderPr
 		if len(owner) > 4 {
 			owner = owner[len(owner)-4:]
 		}
-		content += fmt.Sprintf(`%s，%d，%4s，%s
+		content += fmt.Sprintf(`%s, %d, %s, %s
 `, account, registerYears, owner, invitedBy)
 		count++
 		if count == 15 {
