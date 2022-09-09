@@ -95,10 +95,11 @@ func (t *TableAccountInfo) FormatAccountStatus() SearchStatus {
 type Category int
 
 const (
-	CategoryDefault      Category = 0
-	CategoryMainAccount  Category = 1
-	CategorySubAccount   Category = 2
-	CategoryOnSale       Category = 3
-	CategoryExpireSoon   Category = 4
-	CategoryToBeRecycled Category = 5
+	CategoryDefault        Category = 0
+	CategoryMainAccount    Category = 1
+	CategorySubAccount     Category = 2
+	CategoryOnSale         Category = 3
+	CategoryExpireSoon     Category = 4
+	CategoryToBeRecycled   Category = 5
+	CategoryForInviterLink Category = 6
 )

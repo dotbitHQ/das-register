@@ -21,7 +21,9 @@ func (d *DbDao) SearchAccountList(chainType common.ChainType, address string) (l
 
 func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, keyword string, limit, offset int, category tables.Category) (list []tables.TableAccountInfo, err error) {
 	db := d.parserDb.Where("((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?))", chainType, address, chainType, address)
-	db = db.Where("status!=?", tables.AccountStatusOnCross)
+	if category != tables.CategoryForInviterLink {
+		db = db.Where("status!=?", tables.AccountStatusOnCross)
+	}
 
 	switch category {
 	//case tables.CategoryDefault:
@@ -54,7 +56,9 @@ func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, k
 
 func (d *DbDao) GetAccountsCount(chainType common.ChainType, address, keyword string, category tables.Category) (count int64, err error) {
 	db := d.parserDb.Model(tables.TableAccountInfo{}).Where("((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?))", chainType, address, chainType, address)
-	db = db.Where("status!=?", tables.AccountStatusOnCross)
+	if category != tables.CategoryForInviterLink {
+		db = db.Where("status!=?", tables.AccountStatusOnCross)
+	}
 
 	switch category {
 	//case tables.CategoryDefault:
