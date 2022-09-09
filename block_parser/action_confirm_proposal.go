@@ -85,6 +85,7 @@ func (b *BlockParser) ActionConfirmProposal(req FuncTransactionHandleReq) (resp 
 	})
 	// discord
 	doDiscordNotify(inviters, builderPreMap, builderAccMap)
+	b.doLarkNotify(inviters, builderPreMap, builderAccMap)
 
 	return
 }
@@ -128,11 +129,50 @@ func doDiscordNotify(inviters []tables.TableAccountInfo, builderPreMap map[strin
 			}
 		}
 	}()
+	//go func() {
+	//	for _, v := range contentList {
+	//		tmp := strings.Replace(v, "** ", "", -1)
+	//		tmp = strings.Replace(tmp, " **", "", -1)
+	//		notify.SendLarkTextNotify(config.Cfg.Notify.LarkRegisterOkKey, "", tmp)
+	//	}
+	//}()
+}
+
+func (b *BlockParser) doLarkNotify(inviters []tables.TableAccountInfo, builderPreMap map[string]*witness.PreAccountCellDataBuilder, builderAccMap map[string]*witness.AccountCellDataBuilder) {
+	var inviterMap = make(map[string]tables.TableAccountInfo)
+	for i, v := range inviters {
+		inviterMap[v.AccountId] = inviters[i]
+	}
+	content := ""
+	count := 0
+	var contentList []string
+	for k, v := range builderPreMap {
+		account := v.Account
+		invitedBy := ""
+		inviterId := v.InviterId
+		if acc, ok := inviterMap[inviterId]; ok {
+			invitedBy = acc.Account
+		}
+		registerYears := uint64(1)
+		if acc, ok := builderAccMap[k]; ok {
+			registerYears = (acc.ExpiredAt - acc.RegisteredAt) / 31536000
+		}
+		ownerNormal, _, _ := b.DasCore.Daf().ArgsToNormal(common.Hex2Bytes(v.OwnerLockArgs))
+		content += fmt.Sprintf(`%s, %d, %4s, %s
+`, account, registerYears, ownerNormal.AddressNormal, invitedBy)
+		count++
+		if count == 15 {
+			contentList = append(contentList, content)
+			content = ""
+			count = 0
+		}
+	}
+	if content != "" {
+		contentList = append(contentList, content)
+	}
 	go func() {
 		for _, v := range contentList {
-			tmp := strings.Replace(v, "** ", "", -1)
-			tmp = strings.Replace(tmp, " **", "", -1)
-			notify.SendLarkTextNotify(config.Cfg.Notify.LarkRegisterOkKey, "", tmp)
+			notify.SendLarkTextNotify(config.Cfg.Notify.LarkRegisterOkKey, "", v)
 		}
 	}()
 }
