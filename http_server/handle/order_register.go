@@ -233,10 +233,14 @@ func (h *HttpHandle) checkOrderInfo(coinType, crossCoinType string, req *ReqOrde
 		}
 	}
 	if crossCoinType != "" {
-		if ok, _ := regexp.MatchString("^(0|[1-9][0-9]*)$", crossCoinType); !ok {
+		if crossCoinType != string(common.CoinTypeEth) {
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("CrossCoinType [%s] is invalid", coinType))
 			return nil
 		}
+		//if ok, _ := regexp.MatchString("^(0|[1-9][0-9]*)$", crossCoinType); !ok {
+		//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("CrossCoinType [%s] is invalid", coinType))
+		//	return nil
+		//}
 	}
 	return nil
 }
