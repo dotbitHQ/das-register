@@ -219,7 +219,8 @@ func (h *HttpHandle) checkOrderInfo(coinType string, req *ReqOrderRegisterBase, 
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search channel account fail")
 			return fmt.Errorf("GetAccountInfoByAccountId err: %s", err.Error())
-		} else if acc.Id == 0 || acc.Status == tables.AccountStatusOnCross || acc.IsExpired() {
+		} else if acc.Id == 0 {
+			//else if acc.Id == 0 || acc.Status == tables.AccountStatusOnCross || acc.IsExpired() {
 			//apiResp.ApiRespErr(api_code.ApiCodeChannelAccountNotExist, "channel account not exist")
 			//return nil
 			req.ChannelAccount = ""
