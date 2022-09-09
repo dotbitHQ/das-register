@@ -158,8 +158,12 @@ func (b *BlockParser) doLarkNotify(inviters []tables.TableAccountInfo, builderPr
 			registerYears = (acc.ExpiredAt - acc.RegisteredAt) / 31536000
 		}
 		ownerNormal, _, _ := b.DasCore.Daf().ArgsToNormal(common.Hex2Bytes(v.OwnerLockArgs))
+		owner := ownerNormal.AddressNormal
+		if len(owner) > 4 {
+			owner = owner[len(owner)-4:]
+		}
 		content += fmt.Sprintf(`%s, %d, %4s, %s
-`, account, registerYears, ownerNormal.AddressNormal, invitedBy)
+`, account, registerYears, owner, invitedBy)
 		count++
 		if count == 15 {
 			contentList = append(contentList, content)
