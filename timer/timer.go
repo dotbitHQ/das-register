@@ -47,7 +47,7 @@ func (t *TxTimer) Run() error {
 	tickerRejected := time.NewTicker(time.Minute * 3)
 
 	tickerExpired := time.NewTicker(time.Minute * 30)
-	tickerRecover := time.NewTicker(time.Minute * 20)
+	tickerRecover := time.NewTicker(time.Minute)
 	tickerRefundApply := time.NewTicker(time.Minute * 15)
 	tickerClosedAndUnRefund := time.NewTicker(time.Minute * 20)
 

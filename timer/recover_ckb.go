@@ -46,7 +46,7 @@ func (t *TxTimer) doRecoverCkb() error {
 	}
 	log.Info("doRecoverCkb:", total, len(liveCells.Objects))
 	// outputs
-	capacity := 1000 * common.OneCkb
+	capacity := 10000 * common.OneCkb
 	if total < capacity*2 {
 		return nil
 	}
