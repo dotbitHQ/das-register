@@ -184,7 +184,7 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 	txParams.Witnesses = append(txParams.Witnesses, incomeCell.incomeWitness)
 
 	// search balance
-	feeCapacity := uint64(1e4)
+	feeCapacity := uint64(15000)
 	splitCapacity := 3000 * common.OneCkb
 	needCapacity := feeCapacity + incomeCell.incomeCell.Capacity
 	liveCell, totalCapacity, err := t.DasCore.GetBalanceCells(&core.ParamGetBalanceCells{
