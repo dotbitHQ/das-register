@@ -45,6 +45,7 @@ func (t *TxTimer) Run() error {
 	}
 	tickerToken := time.NewTicker(time.Second * 50)
 	tickerRejected := time.NewTicker(time.Minute * 3)
+	tickerTxRejected := time.NewTicker(time.Minute * 10)
 
 	tickerExpired := time.NewTicker(time.Minute * 30)
 	tickerRecover := time.NewTicker(time.Minute * 20)
@@ -67,7 +68,12 @@ func (t *TxTimer) Run() error {
 					log.Error("checkRejected err: ", err.Error())
 				}
 				log.Info("checkRejected end ...")
-
+			case <-tickerTxRejected.C:
+				log.Info("doTxRejected start ...")
+				if err := t.doTxRejected(); err != nil {
+					log.Error("doTxRejected err: ", err.Error())
+				}
+				log.Info("doTxRejected end ...")
 			case <-t.ctx.Done():
 				log.Info("timer done")
 				t.wg.Done()
