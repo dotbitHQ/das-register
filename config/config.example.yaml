@@ -7,6 +7,8 @@ server:
   pay_private: ""
   parser_url: "http://127.0.0.1:8118/v1" # das-database server
   tx_tool_switch: true # open send register tx
+  recover_ckb: 1000
+  recover_time: 1 # min
 origins: # cross domain
   - ""
 pay_address_map: # receiver's address

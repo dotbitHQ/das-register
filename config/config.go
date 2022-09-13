@@ -7,6 +7,7 @@ import (
 	"github.com/scorpiotzh/mylog"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
+	"time"
 )
 
 var (
@@ -58,6 +59,8 @@ type CfgServer struct {
 		PushLogIndex           string            `json:"push_log_index" yaml:"push_log_index"`
 		ParserUrl              string            `json:"parser_url" yaml:"parser_url"`
 		TxToolSwitch           bool              `json:"tx_tool_switch" yaml:"tx_tool_switch"`
+		RecoverCkb             uint64            `json:"recover_ckb" yaml:"recover_ckb"`
+		RecoverTime            time.Duration     `json:"recover_time" yaml:"recover_time"`
 	} `json:"server" yaml:"server"`
 	Origins []string `json:"origins" yaml:"origins"`
 	Notify  struct {

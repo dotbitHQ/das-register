@@ -2,6 +2,7 @@ package timer
 
 import (
 	"context"
+	"das_register_server/config"
 	"das_register_server/dao"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/core"
@@ -47,7 +48,10 @@ func (t *TxTimer) Run() error {
 	tickerRejected := time.NewTicker(time.Minute * 3)
 
 	tickerExpired := time.NewTicker(time.Minute * 30)
-	tickerRecover := time.NewTicker(time.Minute)
+	tickerRecover := time.NewTicker(time.Minute * 3)
+	if config.Cfg.Server.RecoverTime > 0 {
+		tickerRecover = time.NewTicker(time.Minute * config.Cfg.Server.RecoverTime)
+	}
 	tickerRefundApply := time.NewTicker(time.Minute * 15)
 	tickerClosedAndUnRefund := time.NewTicker(time.Minute * 20)
 
