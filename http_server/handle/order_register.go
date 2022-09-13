@@ -310,6 +310,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		OrderStatus:       tables.OrderStatusDefault,
 		RegisterStatus:    tables.RegisterStatusConfirmPayment,
 		CoinType:          req.CoinType,
+		CrossCoinType:     req.CrossCoinType,
 	}
 	order.CreateOrderId()
 	resp.OrderId = order.OrderId
