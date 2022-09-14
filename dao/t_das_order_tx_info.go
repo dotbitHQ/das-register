@@ -36,8 +36,8 @@ func (d *DbDao) GetOrderTxByAction(orderId string, action tables.OrderTxAction) 
 	return
 }
 
-func (d *DbDao) GetMaybeRejectedRegisterTxs(timestamp int64) (list []tables.TableDasOrderTxInfo, err error) {
-	err = d.db.Where("timestamp<? AND status=?", timestamp, tables.OrderTxStatusDefault).Find(&list).Error
+func (d *DbDao) GetMaybeRejectedRegisterTxs(start, end int64) (list []tables.TableDasOrderTxInfo, err error) {
+	err = d.db.Where("timestamp>? AND timestamp<? AND status=?", start, end, tables.OrderTxStatusDefault).Find(&list).Error
 	return
 }
 

@@ -10,7 +10,7 @@ import (
 )
 
 func (t *TxTimer) doTxRejected() error {
-	list, err := t.dbDao.GetMaybeRejectedRegisterTxs(time.Now().Add(-time.Minute*10).UnixNano() / 1e6)
+	list, err := t.dbDao.GetMaybeRejectedRegisterTxs(time.Now().Add(-time.Hour*72).UnixNano()/1e6, time.Now().Add(-time.Minute*10).UnixNano()/1e6)
 	if err != nil {
 		return fmt.Errorf("GetMaybeRejectedRegisterTxs err: %s", err.Error())
 	}
