@@ -232,7 +232,7 @@ func (d *DbDao) DoActionRenewAccount(orderId, hash string) error {
 func (d *DbDao) GetNeedSendPayOrderList(action common.DasAction) (list []tables.TableDasOrderInfo, err error) {
 	err = d.db.Where("action=? AND order_type=? AND pay_status=? AND order_status=?",
 		action, tables.OrderTypeSelf, tables.TxStatusSending, tables.OrderStatusDefault).
-		Order("id").Limit(10).Find(&list).Error
+		Order("id").Limit(15).Find(&list).Error
 	return
 }
 
@@ -247,7 +247,7 @@ func (d *DbDao) UpdatePayStatus(orderId string, oldTxStatus, newTxStatus tables.
 func (d *DbDao) GetNeedSendPreRegisterTxOrderList() (list []tables.TableDasOrderInfo, err error) {
 	err = d.db.Where("action=? AND order_type=? AND pre_register_status=? AND order_status=?",
 		common.DasActionApplyRegister, tables.OrderTypeSelf, tables.TxStatusSending, tables.OrderStatusDefault).
-		Order("id").Limit(10).Find(&list).Error
+		Order("id").Limit(15).Find(&list).Error
 	return
 }
 
