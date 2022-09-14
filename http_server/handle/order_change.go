@@ -23,11 +23,12 @@ type ReqOrderChange struct {
 	Address   string           `json:"address"`
 	Account   string           `json:"account"`
 
-	PayChainType common.ChainType  `json:"pay_chain_type"`
-	PayTokenId   tables.PayTokenId `json:"pay_token_id"`
-	PayAddress   string            `json:"pay_address"`
-	PayType      tables.PayType    `json:"pay_type"`
-	CoinType     string            `json:"coin_type"`
+	PayChainType  common.ChainType  `json:"pay_chain_type"`
+	PayTokenId    tables.PayTokenId `json:"pay_token_id"`
+	PayAddress    string            `json:"pay_address"`
+	PayType       tables.PayType    `json:"pay_type"`
+	CoinType      string            `json:"coin_type"`
+	CrossCoinType string            `json:"cross_coin_type"`
 
 	ReqOrderRegisterBase
 }
@@ -124,7 +125,7 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 	//}
 
 	// order check
-	if err := h.checkOrderInfo(req.CoinType, "", &req.ReqOrderRegisterBase, apiResp); err != nil {
+	if err := h.checkOrderInfo(req.CoinType, req.CrossCoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
 		return fmt.Errorf("checkOrderInfo err: %s", err.Error())
 	}
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -132,13 +133,13 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 	}
 
 	// old Order
-	oldOrderContent, oldCrossCoinType := h.oldOrderCheck(req, apiResp)
+	oldOrderContent := h.oldOrderCheck(req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
 
 	// new Older
-	h.doNewOrder(req, apiResp, &resp, oldOrderContent, oldCrossCoinType)
+	h.doNewOrder(req, apiResp, &resp, oldOrderContent)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -149,7 +150,7 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 	return nil
 }
 
-func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, resp *RespOrderChange, oldOrderContent *tables.TableOrderContent, oldCrossCoinType string) {
+func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, resp *RespOrderChange, oldOrderContent *tables.TableOrderContent) {
 	// pay amount
 	hexAddress := core.DasAddressHex{
 		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
@@ -214,7 +215,7 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 		RegisterStatus:    tables.RegisterStatusConfirmPayment,
 		OrderStatus:       tables.OrderStatusDefault,
 		CoinType:          req.CoinType,
-		CrossCoinType:     oldCrossCoinType,
+		CrossCoinType:     req.CrossCoinType,
 	}
 	order.CreateOrderId()
 	resp.OrderId = order.OrderId
@@ -249,7 +250,7 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 	}()
 }
 
-func (h *HttpHandle) oldOrderCheck(req *ReqOrderChange, apiResp *api_code.ApiResp) (oldOrderContent *tables.TableOrderContent, oldCrossCoinType string) {
+func (h *HttpHandle) oldOrderCheck(req *ReqOrderChange, apiResp *api_code.ApiResp) (oldOrderContent *tables.TableOrderContent) {
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	order, err := h.dbDao.GetLatestRegisterOrderBySelf(req.ChainType, req.Address, accountId)
 	if err != nil {
@@ -282,6 +283,5 @@ func (h *HttpHandle) oldOrderCheck(req *ReqOrderChange, apiResp *api_code.ApiRes
 	//	return
 	//}
 	oldOrderContent = &contentData
-	oldCrossCoinType = order.CrossCoinType
 	return
 }
