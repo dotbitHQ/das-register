@@ -1533,7 +1533,8 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"chain_type":1,
   "register_years": 2,
   "inviter_account": "",
   "channel_account": "",
-  "coin_type": ""
+  "coin_type": "",
+  "cross_coin_type": ""
 }
 ```
 
