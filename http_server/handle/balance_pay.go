@@ -114,11 +114,11 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 		return fmt.Errorf("HexToScript err: %s", err.Error())
 	}
 	fee := common.OneCkb
-	needCapacity := order.PayAmount.BigInt().Uint64() + fee
+	needCapacity := order.PayAmount.BigInt().Uint64()
 	liveCells, totalCapacity, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
 		DasCache:          h.dasCache,
 		LockScript:        dasLock,
-		CapacityNeed:      needCapacity,
+		CapacityNeed:      needCapacity + fee,
 		CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
