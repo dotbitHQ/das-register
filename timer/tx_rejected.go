@@ -28,6 +28,7 @@ func (t *TxTimer) doTxRejected() error {
 		} else {
 			log.Info("GetTransaction:", v.OrderId, v.Hash, txRes.TxStatus.Status)
 			if txRes.TxStatus.Status == types.TransactionStatusRejected {
+				notify.SendLarkTextNotifyAtAll(config.Cfg.Notify.LarkErrorKey, "doTxRejected", v.OrderId)
 				if err := t.dbDao.UpdateRejectedTx(v.Action, v.OrderId); err != nil {
 					log.Error("UpdateRejectedTx err: %s", err.Error())
 				}
