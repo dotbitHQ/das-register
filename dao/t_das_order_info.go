@@ -336,3 +336,11 @@ func (d *DbDao) UpdateOrderRedoApply(orderId string) error {
 			"pre_register_status": tables.TxStatusDefault,
 		}).Error
 }
+
+func (d *DbDao) UpdateOrderStatusClosed(orderId string) error {
+	return d.db.Model(tables.TableDasOrderInfo{}).
+		Where("order_id=? AND order_status=?", orderId, tables.OrderStatusDefault).
+		Updates(map[string]interface{}{
+			"order_status": tables.OrderStatusClosed,
+		}).Error
+}

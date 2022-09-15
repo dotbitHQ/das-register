@@ -41,6 +41,14 @@ func (t *TxTool) DoOrderRenewTx(order *tables.TableDasOrderInfo) error {
 	acc, err := t.DbDao.GetAccountInfoByAccountId(common.Bytes2Hex(accountId))
 	if err != nil {
 		return fmt.Errorf("GetAccountInfoByAccountId err: %s", err.Error())
+	} else if acc.Status == tables.AccountStatusOnCross {
+		log.Error("DoOrderRenewTx:", order.OrderId, acc.Status)
+		msg := fmt.Sprintf(`order id: %s, account on cross`, order.OrderId)
+		notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionRenewAccount, msg)
+		if err := t.DbDao.UpdateOrderStatusClosed(order.OrderId); err != nil {
+			return fmt.Errorf("UpdateOrderStatusClosed err: %s", err.Error())
+		}
+		return nil
 	}
 
 	// build tx
