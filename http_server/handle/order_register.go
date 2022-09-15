@@ -152,7 +152,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 	// base check
-	status, _ := h.checkAccountBase(&req.ReqAccountSearch, apiResp)
+	_, status, _ := h.checkAccountBase(&req.ReqAccountSearch, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
