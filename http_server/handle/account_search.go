@@ -161,7 +161,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 			resp.Status = status
 		}
 		resp.RegisterTxMap = registerTxMap
-		if _, ok := resp.RegisterTxMap[tables.RegisterStatusConfirmProposal]; !ok {
+		if _, ok := resp.RegisterTxMap[tables.RegisterStatusConfirmProposal]; !ok && confirmProposalHash != "" {
 			resp.RegisterTxMap[tables.RegisterStatusConfirmProposal] = RegisterTx{
 				ChainType: common.ChainTypeCkb,
 				Hash:      confirmProposalHash,
