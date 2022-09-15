@@ -25,9 +25,12 @@ func (d *DbDao) GetLatestRegisterOrderByLatest(accountId string) (order tables.T
 
 func (d *DbDao) GetRegisteringOrders(chainType common.ChainType, address string) (list []tables.TableDasOrderInfo, err error) {
 	// SELECT account,MAX(register_status)AS register_status FROM t_das_order_status_info WHERE chain_type=? AND address=? AND order_status=? GROUP BY account
-	err = d.db.Select("account,MAX(register_status) AS register_status").
-		Where("chain_type=? AND address=? AND action=? AND order_status=?", chainType, address, common.DasActionApplyRegister, tables.OrderStatusDefault).
-		Group("account").Order("id DESC").Find(&list).Error
+	//err = d.db.Select("account,MAX(register_status) AS register_status").
+	//	Where("chain_type=? AND address=? AND action=? AND order_status=?", chainType, address, common.DasActionApplyRegister, tables.OrderStatusDefault).
+	//	Group("account").Order("id DESC").Find(&list).Error
+	//return
+	err = d.db.Select("account,account_id,register_status,cross_coin_type").Where("chain_type=? AND address=? AND action=? AND order_status=?",
+		chainType, address, common.DasActionApplyRegister, tables.OrderStatusDefault).Order("id DESC").Find(&list).Error
 	return
 }
 
