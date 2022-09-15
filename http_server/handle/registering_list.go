@@ -95,9 +95,11 @@ func (h *HttpHandle) doRegisteringList(req *ReqRegisteringList, apiResp *api_cod
 	}
 	var accMap = make(map[string]int)
 	for _, v := range list {
-		if item, ok := accMap[v.AccountId]; ok && v.RegisterStatus > resp.RegisteringAccounts[item].Status {
-			resp.RegisteringAccounts[item].Status = v.RegisterStatus
-			resp.RegisteringAccounts[item].CrossCoinType = v.CrossCoinType
+		if item, ok := accMap[v.AccountId]; ok {
+			if v.RegisterStatus > resp.RegisteringAccounts[item].Status {
+				resp.RegisteringAccounts[item].Status = v.RegisterStatus
+				resp.RegisteringAccounts[item].CrossCoinType = v.CrossCoinType
+			}
 		} else {
 			resp.RegisteringAccounts = append(resp.RegisteringAccounts, RespRegisteringData{
 				Account:       v.Account,
