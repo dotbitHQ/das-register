@@ -30,6 +30,7 @@ type TableDasOrderInfo struct {
 	RegisterStatus    RegisterStatus   `json:"register_status" gorm:"column:register_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-6'"`
 	OrderStatus       OrderStatus      `json:"order_status" gorm:"column:order_status;index:k_order_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-closed'"`
 	CoinType          string           `json:"coin_type" gorm:"column:coin_type; type:varchar(255) NOT NULL DEFAULT '';"`
+	CrossCoinType     string           `json:"cross_coin_type" gorm:"column:cross_coin_type; type:varchar(255) NOT NULL DEFAULT '';"`
 	CreatedAt         time.Time        `json:"created_at" gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
 	UpdatedAt         time.Time        `json:"updated_at" gorm:"column:updated_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''"`
 }

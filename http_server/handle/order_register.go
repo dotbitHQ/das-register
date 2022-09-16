@@ -25,11 +25,12 @@ type ReqOrderRegister struct {
 	ReqAccountSearch
 	ReqOrderRegisterBase
 
-	PayChainType common.ChainType  `json:"pay_chain_type"`
-	PayAddress   string            `json:"pay_address"`
-	PayTokenId   tables.PayTokenId `json:"pay_token_id"`
-	PayType      tables.PayType    `json:"pay_type"`
-	CoinType     string            `json:"coin_type"`
+	PayChainType  common.ChainType  `json:"pay_chain_type"`
+	PayAddress    string            `json:"pay_address"`
+	PayTokenId    tables.PayTokenId `json:"pay_token_id"`
+	PayType       tables.PayType    `json:"pay_type"`
+	CoinType      string            `json:"coin_type"`
+	CrossCoinType string            `json:"cross_coin_type"`
 }
 
 type ReqOrderRegisterBase struct {
@@ -139,7 +140,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 	//}
 
 	// order check
-	if err := h.checkOrderInfo(req.CoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
+	if err := h.checkOrderInfo(req.CoinType, req.CrossCoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
 		return fmt.Errorf("checkOrderInfo err: %s", err.Error())
 	}
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -152,7 +153,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 	// base check
-	status, _ := h.checkAccountBase(&req.ReqAccountSearch, apiResp)
+	_, status, _ := h.checkAccountBase(&req.ReqAccountSearch, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -197,7 +198,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 	return nil
 }
 
-func (h *HttpHandle) checkOrderInfo(coinType string, req *ReqOrderRegisterBase, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) checkOrderInfo(coinType, crossCoinType string, req *ReqOrderRegisterBase, apiResp *api_code.ApiResp) error {
 	if req.RegisterYears <= 0 || req.RegisterYears > config.Cfg.Das.MaxRegisterYears {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("register years[%d] invalid", req.RegisterYears))
 		return nil
@@ -232,9 +233,19 @@ func (h *HttpHandle) checkOrderInfo(coinType string, req *ReqOrderRegisterBase, 
 	}
 	if coinType != "" {
 		if ok, _ := regexp.MatchString("^(0|[1-9][0-9]*)$", coinType); !ok {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("record [%s] is invalid", coinType))
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("CoinType [%s] is invalid", coinType))
 			return nil
 		}
+	}
+	if crossCoinType != "" {
+		if crossCoinType != string(common.CoinTypeEth) {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("CrossCoinType [%s] is invalid", coinType))
+			return nil
+		}
+		//if ok, _ := regexp.MatchString("^(0|[1-9][0-9]*)$", crossCoinType); !ok {
+		//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("CrossCoinType [%s] is invalid", coinType))
+		//	return nil
+		//}
 	}
 	return nil
 }
@@ -304,6 +315,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		OrderStatus:       tables.OrderStatusDefault,
 		RegisterStatus:    tables.RegisterStatusConfirmPayment,
 		CoinType:          req.CoinType,
+		CrossCoinType:     req.CrossCoinType,
 	}
 	order.CreateOrderId()
 	resp.OrderId = order.OrderId

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"das_register_server/tables"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -33,4 +34,41 @@ func (d *DbDao) GetOrderTxByAction(orderId string, action tables.OrderTxAction) 
 		orderId, action, tables.OrderTxStatusConfirm).Order("id DESC").
 		Limit(1).Find(&tx).Error
 	return
+}
+
+func (d *DbDao) GetMaybeRejectedRegisterTxs(start, end int64) (list []tables.TableDasOrderTxInfo, err error) {
+	err = d.db.Where("timestamp>? AND timestamp<? AND status=?", start, end, tables.OrderTxStatusDefault).Find(&list).Error
+	return
+}
+
+func (d *DbDao) UpdateRejectedTx(action tables.OrderTxAction, orderId string) error {
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(tables.TableDasOrderTxInfo{}).
+			Where("order_id=? AND status=?", orderId, tables.OrderTxStatusDefault).
+			Updates(map[string]interface{}{
+				"status": tables.OrderTxStatusRejected,
+			}).Error; err != nil {
+			return err
+		}
+
+		switch action {
+		case tables.TxActionApplyRegister, tables.TxActionRenewAccount:
+			if err := tx.Model(tables.TableDasOrderInfo{}).
+				Where("order_id=? AND pay_status=?", orderId, tables.TxStatusOk).
+				Updates(map[string]interface{}{
+					"pay_status": tables.TxStatusSending,
+				}).Error; err != nil {
+				return err
+			}
+		case tables.TxActionPreRegister:
+			if err := tx.Model(tables.TableDasOrderInfo{}).
+				Where("order_id=? AND pre_register_status=?", orderId, tables.TxStatusOk).
+				Updates(map[string]interface{}{
+					"pre_register_status": tables.TxStatusSending,
+				}).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }

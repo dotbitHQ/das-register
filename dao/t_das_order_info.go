@@ -25,9 +25,12 @@ func (d *DbDao) GetLatestRegisterOrderByLatest(accountId string) (order tables.T
 
 func (d *DbDao) GetRegisteringOrders(chainType common.ChainType, address string) (list []tables.TableDasOrderInfo, err error) {
 	// SELECT account,MAX(register_status)AS register_status FROM t_das_order_status_info WHERE chain_type=? AND address=? AND order_status=? GROUP BY account
-	err = d.db.Select("account,MAX(register_status) AS register_status").
-		Where("chain_type=? AND address=? AND action=? AND order_status=?", chainType, address, common.DasActionApplyRegister, tables.OrderStatusDefault).
-		Group("account").Order("id DESC").Find(&list).Error
+	//err = d.db.Select("account,MAX(register_status) AS register_status").
+	//	Where("chain_type=? AND address=? AND action=? AND order_status=?", chainType, address, common.DasActionApplyRegister, tables.OrderStatusDefault).
+	//	Group("account").Order("id DESC").Find(&list).Error
+	//return
+	err = d.db.Select("account,account_id,register_status,cross_coin_type").Where("chain_type=? AND address=? AND action=? AND order_status=?",
+		chainType, address, common.DasActionApplyRegister, tables.OrderStatusDefault).Order("id DESC").Find(&list).Error
 	return
 }
 
@@ -232,7 +235,7 @@ func (d *DbDao) DoActionRenewAccount(orderId, hash string) error {
 func (d *DbDao) GetNeedSendPayOrderList(action common.DasAction) (list []tables.TableDasOrderInfo, err error) {
 	err = d.db.Where("action=? AND order_type=? AND pay_status=? AND order_status=?",
 		action, tables.OrderTypeSelf, tables.TxStatusSending, tables.OrderStatusDefault).
-		Order("id").Limit(10).Find(&list).Error
+		Order("id").Limit(15).Find(&list).Error
 	return
 }
 
@@ -247,7 +250,7 @@ func (d *DbDao) UpdatePayStatus(orderId string, oldTxStatus, newTxStatus tables.
 func (d *DbDao) GetNeedSendPreRegisterTxOrderList() (list []tables.TableDasOrderInfo, err error) {
 	err = d.db.Where("action=? AND order_type=? AND pre_register_status=? AND order_status=?",
 		common.DasActionApplyRegister, tables.OrderTypeSelf, tables.TxStatusSending, tables.OrderStatusDefault).
-		Order("id").Limit(10).Find(&list).Error
+		Order("id").Limit(15).Find(&list).Error
 	return
 }
 
@@ -331,5 +334,13 @@ func (d *DbDao) UpdateOrderRedoApply(orderId string) error {
 		Updates(map[string]interface{}{
 			"pay_status":          tables.TxStatusSending,
 			"pre_register_status": tables.TxStatusDefault,
+		}).Error
+}
+
+func (d *DbDao) UpdateOrderStatusClosed(orderId string) error {
+	return d.db.Model(tables.TableDasOrderInfo{}).
+		Where("order_id=? AND order_status=?", orderId, tables.OrderStatusDefault).
+		Updates(map[string]interface{}{
+			"order_status": tables.OrderStatusClosed,
 		}).Error
 }

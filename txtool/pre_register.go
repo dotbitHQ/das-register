@@ -297,21 +297,27 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	} else {
 		log.Error("buildOrderPreRegisterTx FormatAddressByCoinType err: ", err.Error())
 	}
+	var initialCrossChain witness.ChainInfo
+	if p.order.CrossCoinType != "" {
+		initialCrossChain.Checked = true
+		initialCrossChain.CoinType = p.order.CrossCoinType
+	}
 	var preBuilder witness.PreAccountCellDataBuilder
 	preWitness, preData, err := preBuilder.GenWitness(&witness.PreAccountCellParam{
-		NewIndex:        0,
-		Action:          common.DasActionPreRegister,
-		CreatedAt:       timeCell.Timestamp(),
-		InvitedDiscount: invitedDiscount,
-		Quote:           quoteCell.Quote(),
-		InviterScript:   p.inviterScript,
-		ChannelScript:   p.channelScript,
-		InviterId:       p.inviterId,
-		OwnerLockArgs:   p.ownerLockArgs,
-		RefundLock:      p.refundLock,
-		Price:           *price,
-		AccountChars:    accountChars,
-		InitialRecords:  initialRecords,
+		NewIndex:          0,
+		Action:            common.DasActionPreRegister,
+		CreatedAt:         timeCell.Timestamp(),
+		InvitedDiscount:   invitedDiscount,
+		Quote:             quoteCell.Quote(),
+		InviterScript:     p.inviterScript,
+		ChannelScript:     p.channelScript,
+		InviterId:         p.inviterId,
+		OwnerLockArgs:     p.ownerLockArgs,
+		RefundLock:        p.refundLock,
+		Price:             *price,
+		AccountChars:      accountChars,
+		InitialRecords:    initialRecords,
+		InitialCrossChain: initialCrossChain,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GenWitness err: %s", err.Error())

@@ -25,3 +25,9 @@ func (d *DbDao) UpdatePayToRefund(orderId string) error {
 			"refund_status": tables.TxStatusSending,
 		}).Error
 }
+
+func (d *DbDao) GetUnRefundTxCount() (count int64, err error) {
+	err = d.db.Model(tables.TableDasOrderPayInfo{}).
+		Where("`status`=? AND refund_status=?", tables.OrderTxStatusConfirm, tables.TxStatusSending).Count(&count).Error
+	return
+}

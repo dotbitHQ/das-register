@@ -22,8 +22,9 @@ type RespRegisteringList struct {
 }
 
 type RespRegisteringData struct {
-	Account string                `json:"account"`
-	Status  tables.RegisterStatus `json:"status"`
+	Account       string                `json:"account"`
+	Status        tables.RegisterStatus `json:"status"`
+	CrossCoinType string                `json:"cross_coin_type"`
 }
 
 func (h *HttpHandle) RpcRegisteringList(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -92,11 +93,21 @@ func (h *HttpHandle) doRegisteringList(req *ReqRegisteringList, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "get registering account fail")
 		return fmt.Errorf("GetRegisteringOrders err: %s", err.Error())
 	}
+	var accMap = make(map[string]int)
 	for _, v := range list {
-		resp.RegisteringAccounts = append(resp.RegisteringAccounts, RespRegisteringData{
-			Account: v.Account,
-			Status:  v.RegisterStatus,
-		})
+		if item, ok := accMap[v.AccountId]; ok {
+			if v.RegisterStatus > resp.RegisteringAccounts[item].Status {
+				resp.RegisteringAccounts[item].Status = v.RegisterStatus
+				resp.RegisteringAccounts[item].CrossCoinType = v.CrossCoinType
+			}
+		} else {
+			resp.RegisteringAccounts = append(resp.RegisteringAccounts, RespRegisteringData{
+				Account:       v.Account,
+				Status:        v.RegisterStatus,
+				CrossCoinType: v.CrossCoinType,
+			})
+			accMap[v.AccountId] = len(resp.RegisteringAccounts) - 1
+		}
 	}
 
 	apiResp.ApiRespOK(resp)

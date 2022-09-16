@@ -115,7 +115,8 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 		return nil
 	}
 
-	resp.Status, resp.IsSelf = h.checkAccountBase(req, apiResp)
+	confirmProposalHash := ""
+	confirmProposalHash, resp.Status, resp.IsSelf = h.checkAccountBase(req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if resp.Status != tables.SearchStatusRegisterAble && !resp.IsSelf {
@@ -160,6 +161,12 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 			resp.Status = status
 		}
 		resp.RegisterTxMap = registerTxMap
+		if _, ok := resp.RegisterTxMap[tables.RegisterStatusConfirmProposal]; !ok && confirmProposalHash != "" {
+			resp.RegisterTxMap[tables.RegisterStatusConfirmProposal] = RegisterTx{
+				ChainType: common.ChainTypeCkb,
+				Hash:      confirmProposalHash,
+			}
+		}
 		resp.IsSelf = true
 		apiResp.ApiRespOK(resp)
 		return nil
@@ -265,7 +272,7 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 	return
 }
 
-func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.ApiResp) (status tables.SearchStatus, isSelf bool) {
+func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.ApiResp) (confirmProposalHash string, status tables.SearchStatus, isSelf bool) {
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
@@ -274,6 +281,7 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 		return
 	} else if acc.Id > 0 {
 		status = acc.FormatAccountStatus()
+		confirmProposalHash = acc.ConfirmProposalHash
 		if req.ChainType == acc.OwnerChainType && strings.EqualFold(req.Address, acc.Owner) {
 			isSelf = true
 		}

@@ -173,7 +173,6 @@ func (t *TxTool) buildOrderApplyTx(p *applyTxParams) (*txbuilder.BuildTransactio
 	// cell deps
 	txParams.CellDeps = append(txParams.CellDeps,
 		applyContract.ToCellDep(),
-		applyContract.ToCellDep(),
 		heightCell.ToCellDep(),
 		timeCell.ToCellDep(),
 	)
