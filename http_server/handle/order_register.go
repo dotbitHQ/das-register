@@ -17,6 +17,7 @@ import (
 	"github.com/shopspring/decimal"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -210,6 +211,9 @@ func (h *HttpHandle) checkOrderInfo(coinType, crossCoinType string, req *ReqOrde
 			return fmt.Errorf("GetAccountInfoByAccountId err: %s", err.Error())
 		} else if acc.Id == 0 {
 			apiResp.ApiRespErr(api_code.ApiCodeInviterAccountNotExist, "inviter account not exist")
+			return nil
+		} else if strings.EqualFold(acc.Owner, "0x0000000000000000000000000000000000000000") {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "inviter account owner is 0x0")
 			return nil
 		}
 	}
