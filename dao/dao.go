@@ -13,6 +13,11 @@ type DbDao struct {
 	parserDb *gorm.DB
 }
 
+func (d *DbDao) InitDb(db, parserDb *gorm.DB) {
+	d.parserDb = parserDb
+	d.db = db
+}
+
 func NewGormDB(dbMysql, parserMysql config.DbMysql) (*DbDao, error) {
 	db, err := toolib.NewGormDB(dbMysql.Addr, dbMysql.User, dbMysql.Password, dbMysql.DbName, dbMysql.MaxOpenConn, dbMysql.MaxIdleConn)
 	if err != nil {

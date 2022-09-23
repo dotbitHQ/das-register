@@ -25,6 +25,7 @@ type TableAccountInfo struct {
 	EnableSubAccount     EnableSubAccount      `json:"enable_sub_account" gorm:"column:enable_sub_account"`
 	RenewSubAccountPrice uint64                `json:"renew_sub_account_price" gorm:"column:renew_sub_account_price"`
 	Nonce                uint64                `json:"nonce" gorm:"column:nonce"`
+	CharsetNum           uint64                `json:"charset_num" gorm:"column:charset_num; index:k_charset_num; type: bigint(20) unsigned NOT NULL DEFAULT '0'; "`
 }
 
 type AccountStatus int
