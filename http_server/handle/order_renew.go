@@ -12,6 +12,7 @@ import (
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
+	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
@@ -192,6 +193,28 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 		log.Error("json marshal err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "json marshal fail")
 		return
+	}
+	if req.PayTokenId == tables.TokenIdDas {
+		dasLock, _, err := h.dasCore.Daf().HexToScript(addrHex)
+		if err != nil {
+			log.Error("HexToArgs err: ", err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
+			return
+		}
+
+		fee := common.OneCkb
+		needCapacity := amountTotalPayToken.BigInt().Uint64()
+		_, _, err = h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+			DasCache:          h.dasCache,
+			LockScript:        dasLock,
+			CapacityNeed:      needCapacity + fee,
+			CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
+			SearchOrder:       indexer.SearchOrderDesc,
+		})
+		if err != nil {
+			checkBalanceErr(err, apiResp)
+			return
+		}
 	}
 	order := tables.TableDasOrderInfo{
 		Id:                0,
