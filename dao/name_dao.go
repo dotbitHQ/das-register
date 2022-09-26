@@ -28,8 +28,10 @@ func (d *DbDao) GetInviteeList(inviterId string) (list []tables.TableRebateInfo,
 }
 
 func (d *DbDao) GetInviterCount(accountIds []string, charsetNum int) (count int64, err error) {
-	err = d.parserDb.Model(tables.TableAccountInfo{}).
-		Where("account_id IN(?) AND charset_num=?",
-			accountIds, charsetNum).Count(&count).Error
+	db := d.parserDb.Model(tables.TableAccountInfo{}).Where("account_id IN(?) AND charset_num=?", accountIds, charsetNum)
+	if charsetNum == 2 {
+		db = db.Where("account NOT LIKE '%-%'")
+	}
+	err = db.Count(&count).Error
 	return
 }

@@ -1,14 +1,18 @@
 package timer
 
 import (
+	"das_register_server/config"
 	"das_register_server/dao"
+	"das_register_server/notify"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/robfig/cron/v3"
 	"strings"
 )
 
 type NameDaoTimer struct {
 	DbDao *dao.DbDao
+	cron  *cron.Cron
 }
 
 func (t *NameDaoTimer) CheckNameDaoMember(account string, charset int) error {
@@ -54,14 +58,44 @@ func (t *NameDaoTimer) CheckNameDaoMember(account string, charset int) error {
 		}
 	}
 
-	fmt.Println(memberIds)
 	members, err := t.DbDao.GetAccountInfoByAccountIds(memberIds)
 	if err != nil {
 		return fmt.Errorf("GetAccountInfoByAccountIds err: %s", err.Error())
 	}
-	for _, v := range members {
-		fmt.Println(v.Account, v.AccountId)
+	log.Info("CheckNameDaoMember:", len(members))
+	if len(members) > 0 {
+		msg := ``
+		for _, v := range members {
+			log.Info("CheckNameDaoMember:", v.Account, v.AccountId)
+			msg += fmt.Sprintf("%s %s\n", v.Account, v.AccountId)
+		}
+		notify.SendLarkTextNotifyAtAll(config.Cfg.Notify.LarkErrorKey, "NameDao UnMint SubAccount List", msg)
 	}
 
 	return nil
+}
+
+func (t *NameDaoTimer) RunCheckNameDaoMember() {
+	if config.Cfg.Notify.LarkErrorKey == "" {
+		return
+	}
+	t.cron = cron.New(cron.WithSeconds())
+	spec := "0 0 15 * * ? "
+	_, err := t.cron.AddFunc(spec, func() {
+		if err := t.CheckNameDaoMember("0x.bit", 2); err != nil {
+			log.Error("CheckNameDaoMember err: %s", err.Error())
+		}
+	})
+	if err != nil {
+		log.Error("RunCheckNameDaoMember err: %s", err.Error())
+	} else {
+		t.cron.Start()
+	}
+}
+
+func (t *NameDaoTimer) CloseCron() {
+	if t.cron != nil {
+		t.cron.Stop()
+	}
+	log.Warn("cron done")
 }
