@@ -80,7 +80,7 @@ func (t *NameDaoTimer) RunCheckNameDaoMember() {
 		return
 	}
 	t.cron = cron.New(cron.WithSeconds())
-	spec := "0 0 15 * * ? "
+	spec := "0 0 0 * * ? "
 	_, err := t.cron.AddFunc(spec, func() {
 		if err := t.CheckNameDaoMember("0x.bit", 2); err != nil {
 			log.Error("CheckNameDaoMember err: %s", err.Error())
