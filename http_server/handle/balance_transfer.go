@@ -209,12 +209,21 @@ func (h *HttpHandle) buildBalanceTransferTx(req *reqBuildTx, p *balanceTransferP
 	}
 
 	// outputs
-	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
-		Capacity: p.TransferAmount,
-		Lock:     p.ToScript,
-		Type:     p.ToType,
-	})
-	txParams.OutputsData = append(txParams.OutputsData, []byte{})
+	transferList, err := core.SplitOutputCell(p.TransferAmount, 10000*common.OneCkb, 10, p.ToScript, p.ToType)
+	if err != nil {
+		return nil, fmt.Errorf("SplitOutputCell err: %s", err.Error())
+	}
+	for _, cell := range transferList {
+		txParams.Outputs = append(txParams.Outputs, cell)
+		txParams.OutputsData = append(txParams.OutputsData, []byte{})
+	}
+
+	//txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
+	//	Capacity: p.TransferAmount,
+	//	Lock:     p.ToScript,
+	//	Type:     p.ToType,
+	//})
+	//txParams.OutputsData = append(txParams.OutputsData, []byte{})
 	change := p.InputsAmount - p.TransferAmount - p.Fee
 	if change > 0 {
 		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
