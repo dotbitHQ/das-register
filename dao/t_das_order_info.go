@@ -344,3 +344,10 @@ func (d *DbDao) UpdateOrderStatusClosed(orderId string) error {
 			"order_status": tables.OrderStatusClosed,
 		}).Error
 }
+
+func (d *DbDao) GetUnPayOrderCount(chainType common.ChainType, address string) (count int64, err error) {
+	err = d.db.Model(tables.TableDasOrderInfo{}).
+		Where("chain_type=? AND address=? AND order_status=? AND pay_status=?",
+			chainType, address, tables.OrderStatusDefault, tables.TxStatusDefault).Count(&count).Error
+	return
+}

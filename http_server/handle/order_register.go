@@ -135,6 +135,16 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		}
 	}
 
+	// check un pay
+	if unPayCount, err := h.dbDao.GetUnPayOrderCount(req.ChainType, req.Address); err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeDbError, "failed to check order count")
+		return nil
+	} else if unPayCount > 200 {
+		log.Info("GetUnPayOrderCount:", req.ChainType, req.Address, unPayCount)
+		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
+		return nil
+	}
+
 	//if exi := h.rc.RegisterLimitExist(req.ChainType, req.Address, req.Account, "1"); exi {
 	//	apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
 	//	return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
