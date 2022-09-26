@@ -219,12 +219,21 @@ func (h *HttpHandle) buildBalancePayTx(p *balancePayParams) (*txbuilder.BuildTra
 
 	// change
 	if change := p.totalCapacity - p.payCapacity - p.feeCapacity; change > 0 {
-		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
-			Capacity: change,
-			Lock:     p.fromLockScript,
-			Type:     p.fromTypeScript,
-		})
-		txParams.OutputsData = append(txParams.OutputsData, []byte{})
+		changeList, err := core.SplitOutputCell(change, 2000*common.OneCkb, 10, p.fromLockScript, p.fromTypeScript)
+		if err != nil {
+			return nil, fmt.Errorf("SplitOutputCell err: %s", err.Error())
+		}
+		for _, cell := range changeList {
+			txParams.Outputs = append(txParams.Outputs, cell)
+			txParams.OutputsData = append(txParams.OutputsData, []byte{})
+		}
+
+		//txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
+		//	Capacity: change,
+		//	Lock:     p.fromLockScript,
+		//	Type:     p.fromTypeScript,
+		//})
+		//txParams.OutputsData = append(txParams.OutputsData, []byte{})
 	}
 
 	// witness
