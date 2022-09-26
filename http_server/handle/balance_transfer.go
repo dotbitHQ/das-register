@@ -209,7 +209,7 @@ func (h *HttpHandle) buildBalanceTransferTx(req *reqBuildTx, p *balanceTransferP
 	}
 
 	// outputs
-	transferList, err := core.SplitOutputCell(p.TransferAmount, 10000*common.OneCkb, 10, p.ToScript, p.ToType)
+	transferList, err := core.SplitOutputCell(p.TransferAmount, 10000*common.OneCkb, 5, p.ToScript, p.ToType)
 	if err != nil {
 		return nil, fmt.Errorf("SplitOutputCell err: %s", err.Error())
 	}
