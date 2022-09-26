@@ -123,19 +123,8 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
 	if err != nil {
-		if err == core.ErrRejectedOutPoint {
-			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, err.Error())
-			return nil
-		} else if err == core.ErrNotEnoughChange {
-			apiResp.ApiRespErr(api_code.ApiCodeNotEnoughChange, err.Error())
-			return nil
-		} else if err == core.ErrInsufficientFunds {
-			apiResp.ApiRespErr(api_code.ApiCodeInsufficientBalance, err.Error())
-			return nil
-		} else {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
-			return fmt.Errorf("GetBalanceCells err: %s", err.Error())
-		}
+		checkBalanceErr(err, apiResp)
+		return nil
 	}
 
 	// check pay address

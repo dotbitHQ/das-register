@@ -85,3 +85,15 @@ func checkChainType(chainType common.ChainType) bool {
 	}
 	return false
 }
+
+func checkBalanceErr(err error, apiResp *api_code.ApiResp) {
+	if err == core.ErrRejectedOutPoint {
+		apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, err.Error())
+	} else if err == core.ErrNotEnoughChange {
+		apiResp.ApiRespErr(api_code.ApiCodeNotEnoughChange, err.Error())
+	} else if err == core.ErrInsufficientFunds {
+		apiResp.ApiRespErr(api_code.ApiCodeInsufficientBalance, err.Error())
+	} else {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+	}
+}
