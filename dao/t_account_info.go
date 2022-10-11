@@ -105,3 +105,8 @@ func (d *DbDao) GetAccountInfoByAccountIds(accountIds []string) (list []tables.T
 	err = d.parserDb.Where(" account_id IN(?) ", accountIds).Find(&list).Error
 	return
 }
+
+func (d *DbDao) GetNameDaoAccountInfoByAccountIds(accountIds []string) (list []tables.TableAccountInfo, err error) {
+	err = d.parserDb.Where(" parent_account_id='' AND account_id IN(?) ", accountIds).Find(&list).Error
+	return
+}

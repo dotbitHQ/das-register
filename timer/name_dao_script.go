@@ -58,7 +58,7 @@ func (t *NameDaoTimer) CheckNameDaoMember(account string, charset int) error {
 		}
 	}
 
-	members, err := t.DbDao.GetAccountInfoByAccountIds(memberIds)
+	members, err := t.DbDao.GetNameDaoAccountInfoByAccountIds(memberIds)
 	if err != nil {
 		return fmt.Errorf("GetAccountInfoByAccountIds err: %s", err.Error())
 	}
