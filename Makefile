@@ -8,3 +8,11 @@ register:
 
 update:
 	go mod tidy
+
+docker:
+	docker build --network host -t dotbitteam/das-register:latest .
+
+docker-publish:
+	docker image push dotbitteam/das-register:latest
+
+default:register
