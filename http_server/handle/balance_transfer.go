@@ -148,7 +148,7 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 		}
 	}
 
-	feeAmount := uint64(1e4)
+	feeAmount := uint64(1e6)
 	transferAmount := totalAmount - feeAmount
 	var reqBuild reqBuildTx
 	reqBuild.Action = tables.DasActionTransferBalance
