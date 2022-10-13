@@ -272,6 +272,15 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 	return
 }
 
+var OpenCharTypeMap = map[common.AccountCharType]struct{}{
+	common.AccountCharTypeEmoji: {},
+	common.AccountCharTypeDigit: {},
+	common.AccountCharTypeKo:    {},
+	common.AccountCharTypeTh:    {},
+	common.AccountCharTypeTr:    {},
+	common.AccountCharTypeVi:    {},
+}
+
 func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.ApiResp) (confirmProposalHash string, status tables.SearchStatus, isSelf bool) {
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
@@ -310,6 +319,37 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 			apiResp.ApiRespErr(api_code.ApiCodeAccountLenInvalid, fmt.Sprintf("account len err:%d [%s]", accLen, accountName))
 			return
 		} else if accLen >= config.Cfg.Das.OpenAccountMinLength && accLen <= config.Cfg.Das.OpenAccountMaxLength {
+			// check time cell
+			tc, err := h.dasCore.GetTimeCell()
+			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("get time cell err: %s", err.Error()))
+				return
+			}
+			tcTimestamp := tc.Timestamp()
+			if tcTimestamp >= 1666094400 {
+				// check dao char type
+				isSameDaoCharType := true
+				for i, v := range req.AccountCharStr {
+					if v.Char == "." {
+						break
+					}
+					if i == 0 {
+						continue
+					}
+					if _, ok := OpenCharTypeMap[req.AccountCharStr[i].CharSetName]; !ok {
+						isSameDaoCharType = false
+						break
+					}
+					if req.AccountCharStr[i].CharSetName != req.AccountCharStr[i-1].CharSetName {
+						isSameDaoCharType = false
+						break
+					}
+				}
+				if isSameDaoCharType {
+					return
+				}
+			}
+
 			configRelease, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsRelease)
 			if err != nil {
 				log.Error("GetDasConfigCellInfo err:", err.Error())
