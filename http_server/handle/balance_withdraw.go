@@ -147,7 +147,7 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 	}
 
 	// check balance
-	fee := uint64(1e4)
+	fee := uint64(1e6)
 	withdrawAmount := req.Amount.BigInt().Uint64()
 	allAmount := withdrawAmount + fee
 	if req.WithdrawAll {
