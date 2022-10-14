@@ -326,7 +326,11 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 				return
 			}
 			tcTimestamp := tc.Timestamp()
-			if tcTimestamp >= 1666094400 {
+			openTimestamp := int64(1666094400)
+			if config.Cfg.Server.Net != common.DasNetTypeMainNet {
+				openTimestamp = 1665712800
+			}
+			if tcTimestamp >= openTimestamp {
 				// check dao char type
 				isSameDaoCharType := true
 				for i, v := range req.AccountCharStr {
