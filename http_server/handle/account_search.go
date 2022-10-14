@@ -146,7 +146,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	if tables.EndWithDotBitChar(req.AccountCharStr) {
 		accLen -= 4
 	}
-	baseAmount, accountPrice, err := h.getAccountPrice(uint8(len(req.AccountCharStr)-4), argsStr, req.Account, false)
+	baseAmount, accountPrice, err := h.getAccountPrice(accLen, argsStr, req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())

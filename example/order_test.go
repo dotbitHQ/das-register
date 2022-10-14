@@ -10,26 +10,17 @@ import (
 )
 
 func TestAccountSearch(t *testing.T) {
+	dc, _ := getNewDasCoreTestnet2()
 	var req handle.ReqAccountSearch
-	req.Account = "7aaaaaaa.bit"
+	req.Account = "1234.bit"
 	req.ChainType = common.ChainTypeEth
 	req.Address = "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
-	req.AccountCharStr = []common.AccountCharSet{
-		//{CharSetName: tables.AccountCharTypeEn, Char: "a"},
-		//{CharSetName: tables.AccountCharTypeNumber, Char: "1"},
-		{CharSetName: common.AccountCharTypeDigit, Char: "7"},
-		{CharSetName: common.AccountCharTypeEn, Char: "a"},
-		{CharSetName: common.AccountCharTypeEn, Char: "a"},
-		{CharSetName: common.AccountCharTypeEn, Char: "a"},
-		{CharSetName: common.AccountCharTypeEn, Char: "a"},
-		{CharSetName: common.AccountCharTypeEn, Char: "a"},
-		{CharSetName: common.AccountCharTypeEn, Char: "a"},
-		{CharSetName: common.AccountCharTypeEn, Char: "a"},
-		{CharSetName: common.AccountCharTypeEn, Char: "."},
-		{CharSetName: common.AccountCharTypeEn, Char: "b"},
-		{CharSetName: common.AccountCharTypeEn, Char: "i"},
-		{CharSetName: common.AccountCharTypeEn, Char: "t"},
+	accountChars, err := dc.GetAccountCharSetList(req.Account)
+	if err != nil {
+		t.Fatal(err)
 	}
+
+	req.AccountCharStr = accountChars
 
 	url := TestUrl + "/account/search"
 	var data handle.RespAccountSearch
