@@ -17,6 +17,9 @@ import (
 )
 
 func (t *TxTool) doOrderApplyTx() error {
+	if !t.IsRebootTxOK() {
+		return nil
+	}
 	list, err := t.DbDao.GetNeedSendPayOrderList(common.DasActionApplyRegister)
 	if err != nil {
 		return fmt.Errorf("GetNeedSendPayOrderList err: %s", err.Error())

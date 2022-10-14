@@ -18,6 +18,9 @@ import (
 )
 
 func (t *TxTool) doOrderPreRegisterTx() error {
+	if !t.IsRebootTxOK() {
+		return nil
+	}
 	list, err := t.DbDao.GetNeedSendPreRegisterTxOrderList()
 	if err != nil {
 		return fmt.Errorf("GetNeedSendPreRegisterTxOrderList err: %s", err.Error())

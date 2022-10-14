@@ -16,6 +16,9 @@ import (
 )
 
 func (t *TxTool) doOrderRenewTx() error {
+	if !t.IsRebootTxOK() {
+		return nil
+	}
 	list, err := t.DbDao.GetNeedSendPayOrderList(common.DasActionRenewAccount)
 	if err != nil {
 		return fmt.Errorf("GetNeedSendPayOrderList err: %s", err.Error())

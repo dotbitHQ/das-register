@@ -116,6 +116,7 @@ func runServer(ctx *cli.Context) error {
 		DasCache:      dasCache,
 		TxBuilderBase: txBuilderBase,
 		ServerScript:  serverScript,
+		RebootTime:    time.Now(),
 	}
 	txTool.Run()
 

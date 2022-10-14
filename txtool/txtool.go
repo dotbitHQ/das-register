@@ -25,6 +25,7 @@ type TxTool struct {
 	DasCache      *dascache.DasCache
 	TxBuilderBase *txbuilder.DasTxBuilderBase
 	ServerScript  *types.Script
+	RebootTime    time.Time
 }
 
 func (t *TxTool) Run() {
