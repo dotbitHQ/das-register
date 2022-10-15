@@ -11,6 +11,17 @@ import (
 
 func TestAccountSearch(t *testing.T) {
 	dc, _ := getNewDasCoreTestnet2()
+
+	configRelease, err := dc.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsRelease)
+	if err != nil {
+		t.Fatal(err)
+	}
+	luckyNumber, _ := configRelease.LuckyNumber()
+	fmt.Println("config release lucky number: ", luckyNumber)
+	if resNum, _ := handle.Blake256AndFourBytesBigEndian([]byte("12as.bit")); resNum < luckyNumber {
+		t.Fatal("luckyNumber:", resNum)
+	}
+
 	var req handle.ReqAccountSearch
 	req.Account = "1234.bit"
 	req.ChainType = common.ChainTypeEth

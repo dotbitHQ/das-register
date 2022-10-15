@@ -29,6 +29,7 @@ type RespAccountSearch struct {
 	BaseAmount    decimal.Decimal                      `json:"base_amount"`
 	IsSelf        bool                                 `json:"is_self"`
 	RegisterTxMap map[tables.RegisterStatus]RegisterTx `json:"register_tx_map"`
+	OpenTimestamp int64                                `json:"open_timestamp"`
 }
 
 type RegisterTx struct {
@@ -116,7 +117,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	}
 
 	confirmProposalHash := ""
-	confirmProposalHash, resp.Status, resp.IsSelf = h.checkAccountBase(req, apiResp)
+	confirmProposalHash, resp.Status, resp.IsSelf, resp.OpenTimestamp = h.checkAccountBase(req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if resp.Status != tables.SearchStatusRegisterAble && !resp.IsSelf {
@@ -281,7 +282,7 @@ var OpenCharTypeMap = map[common.AccountCharType]struct{}{
 	common.AccountCharTypeVi:    {},
 }
 
-func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.ApiResp) (confirmProposalHash string, status tables.SearchStatus, isSelf bool) {
+func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.ApiResp) (confirmProposalHash string, status tables.SearchStatus, isSelf bool, openTs int64) {
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
@@ -330,28 +331,26 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 			if config.Cfg.Server.Net != common.DasNetTypeMainNet {
 				openTimestamp = 1665712800
 			}
-			if tcTimestamp >= openTimestamp {
-				// check dao char type
-				isSameDaoCharType := true
-				for i, v := range req.AccountCharStr {
-					if v.Char == "." {
-						break
-					}
-					if i == 0 {
-						continue
-					}
-					if _, ok := OpenCharTypeMap[req.AccountCharStr[i].CharSetName]; !ok {
-						isSameDaoCharType = false
-						break
-					}
-					if req.AccountCharStr[i].CharSetName != req.AccountCharStr[i-1].CharSetName {
-						isSameDaoCharType = false
-						break
-					}
+			// check dao char type
+			isSameDaoCharType := true
+			for i, v := range req.AccountCharStr {
+				if v.Char == "." {
+					break
 				}
-				if isSameDaoCharType {
-					return
+				if i == 0 {
+					continue
 				}
+				if _, ok := OpenCharTypeMap[req.AccountCharStr[i].CharSetName]; !ok {
+					isSameDaoCharType = false
+					break
+				}
+				if req.AccountCharStr[i].CharSetName != req.AccountCharStr[i-1].CharSetName {
+					isSameDaoCharType = false
+					break
+				}
+			}
+			if tcTimestamp >= openTimestamp && isSameDaoCharType {
+				return
 			}
 
 			configRelease, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsRelease)
@@ -364,6 +363,9 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 			log.Info("config release lucky number: ", luckyNumber)
 			if resNum, _ := Blake256AndFourBytesBigEndian([]byte(req.Account)); resNum > luckyNumber {
 				status = tables.SearchStatusRegisterNotOpen
+				if isSameDaoCharType {
+					openTs = openTimestamp
+				}
 				return
 			}
 		}

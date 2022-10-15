@@ -133,7 +133,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	}
 
 	// base check
-	_, status, _ := h.checkAccountBase(&req.ReqAccountSearch, apiResp)
+	_, status, _, _ := h.checkAccountBase(&req.ReqAccountSearch, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
