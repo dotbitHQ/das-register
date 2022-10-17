@@ -136,10 +136,14 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 	}
 
 	// check un pay
+	maxUnPayCount := int64(200)
+	if config.Cfg.Server.Net != common.DasNetTypeMainNet {
+		maxUnPayCount = 5000
+	}
 	if unPayCount, err := h.dbDao.GetUnPayOrderCount(req.ChainType, req.Address); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "failed to check order count")
 		return nil
-	} else if unPayCount > 200 {
+	} else if unPayCount > maxUnPayCount {
 		log.Info("GetUnPayOrderCount:", req.ChainType, req.Address, unPayCount)
 		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
 		return nil
