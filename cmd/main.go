@@ -244,7 +244,7 @@ func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
 
 	// das cache
 	dasCache := dascache.NewDasCache(ctxServer, &wgServer)
-	dasCache.RunClearExpiredOutPoint(time.Minute * 5)
+	dasCache.RunClearExpiredOutPoint(time.Minute * 15)
 	log.Info("das cache ok")
 
 	return dasCore, dasCache, nil
