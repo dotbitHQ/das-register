@@ -46,7 +46,7 @@ func (t *TxTimer) Run() error {
 	}
 	tickerToken := time.NewTicker(time.Second * 50)
 	tickerRejected := time.NewTicker(time.Minute * 3)
-	tickerTxRejected := time.NewTicker(time.Minute * 10)
+	tickerTxRejected := time.NewTicker(time.Minute * 5)
 
 	tickerExpired := time.NewTicker(time.Minute * 30)
 	tickerRecover := time.NewTicker(time.Minute * 3)

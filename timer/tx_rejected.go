@@ -32,6 +32,13 @@ func (t *TxTimer) doTxRejected() error {
 				if err := t.dbDao.UpdateRejectedTx(v.Action, v.OrderId); err != nil {
 					log.Error("UpdateRejectedTx err: %s", err.Error())
 				}
+			} else {
+				sinceMin := time.Since(time.Unix(v.Timestamp/1000, 0)).Minutes()
+				if sinceMin > 20 {
+					if err := t.dbDao.UpdateRejectedTx(v.Action, v.OrderId); err != nil {
+						log.Error("UpdateRejectedTx err: %s", err.Error())
+					}
+				}
 			}
 		}
 		//
