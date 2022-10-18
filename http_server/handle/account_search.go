@@ -278,8 +278,8 @@ var OpenCharTypeMap = map[common.AccountCharType]struct{}{
 	common.AccountCharTypeDigit: {},
 	common.AccountCharTypeKo:    {},
 	common.AccountCharTypeTh:    {},
-	common.AccountCharTypeTr:    {},
-	common.AccountCharTypeVi:    {},
+	//common.AccountCharTypeTr:    {},
+	//common.AccountCharTypeVi:    {},
 }
 
 func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.ApiResp) (confirmProposalHash string, status tables.SearchStatus, isSelf bool, openTs int64) {
