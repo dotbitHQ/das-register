@@ -54,7 +54,7 @@ func (d *DbDao) UpdateRejectedTx(action tables.OrderTxAction, orderId string) er
 		switch action {
 		case tables.TxActionApplyRegister, tables.TxActionRenewAccount:
 			if err := tx.Model(tables.TableDasOrderInfo{}).
-				Where("order_id=? AND pay_status=?", orderId, tables.TxStatusOk).
+				Where("order_id=? AND pay_status=? AND order_status=?", orderId, tables.TxStatusOk, tables.OrderStatusDefault).
 				Updates(map[string]interface{}{
 					"pay_status": tables.TxStatusSending,
 				}).Error; err != nil {
@@ -62,7 +62,7 @@ func (d *DbDao) UpdateRejectedTx(action tables.OrderTxAction, orderId string) er
 			}
 		case tables.TxActionPreRegister:
 			if err := tx.Model(tables.TableDasOrderInfo{}).
-				Where("order_id=? AND pre_register_status=?", orderId, tables.TxStatusOk).
+				Where("order_id=? AND pre_register_status=? AND order_status=?", orderId, tables.TxStatusOk, tables.OrderStatusDefault).
 				Updates(map[string]interface{}{
 					"pre_register_status": tables.TxStatusSending,
 				}).Error; err != nil {
