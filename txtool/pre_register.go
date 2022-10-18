@@ -115,12 +115,24 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 	}
 	//
 	if hash, err := txBuilder.SendTransaction(); err != nil {
-		// update order
-		if err := t.DbDao.UpdatePreRegisterStatus(order.OrderId, tables.TxStatusOk, tables.TxStatusSending); err != nil {
-			log.Error("UpdatePayStatus err:", err.Error(), order.OrderId)
-			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister, notify.GetLarkTextNotifyStr("UpdatePayStatus", order.OrderId, err.Error()))
+		if strings.Contains(err.Error(), "see the error code 35 in the page") {
+			log.Error("err see the error code 35:", order.OrderId)
+			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister,
+				notify.GetLarkTextNotifyStr("UpdateOrderToClosedAndRefund", order.OrderId, order.Account))
+
+			if err := t.DbDao.UpdateOrderToClosedAndRefund(order.OrderId); err != nil {
+				log.Error("UpdateOrderToClosed err:", err.Error())
+				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister, notify.GetLarkTextNotifyStr("UpdateOrderToClosedAndRefund", order.OrderId, err.Error()))
+			}
+
+		} else {
+			// update order
+			if err := t.DbDao.UpdatePreRegisterStatus(order.OrderId, tables.TxStatusOk, tables.TxStatusSending); err != nil {
+				log.Error("UpdatePayStatus err:", err.Error(), order.OrderId)
+				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister, notify.GetLarkTextNotifyStr("UpdatePayStatus", order.OrderId, err.Error()))
+			}
+			return fmt.Errorf("SendTransaction err: %s", err.Error())
 		}
-		return fmt.Errorf("SendTransaction err: %s", err.Error())
 	} else {
 		log.Info("SendTransaction ok:", tables.TxActionPreRegister, hash)
 		t.DasCache.AddCellInputByAction("", txBuilder.Transaction.Inputs)

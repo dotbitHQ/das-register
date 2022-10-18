@@ -263,6 +263,28 @@ func (d *DbDao) UpdatePreRegisterStatus(orderId string, oldTxStatus, newTxStatus
 		}).Error
 }
 
+func (d *DbDao) UpdateOrderToClosedAndRefund(orderId string) error {
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(tables.TableDasOrderInfo{}).
+			Where("order_id=? AND order_type=? AND order_status=?",
+				orderId, tables.OrderTypeSelf, tables.OrderStatusDefault).
+			Updates(map[string]interface{}{
+				"order_status": tables.OrderStatusClosed,
+			}).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(tables.TableDasOrderPayInfo{}).
+			Where("order_id=? AND `status`=? AND refund_status=?",
+				orderId, tables.OrderTxStatusConfirm, tables.TxStatusDefault).
+			Updates(map[string]interface{}{
+				"refund_status": tables.TxStatusSending,
+			}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (d *DbDao) GetPreRegisteredOrderByAccountId(accountId string) (order tables.TableDasOrderInfo, err error) {
 	err = d.db.Where("account_id=? AND action=? AND register_status>?",
 		accountId, common.DasActionApplyRegister, tables.RegisterStatusPreRegister).
