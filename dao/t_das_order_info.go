@@ -301,13 +301,13 @@ func (d *DbDao) UpdateOrderToRefund(orderId string) error {
 			}).Error; err != nil {
 			return err
 		}
-		if err := tx.Model(tables.TableDasOrderPayInfo{}).
-			Where("order_id=? AND refund_status=?", orderId, tables.TxStatusDefault).
-			Updates(map[string]interface{}{
-				"refund_status": tables.TxStatusSending,
-			}).Error; err != nil {
-			return err
-		}
+		//if err := tx.Model(tables.TableDasOrderPayInfo{}).
+		//	Where("order_id=? AND refund_status=?", orderId, tables.TxStatusDefault).
+		//	Updates(map[string]interface{}{
+		//		"refund_status": tables.TxStatusSending,
+		//	}).Error; err != nil {
+		//	return err
+		//}
 		return nil
 	})
 }
