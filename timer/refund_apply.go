@@ -188,7 +188,7 @@ func (t *TxTimer) doRefundPre() error {
 					continue
 				}
 			}
-			log.Info("doRefundPre:", common.OutPointStruct2String(v.OutPoint), common.Bytes2Hex(refundLockScript.Args))
+			log.Info("doRefundPre tx:", common.OutPointStruct2String(v.OutPoint), common.Bytes2Hex(refundLockScript.Args))
 
 			// do refund
 			var txParams txbuilder.BuildTransactionParams
