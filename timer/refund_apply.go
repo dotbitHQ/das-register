@@ -1,7 +1,6 @@
 package timer
 
 import (
-	"bytes"
 	"das_register_server/config"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -11,6 +10,7 @@ import (
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
+	"github.com/nervosnetwork/ckb-sdk-go/transaction"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 )
 
@@ -64,6 +64,11 @@ func (t *TxTimer) doRefundApply() error {
 	for _, v := range liveCells.Objects {
 		if v.BlockNumber+uint64(applyMaxWaitingBlockNumber) > blockNumber {
 			break
+		}
+		// check lock code hash
+		if v.Output.Lock.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
+			log.Warn("doRefundApply tx code hash err:", common.OutPointStruct2String(v.OutPoint))
+			continue
 		}
 
 		var txParams txbuilder.BuildTransactionParams
@@ -123,11 +128,19 @@ func (t *TxTimer) doRefundApply() error {
 var preBlockNumber uint64
 
 func (t *TxTimer) doRefundPre() error {
-	addrParse, err := address.Parse(config.Cfg.Server.PayServerAddress)
-	if err != nil {
-		return fmt.Errorf("address.Parse err: %s", err.Error())
-	}
+	//addrParse, err := address.Parse(config.Cfg.Server.PayServerAddress)
+	//if err != nil {
+	//	return fmt.Errorf("address.Parse err: %s", err.Error())
+	//}
 
+	dasContract, err := core.GetDasContractInfo(common.DasContractNameDispatchCellType)
+	if err != nil {
+		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+	}
+	balanceContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
+	if err != nil {
+		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+	}
 	asContract, err := core.GetDasContractInfo(common.DasContractNameAlwaysSuccess)
 	if err != nil {
 		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
@@ -183,11 +196,27 @@ func (t *TxTimer) doRefundPre() error {
 				continue
 			}
 			refundLockScript := molecule.MoleculeScript2CkbScript(refundLock)
-			if !config.Cfg.Server.RecycleAllPre {
-				if bytes.Compare(addrParse.Script.Args, refundLockScript.Args) != 0 {
-					continue
+			//if bytes.Compare(addrParse.Script.Args, refundLockScript.Args) != 0 {
+			//	continue
+			//}
+
+			// check lock code hash
+			if !dasContract.IsSameTypeId(refundLockScript.CodeHash) || refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
+				log.Warn("doRefundPre tx code hash err:", common.OutPointStruct2String(v.OutPoint))
+				continue
+			}
+
+			var refundTypeScript *types.Script
+			if dasContract.IsSameTypeId(refundLockScript.CodeHash) {
+				ownerHex, _, err := t.dasCore.Daf().ScriptToHex(refundLockScript)
+				if err != nil {
+					return fmt.Errorf("ScriptToHex err: %s", err.Error())
+				}
+				if ownerHex.DasAlgorithmId == common.DasAlgorithmIdEth712 {
+					refundTypeScript = balanceContract.ToScript(nil)
 				}
 			}
+
 			log.Info("doRefundPre tx:", common.OutPointStruct2String(v.OutPoint), common.Bytes2Hex(refundLockScript.Args))
 
 			// do refund
@@ -201,7 +230,7 @@ func (t *TxTimer) doRefundPre() error {
 			txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 				Capacity: capacity,
 				Lock:     refundLockScript,
-				Type:     nil,
+				Type:     refundTypeScript,
 			})
 			txParams.OutputsData = append(txParams.OutputsData, []byte{})
 

@@ -111,8 +111,10 @@ func (t *TxTimer) Run() error {
 				if err := t.doRefundApply(); err != nil {
 					log.Error("doRefundApply err: ", err.Error())
 				}
-				if err := t.doRefundPre(); err != nil {
-					log.Error("doRefundPre err: %s", err.Error())
+				if config.Cfg.Server.RecycleAllPre {
+					if err := t.doRefundPre(); err != nil {
+						log.Error("doRefundPre err: %s", err.Error())
+					}
 				}
 				log.Info("doRefundApply end ...")
 			case <-t.ctx.Done():
