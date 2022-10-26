@@ -172,7 +172,7 @@ func (t *TxTimer) doRefundPre() error {
 		searchKey.Filter.BlockRange = &[2]uint64{preBlockNumber, blockNumber - preMaxWaitingBlockNumber}
 	}
 
-	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 200, "")
+	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 10, "")
 	if err != nil {
 		return fmt.Errorf("GetCells err: %s", err.Error())
 	}
