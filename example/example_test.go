@@ -126,3 +126,47 @@ func getNewDasCoreTestnet2() (*core.DasCore, error) {
 	}
 	return dc, nil
 }
+
+func getClientMainNet() (rpc.Client, error) {
+	ckbUrl := "http://127.0.0.1:8114"
+	indexerUrl := "http://127.0.0.1:8116"
+	return rpc.DialWithIndexer(ckbUrl, indexerUrl)
+}
+
+func getNewDasCoreMainNet() (*core.DasCore, error) {
+	client, err := getClientMainNet()
+	if err != nil {
+		return nil, err
+	}
+
+	env := core.InitEnvOpt(common.DasNetTypeMainNet,
+		common.DasContractNameConfigCellType,
+		common.DasContractNameAccountCellType,
+		common.DasContractNameDispatchCellType,
+		common.DasContractNameBalanceCellType,
+		common.DasContractNameAlwaysSuccess,
+		//common.DasContractNameIncomeCellType,
+		//common.DASContractNameSubAccountCellType,
+		common.DasContractNamePreAccountCellType,
+	)
+	var wg sync.WaitGroup
+	ops := []core.DasCoreOption{
+		core.WithClient(client),
+		core.WithDasContractArgs(env.ContractArgs),
+		core.WithDasContractCodeHash(env.ContractCodeHash),
+		core.WithDasNetType(common.DasNetTypeMainNet),
+		core.WithTHQCodeHash(env.THQCodeHash),
+	}
+	dc := core.NewDasCore(context.Background(), &wg, ops...)
+	// contract
+	dc.InitDasContract(env.MapContract)
+	// config cell
+	if err = dc.InitDasConfigCell(); err != nil {
+		return nil, err
+	}
+	// so script
+	if err = dc.InitDasSoScript(); err != nil {
+		return nil, err
+	}
+	return dc, nil
+}

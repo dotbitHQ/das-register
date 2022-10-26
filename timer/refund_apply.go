@@ -271,6 +271,9 @@ func (t *TxTimer) doRefundPre() error {
 				return fmt.Errorf("SendTransaction err: %s", err.Error())
 			} else {
 				log.Info("doRefundPre ok:", hash)
+				if refundTypeScript != nil {
+					break
+				}
 			}
 		}
 	}
