@@ -76,6 +76,9 @@ func (t *NameDaoTimer) CheckNameDaoMember(account string, charset int) error {
 }
 
 func (t *NameDaoTimer) RunCheckNameDaoMember() {
+	if config.Cfg.Server.Net != common.DasNetTypeMainNet {
+		return
+	}
 	if config.Cfg.Notify.LarkErrorKey == "" {
 		return
 	}

@@ -297,6 +297,10 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		return
 	}
 	//
+	inviterAccountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.InviterAccount))
+	if _, ok := config.Cfg.InviterWhitelist[inviterAccountId]; ok {
+		req.ChannelAccount = req.InviterAccount
+	}
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	orderContent := tables.TableOrderContent{
 		AccountCharStr: req.AccountCharStr,

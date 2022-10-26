@@ -63,8 +63,9 @@ type CfgServer struct {
 		RecoverTime            time.Duration     `json:"recover_time" yaml:"recover_time"`
 		RecycleAllPre          bool              `json:"recycle_all_pre" yaml:"recycle_all_pre"`
 	} `json:"server" yaml:"server"`
-	Origins []string `json:"origins" yaml:"origins"`
-	Notify  struct {
+	Origins          []string          `json:"origins" yaml:"origins"`
+	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`
+	Notify           struct {
 		LarkErrorKey      string `json:"lark_error_key" yaml:"lark_error_key"`
 		LarkRegisterKey   string `json:"lark_register_key" yaml:"lark_register_key"`
 		LarkRegisterOkKey string `json:"lark_register_ok_key" yaml:"lark_register_ok_key"`
