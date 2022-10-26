@@ -17,7 +17,7 @@ func TestPreTx(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := dc.Client().GetTransaction(context.Background(), types.HexToHash("0x831371eeb2b7de5d3ea9a3ba91ac5fd3d1a09dac8b26308210a537aaad658592"))
+	res, err := dc.Client().GetTransaction(context.Background(), types.HexToHash("0x2d9c10a3d1e9a6ee2e6d058313a5b2b5c10fc84b26e8c2a1bb4927d3b0ed8dd7"))
 	if err != nil {
 		t.Fatal(err)
 	}
