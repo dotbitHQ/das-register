@@ -61,6 +61,7 @@ type CfgServer struct {
 		TxToolSwitch           bool              `json:"tx_tool_switch" yaml:"tx_tool_switch"`
 		RecoverCkb             uint64            `json:"recover_ckb" yaml:"recover_ckb"`
 		RecoverTime            time.Duration     `json:"recover_time" yaml:"recover_time"`
+		RecycleAllPre          bool              `json:"recycle_all_pre" yaml:"recycle_all_pre"`
 	} `json:"server" yaml:"server"`
 	Origins []string `json:"origins" yaml:"origins"`
 	Notify  struct {

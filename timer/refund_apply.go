@@ -183,10 +183,12 @@ func (t *TxTimer) doRefundPre() error {
 				continue
 			}
 			refundLockScript := molecule.MoleculeScript2CkbScript(refundLock)
-			if bytes.Compare(addrParse.Script.Args, refundLockScript.Args) != 0 {
-				continue
+			if !config.Cfg.Server.RecycleAllPre {
+				if bytes.Compare(addrParse.Script.Args, refundLockScript.Args) != 0 {
+					continue
+				}
 			}
-			log.Info("doRefundPre:", common.OutPointStruct2String(v.OutPoint))
+			log.Info("doRefundPre:", common.OutPointStruct2String(v.OutPoint), common.Bytes2Hex(refundLockScript.Args))
 
 			// do refund
 			var txParams txbuilder.BuildTransactionParams
