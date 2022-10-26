@@ -201,7 +201,7 @@ func (t *TxTimer) doRefundPre() error {
 			//}
 
 			// check lock code hash
-			if !dasContract.IsSameTypeId(refundLockScript.CodeHash) || refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
+			if !dasContract.IsSameTypeId(refundLockScript.CodeHash) && refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
 				log.Warn("doRefundPre tx code hash err:", common.OutPointStruct2String(v.OutPoint))
 				continue
 			}
