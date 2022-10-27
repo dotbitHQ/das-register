@@ -268,7 +268,9 @@ func (t *TxTimer) doRefundPre() error {
 				return fmt.Errorf("BuildTransaction err: %s", err.Error())
 			}
 			if hash, err := txBuilder.SendTransaction(); err != nil {
-				return fmt.Errorf("SendTransaction err: %s", err.Error())
+				log.Error("doRefundPre SendTransaction err: %s", err.Error())
+				continue
+				//return fmt.Errorf("SendTransaction err: %s", err.Error())
 			} else {
 				log.Info("doRefundPre ok:", hash)
 			}
