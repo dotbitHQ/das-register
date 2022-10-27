@@ -154,7 +154,7 @@ func (t *TxTimer) doRefundPre() error {
 	if err != nil {
 		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
 	}
-	preMaxWaitingBlockNumber := uint64(5760)
+	preMaxWaitingBlockNumber := uint64(5860)
 
 	searchKey := indexer.SearchKey{
 		Script:     asContract.ToScript(nil),
@@ -172,7 +172,7 @@ func (t *TxTimer) doRefundPre() error {
 		searchKey.Filter.BlockRange = &[2]uint64{preBlockNumber, blockNumber - preMaxWaitingBlockNumber}
 	}
 
-	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 20, "")
+	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 100, "")
 	if err != nil {
 		return fmt.Errorf("GetCells err: %s", err.Error())
 	}
