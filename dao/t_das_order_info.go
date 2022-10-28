@@ -273,14 +273,14 @@ func (d *DbDao) UpdateOrderToClosedAndRefund(orderId string) error {
 			}).Error; err != nil {
 			return err
 		}
-		if err := tx.Model(tables.TableDasOrderPayInfo{}).
-			Where("order_id=? AND `status`=? AND refund_status=?",
-				orderId, tables.OrderTxStatusConfirm, tables.TxStatusDefault).
-			Updates(map[string]interface{}{
-				"refund_status": tables.TxStatusSending,
-			}).Error; err != nil {
-			return err
-		}
+		//if err := tx.Model(tables.TableDasOrderPayInfo{}).
+		//	Where("order_id=? AND `status`=? AND refund_status=?",
+		//		orderId, tables.OrderTxStatusConfirm, tables.TxStatusDefault).
+		//	Updates(map[string]interface{}{
+		//		"refund_status": tables.TxStatusSending,
+		//	}).Error; err != nil {
+		//	return err
+		//}
 		return nil
 	})
 }
