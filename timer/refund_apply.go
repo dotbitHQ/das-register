@@ -33,8 +33,8 @@ func (t *TxTimer) doRefundApply() error {
 	if err != nil {
 		return fmt.Errorf("ApplyMaxWaitingBlockNumber err: %s", err.Error())
 	}
-	if applyMaxWaitingBlockNumber < 5760 {
-		applyMaxWaitingBlockNumber = 5760
+	if applyMaxWaitingBlockNumber < 8640 {
+		applyMaxWaitingBlockNumber = 8640
 	}
 
 	blockNumber, err := t.dasCore.Client().GetTipBlockNumber(t.ctx)
@@ -154,7 +154,7 @@ func (t *TxTimer) doRefundPre() error {
 	if err != nil {
 		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
 	}
-	preMaxWaitingBlockNumber := uint64(5860)
+	preMaxWaitingBlockNumber := uint64(8640)
 
 	searchKey := indexer.SearchKey{
 		Script:     asContract.ToScript(nil),
