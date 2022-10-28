@@ -12,6 +12,7 @@ import (
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/transaction"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
+	"strings"
 )
 
 func (t *TxTimer) doRefundApply() error {
@@ -266,6 +267,10 @@ func (t *TxTimer) doRefundPre() error {
 				return fmt.Errorf("BuildTransaction err: %s", err.Error())
 			}
 			if hash, err := txBuilder.SendTransaction(); err != nil {
+				if strings.Contains(err.Error(), "see the error code 83 in the page") {
+					preBlockNumber--
+					break
+				}
 				log.Error("doRefundPre SendTransaction err: %s", err.Error())
 				continue
 				//return fmt.Errorf("SendTransaction err: %s", err.Error())
