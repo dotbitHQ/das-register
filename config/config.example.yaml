@@ -10,6 +10,7 @@ server:
   tx_tool_switch: true # open send register tx
   recover_ckb: 1000
   recover_time: 1 # min
+  split_ckb: 2000
 origins: # cross domain
   - ""
 pay_address_map: # receiver's address
