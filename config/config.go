@@ -59,6 +59,7 @@ type CfgServer struct {
 		PushLogIndex           string            `json:"push_log_index" yaml:"push_log_index"`
 		ParserUrl              string            `json:"parser_url" yaml:"parser_url"`
 		TxToolSwitch           bool              `json:"tx_tool_switch" yaml:"tx_tool_switch"`
+		SplitCkb               uint64            `json:"split_ckb" yaml:"split_ckb"`
 		RecoverCkb             uint64            `json:"recover_ckb" yaml:"recover_ckb"`
 		RecoverTime            time.Duration     `json:"recover_time" yaml:"recover_time"`
 		RecycleAllPre          bool              `json:"recycle_all_pre" yaml:"recycle_all_pre"`

@@ -378,12 +378,25 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		return nil, fmt.Errorf("GetBalanceCells err: %s", err.Error())
 	}
 	if change := totalCapacity - needCapacity; change > 0 {
-		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
-			Capacity: change,
-			Lock:     t.ServerScript,
-			Type:     nil,
-		})
-		txParams.OutputsData = append(txParams.OutputsData, []byte{})
+		splitCkb := 2000 * common.OneCkb
+		if config.Cfg.Server.SplitCkb > 0 {
+			splitCkb = config.Cfg.Server.SplitCkb * common.OneCkb
+		}
+		changeList, err := core.SplitOutputCell2(change, splitCkb, 30, t.ServerScript, nil, indexer.SearchOrderAsc)
+		if err != nil {
+			return nil, fmt.Errorf("SplitOutputCell2 err: %s", err.Error())
+		}
+		for i := 0; i < len(changeList); i++ {
+			txParams.Outputs = append(txParams.Outputs, changeList[i])
+			txParams.OutputsData = append(txParams.OutputsData, []byte{})
+		}
+
+		//txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
+		//	Capacity: change,
+		//	Lock:     t.ServerScript,
+		//	Type:     nil,
+		//})
+		//txParams.OutputsData = append(txParams.OutputsData, []byte{})
 	}
 
 	// inputs

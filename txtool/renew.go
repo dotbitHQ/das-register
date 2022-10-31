@@ -195,13 +195,12 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 	txParams.Witnesses = append(txParams.Witnesses, incomeCell.incomeWitness)
 
 	// search balance
-	feeCapacity := uint64(1e4)
-	splitCapacity := 3000 * common.OneCkb
+	feeCapacity := uint64(1e6)
 	needCapacity := feeCapacity + incomeCell.incomeCell.Capacity
 	liveCell, totalCapacity, err := t.DasCore.GetBalanceCells(&core.ParamGetBalanceCells{
 		DasCache:          t.DasCache,
 		LockScript:        t.ServerScript,
-		CapacityNeed:      needCapacity + splitCapacity,
+		CapacityNeed:      needCapacity,
 		CapacityForChange: common.MinCellOccupiedCkb,
 		SearchOrder:       indexer.SearchOrderAsc,
 	})
@@ -218,14 +217,27 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 
 	// change
 	if change := totalCapacity - needCapacity; change > 0 {
-		changeList, err := core.SplitOutputCell(change, 1000*common.OneCkb, 3, t.ServerScript, nil)
-		if err != nil {
-			return nil, fmt.Errorf("SplitOutputCell err: %s", err.Error())
+		splitCkb := 2000 * common.OneCkb
+		if config.Cfg.Server.SplitCkb > 0 {
+			splitCkb = config.Cfg.Server.SplitCkb * common.OneCkb
 		}
-		for i := len(changeList); i > 0; i-- {
-			txParams.Outputs = append(txParams.Outputs, changeList[i-1])
+		changeList, err := core.SplitOutputCell2(change, splitCkb, 200, t.ServerScript, nil, indexer.SearchOrderAsc)
+		if err != nil {
+			return nil, fmt.Errorf("SplitOutputCell2 err: %s", err.Error())
+		}
+		for i := 0; i < len(changeList); i++ {
+			txParams.Outputs = append(txParams.Outputs, changeList[i])
 			txParams.OutputsData = append(txParams.OutputsData, []byte{})
 		}
+
+		//changeList, err := core.SplitOutputCell(change, 1000*common.OneCkb, 3, t.ServerScript, nil)
+		//if err != nil {
+		//	return nil, fmt.Errorf("SplitOutputCell err: %s", err.Error())
+		//}
+		//for i := len(changeList); i > 0; i-- {
+		//	txParams.Outputs = append(txParams.Outputs, changeList[i-1])
+		//	txParams.OutputsData = append(txParams.OutputsData, []byte{})
+		//}
 		//for _, cell := range changeList {
 		//	txParams.Outputs = append(txParams.Outputs, cell)
 		//	txParams.OutputsData = append(txParams.OutputsData, []byte{})
