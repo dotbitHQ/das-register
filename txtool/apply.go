@@ -48,6 +48,15 @@ func (t *TxTool) DoOrderApplyTx(order *tables.TableDasOrderInfo) error {
 	if err := txBuilder.BuildTransaction(txParams); err != nil {
 		return fmt.Errorf("BuildTransaction err: %s", err.Error())
 	}
+
+	sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
+	changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity
+	if sizeInBlock > 1e4 {
+		changeCapacity = changeCapacity - sizeInBlock
+		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
+	}
+	log.Info("changeCapacity:", sizeInBlock, changeCapacity)
+
 	// check has pre tx
 	preOrder, err := t.DbDao.GetPreRegisteredOrderByAccountId(order.AccountId)
 	if err != nil {
@@ -131,7 +140,7 @@ func (t *TxTool) buildOrderApplyTx(p *applyTxParams) (*txbuilder.BuildTransactio
 	txParams.Outputs = append(txParams.Outputs, applyOutputs)
 
 	// search balance
-	feeCapacity := uint64(1e6)
+	feeCapacity := uint64(1e4)
 	needCapacity := feeCapacity + applyOutputs.Capacity
 	liveCell, totalCapacity, err := t.DasCore.GetBalanceCells(&core.ParamGetBalanceCells{
 		DasCache:          t.DasCache,
