@@ -72,8 +72,8 @@ func (t *TxTool) DoOrderRenewTx(order *tables.TableDasOrderInfo) error {
 
 	sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 	changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity
-	if sizeInBlock > 10000 {
-		changeCapacity = changeCapacity + 10000 - sizeInBlock - 1000
+	if sizeInBlock > 1e4 {
+		changeCapacity = changeCapacity - sizeInBlock
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
 	}
 	log.Info("changeCapacity:", sizeInBlock, changeCapacity)
@@ -195,7 +195,7 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 	txParams.Witnesses = append(txParams.Witnesses, incomeCell.incomeWitness)
 
 	// search balance
-	feeCapacity := uint64(1e6)
+	feeCapacity := uint64(1e4)
 	needCapacity := feeCapacity + incomeCell.incomeCell.Capacity
 	liveCell, totalCapacity, err := t.DasCore.GetBalanceCells(&core.ParamGetBalanceCells{
 		DasCache:          t.DasCache,
