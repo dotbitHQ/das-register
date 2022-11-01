@@ -285,6 +285,11 @@ func (t *TxTimer) doRefundPre() error {
 }
 
 func (t *TxTimer) doCheckClosedAndUnRefund() error {
+	//SELECT o.order_id,o.pay_status,o.pre_register_status
+	//FROM t_das_order_info o JOIN t_das_order_pay_info p ON o.order_id=p.order_id
+	//AND o.action='renew_account' AND o.order_type='1' AND o.order_status='1'
+	//AND o.pay_status='1' AND p.`status`='1' AND p.refund_status='0'
+
 	list, err := t.dbDao.GetClosedAndUnRefundOrders()
 	if err != nil {
 		return fmt.Errorf("GetClosedAndUnRefundOrders err: %s", err.Error())
