@@ -75,7 +75,7 @@ func (d *DbDao) DoActionPropose(orderIds []string, txs []tables.TableDasOrderTxI
 	})
 }
 
-func (d *DbDao) DoActionConfirmProposal(orderIds, accountIds []string, txs []tables.TableDasOrderTxInfo) error {
+func (d *DbDao) DoActionConfirmProposal(orderIds, okOrderIds, accountIds []string, txs []tables.TableDasOrderTxInfo) error {
 	return d.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(tables.TableDasOrderInfo{}).
 			Where("order_id IN(?)", orderIds).
@@ -112,7 +112,7 @@ func (d *DbDao) DoActionConfirmProposal(orderIds, accountIds []string, txs []tab
 
 		if err := tx.Model(tables.TableDasOrderPayInfo{}).
 			Where("account_id IN(?) AND order_id NOT IN(?) AND refund_status=?",
-				accountIds, orderIds, tables.TxStatusDefault).
+				accountIds, okOrderIds, tables.TxStatusDefault).
 			Updates(map[string]interface{}{
 				"refund_status": tables.TxStatusSending,
 			}).Error; err != nil {
@@ -371,5 +371,12 @@ func (d *DbDao) GetUnPayOrderCount(chainType common.ChainType, address string) (
 	err = d.db.Model(tables.TableDasOrderInfo{}).
 		Where("chain_type=? AND address=? AND order_status=? AND pay_status=?",
 			chainType, address, tables.OrderStatusDefault, tables.TxStatusDefault).Count(&count).Error
+	return
+}
+
+func (d *DbDao) GetHistoryOkOrders(accountIds []string) (list []tables.TableDasOrderInfo, err error) {
+	err = d.db.Where("account_id IN(?) AND order_type=? AND pay_status!=? AND order_status=?",
+		accountIds, tables.OrderTypeSelf, tables.TxStatusDefault, tables.OrderStatusClosed).
+		Find(&list).Error
 	return
 }

@@ -63,6 +63,17 @@ func (b *BlockParser) ActionConfirmProposal(req FuncTransactionHandleReq) (resp 
 		inviterId := v.InviterId
 		inviterIds = append(inviterIds, inviterId)
 	}
+	// get history ok orders
+	okOrders, err := b.DbDao.GetHistoryOkOrders(accountIds)
+	if err != nil {
+		resp.Err = fmt.Errorf("GetHistoryOkOrders err: %s", err.Error())
+		return
+	}
+	var okOrderIds []string
+	for _, v := range okOrders {
+		okOrderIds = append(okOrderIds, v.OrderId)
+	}
+	okOrderIds = append(okOrderIds, orderIds...)
 	// inviters
 	inviters, err := b.DbDao.GetAccountInfoByAccountIds(inviterIds)
 	if err != nil {
@@ -71,7 +82,7 @@ func (b *BlockParser) ActionConfirmProposal(req FuncTransactionHandleReq) (resp 
 	}
 
 	// update
-	if err := b.DbDao.DoActionConfirmProposal(orderIds, accountIds, orderTxList); err != nil {
+	if err := b.DbDao.DoActionConfirmProposal(orderIds, okOrderIds, accountIds, orderTxList); err != nil {
 		resp.Err = fmt.Errorf("UpdateOrdersRegisterStatus err: %s", err.Error())
 		return
 	}
