@@ -525,5 +525,35 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		}
 	}
 
+	accCellDepList, err := t.getPreTxBetweenAccountCell(p.order.AccountId)
+	if err != nil {
+		return nil, fmt.Errorf("getPreTxBetweenAccountCell err: %s", err.Error())
+	}
+	txParams.CellDeps = append(txParams.CellDeps, accCellDepList...)
+
 	return &txParams, nil
+}
+
+func (t *TxTool) getPreTxBetweenAccountCell(accountId string) ([]*types.CellDep, error) {
+	var list []*types.CellDep
+	accPre, err := t.DbDao.GetPreAccount(accountId)
+	if err != nil {
+		return nil, fmt.Errorf("GetPreAccount err: %s", err.Error())
+	} else if accPre.Outpoint != "" {
+		list = append(list, &types.CellDep{
+			OutPoint: common.String2OutPointStruct(accPre.Outpoint),
+			DepType:  types.DepTypeCode,
+		})
+	}
+
+	accNext, err := t.DbDao.GetNextAccount(accountId)
+	if err != nil {
+		return nil, fmt.Errorf("GetNextAccount err: %s", err.Error())
+	} else if accNext.Outpoint != "" {
+		list = append(list, &types.CellDep{
+			OutPoint: common.String2OutPointStruct(accNext.Outpoint),
+			DepType:  types.DepTypeCode,
+		})
+	}
+	return list, nil
 }
