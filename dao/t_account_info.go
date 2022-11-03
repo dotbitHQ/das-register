@@ -112,6 +112,7 @@ func (d *DbDao) GetNameDaoAccountInfoByAccountIds(accountIds []string) (list []t
 }
 
 func (d *DbDao) GetPreAccount(accountId string) (info tables.TableAccountInfo, err error) {
-	err = d.parserDb.Where("account_id<?", accountId).Limit(1).Find(&info).Error
+	err = d.parserDb.Where("parent_account_id='' AND account_id<?", accountId).
+		Order("account_id DESC").Limit(1).Find(&info).Error
 	return
 }
