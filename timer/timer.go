@@ -112,8 +112,11 @@ func (t *TxTimer) Run() error {
 					log.Error("doRefundApply err: ", err.Error())
 				}
 				if config.Cfg.Server.RecycleAllPre {
-					if err := t.doRefundPre(); err != nil {
-						log.Error("doRefundPre err: %s", err.Error())
+					//if err := t.doRefundPre(); err != nil {
+					//	log.Error("doRefundPre err: %s", err.Error())
+					//}
+					if err := t.doRecyclePre(); err != nil {
+						log.Error("doRecyclePre err: ", err.Error())
 					}
 				}
 				log.Info("doRefundApply end ...")
