@@ -86,11 +86,11 @@ func (t *NameDaoTimer) RunCheckNameDaoMember() {
 	spec := "0 0 2 * * ? "
 	_, err := t.cron.AddFunc(spec, func() {
 		if err := t.CheckNameDaoMember("0x.bit", 2); err != nil {
-			log.Error("CheckNameDaoMember err: %s", err.Error())
+			log.Error("CheckNameDaoMember err: ", err.Error())
 		}
 	})
 	if err != nil {
-		log.Error("RunCheckNameDaoMember err: %s", err.Error())
+		log.Error("RunCheckNameDaoMember err: ", err.Error())
 	} else {
 		t.cron.Start()
 	}

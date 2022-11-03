@@ -151,7 +151,7 @@ func (t *TxTimer) Run() error {
 			case <-tickerClosedAndUnRefund.C:
 				log.Info("doCheckClosedAndUnRefund start ...")
 				if err := t.doCheckClosedAndUnRefund(); err != nil {
-					log.Error("doCheckClosedAndUnRefund err: %s", err.Error())
+					log.Error("doCheckClosedAndUnRefund err: ", err.Error())
 				}
 				log.Info("doCheckClosedAndUnRefund start ...")
 			case <-t.ctx.Done():

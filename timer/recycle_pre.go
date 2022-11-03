@@ -48,13 +48,13 @@ func (t *TxTimer) doRecyclePre() error {
 			BlockRange:          nil,
 		},
 	}
-	log.Info("doRecyclePre:", blockChainInfo.Chain, blockChainInfo.MedianTime)
 	searchKey.Filter.BlockRange = &[2]uint64{recyclePreBlockNumber, 0}
 
 	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 100, "")
 	if err != nil {
 		return fmt.Errorf("GetCells err: %s", err.Error())
 	}
+	log.Info("doRecyclePre:", blockChainInfo.Chain, blockChainInfo.MedianTime, len(liveCells.Objects))
 	if len(liveCells.Objects) == 0 {
 		return nil
 	}
@@ -63,7 +63,7 @@ func (t *TxTimer) doRecyclePre() error {
 		if err != nil {
 			return fmt.Errorf("GetBlockByNumber err: %s", err.Error())
 		}
-
+		log.Info("doRecyclePre:", blockChainInfo.MedianTime, numberBlock.Header.Timestamp, blockChainInfo.MedianTime-numberBlock.Header.Timestamp)
 		if blockChainInfo.MedianTime > numberBlock.Header.Timestamp+24*60*60*1e3 {
 			break
 		}
