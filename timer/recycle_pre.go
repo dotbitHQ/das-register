@@ -1,6 +1,7 @@
 package timer
 
 import (
+	"das_register_server/config"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -19,6 +20,10 @@ func (t *TxTimer) doRecyclePre() error {
 	blockChainInfo, err := t.dasCore.Client().GetBlockchainInfo(t.ctx)
 	if err != nil {
 		return fmt.Errorf("GetBlockchainInfo err: %s", err.Error())
+	}
+	tipBlockNumber, err := t.dasCore.Client().GetTipBlockNumber(t.ctx)
+	if err != nil {
+		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
 	}
 
 	dasContract, err := core.GetDasContractInfo(common.DasContractNameDispatchCellType)
@@ -48,7 +53,15 @@ func (t *TxTimer) doRecyclePre() error {
 			BlockRange:          nil,
 		},
 	}
-	searchKey.Filter.BlockRange = &[2]uint64{recyclePreBlockNumber, 0}
+	if recyclePreBlockNumber == 0 {
+		if config.Cfg.Server.Net != common.DasNetTypeMainNet {
+			recyclePreBlockNumber = 1927285
+		} else {
+			recyclePreBlockNumber = 4872287
+		}
+	}
+
+	searchKey.Filter.BlockRange = &[2]uint64{recyclePreBlockNumber, tipBlockNumber}
 
 	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 100, "")
 	if err != nil {
@@ -63,13 +76,14 @@ func (t *TxTimer) doRecyclePre() error {
 		if err != nil {
 			return fmt.Errorf("GetBlockByNumber err: %s", err.Error())
 		}
-		log.Info("doRecyclePre:", blockChainInfo.MedianTime, numberBlock.Header.Timestamp, blockChainInfo.MedianTime-numberBlock.Header.Timestamp)
-		if blockChainInfo.MedianTime > numberBlock.Header.Timestamp+24*60*60*1e3 {
+		log.Info("doRecyclePre:", blockChainInfo.MedianTime, numberBlock.Header.Timestamp, v.OutPoint.TxHash.String())
+		if blockChainInfo.MedianTime < numberBlock.Header.Timestamp+60*60*1e3 {
 			break
 		}
 		if err := t.doRecyclePreTx(v, dasContract, balanceContract, preContract); err != nil {
 			log.Warn(err.Error(), v.OutPoint.TxHash.String())
 		}
+		break
 	}
 	return nil
 }
