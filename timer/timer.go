@@ -6,7 +6,9 @@ import (
 	"das_register_server/dao"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/dascache"
 	"github.com/dotbitHQ/das-lib/txbuilder"
+	"github.com/robfig/cron/v3"
 	"github.com/scorpiotzh/mylog"
 	"sync"
 	"time"
@@ -19,7 +21,9 @@ type TxTimer struct {
 	wg            *sync.WaitGroup
 	dbDao         *dao.DbDao
 	dasCore       *core.DasCore
+	dasCache      *dascache.DasCache
 	txBuilderBase *txbuilder.DasTxBuilderBase
+	cron          *cron.Cron
 }
 
 type TxTimerParam struct {
@@ -27,6 +31,7 @@ type TxTimerParam struct {
 	Ctx           context.Context
 	Wg            *sync.WaitGroup
 	DasCore       *core.DasCore
+	DasCache      *dascache.DasCache
 	TxBuilderBase *txbuilder.DasTxBuilderBase
 }
 
@@ -36,6 +41,7 @@ func NewTxTimer(p TxTimerParam) *TxTimer {
 	t.wg = p.Wg
 	t.dbDao = p.DbDao
 	t.dasCore = p.DasCore
+	t.dasCache = p.DasCache
 	t.txBuilderBase = p.TxBuilderBase
 	return &t
 }
