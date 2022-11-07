@@ -1,10 +1,8 @@
 package timer
 
 import (
-	"das_register_server/config"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
-	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/molecule"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
@@ -17,78 +15,29 @@ import (
 var recyclePreBlockNumber uint64
 
 func (t *TxTimer) doRecyclePre() error {
-	blockChainInfo, err := t.dasCore.Client().GetBlockchainInfo(t.ctx)
+	p, err := t.getPreCellRecycleParams()
 	if err != nil {
-		return fmt.Errorf("GetBlockchainInfo err: %s", err.Error())
-	}
-	tipBlockNumber, err := t.dasCore.Client().GetTipBlockNumber(t.ctx)
-	if err != nil {
-		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
+		return fmt.Errorf("getPreCellRecycleParams err: %s", err.Error())
 	}
 
-	dasContract, err := core.GetDasContractInfo(common.DasContractNameDispatchCellType)
+	timestamp := uint64(24 * 60 * 60)
+	list, err := t.getPreCellByMedianTime(p, recyclePreBlockNumber, timestamp)
 	if err != nil {
-		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+		return fmt.Errorf("getPreCellByMedianTime err: %s", err.Error())
 	}
-	balanceContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
-	if err != nil {
-		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
-	}
-	asContract, err := core.GetDasContractInfo(common.DasContractNameAlwaysSuccess)
-	if err != nil {
-		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
-	}
-	preContract, err := core.GetDasContractInfo(common.DasContractNamePreAccountCellType)
-	if err != nil {
-		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
-	}
-	searchKey := indexer.SearchKey{
-		Script:     asContract.ToScript(nil),
-		ScriptType: indexer.ScriptTypeLock,
-		ArgsLen:    0,
-		Filter: &indexer.CellsFilter{
-			Script:              preContract.ToScript(nil),
-			OutputDataLenRange:  nil,
-			OutputCapacityRange: nil,
-			BlockRange:          nil,
-		},
-	}
-	if recyclePreBlockNumber == 0 {
-		if config.Cfg.Server.Net != common.DasNetTypeMainNet {
-			recyclePreBlockNumber = 1927285
+	for _, v := range list {
+		log.Info("doRecyclePre:", v.OutPoint.TxHash.String())
+		if err := t.doRecyclePreTx(v, p, timestamp); err != nil {
+			log.Error("doRecyclePreTx err:", err.Error(), v.OutPoint.TxHash.String())
 		} else {
-			recyclePreBlockNumber = 4872287
+			recyclePreBlockNumber = v.BlockNumber
 		}
 	}
 
-	searchKey.Filter.BlockRange = &[2]uint64{recyclePreBlockNumber, tipBlockNumber}
-
-	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 100, "")
-	if err != nil {
-		return fmt.Errorf("GetCells err: %s", err.Error())
-	}
-	log.Info("doRecyclePre:", blockChainInfo.Chain, blockChainInfo.MedianTime, len(liveCells.Objects))
-	if len(liveCells.Objects) == 0 {
-		return nil
-	}
-	for _, v := range liveCells.Objects {
-		numberBlock, err := t.dasCore.Client().GetBlockByNumber(t.ctx, v.BlockNumber)
-		if err != nil {
-			return fmt.Errorf("GetBlockByNumber err: %s", err.Error())
-		}
-		log.Info("doRecyclePre:", blockChainInfo.MedianTime, numberBlock.Header.Timestamp, v.OutPoint.TxHash.String())
-		if blockChainInfo.MedianTime < numberBlock.Header.Timestamp+60*60*1e3 {
-			break
-		}
-		if err := t.doRecyclePreTx(v, dasContract, balanceContract, preContract); err != nil {
-			log.Warn(err.Error(), v.OutPoint.TxHash.String())
-		}
-		break
-	}
 	return nil
 }
 
-func (t *TxTimer) doRecyclePreTx(liveCell *indexer.LiveCell, dasContract, balanceContract, preContract *core.DasContractInfo) error {
+func (t *TxTimer) doRecyclePreTx(liveCell *indexer.LiveCell, p *preCellRecycleParams, timestamp uint64) error {
 	res, err := t.dasCore.Client().GetTransaction(t.ctx, liveCell.OutPoint.TxHash)
 	if err != nil {
 		return fmt.Errorf("GetTransaction err: %s", err.Error())
@@ -104,18 +53,18 @@ func (t *TxTimer) doRecyclePreTx(liveCell *indexer.LiveCell, dasContract, balanc
 	refundLockScript := molecule.MoleculeScript2CkbScript(refundLock)
 
 	// check lock code hash
-	if !dasContract.IsSameTypeId(refundLockScript.CodeHash) && refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
+	if !p.dasContract.IsSameTypeId(refundLockScript.CodeHash) && refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
 		return fmt.Errorf("doRecyclePreTx code hash: %s", refundLockScript.CodeHash.String())
 	}
 
 	var refundTypeScript *types.Script
-	if dasContract.IsSameTypeId(refundLockScript.CodeHash) {
+	if p.dasContract.IsSameTypeId(refundLockScript.CodeHash) {
 		ownerHex, _, err := t.dasCore.Daf().ScriptToHex(refundLockScript)
 		if err != nil {
 			return fmt.Errorf("ScriptToHex err: %s", err.Error())
 		}
 		if ownerHex.DasAlgorithmId == common.DasAlgorithmIdEth712 {
-			refundTypeScript = balanceContract.ToScript(nil)
+			refundTypeScript = p.balanceContract.ToScript(nil)
 		}
 	}
 
@@ -125,7 +74,7 @@ func (t *TxTimer) doRecyclePreTx(liveCell *indexer.LiveCell, dasContract, balanc
 	var txParams txbuilder.BuildTransactionParams
 	txParams.Inputs = append(txParams.Inputs, &types.CellInput{
 		PreviousOutput: liveCell.OutPoint,
-		Since:          utils.SinceFromRelativeTimestamp(24 * 60 * 60),
+		Since:          utils.SinceFromRelativeTimestamp(timestamp),
 	})
 
 	fee := uint64(1e4)
@@ -152,7 +101,7 @@ func (t *TxTimer) doRecyclePreTx(liveCell *indexer.LiveCell, dasContract, balanc
 
 	// cell deps
 	txParams.CellDeps = append(txParams.CellDeps,
-		preContract.ToCellDep(),
+		p.preContract.ToCellDep(),
 	)
 
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(t.txBuilderBase, nil)

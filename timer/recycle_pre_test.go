@@ -3,14 +3,22 @@ package timer
 import (
 	"context"
 	"das_register_server/config"
+	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/nervosnetwork/ckb-sdk-go/rpc"
+	"github.com/nervosnetwork/ckb-sdk-go/utils"
 	"sync"
 	"testing"
 )
+
+func TestSince(t *testing.T) {
+	fmt.Println(utils.SinceFromRelativeTimestamp(5 * 60))
+	fmt.Println(utils.SinceFromRelativeTimestamp(60 * 60))
+	fmt.Println(utils.SinceFromRelativeTimestamp(24 * 60 * 60))
+}
 
 func TestRecyclePre(t *testing.T) {
 	dc, err := getNewDasCoreTestnet2()
@@ -28,7 +36,10 @@ func TestRecyclePre(t *testing.T) {
 		DasCore:       dc,
 		TxBuilderBase: txBuilderBase,
 	})
-	if err := txTimer.doRecyclePre(); err != nil {
+	//if err := txTimer.doRecyclePre(); err != nil {
+	//	t.Fatal(err)
+	//}
+	if err := txTimer.doRecyclePreEarly(); err != nil {
 		t.Fatal(err)
 	}
 }
