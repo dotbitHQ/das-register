@@ -28,6 +28,7 @@ func (t *TxTimer) doRecyclePre() error {
 	if err != nil {
 		return fmt.Errorf("getPreCellByMedianTime err: %s", err.Error())
 	}
+	log.Info("doRecyclePre:", len(list))
 	for _, v := range list {
 		log.Info("doRecyclePre:", v.liveCell.OutPoint.TxHash.String())
 		if err := t.doRecyclePreTx(v, p, recycleTimestamp); err != nil {
