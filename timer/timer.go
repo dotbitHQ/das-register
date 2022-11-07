@@ -59,7 +59,7 @@ func (t *TxTimer) Run() error {
 	if config.Cfg.Server.RecoverTime > 0 {
 		tickerRecover = time.NewTicker(time.Minute * config.Cfg.Server.RecoverTime)
 	}
-	tickerRefundApply := time.NewTicker(time.Minute * 5)
+	tickerRefundApply := time.NewTicker(time.Minute * 10)
 	tickerClosedAndUnRefund := time.NewTicker(time.Minute * 20)
 
 	t.wg.Add(5)

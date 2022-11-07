@@ -6,7 +6,6 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
-	"github.com/nervosnetwork/ckb-sdk-go/transaction"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/nervosnetwork/ckb-sdk-go/utils"
 )
@@ -29,6 +28,7 @@ func (t *TxTimer) doRecyclePre() error {
 		return fmt.Errorf("getPreCellByMedianTime err: %s", err.Error())
 	}
 	log.Info("doRecyclePre:", len(list))
+
 	for _, v := range list {
 		log.Info("doRecyclePre:", v.liveCell.OutPoint.TxHash.String())
 		if err := t.doRecyclePreTx(v, p, recycleTimestamp); err != nil {
@@ -42,11 +42,6 @@ func (t *TxTimer) doRecyclePre() error {
 }
 
 func (t *TxTimer) doRecyclePreTx(preInfo preCellRecycleInfo, p *preCellRecycleParams, timestamp uint64) error {
-	// check lock code hash
-	if !p.dasContract.IsSameTypeId(preInfo.refundLockScript.CodeHash) && preInfo.refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
-		return fmt.Errorf("doRecyclePreTx code hash: %s", preInfo.refundLockScript.CodeHash.String())
-	}
-
 	var refundTypeScript *types.Script
 	if p.dasContract.IsSameTypeId(preInfo.refundLockScript.CodeHash) {
 		ownerHex, _, err := t.dasCore.Daf().ScriptToHex(preInfo.refundLockScript)

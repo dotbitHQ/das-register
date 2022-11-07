@@ -11,7 +11,6 @@ import (
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
-	"github.com/nervosnetwork/ckb-sdk-go/transaction"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/nervosnetwork/ckb-sdk-go/utils"
 	"github.com/robfig/cron/v3"
@@ -83,12 +82,13 @@ func (t *TxTimer) getPreCellByMedianTime(p *preCellRecycleParams, blockRange, ti
 	}
 	if blockRange == 0 {
 		if config.Cfg.Server.Net != common.DasNetTypeMainNet {
-			blockRange = 1927285
+			blockRange = 7268680 //1927285
 		} else {
-			blockRange = 4872287
+			blockRange = 8424701 //4872287
 		}
 	}
 
+	log.Info("getPreCellByMedianTime:", blockRange, p.tipBlockNumber)
 	searchKey.Filter.BlockRange = &[2]uint64{blockRange, p.tipBlockNumber}
 	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 100, "")
 	if err != nil {
@@ -120,10 +120,10 @@ func (t *TxTimer) getPreCellByMedianTime(p *preCellRecycleParams, blockRange, ti
 			return nil, fmt.Errorf("PreAccountCellDataBuilderFromTx err: %s", err.Error())
 		}
 		refundLockScript := molecule.MoleculeScript2CkbScript(preBuilder.RefundLock)
-		if !p.dasContract.IsSameTypeId(refundLockScript.CodeHash) && refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
-			log.Warn("getPreCellByMedianTime code hash err:", common.OutPointStruct2String(v.OutPoint))
-			continue
-		}
+		//if !p.dasContract.IsSameTypeId(refundLockScript.CodeHash) && refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
+		//	log.Warn("getPreCellByMedianTime code hash err:", common.OutPointStruct2String(v.OutPoint))
+		//	continue
+		//}
 		if recycleTimestampEarly == timestamp {
 			if bytes.Compare(p.addrParse.Script.Args, refundLockScript.Args) != 0 {
 				continue
@@ -169,12 +169,9 @@ func (t *TxTimer) doRecyclePreEarly() error {
 	}
 	txParams.Witnesses = append(txParams.Witnesses, actionWitness)
 
+	recyclePreBlockNumberEarlyTmp := recyclePreBlockNumberEarly
 	for i, v := range list {
-		// check lock code hash
-		if !p.dasContract.IsSameTypeId(v.refundLockScript.CodeHash) && v.refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
-			log.Error("doRecyclePreEarly code hash: ", v.refundLockScript.CodeHash.String(), v.liveCell.OutPoint.TxHash.String())
-			continue
-		}
+		recyclePreBlockNumberEarlyTmp = v.liveCell.BlockNumber
 		var refundTypeScript *types.Script
 		if p.dasContract.IsSameTypeId(v.refundLockScript.CodeHash) {
 			ownerHex, _, err := t.dasCore.Daf().ScriptToHex(v.refundLockScript)
@@ -249,6 +246,7 @@ func (t *TxTimer) doRecyclePreEarly() error {
 		return fmt.Errorf("SendTransaction err: %s", err.Error())
 	} else {
 		log.Info("doRecyclePreEarly ok:", hash)
+		recyclePreBlockNumberEarly = recyclePreBlockNumberEarlyTmp
 	}
 
 	return nil
@@ -268,7 +266,7 @@ func (t *TxTimer) DoRecyclePreEarly() {
 		log.Info("doRecyclePreEarly end ...")
 	})
 	if err != nil {
-		log.Error("DoRecyclePreEarly err: %s", err.Error())
+		log.Error("DoRecyclePreEarly err: ", err.Error())
 		return
 	}
 	t.cron.Start()

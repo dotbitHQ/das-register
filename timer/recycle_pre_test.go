@@ -22,10 +22,11 @@ func TestSince(t *testing.T) {
 }
 
 func TestRecyclePre(t *testing.T) {
+	config.Cfg.Server.Net = common.DasNetTypeMainNet
 	config.Cfg.Server.PayPrivate = ""
 	config.Cfg.Server.PayServerAddress = ""
 
-	dc, err := getNewDasCoreTestnet2()
+	dc, err := getNewDasCoreMainNet() //getNewDasCoreTestnet2()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,13 +41,13 @@ func TestRecyclePre(t *testing.T) {
 		DasCore:       dc,
 		TxBuilderBase: txBuilderBase,
 	})
-	//if err := txTimer.doRecyclePre(); err != nil {
-	//	t.Fatal(err)
-	//}
-
-	if err := txTimer.doRecyclePreEarly(); err != nil {
+	if err := txTimer.doRecyclePre(); err != nil {
 		t.Fatal(err)
 	}
+
+	//if err := txTimer.doRecyclePreEarly(); err != nil {
+	//	t.Fatal(err)
+	//}
 }
 
 func getClientTestnet2() (rpc.Client, error) {
@@ -78,6 +79,51 @@ func getNewDasCoreTestnet2() (*core.DasCore, error) {
 		core.WithDasContractArgs(env.ContractArgs),
 		core.WithDasContractCodeHash(env.ContractCodeHash),
 		core.WithDasNetType(common.DasNetTypeTestnet2),
+		core.WithTHQCodeHash(env.THQCodeHash),
+	}
+	dc := core.NewDasCore(context.Background(), &wg, ops...)
+	// contract
+	dc.InitDasContract(env.MapContract)
+	// config cell
+	if err = dc.InitDasConfigCell(); err != nil {
+		return nil, err
+	}
+	// so script
+	if err = dc.InitDasSoScript(); err != nil {
+		return nil, err
+	}
+	return dc, nil
+}
+
+func getClientMainNet() (rpc.Client, error) {
+	ckbUrl := "http://47.243.89.165:8114"
+	indexerUrl := "http://47.243.89.165:8116"
+	return rpc.DialWithIndexer(ckbUrl, indexerUrl)
+}
+
+func getNewDasCoreMainNet() (*core.DasCore, error) {
+	client, err := getClientMainNet()
+	if err != nil {
+		return nil, err
+	}
+
+	env := core.InitEnvOpt(common.DasNetTypeMainNet,
+		common.DasContractNameConfigCellType,
+		//common.DasContractNameAccountCellType,
+		common.DasContractNameDispatchCellType,
+		common.DasContractNameBalanceCellType,
+		common.DasContractNameAlwaysSuccess,
+		//common.DasContractNameIncomeCellType,
+		//common.DASContractNameSubAccountCellType,
+		common.DasContractNamePreAccountCellType,
+		//common.DASContractNameEip712LibCellType,
+	)
+	var wg sync.WaitGroup
+	ops := []core.DasCoreOption{
+		core.WithClient(client),
+		core.WithDasContractArgs(env.ContractArgs),
+		core.WithDasContractCodeHash(env.ContractCodeHash),
+		core.WithDasNetType(common.DasNetTypeMainNet),
 		core.WithTHQCodeHash(env.THQCodeHash),
 	}
 	dc := core.NewDasCore(context.Background(), &wg, ops...)
