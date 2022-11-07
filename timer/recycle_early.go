@@ -141,9 +141,12 @@ func (t *TxTimer) getPreCellByMedianTime(p *preCellRecycleParams, blockRange, ti
 
 var recyclePreBlockNumberEarly uint64
 
-const recycleTimestampEarly = uint64(60 * 60)
+var recycleTimestampEarly = uint64(60 * 60)
 
 func (t *TxTimer) doRecyclePreEarly() error {
+	if config.Cfg.Server.Net != common.DasNetTypeMainNet {
+		recycleTimestamp = uint64(2 * 60)
+	}
 	if !config.Cfg.Server.RecyclePreEarly {
 		return nil
 	}
