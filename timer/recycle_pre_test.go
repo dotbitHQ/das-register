@@ -22,11 +22,11 @@ func TestSince(t *testing.T) {
 }
 
 func TestRecyclePre(t *testing.T) {
-	config.Cfg.Server.Net = common.DasNetTypeMainNet
+	config.Cfg.Server.Net = common.DasNetTypeTestnet2
 	config.Cfg.Server.PayPrivate = ""
 	config.Cfg.Server.PayServerAddress = ""
-
-	dc, err := getNewDasCoreMainNet() //getNewDasCoreTestnet2()
+	config.Cfg.Server.RecyclePreEarly = true
+	dc, err := getNewDasCoreTestnet2() //getNewDasCoreTestnet2()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,17 +41,17 @@ func TestRecyclePre(t *testing.T) {
 		DasCore:       dc,
 		TxBuilderBase: txBuilderBase,
 	})
-	if err := txTimer.doRecyclePre(); err != nil {
-		t.Fatal(err)
-	}
-
-	//if err := txTimer.doRecyclePreEarly(); err != nil {
+	//if err := txTimer.doRecyclePre(); err != nil {
 	//	t.Fatal(err)
 	//}
+
+	if err := txTimer.doRecyclePreEarly(); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func getClientTestnet2() (rpc.Client, error) {
-	ckbUrl := "https://testnet.ckb.dev/"
+	ckbUrl := "https://testnet.ckb.dev"
 	indexerUrl := "https://testnet.ckb.dev/indexer"
 	return rpc.DialWithIndexer(ckbUrl, indexerUrl)
 }
@@ -96,8 +96,8 @@ func getNewDasCoreTestnet2() (*core.DasCore, error) {
 }
 
 func getClientMainNet() (rpc.Client, error) {
-	ckbUrl := "http://47.243.89.165:8114"
-	indexerUrl := "http://47.243.89.165:8116"
+	ckbUrl := "http://127.0.0.1:8114"
+	indexerUrl := "http://127.0.0.1:8116"
 	return rpc.DialWithIndexer(ckbUrl, indexerUrl)
 }
 
@@ -158,4 +158,12 @@ func initTxBuilder(dasCore *core.DasCore) (*txbuilder.DasTxBuilderBase, error) {
 	log.Info("tx builder ok")
 
 	return txBuilderBase, nil
+}
+
+func TestAddress(t *testing.T) {
+	res, err := address.GenerateAddress(address.Testnet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(res.Address, res.PrivateKey)
 }
