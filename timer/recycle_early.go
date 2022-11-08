@@ -11,6 +11,7 @@ import (
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
+	"github.com/nervosnetwork/ckb-sdk-go/transaction"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/nervosnetwork/ckb-sdk-go/utils"
 	"github.com/robfig/cron/v3"
@@ -120,10 +121,10 @@ func (t *TxTimer) getPreCellByMedianTime(p *preCellRecycleParams, blockRange, ti
 			return nil, fmt.Errorf("PreAccountCellDataBuilderFromTx err: %s", err.Error())
 		}
 		refundLockScript := molecule.MoleculeScript2CkbScript(preBuilder.RefundLock)
-		//if !p.dasContract.IsSameTypeId(refundLockScript.CodeHash) && refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
-		//	log.Warn("getPreCellByMedianTime code hash err:", common.OutPointStruct2String(v.OutPoint))
-		//	continue
-		//}
+		if !p.dasContract.IsSameTypeId(refundLockScript.CodeHash) && refundLockScript.CodeHash.String() != transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
+			log.Warn("getPreCellByMedianTime code hash err:", common.OutPointStruct2String(v.OutPoint))
+			continue
+		}
 		if recycleTimestampEarly == timestamp {
 			if bytes.Compare(p.addrParse.Script.Args, refundLockScript.Args) != 0 {
 				continue
