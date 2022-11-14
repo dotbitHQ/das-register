@@ -114,8 +114,11 @@ func (t *TxTimer) Run() error {
 			select {
 			case <-tickerRefundApply.C:
 				log.Info("doRefundApply start ...")
-				if err := t.doRefundApply(); err != nil {
-					log.Error("doRefundApply err: ", err.Error())
+				//if err := t.doRefundApply(); err != nil {
+				//	log.Error("doRefundApply err: ", err.Error())
+				//}
+				if err := t.doRecycleApply(); err != nil {
+					log.Errorf("doRecycleApply err: %s", err.Error())
 				}
 				if config.Cfg.Server.RecycleAllPre {
 					//if err := t.doRefundPre(); err != nil {

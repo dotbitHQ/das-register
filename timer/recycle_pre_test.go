@@ -19,6 +19,32 @@ func TestSince(t *testing.T) {
 	fmt.Println(utils.SinceFromRelativeTimestamp(5 * 60))
 	fmt.Println(utils.SinceFromRelativeTimestamp(60 * 60))
 	fmt.Println(utils.SinceFromRelativeTimestamp(24 * 60 * 60))
+	fmt.Println(utils.SinceFromRelativeTimestamp(60))
+	fmt.Println(utils.SinceFromRelativeBlockNumber(5760))
+}
+
+func TestRecycleApply(t *testing.T) {
+	config.Cfg.Server.Net = common.DasNetTypeMainNet
+	config.Cfg.Server.PayServerAddress = ""
+	config.Cfg.Server.PayPrivate = ""
+	dc, err := getNewDasCoreMainNet() //getNewDasCoreTestnet2()
+	if err != nil {
+		t.Fatal(err)
+	}
+	txBuilderBase, err := initTxBuilder(dc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	txTimer := NewTxTimer(TxTimerParam{
+		Ctx:           context.Background(),
+		Wg:            nil,
+		DbDao:         nil,
+		DasCore:       dc,
+		TxBuilderBase: txBuilderBase,
+	})
+	if err := txTimer.doRecycleApply(); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestRecyclePre(t *testing.T) {
@@ -72,6 +98,7 @@ func getNewDasCoreTestnet2() (*core.DasCore, error) {
 		//common.DASContractNameSubAccountCellType,
 		common.DasContractNamePreAccountCellType,
 		//common.DASContractNameEip712LibCellType,
+		common.DasContractNameApplyRegisterCellType,
 	)
 	var wg sync.WaitGroup
 	ops := []core.DasCoreOption{
@@ -117,6 +144,7 @@ func getNewDasCoreMainNet() (*core.DasCore, error) {
 		//common.DASContractNameSubAccountCellType,
 		common.DasContractNamePreAccountCellType,
 		//common.DASContractNameEip712LibCellType,
+		common.DasContractNameApplyRegisterCellType,
 	)
 	var wg sync.WaitGroup
 	ops := []core.DasCoreOption{
