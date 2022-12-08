@@ -70,6 +70,8 @@ func (t *NameDaoTimer) CheckNameDaoMember(account string, charset int) error {
 			msg += fmt.Sprintf("%s %s\n", v.Account, v.AccountId)
 		}
 		notify.SendLarkTextNotifyAtAll(config.Cfg.Notify.LarkErrorKey, "NameDao UnMint SubAccount List", msg)
+	} else {
+		notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "NameDao Mint Check", "OK")
 	}
 
 	return nil
