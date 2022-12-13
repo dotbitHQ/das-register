@@ -268,11 +268,6 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		Since: utils.SinceFromRelativeBlockNumber(p.applyMinWaitingBlockNumber),
 	})
 
-	// time cell
-	timeCell, err := t.DasCore.GetTimeCell()
-	if err != nil {
-		return nil, fmt.Errorf("GetTimeCell err: %s", err.Error())
-	}
 	quoteCell, err := t.DasCore.GetQuoteCell()
 	if err != nil {
 		return nil, fmt.Errorf("GetQuoteCell err: %s", err.Error())
@@ -353,7 +348,6 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	preWitness, preData, err := preBuilder.GenWitness(&witness.PreAccountCellParam{
 		NewIndex:          0,
 		Action:            common.DasActionPreRegister,
-		CreatedAt:         timeCell.Timestamp(),
 		InvitedDiscount:   invitedDiscount,
 		Quote:             quoteCell.Quote(),
 		InviterScript:     p.inviterScript,
@@ -443,7 +437,6 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
-	heightCell, err := t.DasCore.GetHeightCell()
 	if err != nil {
 		return nil, fmt.Errorf("GetHeightCell err: %s", err.Error())
 	}
@@ -523,8 +516,6 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		alwaysContract.ToCellDep(),
 		applyContract.ToCellDep(),
 		preContract.ToCellDep(),
-		timeCell.ToCellDep(),
-		heightCell.ToCellDep(),
 		quoteCell.ToCellDep(),
 		priceConfig.ToCellDep(),
 		applyConfig.ToCellDep(),
