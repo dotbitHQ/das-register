@@ -268,6 +268,10 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		Since: utils.SinceFromRelativeBlockNumber(p.applyMinWaitingBlockNumber),
 	})
 
+	timeCell, err := t.DasCore.GetTimeCell()
+	if err != nil {
+		return nil, fmt.Errorf("GetTimeCell err: %s", err.Error())
+	}
 	quoteCell, err := t.DasCore.GetQuoteCell()
 	if err != nil {
 		return nil, fmt.Errorf("GetQuoteCell err: %s", err.Error())
@@ -516,6 +520,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		alwaysContract.ToCellDep(),
 		applyContract.ToCellDep(),
 		preContract.ToCellDep(),
+		timeCell.ToCellDep(),
 		quoteCell.ToCellDep(),
 		priceConfig.ToCellDep(),
 		applyConfig.ToCellDep(),
