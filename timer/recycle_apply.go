@@ -39,7 +39,7 @@ func (t *TxTimer) doRecycleApply() error {
 		ArgsLen:    0,
 		Filter: &indexer.CellsFilter{
 			Script:             applyContract.ToScript(nil),
-			OutputDataLenRange: &[2]uint64{48, 49},
+			OutputDataLenRange: &[2]uint64{32, 33},
 		},
 	}
 	liveCells, err := t.dasCore.Client().GetCells(t.ctx, &searchKey, indexer.SearchOrderAsc, 200, "")
