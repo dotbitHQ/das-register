@@ -13,6 +13,7 @@ import (
 	"github.com/nervosnetwork/ckb-sdk-go/crypto/blake2b"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
+	"github.com/nervosnetwork/ckb-sdk-go/utils"
 	"strings"
 	"time"
 )
@@ -61,6 +62,23 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 		return nil
 	}
 
+	blockChainInfo, err := t.DasCore.Client().GetBlockchainInfo(t.Ctx)
+	if err != nil {
+		return fmt.Errorf("GetBlockchainInfo err: %s", err.Error())
+	}
+	applyTxTx, err := t.DasCore.Client().GetTransaction(t.Ctx, types.HexToHash(orderTxApply.Hash))
+	if err != nil {
+		return fmt.Errorf("txTool DoOrderPreRegisterTx GetTransaction err: %s", err)
+	}
+	applyTxBlock, err := t.DasCore.Client().GetBlock(t.Ctx, *applyTxTx.TxStatus.BlockHash)
+	if err != nil {
+		return fmt.Errorf("txTool DoOrderPreRegisterTx GetBlock err: %s", err)
+	}
+	if blockChainInfo.MedianTime <= applyTxBlock.Header.Timestamp {
+		log.Info("apply transaction's block timestamp >= blockChainInfo.MedianTime skip ...")
+		return nil
+	}
+
 	// inviter channel
 	inviterScript, channelScript, inviterId, err := t.getOrderInviterChannelScript(&orderContent)
 	if err != nil {
@@ -77,15 +95,16 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 		return fmt.Errorf("NormalToScript err: %s", err.Error())
 	}
 	p := preRegisterTxParams{
-		order:         order,
-		applyCellHash: orderTxApply.Hash,
-		inviterId:     inviterId,
-		inviterScript: inviterScript,
-		channelScript: channelScript,
-		ownerLockArgs: ownerLockScript.Args,
-		refundLock:    t.ServerScript,
-		accountChars:  orderContent.AccountCharStr,
-		registerYears: orderContent.RegisterYears,
+		order:                         order,
+		applyCellHash:                 orderTxApply.Hash,
+		inviterId:                     inviterId,
+		inviterScript:                 inviterScript,
+		channelScript:                 channelScript,
+		ownerLockArgs:                 ownerLockScript.Args,
+		refundLock:                    t.ServerScript,
+		accountChars:                  orderContent.AccountCharStr,
+		registerYears:                 orderContent.RegisterYears,
+		applyRegisterTxBlockTimestamp: applyTxBlock.Header.Timestamp,
 	}
 	txParams, err := t.buildOrderPreRegisterTx(&p)
 	if err != nil {
@@ -208,15 +227,16 @@ func (t *TxTool) getOrderInviterChannelScript(orderContent *tables.TableOrderCon
 }
 
 type preRegisterTxParams struct {
-	order         *tables.TableDasOrderInfo
-	applyCellHash string
-	inviterId     []byte
-	inviterScript *types.Script
-	channelScript *types.Script
-	ownerLockArgs []byte
-	refundLock    *types.Script
-	accountChars  []common.AccountCharSet
-	registerYears int
+	order                         *tables.TableDasOrderInfo
+	applyCellHash                 string
+	inviterId                     []byte
+	inviterScript                 *types.Script
+	channelScript                 *types.Script
+	ownerLockArgs                 []byte
+	refundLock                    *types.Script
+	accountChars                  []common.AccountCharSet
+	registerYears                 int
+	applyRegisterTxBlockTimestamp uint64
 }
 
 func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.BuildTransactionParams, error) {
@@ -234,6 +254,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 			TxHash: applyHash,
 			Index:  0,
 		},
+		Since: utils.SinceFromRelativeTimestamp(p.applyRegisterTxBlockTimestamp),
 	})
 
 	// time cell
