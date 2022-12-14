@@ -85,7 +85,7 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 	}
 	applyTxBlockAddMinWaitNum := applyTxBlock.Header.Number + uint64(applyMinWaitingBlockNumber)
 	if tipBlockNumber < applyTxBlockAddMinWaitNum {
-		log.Info("txTool DoOrderPreRegisterTx tipBlockNumber=%d < applyTxBlockAddMinWaitNum=%d", tipBlockNumber, applyTxBlockAddMinWaitNum)
+		log.Infof("txTool DoOrderPreRegisterTx tipBlockNumber=%d < applyTxBlockAddMinWaitNum=%d", tipBlockNumber, applyTxBlockAddMinWaitNum)
 		return nil
 	}
 	log.Infof("txTool DoOrderPreRegisterTx tipBlockNumber=%d >= applyTxBlockAddMinWaitNum=%d", tipBlockNumber, applyTxBlockAddMinWaitNum)
