@@ -71,24 +71,24 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 	if err != nil {
 		return fmt.Errorf("ApplyMaxWaitingBlockNumber err: %s", err.Error())
 	}
-	//tipBlockNumber, err := t.DasCore.Client().GetTipBlockNumber(t.Ctx)
-	//if err != nil {
-	//	return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
-	//}
-	//applyTx, err := t.DasCore.Client().GetTransaction(t.Ctx, types.HexToHash(orderTxApply.Hash))
-	//if err != nil {
-	//	return fmt.Errorf("txTool DoOrderPreRegisterTx GetTransaction err: %s", err)
-	//}
-	//applyTxBlock, err := t.DasCore.Client().GetBlock(t.Ctx, *applyTx.TxStatus.BlockHash)
-	//if err != nil {
-	//	return fmt.Errorf("txTool DoOrderPreRegisterTx GetBlock err: %s", err)
-	//}
-	//applyTxBlockAddMinWaitNum := applyTxBlock.Header.Number + uint64(applyMinWaitingBlockNumber)
-	//if tipBlockNumber < applyTxBlockAddMinWaitNum {
-	//	log.Infof("txTool DoOrderPreRegisterTx tipBlockNumber=%d < applyTxBlockAddMinWaitNum=%d", tipBlockNumber, applyTxBlockAddMinWaitNum)
-	//	return nil
-	//}
-	//log.Infof("txTool DoOrderPreRegisterTx tipBlockNumber=%d >= applyTxBlockAddMinWaitNum=%d", tipBlockNumber, applyTxBlockAddMinWaitNum)
+	tipBlockNumber, err := t.DasCore.Client().GetTipBlockNumber(t.Ctx)
+	if err != nil {
+		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
+	}
+	applyTx, err := t.DasCore.Client().GetTransaction(t.Ctx, types.HexToHash(orderTxApply.Hash))
+	if err != nil {
+		return fmt.Errorf("txTool DoOrderPreRegisterTx GetTransaction err: %s", err)
+	}
+	applyTxBlock, err := t.DasCore.Client().GetBlock(t.Ctx, *applyTx.TxStatus.BlockHash)
+	if err != nil {
+		return fmt.Errorf("txTool DoOrderPreRegisterTx GetBlock err: %s", err)
+	}
+	applyTxBlockAddMinWaitNum := applyTxBlock.Header.Number + uint64(applyMinWaitingBlockNumber)
+	if tipBlockNumber < applyTxBlockAddMinWaitNum {
+		log.Infof("txTool DoOrderPreRegisterTx tipBlockNumber=%d < applyTxBlockAddMinWaitNum=%d", tipBlockNumber, applyTxBlockAddMinWaitNum)
+		return nil
+	}
+	log.Infof("txTool DoOrderPreRegisterTx tipBlockNumber=%d >= applyTxBlockAddMinWaitNum=%d", tipBlockNumber, applyTxBlockAddMinWaitNum)
 
 	// inviter channel
 	inviterScript, channelScript, inviterId, err := t.getOrderInviterChannelScript(&orderContent)
