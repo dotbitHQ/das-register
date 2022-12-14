@@ -267,6 +267,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		},
 		Since: utils.SinceFromRelativeBlockNumber(p.applyMinWaitingBlockNumber),
 	})
+	txParams.HeadDeps = append(txParams.HeadDeps, *applyTx.TxStatus.BlockHash)
 
 	timeCell, err := t.DasCore.GetTimeCell()
 	if err != nil {
