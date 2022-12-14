@@ -192,6 +192,9 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 	if !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "not has suffix .bit")
 		return
+	} else if len(req.Account) <= 4 {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "Invalid account name")
+		return
 	}
 
 	accountName := strings.TrimSuffix(req.Account, common.DasAccountSuffix)
