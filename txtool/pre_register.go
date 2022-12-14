@@ -364,6 +364,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		AccountChars:      accountChars,
 		InitialRecords:    initialRecords,
 		InitialCrossChain: initialCrossChain,
+		CreatedAt:         timeCell.Timestamp(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GenWitness err: %s", err.Error())
