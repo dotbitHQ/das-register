@@ -1,7 +1,6 @@
 package timer
 
 import (
-	"das_register_server/config"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/txbuilder"
@@ -15,9 +14,9 @@ var recyclePreBlockNumber uint64
 var recycleTimestamp = uint64(24 * 60 * 60)
 
 func (t *TxTimer) doRecyclePre() error {
-	if config.Cfg.Server.Net != common.DasNetTypeMainNet {
-		recycleTimestamp = uint64(5 * 60)
-	}
+	//if config.Cfg.Server.Net != common.DasNetTypeMainNet {
+	//	recycleTimestamp = uint64(5 * 60)
+	//}
 	p, err := t.getPreCellRecycleParams()
 	if err != nil {
 		return fmt.Errorf("getPreCellRecycleParams err: %s", err.Error())
