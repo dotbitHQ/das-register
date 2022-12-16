@@ -299,8 +299,8 @@ func (h *HttpHandle) checkRenewOrder(req *ReqOrderRenew, apiResp *api_code.ApiRe
 	}
 	expirationGracePeriod, _ := builder.ExpirationGracePeriod()
 	log.Info("checkRenewOrder:", expirationGracePeriod)
-	expirationGracePeriod -= 2 * 60 * 60
-	log.Info("checkRenewOrder:", expirationGracePeriod)
+	//expirationGracePeriod -= 2 * 60 * 60
+	//log.Info("checkRenewOrder:", expirationGracePeriod)
 	if int64(acc.ExpiredAt+uint64(expirationGracePeriod)) <= time.Now().Unix() {
 		apiResp.ApiRespErr(api_code.ApiCodeAfterGracePeriod, "after the grace period")
 		return nil
