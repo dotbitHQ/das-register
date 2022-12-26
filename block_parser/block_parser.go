@@ -162,6 +162,9 @@ func (b *BlockParser) parserConcurrencyMode() error {
 }
 
 func (b *BlockParser) parsingBlockData(block *types.Block) error {
+	if err := b.checkContractVersion(); err != nil {
+		return err
+	}
 	for _, tx := range block.Transactions {
 		txHash := tx.Hash.Hex()
 		blockNumber := block.Header.Number
@@ -192,5 +195,36 @@ func (b *BlockParser) parsingBlockData(block *types.Block) error {
 		}
 	}
 	b.errCountHandle = 0
+	return nil
+}
+
+var contractNames = []common.DasContractName{
+	common.DasContractNameApplyRegisterCellType,
+	common.DasContractNamePreAccountCellType,
+	common.DasContractNameProposalCellType,
+	common.DasContractNameConfigCellType,
+	common.DasContractNameAccountCellType,
+	//common.DasContractNameAccountSaleCellType,
+	common.DASContractNameSubAccountCellType,
+	//common.DASContractNameOfferCellType,
+	//common.DasContractNameBalanceCellType,
+	//common.DasContractNameIncomeCellType,
+	common.DasContractNameReverseRecordCellType,
+	//common.DASContractNameEip712LibCellType,
+}
+
+func (b *BlockParser) checkContractVersion() error {
+	for _, v := range contractNames {
+		defaultVersion, chainVersion, err := b.DasCore.CheckContractVersion(v)
+		if err != nil {
+			if err == core.ErrContractMajorVersionDiff {
+				log.Error("chain version is[%s],service version is[%s],please upgrade service.", chainVersion, defaultVersion)
+				//log.Fatal("checkContractVersion:", defaultVersion, chainVersion)
+				//b.ctx.Done()
+				return err
+			}
+			return fmt.Errorf("CheckContractVersion err: %s", err.Error())
+		}
+	}
 	return nil
 }
