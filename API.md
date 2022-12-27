@@ -288,7 +288,22 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
 ```
 
 **Response**
-
+* status
+  * -1: not open for registration
+  * 0: can be registered
+  * 1: payment confirmation
+  * 2: application for registration
+  * 3: pre-registration
+  * 4: proposal
+  * 5: confirming the proposal
+  * 6: has been registered
+  * 7: reserve account
+  * 8: on sale
+  * 9: auction
+  * 13: unregisterable
+  * 14: sub-account
+  * 15: cross-chain
+  
 ```json
 {
   "err_no": 0,
