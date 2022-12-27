@@ -205,7 +205,7 @@ var contractNames = []common.DasContractName{
 	common.DasContractNameConfigCellType,
 	common.DasContractNameAccountCellType,
 	//common.DasContractNameAccountSaleCellType,
-	common.DASContractNameSubAccountCellType,
+	//common.DASContractNameSubAccountCellType,
 	//common.DASContractNameOfferCellType,
 	//common.DasContractNameBalanceCellType,
 	//common.DasContractNameIncomeCellType,
