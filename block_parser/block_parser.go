@@ -221,7 +221,7 @@ func (b *BlockParser) checkContractVersion() error {
 			if err == core.ErrContractMajorVersionDiff {
 				log.Errorf("contract[%s] version diff, chain[%s], service[%s].", v, chainVersion, defaultVersion)
 				log.Error("Please update the service. [https://github.com/dotbitHQ/das-register]")
-				if b.Cancel != nil {
+				if b.Cancel != nil && !config.Cfg.Server.NotExit {
 					b.Cancel()
 				}
 				return err
