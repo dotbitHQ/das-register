@@ -48,21 +48,24 @@ func AddCfgFileWatcher(configFilePath string) (*fsnotify.Watcher, error) {
 
 type CfgServer struct {
 	Server struct {
-		IsUpdate               bool              `json:"is_update" yaml:"is_update"`
-		Net                    common.DasNetType `json:"net" yaml:"net"`
-		HttpServerAddr         string            `json:"http_server_addr" yaml:"http_server_addr"`
-		HttpServerInternalAddr string            `json:"http_server_internal_addr" yaml:"http_server_internal_addr"`
-		PayServerAddress       string            `json:"pay_server_address" yaml:"pay_server_address"`
-		PayPrivate             string            `json:"pay_private" yaml:"pay_private"`
-		RemoteSignApiUrl       string            `json:"remote_sign_api_url" yaml:"remote_sign_api_url"`
-		PushLogUrl             string            `json:"push_log_url" yaml:"push_log_url"`
-		PushLogIndex           string            `json:"push_log_index" yaml:"push_log_index"`
-		ParserUrl              string            `json:"parser_url" yaml:"parser_url"`
-		TxToolSwitch           bool              `json:"tx_tool_switch" yaml:"tx_tool_switch"`
-		SplitCkb               uint64            `json:"split_ckb" yaml:"split_ckb"`
-		RecoverCkb             uint64            `json:"recover_ckb" yaml:"recover_ckb"`
-		RecoverTime            time.Duration     `json:"recover_time" yaml:"recover_time"`
-		RecycleAllPre          bool              `json:"recycle_all_pre" yaml:"recycle_all_pre"`
+		IsUpdate                bool              `json:"is_update" yaml:"is_update"`
+		Net                     common.DasNetType `json:"net" yaml:"net"`
+		HttpServerAddr          string            `json:"http_server_addr" yaml:"http_server_addr"`
+		HttpServerInternalAddr  string            `json:"http_server_internal_addr" yaml:"http_server_internal_addr"`
+		PayServerAddress        string            `json:"pay_server_address" yaml:"pay_server_address"`
+		PayPrivate              string            `json:"pay_private" yaml:"pay_private"`
+		RemoteSignApiUrl        string            `json:"remote_sign_api_url" yaml:"remote_sign_api_url"`
+		PushLogUrl              string            `json:"push_log_url" yaml:"push_log_url"`
+		PushLogIndex            string            `json:"push_log_index" yaml:"push_log_index"`
+		ParserUrl               string            `json:"parser_url" yaml:"parser_url"`
+		TxToolSwitch            bool              `json:"tx_tool_switch" yaml:"tx_tool_switch"`
+		SplitCkb                uint64            `json:"split_ckb" yaml:"split_ckb"`
+		RecoverCkb              uint64            `json:"recover_ckb" yaml:"recover_ckb"`
+		RecoverTime             time.Duration     `json:"recover_time" yaml:"recover_time"`
+		RecycleAllPre           bool              `json:"recycle_all_pre" yaml:"recycle_all_pre"`
+		RecyclePreEarly         bool              `json:"recycle_pre_early" yaml:"recycle_pre_early"`
+		RecyclePreEarlyCronSpec string            `json:"recycle_pre_early_cron_spec" yaml:"recycle_pre_early_cron_spec"`
+		NotExit                 bool              `json:"not_exit" yaml:"not_exit"`
 	} `json:"server" yaml:"server"`
 	Origins          []string          `json:"origins" yaml:"origins"`
 	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`

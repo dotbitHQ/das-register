@@ -271,7 +271,7 @@ func (t *TxTimer) doRefundPre() error {
 					preBlockNumber--
 					break
 				}
-				log.Error("doRefundPre SendTransaction err: %s", err.Error())
+				log.Error("doRefundPre SendTransaction err: ", err.Error())
 				continue
 				//return fmt.Errorf("SendTransaction err: %s", err.Error())
 			} else {

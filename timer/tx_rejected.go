@@ -24,13 +24,13 @@ func (t *TxTimer) doTxRejected() error {
 	for _, v := range list {
 		txRes, err := t.dasCore.Client().GetTransaction(t.ctx, types.HexToHash(v.Hash))
 		if err != nil {
-			log.Error("GetTransaction err: %s", err.Error())
+			log.Error("GetTransaction err: ", err.Error())
 		} else {
 			log.Info("GetTransaction:", v.OrderId, v.Hash, txRes.TxStatus.Status)
 			if txRes.TxStatus.Status == types.TransactionStatusRejected {
 				notify.SendLarkTextNotifyAtAll(config.Cfg.Notify.LarkErrorKey, "doTxRejected", v.OrderId)
 				if err := t.dbDao.UpdateRejectedTx(v.Action, v.OrderId); err != nil {
-					log.Error("UpdateRejectedTx err: %s", err.Error())
+					log.Error("UpdateRejectedTx err: ", err.Error())
 				}
 			} else if txRes.TxStatus.Status != types.TransactionStatusCommitted && txRes.TxStatus.Status != types.TransactionStatusPending {
 				//sinceMin := time.Since(time.Unix(v.Timestamp/1000, 0)).Minutes()

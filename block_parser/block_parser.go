@@ -27,6 +27,7 @@ type BlockParser struct {
 	ConcurrencyNum       uint64
 	ConfirmNum           uint64
 	Ctx                  context.Context
+	Cancel               context.CancelFunc
 	Wg                   *sync.WaitGroup
 
 	errCountHandle int
@@ -162,6 +163,9 @@ func (b *BlockParser) parserConcurrencyMode() error {
 }
 
 func (b *BlockParser) parsingBlockData(block *types.Block) error {
+	if err := b.checkContractVersion(); err != nil {
+		return err
+	}
 	for _, tx := range block.Transactions {
 		txHash := tx.Hash.Hex()
 		blockNumber := block.Header.Number
@@ -192,5 +196,38 @@ func (b *BlockParser) parsingBlockData(block *types.Block) error {
 		}
 	}
 	b.errCountHandle = 0
+	return nil
+}
+
+var contractNames = []common.DasContractName{
+	common.DasContractNameApplyRegisterCellType,
+	common.DasContractNamePreAccountCellType,
+	common.DasContractNameProposalCellType,
+	common.DasContractNameConfigCellType,
+	common.DasContractNameAccountCellType,
+	//common.DasContractNameAccountSaleCellType,
+	//common.DASContractNameSubAccountCellType,
+	//common.DASContractNameOfferCellType,
+	common.DasContractNameBalanceCellType,
+	//common.DasContractNameIncomeCellType,
+	common.DasContractNameReverseRecordCellType,
+	//common.DASContractNameEip712LibCellType,
+}
+
+func (b *BlockParser) checkContractVersion() error {
+	for _, v := range contractNames {
+		defaultVersion, chainVersion, err := b.DasCore.CheckContractVersion(v)
+		if err != nil {
+			if err == core.ErrContractMajorVersionDiff {
+				log.Errorf("contract[%s] version diff, chain[%s], service[%s].", v, chainVersion, defaultVersion)
+				log.Error("Please update the service. [https://github.com/dotbitHQ/das-register]")
+				if b.Cancel != nil && !config.Cfg.Server.NotExit {
+					b.Cancel()
+				}
+				return err
+			}
+			return fmt.Errorf("CheckContractVersion err: %s", err.Error())
+		}
+	}
 	return nil
 }

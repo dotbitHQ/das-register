@@ -6,7 +6,9 @@ import (
 	"das_register_server/dao"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/dascache"
 	"github.com/dotbitHQ/das-lib/txbuilder"
+	"github.com/robfig/cron/v3"
 	"github.com/scorpiotzh/mylog"
 	"sync"
 	"time"
@@ -19,7 +21,9 @@ type TxTimer struct {
 	wg            *sync.WaitGroup
 	dbDao         *dao.DbDao
 	dasCore       *core.DasCore
+	dasCache      *dascache.DasCache
 	txBuilderBase *txbuilder.DasTxBuilderBase
+	cron          *cron.Cron
 }
 
 type TxTimerParam struct {
@@ -27,6 +31,7 @@ type TxTimerParam struct {
 	Ctx           context.Context
 	Wg            *sync.WaitGroup
 	DasCore       *core.DasCore
+	DasCache      *dascache.DasCache
 	TxBuilderBase *txbuilder.DasTxBuilderBase
 }
 
@@ -36,6 +41,7 @@ func NewTxTimer(p TxTimerParam) *TxTimer {
 	t.wg = p.Wg
 	t.dbDao = p.DbDao
 	t.dasCore = p.DasCore
+	t.dasCache = p.DasCache
 	t.txBuilderBase = p.TxBuilderBase
 	return &t
 }
@@ -53,7 +59,7 @@ func (t *TxTimer) Run() error {
 	if config.Cfg.Server.RecoverTime > 0 {
 		tickerRecover = time.NewTicker(time.Minute * config.Cfg.Server.RecoverTime)
 	}
-	tickerRefundApply := time.NewTicker(time.Minute * 5)
+	tickerRefundApply := time.NewTicker(time.Minute * 10)
 	tickerClosedAndUnRefund := time.NewTicker(time.Minute * 20)
 
 	t.wg.Add(5)
@@ -108,12 +114,18 @@ func (t *TxTimer) Run() error {
 			select {
 			case <-tickerRefundApply.C:
 				log.Info("doRefundApply start ...")
-				if err := t.doRefundApply(); err != nil {
-					log.Error("doRefundApply err: ", err.Error())
+				//if err := t.doRefundApply(); err != nil {
+				//	log.Error("doRefundApply err: ", err.Error())
+				//}
+				if err := t.doRecycleApply(); err != nil {
+					log.Errorf("doRecycleApply err: %s", err.Error())
 				}
 				if config.Cfg.Server.RecycleAllPre {
-					if err := t.doRefundPre(); err != nil {
-						log.Error("doRefundPre err: %s", err.Error())
+					//if err := t.doRefundPre(); err != nil {
+					//	log.Error("doRefundPre err: %s", err.Error())
+					//}
+					if err := t.doRecyclePre(); err != nil {
+						log.Error("doRecyclePre err: ", err.Error())
 					}
 				}
 				log.Info("doRefundApply end ...")
@@ -148,7 +160,7 @@ func (t *TxTimer) Run() error {
 			case <-tickerClosedAndUnRefund.C:
 				log.Info("doCheckClosedAndUnRefund start ...")
 				if err := t.doCheckClosedAndUnRefund(); err != nil {
-					log.Error("doCheckClosedAndUnRefund err: %s", err.Error())
+					log.Error("doCheckClosedAndUnRefund err: ", err.Error())
 				}
 				log.Info("doCheckClosedAndUnRefund start ...")
 			case <-t.ctx.Done():

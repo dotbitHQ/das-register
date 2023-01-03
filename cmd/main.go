@@ -100,11 +100,13 @@ func runServer(ctx *cli.Context) error {
 		Wg:            &wgServer,
 		DbDao:         dbDao,
 		DasCore:       dasCore,
+		DasCache:      dasCache,
 		TxBuilderBase: txBuilderBase,
 	})
 	if err = txTimer.Run(); err != nil {
 		return fmt.Errorf("txTimer.Run() err: %s", err.Error())
 	}
+	txTimer.DoRecyclePreEarly()
 	log.Info("timer ok")
 
 	// tx timer
@@ -128,6 +130,7 @@ func runServer(ctx *cli.Context) error {
 		ConcurrencyNum:     config.Cfg.Chain.ConcurrencyNum,
 		ConfirmNum:         config.Cfg.Chain.ConfirmNum,
 		Ctx:                ctxServer,
+		Cancel:             cancel,
 		Wg:                 &wgServer,
 	}
 	if err := bp.Run(); err != nil {
@@ -195,6 +198,7 @@ func runServer(ctx *cli.Context) error {
 		cancel()
 		hs.Shutdown()
 		nameDaoTimer.CloseCron()
+		txTimer.CloseCron()
 
 		wgServer.Wait()
 		log.Warn("success exit server. bye bye!")

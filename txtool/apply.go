@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
-	"github.com/dotbitHQ/das-lib/molecule"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/crypto/blake2b"
@@ -128,8 +127,6 @@ func (t *TxTool) buildOrderApplyTx(p *applyTxParams) (*txbuilder.BuildTransactio
 	applyData = append(applyData, t.ServerScript.Args...)
 	applyData = append(applyData, []byte(p.order.Account)...)
 	applyData, _ = blake2b.Blake256(applyData)
-	applyData = append(applyData, molecule.Go64ToBytes(heightCell.BlockNumber())...)
-	applyData = append(applyData, molecule.Go64ToBytes(timeCell.Timestamp())...)
 	txParams.OutputsData = append(txParams.OutputsData, applyData)
 
 	applyOutputs := &types.CellOutput{

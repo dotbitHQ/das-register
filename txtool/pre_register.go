@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/molecule"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/crypto/blake2b"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
+	"github.com/nervosnetwork/ckb-sdk-go/utils"
 	"strings"
 	"time"
 )
@@ -61,6 +63,33 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 		return nil
 	}
 
+	builder, err := t.DasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsApply)
+	if err != nil {
+		return fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+	}
+	applyMinWaitingBlockNumber, err := molecule.Bytes2GoU32(builder.ConfigCellApply.ApplyMinWaitingBlockNumber().RawData())
+	if err != nil {
+		return fmt.Errorf("ApplyMaxWaitingBlockNumber err: %s", err.Error())
+	}
+	tipBlockNumber, err := t.DasCore.Client().GetTipBlockNumber(t.Ctx)
+	if err != nil {
+		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
+	}
+	applyTx, err := t.DasCore.Client().GetTransaction(t.Ctx, types.HexToHash(orderTxApply.Hash))
+	if err != nil {
+		return fmt.Errorf("txTool DoOrderPreRegisterTx GetTransaction err: %s", err)
+	}
+	applyTxBlock, err := t.DasCore.Client().GetBlock(t.Ctx, *applyTx.TxStatus.BlockHash)
+	if err != nil {
+		return fmt.Errorf("txTool DoOrderPreRegisterTx GetBlock err: %s", err)
+	}
+	applyTxBlockAddMinWaitNum := applyTxBlock.Header.Number + uint64(applyMinWaitingBlockNumber)
+	if tipBlockNumber < applyTxBlockAddMinWaitNum {
+		log.Infof("txTool DoOrderPreRegisterTx tipBlockNumber=%d < applyTxBlockAddMinWaitNum=%d", tipBlockNumber, applyTxBlockAddMinWaitNum)
+		return nil
+	}
+	log.Infof("txTool DoOrderPreRegisterTx tipBlockNumber=%d >= applyTxBlockAddMinWaitNum=%d", tipBlockNumber, applyTxBlockAddMinWaitNum)
+
 	// inviter channel
 	inviterScript, channelScript, inviterId, err := t.getOrderInviterChannelScript(&orderContent)
 	if err != nil {
@@ -77,15 +106,16 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 		return fmt.Errorf("NormalToScript err: %s", err.Error())
 	}
 	p := preRegisterTxParams{
-		order:         order,
-		applyCellHash: orderTxApply.Hash,
-		inviterId:     inviterId,
-		inviterScript: inviterScript,
-		channelScript: channelScript,
-		ownerLockArgs: ownerLockScript.Args,
-		refundLock:    t.ServerScript,
-		accountChars:  orderContent.AccountCharStr,
-		registerYears: orderContent.RegisterYears,
+		order:                      order,
+		applyCellHash:              orderTxApply.Hash,
+		inviterId:                  inviterId,
+		inviterScript:              inviterScript,
+		channelScript:              channelScript,
+		ownerLockArgs:              ownerLockScript.Args,
+		refundLock:                 t.ServerScript,
+		accountChars:               orderContent.AccountCharStr,
+		registerYears:              orderContent.RegisterYears,
+		applyMinWaitingBlockNumber: uint64(applyMinWaitingBlockNumber),
 	}
 	txParams, err := t.buildOrderPreRegisterTx(&p)
 	if err != nil {
@@ -208,15 +238,16 @@ func (t *TxTool) getOrderInviterChannelScript(orderContent *tables.TableOrderCon
 }
 
 type preRegisterTxParams struct {
-	order         *tables.TableDasOrderInfo
-	applyCellHash string
-	inviterId     []byte
-	inviterScript *types.Script
-	channelScript *types.Script
-	ownerLockArgs []byte
-	refundLock    *types.Script
-	accountChars  []common.AccountCharSet
-	registerYears int
+	order                      *tables.TableDasOrderInfo
+	applyCellHash              string
+	inviterId                  []byte
+	inviterScript              *types.Script
+	channelScript              *types.Script
+	ownerLockArgs              []byte
+	refundLock                 *types.Script
+	accountChars               []common.AccountCharSet
+	registerYears              int
+	applyMinWaitingBlockNumber uint64
 }
 
 func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.BuildTransactionParams, error) {
@@ -234,9 +265,10 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 			TxHash: applyHash,
 			Index:  0,
 		},
+		Since: utils.SinceFromRelativeBlockNumber(p.applyMinWaitingBlockNumber),
 	})
+	txParams.HeadDeps = append(txParams.HeadDeps, *applyTx.TxStatus.BlockHash)
 
-	// time cell
 	timeCell, err := t.DasCore.GetTimeCell()
 	if err != nil {
 		return nil, fmt.Errorf("GetTimeCell err: %s", err.Error())
@@ -321,7 +353,6 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	preWitness, preData, err := preBuilder.GenWitness(&witness.PreAccountCellParam{
 		NewIndex:          0,
 		Action:            common.DasActionPreRegister,
-		CreatedAt:         timeCell.Timestamp(),
 		InvitedDiscount:   invitedDiscount,
 		Quote:             quoteCell.Quote(),
 		InviterScript:     p.inviterScript,
@@ -333,6 +364,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		AccountChars:      accountChars,
 		InitialRecords:    initialRecords,
 		InitialCrossChain: initialCrossChain,
+		CreatedAt:         timeCell.Timestamp(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GenWitness err: %s", err.Error())
@@ -411,7 +443,6 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
-	heightCell, err := t.DasCore.GetHeightCell()
 	if err != nil {
 		return nil, fmt.Errorf("GetHeightCell err: %s", err.Error())
 	}
@@ -492,7 +523,6 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		applyContract.ToCellDep(),
 		preContract.ToCellDep(),
 		timeCell.ToCellDep(),
-		heightCell.ToCellDep(),
 		quoteCell.ToCellDep(),
 		priceConfig.ToCellDep(),
 		applyConfig.ToCellDep(),
@@ -525,5 +555,24 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		}
 	}
 
+	accCellDep, err := t.getPreTxBetweenAccountCell(p.order.AccountId)
+	if err != nil {
+		return nil, fmt.Errorf("getPreTxBetweenAccountCell err: %s", err.Error())
+	}
+	txParams.CellDeps = append(txParams.CellDeps, accCellDep)
+
 	return &txParams, nil
+}
+
+func (t *TxTool) getPreTxBetweenAccountCell(accountId string) (*types.CellDep, error) {
+	accPre, err := t.DbDao.GetPreAccount(accountId)
+	if err != nil {
+		return nil, fmt.Errorf("GetPreAccount err: %s", err.Error())
+	} else if accPre.Outpoint != "" {
+		return &types.CellDep{
+			OutPoint: common.String2OutPointStruct(accPre.Outpoint),
+			DepType:  types.DepTypeCode,
+		}, nil
+	}
+	return nil, fmt.Errorf("not exist pre account-cell")
 }
