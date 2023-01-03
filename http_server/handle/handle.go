@@ -75,6 +75,14 @@ func (h *HttpHandle) checkSystemUpgrade(apiResp *api_code.ApiResp) error {
 		apiResp.ApiRespErr(api_code.ApiCodeSystemUpgrade, "The service is under maintenance, please try again later.")
 		return fmt.Errorf("contract system upgrade")
 	}
+	ok, err := h.dasCore.CheckContractStatusOK(common.DasContractNameAccountCellType)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		return fmt.Errorf("CheckContractStatusOK err: %s", err.Error())
+	} else if !ok {
+		apiResp.ApiRespErr(api_code.ApiCodeSystemUpgrade, "The service is under maintenance, please try again later.")
+		return fmt.Errorf("contract system upgrade")
+	}
 	return nil
 }
 
