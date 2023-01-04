@@ -50,7 +50,7 @@ func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, k
 	if keyword != "" {
 		db = db.Where("account LIKE ?", "%"+keyword+"%")
 	}
-	err = db.Order("account").Limit(limit).Offset(offset).Find(&list).Error
+	err = db.Order("expired_at").Limit(limit).Offset(offset).Find(&list).Error
 
 	return
 }
