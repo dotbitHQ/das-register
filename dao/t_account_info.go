@@ -42,7 +42,7 @@ func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, k
 		expiredAt := time.Now().Unix()
 		recycledAt := time.Now().Add(-time.Hour * 24 * 90).Unix()
 		if config.Cfg.Server.Net != common.DasNetTypeMainNet {
-			recycledAt = time.Now().Add(-time.Hour * 24 * 3).Unix()
+			recycledAt = time.Now().Add(-time.Hour * 24 * 30).Unix()
 		}
 		db = db.Where("expired_at<=? AND expired_at>=?", expiredAt, recycledAt)
 	}
@@ -78,7 +78,7 @@ func (d *DbDao) GetAccountsCount(chainType common.ChainType, address, keyword st
 		expiredAt := time.Now().Unix()
 		recycledAt := time.Now().Add(-time.Hour * 24 * 90).Unix()
 		if config.Cfg.Server.Net != common.DasNetTypeMainNet {
-			recycledAt = time.Now().Add(-time.Hour * 24 * 3).Unix()
+			recycledAt = time.Now().Add(-time.Hour * 24 * 30).Unix()
 		}
 		db = db.Where("expired_at<=? AND expired_at>=?", expiredAt, recycledAt)
 	}
