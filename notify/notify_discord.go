@@ -8,10 +8,10 @@ import (
 )
 
 type Webhook struct {
-	Username  string  `json:"username"`
-	AvatarURL string  `json:"avatar_url"`
-	Content   string  `json:"content"`
-	Embeds    []Embed `json:"embeds"`
+	//Username  string  `json:"username"`
+	//AvatarURL string  `json:"avatar_url"`
+	Content string `json:"content"`
+	//Embeds    []Embed `json:"embeds"`
 }
 type Embed struct {
 	Author      Author  `json:"author"`
