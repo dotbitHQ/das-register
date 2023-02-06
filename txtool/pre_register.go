@@ -29,9 +29,15 @@ func (t *TxTool) doOrderPreRegisterTx() error {
 	}
 	for i, _ := range list {
 		if err = t.DoOrderPreRegisterTx(&list[i]); err != nil {
+			if strings.Contains(err.Error(), "Unknown(OutPoint") {
+				log.Error("DoOrderPreRegisterTx err:", err.Error(), list[i].AccountId)
+				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister, notify.GetLarkTextNotifyStr("DoOrderPreRegisterTx", "", err.Error()))
+				continue
+			}
 			return fmt.Errorf("DoOrderPreRegisterTx err: %s", err.Error())
 		}
 	}
+
 	return nil
 }
 

@@ -237,15 +237,15 @@ func (h *HttpHandle) buildEditManagerTx(req *reqBuildTx, p *editManagerParams) (
 	accData = append(accData, res.Transaction.OutputsData[builder.Index][32:]...)
 
 	// outputs account cell
-	builderConfigCell, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsAccount)
-	if err != nil {
-		return nil, fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
-	}
-	commonFee, err := builderConfigCell.AccountCommonFee()
-	if err != nil {
-		return nil, fmt.Errorf("AccountCommonFee err: %s", err.Error())
-	}
-	capacity := res.Transaction.Outputs[builder.Index].Capacity - commonFee
+	//builderConfigCell, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsAccount)
+	//if err != nil {
+	//	return nil, fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+	//}
+	//commonFee, err := builderConfigCell.AccountCommonFee()
+	//if err != nil {
+	//	return nil, fmt.Errorf("AccountCommonFee err: %s", err.Error())
+	//}
+	capacity := res.Transaction.Outputs[builder.Index].Capacity //- commonFee
 
 	contractAcc, err := core.GetDasContractInfo(common.DasContractNameAccountCellType)
 	if err != nil {

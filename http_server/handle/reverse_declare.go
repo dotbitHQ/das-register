@@ -225,15 +225,21 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	}
 
 	var skipGroups []int
-	if req.Action == common.DasActionConfigSubAccountCustomScript {
+	switch req.Action {
+	case common.DasActionConfigSubAccountCustomScript:
 		skipGroups = []int{1}
 		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 		changeCapacity := txBuilder.Transaction.Outputs[1].Capacity - sizeInBlock - 1000
 		txBuilder.Transaction.Outputs[1].Capacity = changeCapacity
-	} else if req.Action == common.DasActionTransfer {
+	case common.DasActionTransfer:
 		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity + common.OneCkb - sizeInBlock - 1000
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
+	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount:
+		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
+		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - sizeInBlock - 1000
+		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
+		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
 	}
 	signList, err := txBuilder.GenerateDigestListFromTx(skipGroups)
 	if err != nil {
