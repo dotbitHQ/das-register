@@ -390,7 +390,7 @@ func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
 		return
 	}
-	timeCheck := time.Now().Add(time.Hour*24*365).UnixNano() / 1e6
+	timeCheck := time.Now().Add(-time.Hour*24*365).UnixNano() / 1e6
 	log.Info("checkAddressOrder:", timeCheck, order.Timestamp)
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
