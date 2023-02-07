@@ -11,6 +11,7 @@ server:
   recover_ckb: 1000
   recover_time: 1 # min
   split_ckb: 2000
+  smt_server: "http://172.17.0.1:9130"
 origins: # cross domain
   - ""
 pay_address_map: # receiver's address

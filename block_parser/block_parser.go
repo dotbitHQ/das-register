@@ -29,6 +29,7 @@ type BlockParser struct {
 	Ctx                  context.Context
 	Cancel               context.CancelFunc
 	Wg                   *sync.WaitGroup
+	SmtServer            string
 
 	errCountHandle int
 }

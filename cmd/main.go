@@ -132,6 +132,7 @@ func runServer(ctx *cli.Context) error {
 		Ctx:                ctxServer,
 		Cancel:             cancel,
 		Wg:                 &wgServer,
+		SmtServer:          config.Cfg.Server.SmtServer,
 	}
 	if err := bp.Run(); err != nil {
 		return fmt.Errorf("block parser err: %s", err.Error())

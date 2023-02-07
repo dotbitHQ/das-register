@@ -66,6 +66,7 @@ type CfgServer struct {
 		RecyclePreEarly         bool              `json:"recycle_pre_early" yaml:"recycle_pre_early"`
 		RecyclePreEarlyCronSpec string            `json:"recycle_pre_early_cron_spec" yaml:"recycle_pre_early_cron_spec"`
 		NotExit                 bool              `json:"not_exit" yaml:"not_exit"`
+		SmtServer               string            `json:"smt_server" yaml:"smt_server"`
 	} `json:"server" yaml:"server"`
 	Origins          []string          `json:"origins" yaml:"origins"`
 	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`

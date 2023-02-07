@@ -10,7 +10,7 @@ import (
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 )
 
-type ReverseRecordSmtParams struct {
+type ReverseSmtParams struct {
 	DasLock       *types.Script
 	DasType       *types.Script
 	BalanceCells  []*indexer.LiveCell
@@ -20,7 +20,7 @@ type ReverseRecordSmtParams struct {
 	LatestTxHash  types.Hash
 }
 
-func (h *HttpHandle) buildReverseSmtTx(req *ReverseRecordSmtParams) (*txbuilder.BuildTransactionParams, error) {
+func (h *HttpHandle) buildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams, error) {
 	var txParams txbuilder.BuildTransactionParams
 
 	// cell header dep
