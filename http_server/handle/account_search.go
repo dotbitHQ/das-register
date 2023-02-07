@@ -13,6 +13,7 @@ import (
 	"github.com/shopspring/decimal"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type ReqAccountSearch struct {
@@ -388,7 +389,21 @@ func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.
 		log.Error("GetLatestRegisterOrderByAddress err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
 		return
-	} else if (order.Id > 0 && order.OrderStatus == tables.OrderStatusDefault) || (order.Id > 0 && order.RegisterStatus == tables.RegisterStatusRegistered) {
+	}
+	timeCheck := time.Now().Add(time.Hour*24*365).UnixNano() / 1000
+	log.Info("checkAddressOrder:", timeCheck, order.Timestamp)
+	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
+	if err != nil {
+		log.Error("GetAccountInfoByAccountId err:", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account fail")
+		return
+	}
+	if acc.Id == 0 && timeCheck > order.Timestamp {
+		status = tables.SearchStatusRegisterAble
+		return
+	}
+
+	if (order.Id > 0 && order.OrderStatus == tables.OrderStatusDefault) || (order.Id > 0 && order.RegisterStatus == tables.RegisterStatusRegistered) {
 		status = tables.FormatRegisterStatusToSearchStatus(order.RegisterStatus)
 		if !isGetOrderTx {
 			return
