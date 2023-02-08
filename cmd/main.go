@@ -94,14 +94,22 @@ func runServer(ctx *cli.Context) error {
 		return fmt.Errorf("initTxBuilder err: %s", err.Error())
 	}
 
+	// reverse smt tx builder
+	reverseSmtTxBuilder, reverseSmtServerScript, err := initReverseSmtTxBuilder(dasCore)
+	if err != nil {
+		return fmt.Errorf("initReverseSmtTxBuilder err: %s", err.Error())
+	}
+
 	// service timer
 	txTimer := timer.NewTxTimer(timer.TxTimerParam{
-		Ctx:           ctxServer,
-		Wg:            &wgServer,
-		DbDao:         dbDao,
-		DasCore:       dasCore,
-		DasCache:      dasCache,
-		TxBuilderBase: txBuilderBase,
+		Ctx:                    ctxServer,
+		Wg:                     &wgServer,
+		DbDao:                  dbDao,
+		DasCore:                dasCore,
+		DasCache:               dasCache,
+		TxBuilderBase:          txBuilderBase,
+		ReverseSmtTxBuilder:    reverseSmtTxBuilder,
+		ReverseSmtServerScript: reverseSmtServerScript,
 	})
 	if err = txTimer.Run(); err != nil {
 		return fmt.Errorf("txTimer.Run() err: %s", err.Error())
@@ -132,7 +140,6 @@ func runServer(ctx *cli.Context) error {
 		Ctx:                ctxServer,
 		Cancel:             cancel,
 		Wg:                 &wgServer,
-		SmtServer:          config.Cfg.Server.SmtServer,
 	}
 	if err := bp.Run(); err != nil {
 		return fmt.Errorf("block parser err: %s", err.Error())
@@ -279,6 +286,27 @@ func initTxBuilder(dasCore *core.DasCore) (*txbuilder.DasTxBuilderBase, *types.S
 	}
 	txBuilderBase := txbuilder.NewDasTxBuilderBase(ctxServer, dasCore, handleSign, payServerAddressArgs)
 	log.Info("tx builder ok")
+
+	return txBuilderBase, serverScript, nil
+}
+
+func initReverseSmtTxBuilder(dasCore *core.DasCore) (*txbuilder.DasTxBuilderBase, *types.Script, error) {
+	parseAddress, err := address.Parse(config.Cfg.Server.ReverseSmtPayServerAddress)
+	if err != nil {
+		log.Error("initReverseSmtTxBuilder address.Parse err: ", err.Error())
+		return nil, nil, err
+	}
+	payServerAddressArgs := common.Bytes2Hex(parseAddress.Script.Args)
+	serverScript := parseAddress.Script
+
+	remoteSignClient, err := sign.NewClient(ctxServer, config.Cfg.Server.RemoteSignApiUrl)
+	if err != nil {
+		return nil, nil, fmt.Errorf("sign.NewClient err: %s", err.Error())
+	}
+	handleSign := sign.RemoteSign(remoteSignClient, config.Cfg.Server.Net, payServerAddressArgs)
+
+	txBuilderBase := txbuilder.NewDasTxBuilderBase(ctxServer, dasCore, handleSign, payServerAddressArgs)
+	log.Info("reverse smt tx builder ok")
 
 	return txBuilderBase, serverScript, nil
 }

@@ -1,4 +1,4 @@
-package handle
+package reverse_smt
 
 import (
 	"fmt"
@@ -17,39 +17,35 @@ type ReverseSmtParams struct {
 	TotalCapacity uint64
 	FeeCapacity   uint64
 	SmtRoot       string
-	LatestTxHash  types.Hash
+	LatestTx      *types.TransactionWithStatus
 }
 
-func (h *HttpHandle) buildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams, error) {
+func BuildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams, error) {
 	var txParams txbuilder.BuildTransactionParams
 
 	// cell header dep
-	latestReverseRecordTx, err := h.dasCore.Client().GetTransaction(h.ctx, req.LatestTxHash)
-	if err != nil {
-		return nil, fmt.Errorf("GetTransaction err: %s", err)
-	}
-	txParams.HeadDeps = append(txParams.HeadDeps, *latestReverseRecordTx.TxStatus.BlockHash)
+	txParams.HeadDeps = append(txParams.HeadDeps, *req.LatestTx.TxStatus.BlockHash)
 
 	// cell deps
 	balContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
 	if err != nil {
-		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+		return nil, fmt.Errorf("BuildReverseSmtTx GetDasContractInfo err: %s", err.Error())
 	}
 	reverseRecordRootContract, err := core.GetDasContractInfo(common.DasContractNameReverseRecordRootCellType)
 	if err != nil {
-		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+		return nil, fmt.Errorf("BuildReverseSmtTx GetDasContractInfo err: %s", err.Error())
 	}
 	configCellMain, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsMain)
 	if err != nil {
-		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+		return nil, fmt.Errorf("BuildReverseSmtTx GetDasConfigCellInfo err: %s", err.Error())
 	}
 	configCellTypeArgsReverseRecord, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsReverseRecord)
 	if err != nil {
-		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+		return nil, fmt.Errorf("BuildReverseSmtTx GetDasConfigCellInfo err: %s", err.Error())
 	}
 	configCellTypeArgsSMTNodeWhitelist, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsSMTNodeWhitelist)
 	if err != nil {
-		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+		return nil, fmt.Errorf("BuildReverseSmtTx GetDasConfigCellInfo err: %s", err.Error())
 	}
 
 	txParams.CellDeps = append(txParams.CellDeps,
@@ -63,7 +59,7 @@ func (h *HttpHandle) buildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildT
 	// inputs
 	txParams.Inputs = append(txParams.Inputs, &types.CellInput{
 		PreviousOutput: &types.OutPoint{
-			TxHash: latestReverseRecordTx.Transaction.Hash,
+			TxHash: req.LatestTx.Transaction.Hash,
 			Index:  uint(0),
 		},
 	})
@@ -74,7 +70,7 @@ func (h *HttpHandle) buildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildT
 	}
 
 	// outputs
-	txParams.Outputs = append(txParams.Outputs, latestReverseRecordTx.Transaction.Outputs[0])
+	txParams.Outputs = append(txParams.Outputs, req.LatestTx.Transaction.Outputs[0])
 	txParams.OutputsData = append(txParams.OutputsData, []byte(req.SmtRoot))
 
 	// change
@@ -91,7 +87,7 @@ func (h *HttpHandle) buildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildT
 	// witness
 	actionWitness, err := witness.GenActionDataWitness(common.DasActionUpdateReverseRecordRoot, nil)
 	if err != nil {
-		return nil, fmt.Errorf("GenActionDataWitness err: %s", err.Error())
+		return nil, fmt.Errorf("BuildReverseSmtTx GenActionDataWitness err: %s", err.Error())
 	}
 	txParams.Witnesses = append(txParams.Witnesses, actionWitness)
 

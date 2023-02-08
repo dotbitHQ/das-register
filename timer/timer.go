@@ -8,6 +8,7 @@ import (
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
 	"github.com/dotbitHQ/das-lib/txbuilder"
+	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/robfig/cron/v3"
 	"github.com/scorpiotzh/mylog"
 	"sync"
@@ -17,22 +18,26 @@ import (
 var log = mylog.NewLogger("timer", mylog.LevelDebug)
 
 type TxTimer struct {
-	ctx           context.Context
-	wg            *sync.WaitGroup
-	dbDao         *dao.DbDao
-	dasCore       *core.DasCore
-	dasCache      *dascache.DasCache
-	txBuilderBase *txbuilder.DasTxBuilderBase
-	cron          *cron.Cron
+	ctx                    context.Context
+	wg                     *sync.WaitGroup
+	dbDao                  *dao.DbDao
+	dasCore                *core.DasCore
+	dasCache               *dascache.DasCache
+	txBuilderBase          *txbuilder.DasTxBuilderBase
+	cron                   *cron.Cron
+	reverseSmtTxBuilder    *txbuilder.DasTxBuilderBase
+	reverseSmtServerScript *types.Script
 }
 
 type TxTimerParam struct {
-	DbDao         *dao.DbDao
-	Ctx           context.Context
-	Wg            *sync.WaitGroup
-	DasCore       *core.DasCore
-	DasCache      *dascache.DasCache
-	TxBuilderBase *txbuilder.DasTxBuilderBase
+	DbDao                  *dao.DbDao
+	Ctx                    context.Context
+	Wg                     *sync.WaitGroup
+	DasCore                *core.DasCore
+	DasCache               *dascache.DasCache
+	TxBuilderBase          *txbuilder.DasTxBuilderBase
+	ReverseSmtTxBuilder    *txbuilder.DasTxBuilderBase
+	ReverseSmtServerScript *types.Script
 }
 
 func NewTxTimer(p TxTimerParam) *TxTimer {
@@ -43,6 +48,8 @@ func NewTxTimer(p TxTimerParam) *TxTimer {
 	t.dasCore = p.DasCore
 	t.dasCache = p.DasCache
 	t.txBuilderBase = p.TxBuilderBase
+	t.reverseSmtTxBuilder = p.ReverseSmtTxBuilder
+	t.reverseSmtServerScript = p.ReverseSmtServerScript
 	return &t
 }
 

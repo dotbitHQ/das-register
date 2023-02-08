@@ -44,6 +44,10 @@ func NewGormDB(dbMysql, parserMysql config.DbMysql) (*DbDao, error) {
 	return &DbDao{db: db, parserDb: parserDb}, nil
 }
 
+func (d *DbDao) Transaction(fc func(tx *gorm.DB) error) error {
+	return d.db.Transaction(fc)
+}
+
 type RecordTotal struct {
 	Total int `json:"total" gorm:"column:total"`
 }

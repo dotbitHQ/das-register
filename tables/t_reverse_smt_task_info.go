@@ -1,6 +1,8 @@
 package tables
 
 import (
+	"github.com/google/uuid"
+	"strings"
 	"time"
 )
 
@@ -15,6 +17,8 @@ const (
 	ReverseSmtTxStatusPending = 1
 	ReverseSmtTxStatusConfirm = 2
 	ReverseSmtTxStatusReject  = 3
+
+	ReverseSmtMaxRetryNum = 3
 )
 
 // ReverseSmtTaskInfo reverse task info
@@ -32,6 +36,17 @@ type ReverseSmtTaskInfo struct {
 	UpdatedAt   time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP;NOT NULL"`
 }
 
+const TableNameReverseSmtTaskInfo = "t_reverse_smt_task_info"
+
 func (m *ReverseSmtTaskInfo) TableName() string {
-	return "t_reverse_smt_task_info"
+	return TableNameReverseSmtTaskInfo
+}
+
+func (m *ReverseSmtTaskInfo) InitTaskId() error {
+	uid, err := uuid.NewUUID()
+	if err != nil {
+		return err
+	}
+	m.TaskID = strings.ReplaceAll(uid.String(), "-", "")
+	return nil
 }

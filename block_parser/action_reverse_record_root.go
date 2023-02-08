@@ -1,10 +1,10 @@
 package block_parser
 
 import (
+	"das_register_server/internal/reverse_smt"
 	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
-	"github.com/dotbitHQ/das-lib/smt"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 )
 
@@ -24,33 +24,34 @@ func (b *BlockParser) ActionReverseRecordRoot(req FuncTransactionHandleReq) (res
 	}
 
 	if res.TxStatus.Status == types.TransactionStatusRejected {
-		resp.Err = b.DbDao.UpdateReverseSmtTaskInfoStatus(outpoint, tables.ReverseSmtStatusRollback, tables.ReverseSmtTxStatusReject)
+		resp.Err = b.DbDao.UpdateReverseSmtTaskInfoStatus(tables.ReverseSmtStatusRollback, tables.ReverseSmtTxStatusReject, "outpoint=?", outpoint)
 		return
 	}
 
-	// 查询本地交易是否存在
+	// find local tx exist or not
 	reverseSmtTaskInfo, err := b.DbDao.SearchReverseSmtTaskInfo(outpoint)
 	if err != nil {
 		resp.Err = err
 		return
 	}
 	if reverseSmtTaskInfo.ID == 0 {
-		// TODO 同步交易到本地
+		// TODO 一期不存在这种情况，解析witness同步交易到本地 task_info reverse_record 表
+		// TODO 更新SMT
 		return
 	}
 
-	smtRoot := string(res.Transaction.OutputsData[0])
-	tree := smt.NewSmtSrv(b.SmtServer, "reverse_record")
+	tree := reverse_smt.GetReverseSmt()
 	rootH256, err := tree.GetSmtRoot()
 	if err != nil {
 		resp.Err = err
 		return
 	}
+
+	smtRoot := string(res.Transaction.OutputsData[0])
+	// update smt_status and tx_status
 	if smtRoot == rootH256.String() {
-		resp.Err = b.DbDao.UpdateReverseSmtTaskInfoStatus(outpoint, tables.ReverseSmtStatusConfirm, tables.ReverseSmtTxStatusConfirm)
+		resp.Err = b.DbDao.UpdateReverseSmtTaskInfoStatus(tables.ReverseSmtStatusConfirm, tables.ReverseSmtTxStatusConfirm, "outpoint=?", outpoint)
 		return
 	}
-
-	// TODO 更新SMT到本地
 	return
 }
