@@ -59,6 +59,8 @@ func (h *HttpHandle) Operate(ctx *gin.Context) {
 		h.RpcOrderChange(req.Params, &apiResp)
 	case api_code.MethodOrderPayHash:
 		h.RpcOrderPayHash(req.Params, &apiResp)
+	case api_code.MethodOrderCheckCoupon:
+		h.RpcCheckCouponr(req.Params, &apiResp)
 	default:
 		log.Error("method not exist:", req.Method)
 		apiResp.ApiRespErr(api_code.ApiCodeMethodNotExist, fmt.Sprintf("method [%s] not exits", req.Method))

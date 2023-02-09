@@ -32,8 +32,15 @@ type ReqOrderRegister struct {
 	PayType       tables.PayType    `json:"pay_type"`
 	CoinType      string            `json:"coin_type"`
 	CrossCoinType string            `json:"cross_coin_type"`
+	GiftCard      string            `json:"gift_card"`
 }
 
+type ReqCheckCoupon struct {
+	Coupon string `json:"coupon"`
+}
+type RespCheckCoupon struct {
+	CouponType tables.CouponType `json:"type"`
+}
 type ReqOrderRegisterBase struct {
 	RegisterYears  int    `json:"register_years"`
 	InviterAccount string `json:"inviter_account"`
@@ -47,6 +54,69 @@ type RespOrderRegister struct {
 	Amount         decimal.Decimal   `json:"amount"`
 	CodeUrl        string            `json:"code_url"`
 	PayType        tables.PayType    `json:"pay_type"`
+}
+
+type AccountAttr struct {
+	Length uint8           `json:"length"`
+	Amount decimal.Decimal `json:"amount"`
+}
+
+func (h *HttpHandle) RpcCheckCouponr(p json.RawMessage, apiResp *api_code.ApiResp) {
+	var req []ReqCheckCoupon
+	err := json.Unmarshal(p, &req)
+	if err != nil {
+		log.Error("json.Unmarshal err:", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		return
+	} else if len(req) == 0 {
+		log.Error("len(req) is 0")
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		return
+	}
+
+	if err = h.doCheckCoupon(&req[0], apiResp); err != nil {
+		log.Error("doOrderRegister err:", err.Error())
+	}
+}
+func (h *HttpHandle) CheckCoupon(ctx *gin.Context) {
+	var (
+		funcName = "OrderRegister"
+		clientIp = GetClientIp(ctx)
+		req      ReqCheckCoupon
+		apiResp  api_code.ApiResp
+		err      error
+	)
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp)
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		ctx.JSON(http.StatusOK, apiResp)
+		return
+	}
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
+
+	if err = h.doCheckCoupon(&req, &apiResp); err != nil {
+		log.Error("doOrderRegister err:", err.Error(), funcName, clientIp)
+	}
+
+	ctx.JSON(http.StatusOK, apiResp)
+}
+
+func (h *HttpHandle) doCheckCoupon(req *ReqCheckCoupon, apiResp *api_code.ApiResp) error {
+	var resp RespCheckCoupon
+	if req.Coupon == "" {
+		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "params invalid")
+		return nil
+	}
+	res := h.checkCoupon(req.Coupon)
+
+	if res == nil {
+		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
+		return nil
+	}
+	resp.CouponType = res.CouponType
+	apiResp.ApiRespOK(resp)
+	return nil
 }
 
 func (h *HttpHandle) RpcOrderRegister(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -285,6 +355,38 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	if tables.EndWithDotBitChar(req.AccountCharStr) {
 		accLen -= 4
 	}
+
+	var coupon *tables.TableCoupon
+	if req.GiftCard != "" {
+		if req.RegisterYears != 1 {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+			return
+		}
+
+		coupon = h.checkCoupon(req.GiftCard)
+		if coupon == nil {
+			apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
+			return
+		}
+
+		accountAttr := AccountAttr{
+			Length: accLen,
+		}
+		if res := h.checkCouponType(accountAttr, coupon); !res {
+			apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card type err")
+			return
+		}
+
+		req.InviterAccount = ""
+		req.ChannelAccount = ""
+
+		if err := h.rc.GetCouponLockWithRedis(coupon.Code, time.Minute*60); err != nil {
+			log.Error("gift_card has been used: ", err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card has been used")
+			return
+		}
+	}
+
 	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
@@ -296,7 +398,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
-	//
+
 	inviterAccountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.InviterAccount))
 	if _, ok := config.Cfg.InviterWhitelist[inviterAccountId]; ok {
 		req.ChannelAccount = req.InviterAccount
@@ -310,6 +412,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		AmountTotalUSD: amountTotalUSD,
 		AmountTotalCKB: amountTotalCKB,
 	}
+
 	contentDataStr, err := json.Marshal(&orderContent)
 	if err != nil {
 		log.Error("json marshal err:", err.Error())
@@ -364,6 +467,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		CrossCoinType:     req.CrossCoinType,
 	}
 	order.CreateOrderId()
+
 	resp.OrderId = order.OrderId
 	resp.TokenId = req.PayTokenId
 	resp.PayType = req.PayType
@@ -376,11 +480,21 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		resp.ReceiptAddress = addr
 	}
 
-	if err := h.dbDao.CreateOrder(&order); err != nil {
-		log.Error("CreateOrder err:", err.Error())
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
-		return
+	if coupon != nil {
+		order.PayStatus = tables.TxStatusSending
+		if err := h.dbDao.CreateCouponOrder(&order, coupon.Code); err != nil {
+			log.Error("CreateOrder err:", err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
+			return
+		}
+	} else {
+		if err := h.dbDao.CreateOrder(&order); err != nil {
+			log.Error("CreateOrder err:", err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
+			return
+		}
 	}
+
 	// notify
 	go func() {
 		notify.SendLarkOrderNotify(&notify.SendLarkOrderNotifyParam{
@@ -458,4 +572,37 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 		log.Info("amountTotalPayToken:", amountTotalPayToken.String())
 	}
 	return
+}
+
+func (h *HttpHandle) checkCoupon(code string) (coupon *tables.TableCoupon) {
+	salt := config.Cfg.Server.CouponEncrySalt
+	if salt == "" {
+		log.Error("GetCoupon err: config coupon_encry_salt is empty")
+		return
+	}
+	code = couponEncry(code, salt)
+	res, err := h.dbDao.GetCouponByCode(code)
+	if err != nil {
+		log.Error("GetCoupon err:", err.Error())
+		return
+	}
+	if res.Id == 0 || res.OrderId != "" {
+		return
+	}
+
+	nowTime := time.Now().Unix()
+	if nowTime < res.CreatedAt.Unix() || nowTime > res.ExpiredAt.Unix() {
+		return
+	}
+	return &res
+}
+
+func (h *HttpHandle) checkCouponType(accountAttr AccountAttr, coupon *tables.TableCoupon) bool {
+	if coupon.CouponType == tables.CouponType4bit && accountAttr.Length == 4 {
+		return true
+	}
+	if coupon.CouponType == tables.CouponType5bit && accountAttr.Length == 5 {
+		return true
+	}
+	return false
 }
