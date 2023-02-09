@@ -151,8 +151,8 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 	}
 	//
 	if hash, err := txBuilder.SendTransaction(); err != nil {
-		if strings.Contains(err.Error(), "see the error code 35 in the page") {
-			log.Error("err see the error code 35:", order.OrderId)
+		if strings.Contains(err.Error(), "see the error code 35 in the page") || strings.Contains(err.Error(), "see the error code 53 in the page") {
+			log.Error("err see the error code 35 || 53:", order.OrderId, err.Error())
 			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister,
 				notify.GetLarkTextNotifyStr("UpdateOrderToClosedAndRefund", order.OrderId, order.Account))
 
