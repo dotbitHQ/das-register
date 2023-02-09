@@ -33,7 +33,7 @@ func NewGormDB(dbMysql, parserMysql config.DbMysql) (*DbDao, error) {
 		&tables.TableDasOrderPayInfo{},
 		&tables.TableDasOrderTxInfo{},
 		&tables.TableRegisterPendingInfo{},
-		&tables.TableCoupon{},
+		//&tables.TableCoupon{},
 	); err != nil {
 		return nil, err
 	}
