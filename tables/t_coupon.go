@@ -19,6 +19,7 @@ type TableCoupon struct {
 	CreatedAt  time.Time  `json:"created_at" gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
 	UseAt      int64      `json:"use_at" gorm:"column:use_at;type:bigint(20) NOT NULL DEFAULT '0' COMMENT 'used time'"`
 	ExpiredAt  time.Time  `json:"expired_at" gorm:"column:expired_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
+	IsCheck    uint8      `json:"is_check" gorm:"column:is_check;type:tinyint NOT NULL DEFAULT '0'"`
 	Desc       string     `json:"desc" gorm:"column:desc;type:text NOT NULL COMMENT 'coupon desc'"`
 }
 
