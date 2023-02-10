@@ -483,8 +483,6 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		} else {
 			resp.ReceiptAddress = addr
 		}
-	} else {
-		resp.ReceiptAddress = "0x4e53E498Fe0345d1aA15695dc8a53eC70D412185"
 	}
 
 	if coupon != nil {
