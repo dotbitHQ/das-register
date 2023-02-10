@@ -516,6 +516,12 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 
 func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
 	// pay token
+	if payTokenId == tables.TokenCoupon {
+		amountTotalUSD = decimal.Zero
+		amountTotalCKB = decimal.Zero
+		amountTotalPayToken = decimal.Zero
+		return
+	}
 	payToken := timer.GetTokenInfo(payTokenId)
 	if payToken.TokenId == "" {
 		e = fmt.Errorf("not supported [%s]", payTokenId)
