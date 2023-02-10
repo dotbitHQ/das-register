@@ -604,7 +604,7 @@ func (h *HttpHandle) checkCouponType(accountAttr AccountAttr, coupon *tables.Tab
 	if coupon.CouponType == tables.CouponType4bit && accountAttr.Length == 4 {
 		return true
 	}
-	if coupon.CouponType == tables.CouponType5bit && accountAttr.Length == 5 {
+	if coupon.CouponType == tables.CouponType5bit && accountAttr.Length >= 5 {
 		return true
 	}
 	return false
