@@ -136,7 +136,7 @@ func (d *DbDao) CreateCouponOrder(order *tables.TableDasOrderInfo, coupon string
 		}
 
 		if err := tx.Model(tables.TableCoupon{}).
-			Where("code = ?", coupon).
+			Where("code = ? and order_id= ? and use_at=? ", coupon, "", 0).
 			Updates(map[string]interface{}{
 				"order_id": order.OrderId,
 				"use_at":   time.Now().Unix(),

@@ -17,3 +17,8 @@ func (r *RedisCache) GetCouponLockWithRedis(coupon string, expiration time.Durat
 	}
 	return nil
 }
+func (r *RedisCache) DeleteCouponLockWithRedis(coupon string) error {
+	key := fmt.Sprintf("register:coupon:%s", coupon)
+	return r.red.Del(key).Err()
+
+}

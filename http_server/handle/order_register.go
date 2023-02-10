@@ -380,9 +380,9 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		req.InviterAccount = ""
 		req.ChannelAccount = ""
 
-		if err := h.rc.GetCouponLockWithRedis(coupon.Code, time.Minute*60); err != nil {
-			log.Error("gift_card has been used: ", err.Error())
-			apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card has been used")
+		if err := h.rc.GetCouponLockWithRedis(coupon.Code, time.Minute*1); err != nil {
+			log.Error("get gift card lock error: ", err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
 			return
 		}
 	}
@@ -482,7 +482,11 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 
 	if coupon != nil {
 		order.PayStatus = tables.TxStatusSending
-		if err := h.dbDao.CreateCouponOrder(&order, coupon.Code); err != nil {
+		err := h.dbDao.CreateCouponOrder(&order, coupon.Code)
+		if err := h.rc.DeleteCouponLockWithRedis(coupon.Code); err != nil {
+			log.Error("delete coupon redis lock error : ", err.Error())
+		}
+		if err != nil {
 			log.Error("CreateOrder err:", err.Error())
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
 			return
