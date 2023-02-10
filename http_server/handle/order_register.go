@@ -483,6 +483,8 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		} else {
 			resp.ReceiptAddress = addr
 		}
+	} else {
+		resp.ReceiptAddress = "0x4e53E498Fe0345d1aA15695dc8a53eC70D412185"
 	}
 
 	if coupon != nil {
@@ -519,6 +521,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	}()
 	return
 }
+
 func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
 	// pay token
 	if payTokenId == tables.TokenCoupon {
