@@ -385,6 +385,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the gift card operation is too frequent")
 			return
 		}
+		req.PayTokenId = "coupon"
 		amountTag = 0
 	}
 
