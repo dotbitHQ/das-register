@@ -475,11 +475,13 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	resp.PayType = req.PayType
 	resp.Amount = order.PayAmount
 	resp.CodeUrl = ""
-	if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
-		return
-	} else {
-		resp.ReceiptAddress = addr
+	if coupon == nil {
+		if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
+			return
+		} else {
+			resp.ReceiptAddress = addr
+		}
 	}
 
 	if coupon != nil {
