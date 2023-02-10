@@ -380,7 +380,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		req.InviterAccount = ""
 		req.ChannelAccount = ""
 
-		if err := h.rc.GetCouponLockWithRedis(coupon.Code, time.Minute*1); err != nil {
+		if err := h.rc.GetCouponLockWithRedis(coupon.Code, time.Minute*5); err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the gift card operation is too frequent")
 			return
 		}
