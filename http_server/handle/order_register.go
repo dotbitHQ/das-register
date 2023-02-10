@@ -381,8 +381,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		req.ChannelAccount = ""
 
 		if err := h.rc.GetCouponLockWithRedis(coupon.Code, time.Minute*1); err != nil {
-			log.Error("get gift card lock error: ", err.Error())
-			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
+			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the gift card operation is too frequent")
 			return
 		}
 	}
@@ -483,9 +482,9 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	if coupon != nil {
 		order.PayStatus = tables.TxStatusSending
 		err := h.dbDao.CreateCouponOrder(&order, coupon.Code)
-		if err := h.rc.DeleteCouponLockWithRedis(coupon.Code); err != nil {
-			log.Error("delete coupon redis lock error : ", err.Error())
-		}
+		//if err := h.rc.DeleteCouponLockWithRedis(coupon.Code); err != nil {
+		//	log.Error("delete coupon redis lock error : ", err.Error())
+		//}
 		if err != nil {
 			log.Error("CreateOrder err:", err.Error())
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
@@ -595,7 +594,7 @@ func (h *HttpHandle) checkCoupon(code string) (coupon *tables.TableCoupon) {
 	}
 
 	nowTime := time.Now().Unix()
-	if nowTime < res.CreatedAt.Unix() || nowTime > res.ExpiredAt.Unix() {
+	if nowTime < res.StartAt.Unix() || nowTime > res.ExpiredAt.Unix() {
 		return
 	}
 	return &res

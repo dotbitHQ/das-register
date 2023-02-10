@@ -27,6 +27,7 @@ type Coupon struct {
 type ReqCreateCoupon struct {
 	Desc         string   `json:"desc"`
 	ExpireTime   string   `json:"expire_time"`
+	StartTime    string   `json:"start_time"`
 	CouponsGroup []Coupon `json:"coupons"`
 }
 type RespCreateCoupon struct {
@@ -68,17 +69,24 @@ func (h *HttpHandle) doCreateCoupon(req *ReqCreateCoupon, apiResp *api_code.ApiR
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "config err")
 		return fmt.Errorf("coupon config error")
 	}
-	if len(req.CouponsGroup) == 0 || req.Desc == "" || req.ExpireTime == "" {
+	if len(req.CouponsGroup) == 0 || req.Desc == "" || req.ExpireTime == "" || req.StartTime == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
-
+	startAt, err := time.ParseInLocation("2006-01-02 15:04:05", req.StartTime, time.Local)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		return nil
+	}
 	expireAt, err := time.ParseInLocation("2006-01-02 15:04:05", req.ExpireTime, time.Local)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
-
+	if startAt.After(expireAt) {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		return nil
+	}
 	for i, _ := range req.CouponsGroup {
 		num := req.CouponsGroup[i].Num
 		coupon_type := req.CouponsGroup[i].CouponType
@@ -98,6 +106,7 @@ func (h *HttpHandle) doCreateCoupon(req *ReqCreateCoupon, apiResp *api_code.ApiR
 				CouponType: coupon_type,
 				Desc:       req.Desc,
 				ExpiredAt:  expireAt,
+				StartAt:    startAt,
 			})
 		}
 
