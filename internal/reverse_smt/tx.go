@@ -1,6 +1,7 @@
 package reverse_smt
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -11,20 +12,23 @@ import (
 )
 
 type ReverseSmtParams struct {
-	DasLock       *types.Script
-	DasType       *types.Script
+	ServerLock    *types.Script
 	BalanceCells  []*indexer.LiveCell
 	TotalCapacity uint64
 	FeeCapacity   uint64
 	SmtRoot       string
-	LatestTx      *types.TransactionWithStatus
+	PreTx         *types.TransactionWithStatus
 }
 
 func BuildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams, error) {
+	if req.PreTx == nil {
+		return nil, errors.New("params error PreTx can't be nil")
+	}
+
 	var txParams txbuilder.BuildTransactionParams
 
 	// cell header dep
-	txParams.HeadDeps = append(txParams.HeadDeps, *req.LatestTx.TxStatus.BlockHash)
+	txParams.HeadDeps = append(txParams.HeadDeps, *req.PreTx.TxStatus.BlockHash)
 
 	// cell deps
 	balContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
@@ -59,7 +63,7 @@ func BuildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams
 	// inputs
 	txParams.Inputs = append(txParams.Inputs, &types.CellInput{
 		PreviousOutput: &types.OutPoint{
-			TxHash: req.LatestTx.Transaction.Hash,
+			TxHash: req.PreTx.Transaction.Hash,
 			Index:  uint(0),
 		},
 	})
@@ -70,7 +74,7 @@ func BuildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams
 	}
 
 	// outputs
-	txParams.Outputs = append(txParams.Outputs, req.LatestTx.Transaction.Outputs[0])
+	txParams.Outputs = append(txParams.Outputs, req.PreTx.Transaction.Outputs[0])
 	txParams.OutputsData = append(txParams.OutputsData, []byte(req.SmtRoot))
 
 	// change
@@ -78,8 +82,8 @@ func BuildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams
 	if changeCapacity > 0 {
 		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 			Capacity: changeCapacity,
-			Lock:     req.DasLock,
-			Type:     req.DasType,
+			Lock:     req.ServerLock,
+			Type:     nil,
 		})
 		txParams.OutputsData = append(txParams.OutputsData, []byte{})
 	}

@@ -48,7 +48,7 @@ func (b *BlockParser) ActionReverseRecordRoot(req FuncTransactionHandleReq) (res
 	}
 
 	smtRoot := string(res.Transaction.OutputsData[0])
-	// update smt_status and tx_status
+	// update smt_status=2 and tx_status=2
 	if smtRoot == rootH256.String() {
 		resp.Err = b.DbDao.UpdateReverseSmtTaskInfoStatus(tables.ReverseSmtStatusConfirm, tables.ReverseSmtTxStatusConfirm, "outpoint=?", outpoint)
 		return

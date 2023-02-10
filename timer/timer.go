@@ -178,5 +178,35 @@ func (t *TxTimer) Run() error {
 		}
 	}()
 
+	go func() {
+		latestTaskProcessTime := time.Now()
+		reverseSmtTaskTicker := time.NewTicker(time.Second * 30)
+		for {
+			select {
+			case <-reverseSmtTaskTicker.C:
+				canContinue, err := t.reverseSmtTickerContinue()
+				if err != nil {
+					log.Errorf("reverseSmtTaskTicker reverseSmtTickerContinue err: %s", err)
+					break
+				}
+				if time.Now().Before(latestTaskProcessTime.Add(time.Minute*3)) && canContinue {
+					continue
+				}
+
+				log.Info("doReverseSmtTask start")
+				if err := t.doReverseSmtTask(); err != nil {
+					log.Errorf("reverseSmtTaskTicker doReverseSmtTask err: %s", err)
+					break
+				}
+				log.Info("doReverseSmtTask end")
+
+			case <-t.ctx.Done():
+				log.Info("timer done")
+				t.wg.Done()
+				return
+			}
+			latestTaskProcessTime = time.Now()
+		}
+	}()
 	return nil
 }

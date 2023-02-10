@@ -44,8 +44,16 @@ func NewGormDB(dbMysql, parserMysql config.DbMysql) (*DbDao, error) {
 	return &DbDao{db: db, parserDb: parserDb}, nil
 }
 
-func (d *DbDao) Transaction(fc func(tx *gorm.DB) error) error {
+func (d *DbDao) DbTransaction(fc func(tx *gorm.DB) error) error {
 	return d.db.Transaction(fc)
+}
+
+func (d *DbDao) GetDB() *gorm.DB {
+	return d.db
+}
+
+func (d *DbDao) GetParserDB() *gorm.DB {
+	return d.parserDb
 }
 
 type RecordTotal struct {

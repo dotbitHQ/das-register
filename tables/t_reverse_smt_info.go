@@ -16,6 +16,8 @@ type ReverseSmtInfo struct {
 	UpdatedAt    time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP;NOT NULL"`
 }
 
+const TableNameReverseSmtInfo = "t_reverse_smt_info"
+
 func (m *ReverseSmtInfo) TableName() string {
-	return "t_reverse_smt_info"
+	return TableNameReverseSmtInfo
 }
