@@ -357,6 +357,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	}
 
 	var coupon *tables.TableCoupon
+	amountTag := 1
 	if req.GiftCard != "" {
 		if req.RegisterYears != 1 {
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
@@ -384,6 +385,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the gift card operation is too frequent")
 			return
 		}
+		amountTag = 0
 	}
 
 	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
@@ -392,7 +394,8 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
-	if amountTotalUSD.Cmp(decimal.Zero) != 1 || amountTotalCKB.Cmp(decimal.Zero) != 1 || amountTotalPayToken.Cmp(decimal.Zero) != 1 {
+
+	if amountTotalUSD.Cmp(decimal.Zero) != amountTag || amountTotalCKB.Cmp(decimal.Zero) != amountTag || amountTotalPayToken.Cmp(decimal.Zero) != amountTag {
 		log.Error("order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
@@ -513,7 +516,6 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	}()
 	return
 }
-
 func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
 	// pay token
 	if payTokenId == tables.TokenCoupon {
