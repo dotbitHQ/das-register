@@ -14,10 +14,10 @@ require (
 	github.com/parnurzeal/gorequest v0.2.16
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/scorpiotzh/mylog v1.0.10
-	github.com/scorpiotzh/toolib v1.1.3
+	github.com/scorpiotzh/toolib v1.1.6-0.20230210123015-9770bc1afe72
 	github.com/shopspring/decimal v1.3.1
 	github.com/urfave/cli/v2 v2.4.4
-	gorm.io/gorm v1.22.1
+	gorm.io/gorm v1.23.6
 	moul.io/http2curl v1.0.0 // indirect
 )
 
