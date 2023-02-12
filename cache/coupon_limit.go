@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-//register:coupon:BQVXJ7LC
 func (r *RedisCache) GetCouponLockWithRedis(coupon string, expiration time.Duration) error {
 	key := fmt.Sprintf("register:coupon:%s", coupon)
 	ret := r.red.SetNX(key, "", expiration)

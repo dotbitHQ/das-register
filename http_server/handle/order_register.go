@@ -273,7 +273,12 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 	}
 
 	// create order
-	h.doRegisterOrder(req, apiResp, &resp)
+	if req.GiftCard != "" {
+		h.doRegisterCouponOrder(req, apiResp, &resp)
+	} else {
+		h.doRegisterOrder(req, apiResp, &resp)
+	}
+
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -356,39 +361,6 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		accLen -= 4
 	}
 
-	var coupon *tables.TableCoupon
-	amountTag := 1
-	if req.GiftCard != "" {
-		if req.RegisterYears != 1 {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
-			return
-		}
-
-		coupon = h.checkCoupon(req.GiftCard)
-		if coupon == nil {
-			apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
-			return
-		}
-
-		accountAttr := AccountAttr{
-			Length: accLen,
-		}
-		if res := h.checkCouponType(accountAttr, coupon); !res {
-			apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card type err")
-			return
-		}
-
-		req.InviterAccount = ""
-		req.ChannelAccount = ""
-
-		if err := h.rc.GetCouponLockWithRedis(coupon.Code, time.Minute*1); err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the gift card operation is too frequent")
-			return
-		}
-		req.PayTokenId = "coupon"
-		amountTag = 0
-	}
-
 	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error("getOrderAmount err: ", err.Error())
@@ -396,7 +368,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		return
 	}
 
-	if amountTotalUSD.Cmp(decimal.Zero) != amountTag || amountTotalCKB.Cmp(decimal.Zero) != amountTag || amountTotalPayToken.Cmp(decimal.Zero) != amountTag {
+	if amountTotalUSD.Cmp(decimal.Zero) != 1 || amountTotalCKB.Cmp(decimal.Zero) != 1 || amountTotalPayToken.Cmp(decimal.Zero) != 1 {
 		log.Error("order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
@@ -476,32 +448,18 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	resp.PayType = req.PayType
 	resp.Amount = order.PayAmount
 	resp.CodeUrl = ""
-	if coupon == nil {
-		if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
-			return
-		} else {
-			resp.ReceiptAddress = addr
-		}
+
+	if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
+		return
+	} else {
+		resp.ReceiptAddress = addr
 	}
 
-	if coupon != nil {
-		order.PayStatus = tables.TxStatusSending
-		err := h.dbDao.CreateCouponOrder(&order, coupon.Code)
-		if err := h.rc.DeleteCouponLockWithRedis(coupon.Code); err != nil {
-			log.Error("delete coupon redis lock error : ", err.Error())
-		}
-		if err != nil {
-			log.Error("CreateOrder err:", err.Error())
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
-			return
-		}
-	} else {
-		if err := h.dbDao.CreateOrder(&order); err != nil {
-			log.Error("CreateOrder err:", err.Error())
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
-			return
-		}
+	if err := h.dbDao.CreateOrder(&order); err != nil {
+		log.Error("CreateOrder err:", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
+		return
 	}
 
 	// notify
@@ -509,6 +467,141 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		notify.SendLarkOrderNotify(&notify.SendLarkOrderNotifyParam{
 			Key:        config.Cfg.Notify.LarkRegisterKey,
 			Action:     "new register order",
+			Account:    order.Account,
+			OrderId:    order.OrderId,
+			ChainType:  order.ChainType,
+			Address:    order.Address,
+			PayTokenId: order.PayTokenId,
+			Amount:     order.PayAmount,
+		})
+	}()
+	return
+}
+
+func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
+	req.PayTokenId = tables.TokenCoupon
+	// pay amount
+	addrHex := core.DasAddressHex{
+		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
+		AddressHex:     req.Address,
+		IsMulti:        false,
+		ChainType:      req.ChainType,
+	}
+	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
+	if err != nil {
+		log.Error("HexToArgs err: ", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
+		return
+	}
+	accLen := uint8(len(req.AccountCharStr))
+	if tables.EndWithDotBitChar(req.AccountCharStr) {
+		accLen -= 4
+	}
+
+	var coupon *tables.TableCoupon
+	if req.RegisterYears != 1 {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		return
+	}
+
+	coupon = h.checkCoupon(req.GiftCard)
+	if coupon == nil {
+		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
+		return
+	}
+
+	accountAttr := AccountAttr{
+		Length: accLen,
+	}
+	if res := h.checkCouponType(accountAttr, coupon); !res {
+		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card type err")
+		return
+	}
+
+	req.InviterAccount = ""
+	req.ChannelAccount = ""
+
+	if err := h.rc.GetCouponLockWithRedis(coupon.Code, time.Minute*1); err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the gift card operation is too frequent")
+		return
+	}
+
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	if err != nil {
+		log.Error("getOrderAmount err: ", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
+		return
+	}
+
+	if amountTotalUSD.Cmp(decimal.Zero) != 0 || amountTotalCKB.Cmp(decimal.Zero) != 0 || amountTotalPayToken.Cmp(decimal.Zero) != 0 {
+		log.Error("order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
+		return
+	}
+
+	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+	orderContent := tables.TableOrderContent{
+		AccountCharStr: req.AccountCharStr,
+		InviterAccount: req.InviterAccount,
+		ChannelAccount: req.ChannelAccount,
+		RegisterYears:  req.RegisterYears,
+		AmountTotalUSD: amountTotalUSD,
+		AmountTotalCKB: amountTotalCKB,
+	}
+
+	contentDataStr, err := json.Marshal(&orderContent)
+	if err != nil {
+		log.Error("json marshal err:", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "json marshal fail")
+		return
+	}
+
+	order := tables.TableDasOrderInfo{
+		Id:                0,
+		OrderType:         tables.OrderTypeSelf,
+		OrderId:           "",
+		AccountId:         accountId,
+		Account:           req.Account,
+		Action:            common.DasActionApplyRegister,
+		ChainType:         req.ChainType,
+		Address:           req.Address,
+		Timestamp:         time.Now().UnixNano() / 1e6,
+		PayTokenId:        req.PayTokenId,
+		PayType:           req.PayType,
+		PayAmount:         amountTotalPayToken,
+		Content:           string(contentDataStr),
+		PayStatus:         tables.TxStatusDefault,
+		HedgeStatus:       tables.TxStatusDefault,
+		PreRegisterStatus: tables.TxStatusDefault,
+		OrderStatus:       tables.OrderStatusDefault,
+		RegisterStatus:    tables.RegisterStatusConfirmPayment,
+		CoinType:          req.CoinType,
+		CrossCoinType:     req.CrossCoinType,
+	}
+	order.CreateOrderId()
+
+	resp.OrderId = order.OrderId
+	resp.TokenId = req.PayTokenId
+	resp.PayType = req.PayType
+	resp.Amount = order.PayAmount
+	resp.CodeUrl = ""
+
+	order.PayStatus = tables.TxStatusSending
+	err = h.dbDao.CreateCouponOrder(&order, coupon.Code)
+	if err := h.rc.DeleteCouponLockWithRedis(coupon.Code); err != nil {
+		log.Error("delete coupon redis lock error : ", err.Error())
+	}
+	if err != nil {
+		log.Error("CreateOrder err:", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
+		return
+	}
+
+	// notify
+	go func() {
+		notify.SendLarkOrderNotify(&notify.SendLarkOrderNotifyParam{
+			Key:        config.Cfg.Notify.LarkRegisterKey,
+			Action:     "new register coupon order",
 			Account:    order.Account,
 			OrderId:    order.OrderId,
 			ChainType:  order.ChainType,
@@ -609,6 +702,7 @@ func (h *HttpHandle) checkCoupon(code string) (coupon *tables.TableCoupon) {
 	if nowTime < res.StartAt.Unix() || nowTime > res.ExpiredAt.Unix() {
 		return
 	}
+
 	return &res
 }
 
