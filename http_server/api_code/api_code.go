@@ -48,6 +48,8 @@ const (
 	ApiCodeSubAccountNotEnabled         ApiCode = 30036
 	ApiCodeAfterGracePeriod             ApiCode = 30037
 	ApiCodeCouponInvalid                ApiCode = 30038
+	ApiCodeCouponUsed                   ApiCode = 30039
+	ApiCodeCouponUnopen                 ApiCode = 30040
 )
 
 const (

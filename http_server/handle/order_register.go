@@ -96,7 +96,7 @@ func (h *HttpHandle) CheckCoupon(ctx *gin.Context) {
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
 	if err = h.doCheckCoupon(&req, &apiResp); err != nil {
-		log.Error("doOrderRegister err:", err.Error(), funcName, clientIp)
+		log.Error("doCheckCoupon err:", err.Error(), funcName, clientIp)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
@@ -108,10 +108,8 @@ func (h *HttpHandle) doCheckCoupon(req *ReqCheckCoupon, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "params invalid")
 		return nil
 	}
-	res := h.checkCoupon(req.Coupon)
-
+	res := h.checkCoupon(req.Coupon, apiResp)
 	if res == nil {
-		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
 		return nil
 	}
 	resp.CouponType = res.CouponType
@@ -504,7 +502,7 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 		return
 	}
 
-	coupon = h.checkCoupon(req.GiftCard)
+	coupon = h.checkCoupon(req.GiftCard, apiResp)
 	if coupon == nil {
 		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
 		return
@@ -681,25 +679,32 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 	return
 }
 
-func (h *HttpHandle) checkCoupon(code string) (coupon *tables.TableCoupon) {
+func (h *HttpHandle) checkCoupon(code string, apiResp *api_code.ApiResp) (coupon *tables.TableCoupon) {
 	salt := config.Cfg.Server.CouponEncrySalt
 	if salt == "" {
 		log.Error("GetCoupon err: config coupon_encry_salt is empty")
-		return
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "system setting error")
+		return nil
 	}
 	code = couponEncry(code, salt)
 	res, err := h.dbDao.GetCouponByCode(code)
 	if err != nil {
 		log.Error("GetCoupon err:", err.Error())
-		return
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "get gift card error")
+		return nil
 	}
-	if res.Id == 0 || res.OrderId != "" {
-		return
+	if res.Id == 0 {
+		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
+		return nil
 	}
-
+	if res.OrderId != "" {
+		apiResp.ApiRespErr(api_code.ApiCodeCouponUsed, "gift card has been used")
+		return nil
+	}
 	nowTime := time.Now().Unix()
 	if nowTime < res.StartAt.Unix() || nowTime > res.ExpiredAt.Unix() {
-		return
+		apiResp.ApiRespErr(api_code.ApiCodeCouponUnopen, "gift card not started yet")
+		return nil
 	}
 
 	return &res
