@@ -30,20 +30,19 @@ type ReqReverseUpdate struct {
 }
 
 type RespReverseUpdate struct {
-	SignMsg  string `json:"sign_msg"`
-	SignType int    `json:"sign_type"`
-	SignKey  string `json:"sign_key"`
+	SignMsg  string                `json:"sign_msg"`
+	SignType common.DasAlgorithmId `json:"sign_type"`
+	SignKey  string                `json:"sign_key"`
 }
 
 type ReverseSmtSignCache struct {
 	Action         string                `json:"action"`
 	Account        string                `json:"account"`
 	SignMsg        string                `json:"sign_msg"`
-	SignType       int                   `json:"sign_type"`
 	ChainType      common.ChainType      `json:"chain_type"`
 	DasAlgorithmId common.DasAlgorithmId `json:"das_algorithm_id"`
 	AddressHex     string                `json:"address_hex"`
-	Nonce          int                   `json:"nonce"`
+	Nonce          uint32                `json:"nonce"`
 }
 
 func (h *HttpHandle) ReverseUpdate(ctx *gin.Context) {
@@ -80,6 +79,7 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		log.Error("checkReqReverseRecord:", apiResp.ErrMsg)
 		return nil
 	}
+
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
 	}
@@ -87,6 +87,25 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
 		return fmt.Errorf("sync block number")
 	}
+
+	lockDone := make(chan struct{})
+	lockKey := fmt.Sprintf("lock:doReverseUpdate:%s", res.AddressHex)
+	h.rc.Lock(lockKey, time.Second*3, func(lockFn func()) {
+		t := time.NewTicker(time.Second)
+		defer t.Stop()
+		for range t.C {
+			select {
+			case <-lockDone:
+				return
+			default:
+				lockFn()
+			}
+		}
+	})
+	defer func() {
+		close(lockDone)
+	}()
+
 	if exi := h.rc.ApiLimitExist(res.ChainType, res.AddressHex, common.DasActionUpdateReverseRecordRoot); exi {
 		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
 		return fmt.Errorf("api limit: %d %s", res.ChainType, res.AddressHex)
@@ -106,51 +125,55 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		return fmt.Errorf("account not exist: %s", req.Account)
 	}
 
-	data := make([]byte, 0)
+	var resp RespReverseUpdate
+
+	resp.SignType = res.DasAlgorithmId
+
 	// nonce
 	nonce, err := h.getReverseSmtNonce(res, req, apiResp)
 	if err != nil {
 		return err
-	}
-	nonceByte := bytes.NewBuffer([]byte{})
-	_ = binary.Write(nonceByte, binary.LittleEndian, nonce)
-	data = append(data, nonceByte.Bytes()...)
-
-	// account
-	data = append(data, []byte(req.Account)...)
-	bys, _ := blake2b.Blake256(data)
-
-	var resp RespReverseUpdate
-
-	resp.SignMsg = common.Bytes2Hex([]byte("from did: "))[2:] + base64.StdEncoding.EncodeToString(bys)
-
-	resp.SignType = int(acc.OwnerAlgorithmId)
-	if resp.SignType == int(common.DasAlgorithmIdEth712) {
-		resp.SignType = int(common.DasAlgorithmIdEth)
 	}
 
 	dataCache := &ReverseSmtSignCache{
 		Action:         req.Action,
 		Account:        req.Account,
 		SignMsg:        resp.SignMsg,
-		SignType:       resp.SignType,
 		ChainType:      res.ChainType,
 		DasAlgorithmId: res.DasAlgorithmId,
 		AddressHex:     res.AddressHex,
-		Nonce:          nonce,
+		Nonce:          uint32(nonce),
 	}
+	resp.SignMsg = dataCache.GenSignMsg()
+
 	signKey := dataCache.CacheKey()
 	cacheStr := toolib.JsonString(dataCache)
 	if err = h.rc.SetSignTxCache(signKey, cacheStr); err != nil {
 		return fmt.Errorf("SetSignTxCache err: %s", err.Error())
 	}
 	resp.SignKey = signKey
+	apiResp.Data = resp
 	return nil
 }
 
 func (cache *ReverseSmtSignCache) CacheKey() string {
 	key := fmt.Sprintf("reverse:smt:%s:%d:%s:%s:%s:%d:%d", common.DasActionUpdateReverseRecordRoot, cache.ChainType, cache.AddressHex, cache.Account, cache.Action, cache.Nonce, time.Now().Unix())
 	return fmt.Sprintf("%x", md5.Sum([]byte(key)))
+}
+
+func (cache *ReverseSmtSignCache) GenSignMsg() string {
+	data := make([]byte, 0)
+	nonceByte := bytes.NewBuffer([]byte{})
+	_ = binary.Write(nonceByte, binary.LittleEndian, cache.Nonce)
+	data = append(data, nonceByte.Bytes()...)
+
+	// account
+	data = append(data, []byte(cache.Account)...)
+	bys, _ := blake2b.Blake256(data)
+
+	signMsg := common.Bytes2Hex([]byte("from did: "))[2:] + base64.StdEncoding.EncodeToString(bys)
+	cache.SignMsg = signMsg
+	return signMsg
 }
 
 func (h *HttpHandle) getReverseSmtNonce(res *core.DasAddressHex, req *ReqReverseUpdate, apiResp *api_code.ApiResp) (int, error) {
@@ -241,6 +264,9 @@ func checkReqKeyInfo(daf *core.DasAddressFormat, req *core.ChainTypeAddress, api
 	if err != nil {
 		apiResp.ApiRespErr(code.ApiCodeParamsInvalid, err.Error())
 		return nil
+	}
+	if addrHex.DasAlgorithmId == common.DasAlgorithmIdEth712 {
+		addrHex.DasAlgorithmId = common.DasAlgorithmIdEth
 	}
 	return &addrHex
 }

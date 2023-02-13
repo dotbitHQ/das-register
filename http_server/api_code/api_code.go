@@ -48,6 +48,7 @@ const (
 	ApiCodeSubAccountNotEnabled         ApiCode = 30036
 	ApiCodeAfterGracePeriod             ApiCode = 30037
 	ApiCodeReverseSmtOnReverse          ApiCode = 30038
+	ApiCodeNotExistSignType             ApiCode = 30039
 )
 
 const (
@@ -74,6 +75,7 @@ const (
 	MethodReverseRedeclare = "das_reverseRedeclare"
 	MethodReverseRetract   = "das_reverseRetract"
 	MethodReverseUpdate    = "das_reverseUpdate"
+	MethodReverseSend      = "das_reverseSend"
 	MethodTransactionSend  = "das_transactionSend"
 	MethodBalanceWithdraw  = "das_balanceWithdraw"
 	MethodBalanceTransfer  = "das_balanceTransfer"

@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -19,6 +20,18 @@ func (r *RedisCache) GetSignTxCache(key string) (string, error) {
 	} else {
 		return txStr, nil
 	}
+}
+
+func (r *RedisCache) GetSignTxCacheData(key string, res interface{}) error {
+	if r.red == nil {
+		return fmt.Errorf("redis is nil")
+	}
+	key = r.getSignTxCacheKey(key)
+	txStr, err := r.red.Get(key).Result()
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal([]byte(txStr), res)
 }
 
 func (r *RedisCache) SetSignTxCache(key, txStr string) error {

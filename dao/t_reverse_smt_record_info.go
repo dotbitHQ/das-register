@@ -36,3 +36,8 @@ func (d *DbDao) GetReverseSmtRecordByAddress(address string) (reverse tables.Rev
 	}
 	return
 }
+
+func (d *DbDao) CreateReverseSmtRecord(reverse *tables.ReverseSmtRecordInfo) (err error) {
+	err = d.db.Create(reverse).Error
+	return
+}
