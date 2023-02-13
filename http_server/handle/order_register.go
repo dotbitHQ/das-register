@@ -570,11 +570,11 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 		PayType:           req.PayType,
 		PayAmount:         amountTotalPayToken,
 		Content:           string(contentDataStr),
-		PayStatus:         tables.TxStatusDefault,
+		PayStatus:         tables.TxStatusSending,
 		HedgeStatus:       tables.TxStatusDefault,
 		PreRegisterStatus: tables.TxStatusDefault,
 		OrderStatus:       tables.OrderStatusDefault,
-		RegisterStatus:    tables.RegisterStatusConfirmPayment,
+		RegisterStatus:    tables.RegisterStatusApplyRegister,
 		CoinType:          req.CoinType,
 		CrossCoinType:     req.CrossCoinType,
 	}
@@ -586,7 +586,6 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 	resp.Amount = order.PayAmount
 	resp.CodeUrl = ""
 
-	order.PayStatus = tables.TxStatusSending
 	err = h.dbDao.CreateCouponOrder(&order, coupon.Code)
 	if err := h.rc.DeleteCouponLockWithRedis(coupon.Code); err != nil {
 		log.Error("delete coupon redis lock error : ", err.Error())
