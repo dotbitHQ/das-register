@@ -504,7 +504,6 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 
 	coupon = h.checkCoupon(req.GiftCard, apiResp)
 	if coupon == nil {
-		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
 		return
 	}
 
