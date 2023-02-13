@@ -61,6 +61,7 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/reverse/declare", api_code.DoMonitorLog(api_code.MethodReverseDeclare), h.h.ReverseDeclare)
 		v1.POST("/reverse/redeclare", api_code.DoMonitorLog(api_code.MethodReverseRedeclare), h.h.ReverseRedeclare)
 		v1.POST("/reverse/retract", api_code.DoMonitorLog(api_code.MethodReverseRetract), h.h.ReverseRetract)
+		v1.POST("/reverse/update", api_code.DoMonitorLog(api_code.MethodReverseUpdate), h.h.ReverseUpdate)
 		v1.POST("/transaction/send", api_code.DoMonitorLog(api_code.MethodTransactionSend), h.h.TransactionSend)
 		v1.POST("/balance/pay", api_code.DoMonitorLog(api_code.MethodBalancePay), h.h.BalancePay)
 		v1.POST("/balance/withdraw", api_code.DoMonitorLog(api_code.MethodBalanceWithdraw), h.h.BalanceWithdraw)

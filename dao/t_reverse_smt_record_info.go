@@ -28,3 +28,11 @@ func (d *DbDao) GetPreRecordByAddressAndNonce(address string, nonce int) (revers
 	}
 	return
 }
+
+func (d *DbDao) GetReverseSmtRecordByAddress(address string) (reverse tables.ReverseSmtRecordInfo, err error) {
+	err = d.db.Where(" address=? ", address).Order("nonce desc").First(&reverse).Error
+	if err == gorm.ErrRecordNotFound {
+		err = nil
+	}
+	return
+}
