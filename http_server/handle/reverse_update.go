@@ -87,6 +87,10 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
 		return fmt.Errorf("sync block number")
 	}
+	if exi := h.rc.ApiLimitExist(res.ChainType, res.AddressHex, common.DasActionUpdateReverseRecordRoot); exi {
+		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
+		return fmt.Errorf("api limit: %d %s", res.ChainType, res.AddressHex)
+	}
 
 	lockDone := make(chan struct{})
 	lockKey := fmt.Sprintf("lock:doReverseUpdate:%s", res.AddressHex)
@@ -105,11 +109,6 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 	defer func() {
 		close(lockDone)
 	}()
-
-	if exi := h.rc.ApiLimitExist(res.ChainType, res.AddressHex, common.DasActionUpdateReverseRecordRoot); exi {
-		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
-		return fmt.Errorf("api limit: %d %s", res.ChainType, res.AddressHex)
-	}
 
 	// account check
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))

@@ -17,8 +17,8 @@ const (
 type ReverseSmtRecordInfo struct {
 	ID          uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT"`
 	Address     string    `gorm:"column:address;NOT NULL"` // 设置反向解析的地址
-	AlgorithmID int       `gorm:"column:algorithm_id;default:0;NOT NULL"`
-	Nonce       int       `gorm:"column:nonce;default:0;NOT NULL"`
+	AlgorithmID uint8     `gorm:"column:algorithm_id;default:0;NOT NULL"`
+	Nonce       uint32    `gorm:"column:nonce;default:0;NOT NULL"`
 	TaskID      string    `gorm:"column:task_id;NOT NULL"`             // 批处理任务ID
 	Account     string    `gorm:"column:account;default:0;NOT NULL"`   // 子账户名
 	Sign        string    `gorm:"column:sign;NOT NULL"`                // 用户签名

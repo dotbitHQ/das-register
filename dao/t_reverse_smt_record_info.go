@@ -21,7 +21,7 @@ func (d *DbDao) FindReverseSmtRecordInfoByTaskID(taskID string) (reverse []*tabl
 	return
 }
 
-func (d *DbDao) GetPreRecordByAddressAndNonce(address string, nonce int) (reverse tables.ReverseSmtRecordInfo, err error) {
+func (d *DbDao) GetPreRecordByAddressAndNonce(address string, nonce uint32) (reverse tables.ReverseSmtRecordInfo, err error) {
 	err = d.db.Where(" address=? and nonce=? ", address, nonce-1).Order("id desc").First(&reverse).Error
 	if err == gorm.ErrRecordNotFound {
 		err = nil
@@ -30,7 +30,7 @@ func (d *DbDao) GetPreRecordByAddressAndNonce(address string, nonce int) (revers
 }
 
 func (d *DbDao) GetReverseSmtRecordByAddress(address string) (reverse tables.ReverseSmtRecordInfo, err error) {
-	err = d.db.Where(" address=? ", address).Order("nonce desc").First(&reverse).Error
+	err = d.db.Where(" address=? ", address).Order("id desc").First(&reverse).Error
 	if err == gorm.ErrRecordNotFound {
 		err = nil
 	}

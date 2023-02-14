@@ -371,13 +371,14 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 			witnessData, err := reverseSmtWitnessBuilder.GenWitness(&witness.ReverseSmtRecord{
 				Version:     witness.ReverseSmtRecordVersion1,
 				Action:      witness.ReverseSmtRecordAction(record.SubAction),
-				Sign:        []byte(record.Sign),
-				Key:         []byte(record.Address),
-				Proof:       []byte(proof),
-				PrevNonce:   uint32(preRecord.Nonce),
-				PrevAccount: []byte(preRecord.Account),
-				NextRoot:    []byte(smtRoot.String()),
-				NextAccount: []byte(record.Account),
+				Signature:   record.Sign,
+				SignType:    record.AlgorithmID,
+				Address:     record.Address,
+				Proof:       proof,
+				PrevNonce:   preRecord.Nonce,
+				PrevAccount: preRecord.Account,
+				NextRoot:    smtRoot.String(),
+				NextAccount: record.Account,
 			})
 			if err != nil {
 				return fmt.Errorf("GenWitness err: %s", err)
