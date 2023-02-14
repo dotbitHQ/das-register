@@ -77,7 +77,7 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 		}
 	})
 	defer func() {
-		h.rc.GetRedisClient().Del(req.SignKey)
+		h.rc.DelSignTxCache(req.SignKey)
 		close(lockDone)
 	}()
 

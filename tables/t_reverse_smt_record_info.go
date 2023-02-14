@@ -24,8 +24,8 @@ type ReverseSmtRecordInfo struct {
 	Sign        string    `gorm:"column:sign;NOT NULL"`                // 用户签名
 	Timestamp   int64     `gorm:"column:timestamp;default:0;NOT NULL"` // send transaction timestamp
 	SubAction   string    `gorm:"column:sub_action;NOT NULL"`          // 交易的子类型：update, remove
-	CreatedAt   time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP;NOT NULL"`
-	UpdatedAt   time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP;NOT NULL"`
+	CreatedAt   time.Time `gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
+	UpdatedAt   time.Time `gorm:"column:updated_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''"`
 }
 
 const TableNameReverseSmtRecordInfo = "t_reverse_smt_record_info"

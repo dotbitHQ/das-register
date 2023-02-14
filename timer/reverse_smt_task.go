@@ -396,7 +396,7 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 func (t *TxTimer) reverseSmtTickerContinue() (bool, error) {
 	pendingTasks, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
 		subQuery := db.Model(&tables.ReverseSmtTaskInfo{}).Where("smt_status!=? and tx_status!=?", tables.ReverseSmtStatusRollbackConfirm, tables.ReverseSmtTxStatusConfirm)
-		return db.Table("?", subQuery).Where("smt_status!=?", tables.ReverseSmtStatusRollbackConfirm)
+		return db.Table("(?) as a", subQuery).Where("a.smt_status!=?", tables.ReverseSmtStatusRollbackConfirm)
 	})
 	if err != nil {
 		return false, fmt.Errorf("FindReverseSmtTaskInfo err: %s", err)

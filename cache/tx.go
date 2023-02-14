@@ -44,3 +44,14 @@ func (r *RedisCache) SetSignTxCache(key, txStr string) error {
 	}
 	return nil
 }
+
+func (r *RedisCache) DelSignTxCache(key string) error {
+	if r.red == nil {
+		return fmt.Errorf("redis is nil")
+	}
+	key = r.getSignTxCacheKey(key)
+	if err := r.red.Del(key).Err(); err != nil {
+		return err
+	}
+	return nil
+}

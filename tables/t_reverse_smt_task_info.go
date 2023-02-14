@@ -32,8 +32,8 @@ type ReverseSmtTaskInfo struct {
 	SmtStatus   int       `gorm:"column:smt_status;default:0;NOT NULL"`   // smt的状态
 	TxStatus    int       `gorm:"column:tx_status;default:0;NOT NULL"`    // 交易状态
 	Retry       int       `gorm:"column:retry;default:0;NOT NULL"`        // 失败重试次数
-	CreatedAt   time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP;NOT NULL"`
-	UpdatedAt   time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP;NOT NULL"`
+	CreatedAt   time.Time `gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
+	UpdatedAt   time.Time `gorm:"column:updated_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''"`
 }
 
 const TableNameReverseSmtTaskInfo = "t_reverse_smt_task_info"
