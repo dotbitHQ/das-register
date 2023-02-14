@@ -518,7 +518,7 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 	req.InviterAccount = ""
 	req.ChannelAccount = ""
 
-	if err := h.rc.GetCouponLockWithRedis(coupon.Code, time.Minute*1); err != nil {
+	if err := h.rc.GetCouponLockWithRedis(coupon.Code, time.Minute*10); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the gift card operation is too frequent")
 		return
 	}
@@ -584,8 +584,8 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 	resp.CodeUrl = ""
 
 	err = h.dbDao.CreateCouponOrder(&order, coupon.Code)
-	if err := h.rc.DeleteCouponLockWithRedis(coupon.Code); err != nil {
-		log.Error("delete coupon redis lock error : ", err.Error())
+	if redisErr := h.rc.DeleteCouponLockWithRedis(coupon.Code); redisErr != nil {
+		log.Error("delete coupon redis lock error : ", redisErr.Error())
 	}
 	if err != nil {
 		log.Error("CreateOrder err:", err.Error())
@@ -702,7 +702,7 @@ func (h *HttpHandle) checkCoupon(code string, apiResp *api_code.ApiResp) (coupon
 	}
 	nowTime := time.Now().Unix()
 	if nowTime < res.StartAt.Unix() || nowTime > res.ExpiredAt.Unix() {
-		apiResp.ApiRespErr(api_code.ApiCodeCouponUnopen, "gift card not started yet")
+		apiResp.ApiRespErr(api_code.ApiCodeCouponUnopen, "gift card time has not arrived or expired")
 		return nil
 	}
 
@@ -710,10 +710,10 @@ func (h *HttpHandle) checkCoupon(code string, apiResp *api_code.ApiResp) (coupon
 }
 
 func (h *HttpHandle) checkCouponType(accountAttr AccountAttr, coupon *tables.TableCoupon) bool {
-	if coupon.CouponType == tables.CouponType4bit && accountAttr.Length == 4 {
+	if coupon.CouponType == tables.CouponType4byte && accountAttr.Length == 4 {
 		return true
 	}
-	if coupon.CouponType == tables.CouponType5bit && accountAttr.Length >= 5 {
+	if coupon.CouponType == tables.CouponType5byte && accountAttr.Length >= 5 {
 		return true
 	}
 	return false

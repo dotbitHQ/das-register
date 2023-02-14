@@ -7,8 +7,8 @@ type CouponType int
 const (
 	TableNameCoupon = "t_coupon"
 
-	CouponType4bit CouponType = 1
-	CouponType5bit CouponType = 2
+	CouponType4byte CouponType = 1
+	CouponType5byte CouponType = 2
 )
 
 type TableCoupon struct {

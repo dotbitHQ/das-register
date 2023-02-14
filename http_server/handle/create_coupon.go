@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-var letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+var letters = []rune("ABCDEFGHJKLMNPQRSTUVWXYZ23456789")
 
 type Coupon struct {
 	CouponType tables.CouponType `json:"type"`
@@ -95,12 +95,13 @@ func (h *HttpHandle) doCreateCoupon(req *ReqCreateCoupon, apiResp *api_code.ApiR
 			return nil
 		}
 
-		var fileData []string
+		var fileData [][]string
 		var tableData []tables.TableCoupon
 		for j := 0; j < num; j++ {
 			code := randStr(codeLength)
 			hashCode := couponEncry(code, salt)
-			fileData = append(fileData, fmt.Sprintf("%s%s", qrcodePrefix, code))
+			rowData := []string{fmt.Sprintf("%s%s", qrcodePrefix, code), fmt.Sprintf("%s", req.Desc)}
+			fileData = append(fileData, rowData)
 			tableData = append(tableData, tables.TableCoupon{
 				Code:       hashCode,
 				CouponType: coupon_type,
@@ -130,7 +131,8 @@ func (h *HttpHandle) doCreateCoupon(req *ReqCreateCoupon, apiResp *api_code.ApiR
 	apiResp.ApiRespOK(resp)
 	return nil
 }
-func writeCouponCsv(filePath, fileName string, data []string) error {
+
+func writeCouponCsv(filePath, fileName string, data [][]string) error {
 	if err := checkPath(filePath); err != nil {
 		return err
 	}
@@ -143,7 +145,7 @@ func writeCouponCsv(filePath, fileName string, data []string) error {
 	writer.Comma = ','
 	writer.Write([]string{"qrcode_content"})
 	for i, _ := range data {
-		writer.Write([]string{data[i]})
+		writer.Write(data[i])
 	}
 	writer.Flush()
 	return nil
