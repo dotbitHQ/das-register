@@ -7,7 +7,19 @@ import (
 )
 
 func (d *DbDao) SearchLatestReverse(chainType common.ChainType, address string) (reverse tables.TableReverseInfo, err error) {
-	err = d.parserDb.Where(" chain_type=? AND address=? ", chainType, address).Order(" block_number DESC, outpoint DESC ").First(&reverse).Error
+	err = d.parserDb.Where(" chain_type=? AND address=? ", chainType, address).Order(" block_number DESC, outpoint DESC, id DESC ").First(&reverse).Error
+	if err == gorm.ErrRecordNotFound {
+		err = nil
+	}
+	return
+}
+
+func (d *DbDao) SearchLatestReverseByType(chainType common.ChainType, address string, reverseType int) (reverse tables.TableReverseInfo, err error) {
+	err = d.parserDb.Where(" chain_type=? AND address=? AND reverse_type=? ", chainType, address, reverseType).
+		Order(" block_number DESC, outpoint DESC ").First(&reverse).Error
+	if err == gorm.ErrRecordNotFound {
+		err = nil
+	}
 	return
 }
 

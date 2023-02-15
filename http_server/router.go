@@ -47,6 +47,7 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/reverse/latest", api_code.DoMonitorLog(api_code.MethodReverseLatest), cacheHandleShort, h.h.ReverseLatest)
 		v1.POST("/reverse/list", api_code.DoMonitorLog(api_code.MethodReverseList), cacheHandleShort, h.h.ReverseList)
 		v1.POST("/reverse/status", api_code.DoMonitorLog(api_code.MethodReverseStatus), cacheHandleShort, h.h.ReverseStatus)
+		v1.POST("/reverse/info", api_code.DoMonitorLog(api_code.MethodReverseInfo), cacheHandleShort, h.h.ReverseInfo)
 		v1.POST("/transaction/status", api_code.DoMonitorLog(api_code.MethodTransactionStatus), cacheHandleShort, h.h.TransactionStatus)
 		v1.POST("/balance/info", api_code.DoMonitorLog(api_code.MethodBalanceInfo), cacheHandleLong, h.h.BalanceInfo) // balance（712，not 712，sort address）
 		v1.POST("/transaction/list", api_code.DoMonitorLog(api_code.MethodTransactionList), cacheHandleLong, h.h.TransactionList)

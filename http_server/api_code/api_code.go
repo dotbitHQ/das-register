@@ -61,6 +61,7 @@ const (
 	MethodReverseLatest     = "das_reverseLatest"
 	MethodReverseList       = "das_reverseList"
 	MethodReverseStatus     = "das_reverseStatus"
+	MethodReverseInfo       = "das_reverseInfo"
 	MethodTransactionStatus = "das_transactionStatus"
 	MethodBalanceInfo       = "das_balanceInfo"
 	MethodTransactionList   = "das_transactionList"
