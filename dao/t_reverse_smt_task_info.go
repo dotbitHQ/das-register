@@ -64,7 +64,7 @@ func (d *DbDao) UpdateReverseSmtTaskInfo(updates map[string]interface{}, where s
 	return
 }
 
-func (d *DbDao) GetLatestReverseSmtInfoByTaskID(taskID string) (reverseInfo tables.ReverseSmtTaskInfo, err error) {
+func (d *DbDao) GetLatestReverseSmtTaskByTaskID(taskID string) (reverseInfo tables.ReverseSmtTaskInfo, err error) {
 	err = d.db.Where(" task_id=? ", taskID).First(&reverseInfo).Error
 	if err == gorm.ErrRecordNotFound {
 		err = nil

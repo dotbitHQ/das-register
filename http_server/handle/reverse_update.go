@@ -141,7 +141,7 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		ChainType:      res.ChainType,
 		DasAlgorithmId: res.DasAlgorithmId,
 		AddressHex:     res.AddressHex,
-		Nonce:          uint32(nonce),
+		Nonce:          nonce,
 	}
 	resp.SignMsg = dataCache.GenSignMsg()
 
@@ -175,8 +175,8 @@ func (cache *ReverseSmtSignCache) GenSignMsg() string {
 	return signMsg
 }
 
-func (h *HttpHandle) getReverseSmtNonce(res *core.DasAddressHex, req *ReqReverseUpdate, apiResp *api_code.ApiResp) (int, error) {
-	nonce := 1
+func (h *HttpHandle) getReverseSmtNonce(res *core.DasAddressHex, req *ReqReverseUpdate, apiResp *api_code.ApiResp) (uint32, error) {
+	var nonce uint32 = 1
 
 	reverseSmtRecord, err := h.dbDao.GetReverseSmtRecordByAddress(res.AddressHex)
 	if err != nil {
@@ -192,7 +192,7 @@ func (h *HttpHandle) getReverseSmtNonce(res *core.DasAddressHex, req *ReqReverse
 		apiResp.ApiRespErr(api_code.ApiCodeReverseSmtOnReverse, "reverse is pending")
 		return nonce, fmt.Errorf("address: %s account: %s is pending", res.AddressHex, req.Account)
 	}
-	reverseSmtTaskInfo, err := h.dbDao.GetLatestReverseSmtInfoByTaskID(reverseSmtRecord.TaskID)
+	reverseSmtTaskInfo, err := h.dbDao.GetLatestReverseSmtTaskByTaskID(reverseSmtRecord.TaskID)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "db err")
 		return nonce, fmt.Errorf("GetLatestReverseSmtInfoByTaskID err: %s address: %s account: %s", err, res.AddressHex, req.Account)

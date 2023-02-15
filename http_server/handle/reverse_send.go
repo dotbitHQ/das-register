@@ -77,7 +77,9 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 		}
 	})
 	defer func() {
-		h.rc.DelSignTxCache(req.SignKey)
+		if err := h.rc.DelSignTxCache(req.SignKey); err != nil {
+			log.Errorf("doReverseSend DelSignTxCache err: %s", err)
+		}
 		close(lockDone)
 	}()
 
@@ -86,8 +88,8 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 	}
 	if err := h.dbDao.CreateReverseSmtRecord(&tables.ReverseSmtRecordInfo{
 		Address:     cacheData.AddressHex,
-		AlgorithmID: int(cacheData.DasAlgorithmId),
-		Nonce:       int(cacheData.Nonce),
+		AlgorithmID: uint8(cacheData.DasAlgorithmId),
+		Nonce:       cacheData.Nonce,
 		Account:     cacheData.Account,
 		Sign:        req.Signature,
 		SubAction:   cacheData.Action,
