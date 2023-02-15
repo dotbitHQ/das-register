@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"das-account-indexer/http_server/code"
+	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"das_register_server/internal"
@@ -94,7 +95,7 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 
 	lockDone := make(chan struct{})
 	lockKey := fmt.Sprintf("lock:doReverseUpdate:%s", res.AddressHex)
-	h.rc.Lock(lockKey, time.Second*3, func(lockFn func()) {
+	if err := h.rc.Lock(lockKey, time.Second*3, func(lockFn func()) {
 		t := time.NewTicker(time.Second)
 		defer t.Stop()
 		for range t.C {
@@ -105,7 +106,14 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 				lockFn()
 			}
 		}
-	})
+	}); err != nil {
+		if err == cache.ErrDistributedLockPreemption {
+			apiResp.ApiRespErr(api_code.ApiCodeCacheError, err.Error())
+			return fmt.Errorf("cache err: %s", err.Error())
+		}
+		apiResp.ApiRespErr(api_code.ApiCodeCacheError, "cache error")
+		return fmt.Errorf("cache err: %s", err.Error())
+	}
 	defer func() {
 		close(lockDone)
 	}()
@@ -175,6 +183,7 @@ func (cache *ReverseSmtSignCache) GenSignMsg() string {
 	return signMsg
 }
 
+// getReverseSmtNonce
 func (h *HttpHandle) getReverseSmtNonce(res *core.DasAddressHex, req *ReqReverseUpdate, apiResp *api_code.ApiResp) (uint32, error) {
 	var nonce uint32 = 1
 
@@ -215,6 +224,7 @@ func (h *HttpHandle) getReverseSmtNonce(res *core.DasAddressHex, req *ReqReverse
 	return nonce, nil
 }
 
+// checkReqKeyInfo
 func checkReqKeyInfo(daf *core.DasAddressFormat, req *core.ChainTypeAddress, apiResp *api_code.ApiResp) *core.DasAddressHex {
 	if req.Type != "blockchain" {
 		apiResp.ApiRespErr(code.ApiCodeParamsInvalid, fmt.Sprintf("type [%s] is invalid", req.Type))

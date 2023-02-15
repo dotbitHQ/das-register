@@ -9,6 +9,7 @@ import (
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
+	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 	"net/http"
 	"strings"
@@ -61,22 +62,37 @@ func (h *HttpHandle) doReverseInfo(req *ReqReverseInfo, apiResp *api_code.ApiRes
 	if err != nil {
 		return fmt.Errorf("SearchLatestReverse err: %s", err)
 	}
-
-	resp := &RespReverseInfo{}
+	resp := &RespReverseInfo{
+		Account: reverse.Account,
+	}
 	if reverse.Id == 0 {
 		apiResp.ApiRespOK(resp)
 		return nil
 	}
-	resp.Account = reverse.Account
 
-	reverseOld, err := h.dbDao.SearchLatestReverseByType(res.ChainType, res.AddressHex, dao.ReverseTypeOld)
-	if err != nil {
-		return fmt.Errorf("SearchLatestReverseByType err: %s", err)
+	var reverseOld tables.TableReverseInfo
+	var reverseNew tables.TableReverseInfo
+	errWg := errgroup.Group{}
+	errWg.Go(func() error {
+		var err error
+		reverseOld, err = h.dbDao.SearchLatestReverseByType(res.ChainType, res.AddressHex, dao.ReverseTypeOld)
+		if err != nil {
+			return fmt.Errorf("SearchLatestReverseByType err: %s", err)
+		}
+		return nil
+	})
+	errWg.Go(func() error {
+		var err error
+		reverseNew, err = h.dbDao.SearchLatestReverseByType(res.ChainType, res.AddressHex, dao.ReverseTypeSmt)
+		if err != nil {
+			return fmt.Errorf("SearchLatestReverseByType err: %s", err)
+		}
+		return nil
+	})
+	if err := errWg.Wait(); err != nil {
+		return err
 	}
-	reverseNew, err := h.dbDao.SearchLatestReverseByType(res.ChainType, res.AddressHex, dao.ReverseTypeSmt)
-	if err != nil {
-		return fmt.Errorf("SearchLatestReverseByType err: %s", err)
-	}
+
 	if reverseOld.Id > 0 && reverseNew.Id == 0 {
 		resp.ReserveStatus = ReverseStatusOldOnly
 	} else if reverseOld.Id > 0 && reverseNew.Id > 0 {

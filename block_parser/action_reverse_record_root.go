@@ -7,7 +7,6 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/smt"
 	"github.com/dotbitHQ/das-lib/witness"
-	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/gorm"
 )
 
@@ -35,18 +34,6 @@ func (b *BlockParser) ActionReverseRecordRoot(req FuncTransactionHandleReq) (res
 		}
 		return
 	}
-
-	res, err := b.DasCore.Client().GetTransaction(b.Ctx, types.HexToHash(req.TxHash))
-	if err != nil {
-		resp.Err = fmt.Errorf("GetTransaction err: %s", err.Error())
-		return
-	}
-	// ready to rollback
-	if res.TxStatus.Status == types.TransactionStatusRejected {
-		resp.Err = b.DbDao.UpdateReverseSmtTaskInfoStatus(tables.ReverseSmtStatusRollback, tables.ReverseSmtTxStatusReject, "outpoint=?", outpoint)
-		return
-	}
-
 	// update smt_status=2 and tx_status=2
 	resp.Err = b.DbDao.UpdateReverseSmtTaskInfoStatus(tables.ReverseSmtStatusConfirm, tables.ReverseSmtTxStatusConfirm, "outpoint=?", outpoint)
 	return

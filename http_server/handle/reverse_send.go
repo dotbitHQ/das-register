@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"das_register_server/internal"
@@ -44,14 +45,6 @@ func (h *HttpHandle) ReverseSend(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiResp) error {
-	if err := h.checkSystemUpgrade(apiResp); err != nil {
-		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
-	}
-	if ok := internal.IsLatestBlockNumber(config.Cfg.Server.ParserUrl); !ok {
-		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
-		return fmt.Errorf("sync block number")
-	}
-
 	cacheData := &ReverseSmtSignCache{}
 	if err := h.rc.GetSignTxCacheData(req.SignKey, cacheData); err != nil {
 		if err == redis.Nil {
@@ -62,9 +55,17 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 		return fmt.Errorf("GetSignTxCache err: %s", err.Error())
 	}
 
+	if err := h.checkSystemUpgrade(apiResp); err != nil {
+		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
+	}
+	if ok := internal.IsLatestBlockNumber(config.Cfg.Server.ParserUrl); !ok {
+		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
+		return fmt.Errorf("sync block number")
+	}
+
 	lockDone := make(chan struct{})
 	lockKey := fmt.Sprintf("lock:doReverseSend:%s", cacheData.AddressHex)
-	h.rc.Lock(lockKey, time.Second*3, func(lockFn func()) {
+	if err := h.rc.Lock(lockKey, time.Second*3, func(lockFn func()) {
 		t := time.NewTicker(time.Second)
 		defer t.Stop()
 		for range t.C {
@@ -75,7 +76,14 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 				lockFn()
 			}
 		}
-	})
+	}); err != nil {
+		if err == cache.ErrDistributedLockPreemption {
+			apiResp.ApiRespErr(api_code.ApiCodeCacheError, err.Error())
+			return fmt.Errorf("cache err: %s", err.Error())
+		}
+		apiResp.ApiRespErr(api_code.ApiCodeCacheError, "cache error")
+		return fmt.Errorf("cache err: %s", err.Error())
+	}
 	defer func() {
 		if err := h.rc.DelSignTxCache(req.SignKey); err != nil {
 			log.Errorf("doReverseSend DelSignTxCache err: %s", err)
@@ -83,6 +91,7 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 		close(lockDone)
 	}()
 
+	// check user sign msg
 	if _, err := doReverseSmtSignCheck(cacheData, req.Signature, apiResp); err != nil {
 		return err
 	}
@@ -99,6 +108,7 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 	return nil
 }
 
+// doReverseSmtSignCheck
 func doReverseSmtSignCheck(cacheData *ReverseSmtSignCache, signMsg string, apiResp *api_code.ApiResp) (string, error) {
 	signOk := false
 	var err error
@@ -133,6 +143,7 @@ func doReverseSmtSignCheck(cacheData *ReverseSmtSignCache, signMsg string, apiRe
 	return signMsg, nil
 }
 
+// fixSignature
 func fixSignature(signMsg string) string {
 	if len(signMsg) >= 132 && signMsg[130:132] == "1b" {
 		signMsg = signMsg[0:130] + "00" + signMsg[132:]

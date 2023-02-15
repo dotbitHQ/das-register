@@ -26,11 +26,11 @@ func (t *TxTimer) doReverseSmtTask() error {
 	}
 
 	// rollback smt
-	goRt, err := t.reverseSmtTaskRollback()
+	next, err := t.reverseSmtTaskRollback()
 	if err != nil {
 		return fmt.Errorf("doReverseSmtTaskRollback err: %s", err)
 	}
-	if goRt {
+	if next {
 		return nil
 	}
 
@@ -39,8 +39,10 @@ func (t *TxTimer) doReverseSmtTask() error {
 		return fmt.Errorf("reverseSmtTaskAssignment err: %s", err)
 	}
 
+	// get pending task
 	smtPendingTasks, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
-		return db.Where("smt_status!=?", tables.ReverseSmtStatusRollbackConfirm).Order("id desc").Limit(1)
+		return db.Where(" ( smt_status!=? or tx_status!=? ) and smt_status!=? ",
+			tables.ReverseSmtStatusRollbackConfirm, tables.ReverseSmtTxStatusConfirm, tables.ReverseSmtStatusRollbackConfirm).Limit(1)
 	})
 	if err != nil {
 		return fmt.Errorf("FindReverseSmtTaskInfo err: %s", err)
@@ -51,11 +53,11 @@ func (t *TxTimer) doReverseSmtTask() error {
 	smtPendingTask := smtPendingTasks[0]
 
 	// reverseSmtPendingCheck
-	rt, err := t.reverseSmtPendingCheck(smtPendingTask)
+	next, err = t.reverseSmtPendingCheck(smtPendingTask)
 	if err != nil {
 		return fmt.Errorf("reverseSmtPendingCheck err: %s", err)
 	}
-	if rt {
+	if next {
 		return nil
 	}
 
@@ -64,6 +66,7 @@ func (t *TxTimer) doReverseSmtTask() error {
 	if err != nil {
 		return fmt.Errorf("FindReverseSmtRecordInfoByTaskID err: %s", err)
 	}
+	// update smt_status=2, tx_status=0
 	smtOut, err := t.doReverseSmtUpdateSmt(smtPendingTask.ID, reverseRecordsByTaskID)
 	if err != nil {
 		return fmt.Errorf("doReverseSmtUpdateSmt err: %s", err)
@@ -149,6 +152,7 @@ func (t *TxTimer) doReverseSmtUpdateSmt(id uint64, reverseRecordsByTaskID []*tab
 	return smtOut, nil
 }
 
+// reverseSmtTaskRollback
 func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
 	// find all smt_status=1 and tx_status=0 and retry>=tables.ReverseSmtMaxRetryNum, rollback it
 	rollbackTaskInfos, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
@@ -393,16 +397,16 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 	return txBuilderParams, nil
 }
 
-// reverseSmtTickerContinue
-func (t *TxTimer) reverseSmtTickerContinue() (bool, error) {
-	pendingTasks, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
-		subQuery := db.Model(&tables.ReverseSmtTaskInfo{}).Where("smt_status!=? and tx_status!=?", tables.ReverseSmtStatusRollbackConfirm, tables.ReverseSmtTxStatusConfirm)
-		return db.Table("(?) as a", subQuery).Where("a.smt_status!=?", tables.ReverseSmtStatusRollbackConfirm)
+// reverseSmtTickerNext
+func (t *TxTimer) reverseSmtTickerNext() (bool, error) {
+	smtPendingTasks, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
+		return db.Where(" ( smt_status!=? or tx_status!=? ) and smt_status!=? ",
+			tables.ReverseSmtStatusRollbackConfirm, tables.ReverseSmtTxStatusConfirm, tables.ReverseSmtStatusRollbackConfirm).Limit(1)
 	})
 	if err != nil {
 		return false, fmt.Errorf("FindReverseSmtTaskInfo err: %s", err)
 	}
-	if len(pendingTasks) > 0 {
+	if len(smtPendingTasks) > 0 {
 		return false, nil
 	}
 	reverseRecord, err := t.dbDao.FindReverseRecordInfoUnassigned(ReverseRecordMaxTaskNum)
@@ -415,61 +419,51 @@ func (t *TxTimer) reverseSmtTickerContinue() (bool, error) {
 	return true, nil
 }
 
-// reversePendingCheck
+// reverseSmtPendingCheck
 func (t *TxTimer) reverseSmtPendingCheck(smtPendingTask *tables.ReverseSmtTaskInfo) (bool, error) {
-	// not task to run
-	if smtPendingTask.SmtStatus == tables.ReverseSmtStatusConfirm &&
-		smtPendingTask.TxStatus == tables.ReverseSmtTxStatusConfirm {
-		return true, nil
-	}
-	// waiting tx commit
-	if smtPendingTask.SmtStatus == tables.ReverseSmtStatusConfirm &&
-		smtPendingTask.TxStatus == tables.ReverseSmtTxStatusPending {
-		return true, nil
-	}
-	// check tx whether the delivery was successful
-	if smtPendingTask.SmtStatus == tables.ReverseSmtStatusConfirm &&
-		smtPendingTask.TxStatus == tables.ReverseSmtTxStatusDefault {
-		if smtPendingTask.Outpoint == "" {
-			return false, nil
+	if smtPendingTask.SmtStatus != tables.ReverseSmtStatusConfirm {
+		// should never into this case
+		if smtPendingTask.SmtStatus != tables.ReverseSmtStatusPending ||
+			smtPendingTask.TxStatus != tables.ReverseSmtTxStatusDefault {
+			return false, fmt.Errorf("doReverseSmtTask smt and tx status err, now smt_status=%d and tx_status=%d, by want smt_status=1 and tx_status=0", smtPendingTask.SmtStatus, smtPendingTask.TxStatus)
 		}
+		return false, nil
+	}
 
-		txHash := common.String2OutPointStruct(smtPendingTask.Outpoint).TxHash
-		txStatus, err := t.dasCore.Client().GetTransaction(t.ctx, txHash)
-		if err != nil {
-			return false, fmt.Errorf("doReverseSmtTask GetTransaction err: %s", err)
-		}
+	// mean tx no send, continue to assembly tx
+	if smtPendingTask.Outpoint == "" {
+		return false, nil
+	}
 
-		switch txStatus.TxStatus.Status {
-		case types.TransactionStatusUnknown:
-			return false, nil
-		case types.TransactionStatusCommitted:
-			err = t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
-				"smt_status": tables.ReverseSmtStatusConfirm,
-				"tx_status":  tables.ReverseSmtTxStatusConfirm,
-			}, "id=?", smtPendingTask.ID)
-		case types.TransactionStatusPending, types.TransactionStatusProposed:
-			err = t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
-				"smt_status": tables.ReverseSmtStatusConfirm,
-				"tx_status":  tables.ReverseSmtTxStatusPending,
-			}, "id=?", smtPendingTask.ID)
-		case types.TransactionStatusRejected:
-			err = t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
-				"smt_status": tables.ReverseSmtStatusRollback,
-				"tx_status":  tables.ReverseSmtTxStatusReject,
-			}, "id=?", smtPendingTask.ID)
-		default:
-			return false, fmt.Errorf("doReverseSmtTask GetTransaction status unknown: %s", txStatus.TxStatus.Status)
-		}
-		if err != nil {
-			return false, fmt.Errorf("doReverseSmtTask update status err: %s", err)
-		}
-		return true, nil
+	txHash := common.String2OutPointStruct(smtPendingTask.Outpoint).TxHash
+	txStatus, err := t.dasCore.Client().GetTransaction(t.ctx, txHash)
+	if err != nil {
+		return false, fmt.Errorf("doReverseSmtTask GetTransaction err: %s", err)
 	}
-	// should never into this case
-	if smtPendingTask.SmtStatus != tables.ReverseSmtStatusPending ||
-		smtPendingTask.TxStatus != tables.ReverseSmtTxStatusDefault {
-		return false, fmt.Errorf("doReverseSmtTask smt and tx status err, now smt_status=%d and tx_status=%d, by want smt_status=1 and tx_status=0", smtPendingTask.SmtStatus, smtPendingTask.TxStatus)
+
+	switch txStatus.TxStatus.Status {
+	case types.TransactionStatusUnknown:
+		return false, nil
+	case types.TransactionStatusCommitted:
+		err = t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
+			"smt_status": tables.ReverseSmtStatusConfirm,
+			"tx_status":  tables.ReverseSmtTxStatusConfirm,
+		}, "id=?", smtPendingTask.ID)
+	case types.TransactionStatusPending, types.TransactionStatusProposed:
+		err = t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
+			"smt_status": tables.ReverseSmtStatusConfirm,
+			"tx_status":  tables.ReverseSmtTxStatusPending,
+		}, "id=?", smtPendingTask.ID)
+	case types.TransactionStatusRejected:
+		err = t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
+			"smt_status": tables.ReverseSmtStatusRollback,
+			"tx_status":  tables.ReverseSmtTxStatusReject,
+		}, "id=?", smtPendingTask.ID)
+	default:
+		return false, fmt.Errorf("doReverseSmtTask GetTransaction status unknown: %s", txStatus.TxStatus.Status)
 	}
-	return false, nil
+	if err != nil {
+		return false, fmt.Errorf("doReverseSmtTask update status err: %s", err)
+	}
+	return true, nil
 }

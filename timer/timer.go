@@ -180,16 +180,16 @@ func (t *TxTimer) Run() error {
 
 	go func() {
 		latestTaskProcessTime := time.Now()
-		reverseSmtTaskTicker := time.NewTicker(time.Second * 30)
+		reverseSmtTaskTicker := time.NewTicker(time.Second * 10)
 		for {
 			select {
 			case <-reverseSmtTaskTicker.C:
-				canContinue, err := t.reverseSmtTickerContinue()
+				next, err := t.reverseSmtTickerNext()
 				if err != nil {
 					log.Errorf("reverseSmtTaskTicker reverseSmtTickerContinue err: %s", err)
 					break
 				}
-				if time.Now().Before(latestTaskProcessTime.Add(time.Minute*3)) && canContinue {
+				if time.Now().Before(latestTaskProcessTime.Add(time.Minute*3)) && next {
 					continue
 				}
 

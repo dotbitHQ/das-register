@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
-	"github.com/dotbitHQ/das-lib/sign"
-	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/rpc"
 	"github.com/nervosnetwork/ckb-sdk-go/utils"
@@ -31,7 +29,7 @@ func TestRecycleApply(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	txBuilderBase, err := initTxBuilder(dc)
+	txBuilderBase, _, err := initTxBuilder(dc)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +54,7 @@ func TestRecyclePre(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	txBuilderBase, err := initTxBuilder(dc)
+	txBuilderBase, _, err := initTxBuilder(dc)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -166,26 +164,6 @@ func getNewDasCoreMainNet() (*core.DasCore, error) {
 		return nil, err
 	}
 	return dc, nil
-}
-
-func initTxBuilder(dasCore *core.DasCore) (*txbuilder.DasTxBuilderBase, error) {
-	var handleSign sign.HandleSignCkbMessage
-	if config.Cfg.Server.PayPrivate != "" {
-		handleSign = sign.LocalSign(config.Cfg.Server.PayPrivate)
-	}
-	payServerAddressArgs := ""
-	if config.Cfg.Server.PayServerAddress != "" {
-		parseAddress, err := address.Parse(config.Cfg.Server.PayServerAddress)
-		if err != nil {
-			log.Error("pay server address.Parse err: ", err.Error())
-		} else {
-			payServerAddressArgs = common.Bytes2Hex(parseAddress.Script.Args)
-		}
-	}
-	txBuilderBase := txbuilder.NewDasTxBuilderBase(context.Background(), dasCore, handleSign, payServerAddressArgs)
-	log.Info("tx builder ok")
-
-	return txBuilderBase, nil
 }
 
 func TestAddress(t *testing.T) {

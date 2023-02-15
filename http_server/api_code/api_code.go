@@ -99,6 +99,9 @@ type ApiResp struct {
 	ErrNo  ApiCode     `json:"err_no"`
 	ErrMsg string      `json:"err_msg"`
 	Data   interface{} `json:"data"`
+
+
+    
 }
 
 func ApiRespOK(data interface{}) ApiResp {
