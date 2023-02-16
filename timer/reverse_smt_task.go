@@ -20,12 +20,12 @@ const (
 )
 
 func (t *TxTimer) doReverseSmtTask() error {
-	// update smt_status=3 and tx_status=3 to smt_status=1 and tx_status=0
+	// update smt_status=3 and tx_status=3 to smt_status=1 and tx_status=0 and retry=retry+1
 	if err := t.dbDao.UpdateAllReverseSmtRollbackToTxPending(); err != nil {
 		return fmt.Errorf("UpdateReverseSmtToTxPending err: %s", err)
 	}
 
-	// rollback smt
+	// rollback smt if retry>=tables.ReverseSmtMaxRetryNum
 	next, err := t.reverseSmtTaskRollback()
 	if err != nil {
 		return fmt.Errorf("doReverseSmtTaskRollback err: %s", err)
@@ -40,20 +40,17 @@ func (t *TxTimer) doReverseSmtTask() error {
 	}
 
 	// get pending task
-	smtPendingTasks, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
-		return db.Where(" ( smt_status!=? or tx_status!=? ) and smt_status!=? ",
-			tables.ReverseSmtStatusRollbackConfirm, tables.ReverseSmtTxStatusConfirm, tables.ReverseSmtStatusRollbackConfirm).Limit(1)
-	})
+	smtPendingTask, err := t.reverseSmtGetPendingTask()
 	if err != nil {
-		return fmt.Errorf("FindReverseSmtTaskInfo err: %s", err)
+		return fmt.Errorf("reverseSmtGetPendingTask err: %s", err)
 	}
-	if len(smtPendingTasks) == 0 {
+	// not pending task, return go to next cycle
+	if smtPendingTask.ID == 0 {
 		return nil
 	}
-	smtPendingTask := smtPendingTasks[0]
 
 	// reverseSmtPendingCheck
-	next, err = t.reverseSmtPendingCheck(smtPendingTask)
+	next, err = t.reverseSmtPendingCheck(&smtPendingTask)
 	if err != nil {
 		return fmt.Errorf("reverseSmtPendingCheck err: %s", err)
 	}
@@ -262,13 +259,11 @@ func (t *TxTimer) reverseSmtTaskAssignment() error {
 	}
 
 	// have ending task, don't assign tasks for now
-	pending, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
-		return db.Where("smt_status!=?", tables.ReverseSmtStatusRollbackConfirm).Order("id desc").Limit(1)
-	})
+	pendingTask, err := t.reverseSmtGetPendingTask()
 	if err != nil {
-		return fmt.Errorf("FindReverseSmtTaskInfo err: %s", err)
+		return fmt.Errorf("reverseSmtGetPendingTask err: %s", err)
 	}
-	if len(pending) > 0 && (pending[0].SmtStatus != tables.ReverseSmtStatusConfirm || pending[0].TxStatus != tables.ReverseSmtTxStatusConfirm) {
+	if pendingTask.ID > 0 {
 		return nil
 	}
 
@@ -294,6 +289,23 @@ func (t *TxTimer) reverseSmtTaskAssignment() error {
 		return err
 	}
 	return nil
+}
+
+// reverseSmtGetPendingTask
+func (t *TxTimer) reverseSmtGetPendingTask() (smtPendingTask tables.ReverseSmtTaskInfo, err error) {
+	smtPendingTasks, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
+		return db.Where(" ( smt_status!=? or tx_status!=? ) and smt_status!=? ",
+			tables.ReverseSmtStatusRollbackConfirm, tables.ReverseSmtTxStatusConfirm, tables.ReverseSmtStatusRollbackConfirm).Limit(1)
+	})
+	if err != nil {
+		err = fmt.Errorf("FindReverseSmtTaskInfo err: %s", err)
+		return
+	}
+	if len(smtPendingTasks) == 0 {
+		return
+	}
+	smtPendingTask = *smtPendingTasks[0]
+	return
 }
 
 // reverseSmtAssemblyTx
@@ -397,26 +409,25 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 	return txBuilderParams, nil
 }
 
-// reverseSmtTickerNext
-func (t *TxTimer) reverseSmtTickerNext() (bool, error) {
-	smtPendingTasks, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
-		return db.Where(" ( smt_status!=? or tx_status!=? ) and smt_status!=? ",
-			tables.ReverseSmtStatusRollbackConfirm, tables.ReverseSmtTxStatusConfirm, tables.ReverseSmtStatusRollbackConfirm).Limit(1)
-	})
+// reverseSmtNeedProcess need goto process task
+func (t *TxTimer) reverseSmtNeedProcess() (bool, error) {
+	smtPendingTask, err := t.reverseSmtGetPendingTask()
 	if err != nil {
-		return false, fmt.Errorf("FindReverseSmtTaskInfo err: %s", err)
+		return false, fmt.Errorf("reverseSmtGetPendingTask err: %s", err)
 	}
-	if len(smtPendingTasks) > 0 {
-		return false, nil
+	if smtPendingTask.ID > 0 {
+		return true, nil
 	}
+
+	// find have enough task record to process
 	reverseRecord, err := t.dbDao.FindReverseRecordInfoUnassigned(ReverseRecordMaxTaskNum)
 	if err != nil {
 		return false, fmt.Errorf("FindReverseSmtTaskInfo err: %s", err)
 	}
 	if len(reverseRecord) >= ReverseRecordMaxTaskNum {
-		return false, nil
+		return true, nil
 	}
-	return true, nil
+	return false, nil
 }
 
 // reverseSmtPendingCheck
@@ -425,7 +436,7 @@ func (t *TxTimer) reverseSmtPendingCheck(smtPendingTask *tables.ReverseSmtTaskIn
 		// should never into this case
 		if smtPendingTask.SmtStatus != tables.ReverseSmtStatusPending ||
 			smtPendingTask.TxStatus != tables.ReverseSmtTxStatusDefault {
-			return false, fmt.Errorf("doReverseSmtTask smt and tx status err, now smt_status=%d and tx_status=%d, by want smt_status=1 and tx_status=0", smtPendingTask.SmtStatus, smtPendingTask.TxStatus)
+			return false, fmt.Errorf("smt and tx status err, now smt_status=%d and tx_status=%d, by want smt_status=1 and tx_status=0", smtPendingTask.SmtStatus, smtPendingTask.TxStatus)
 		}
 		return false, nil
 	}
@@ -438,7 +449,7 @@ func (t *TxTimer) reverseSmtPendingCheck(smtPendingTask *tables.ReverseSmtTaskIn
 	txHash := common.String2OutPointStruct(smtPendingTask.Outpoint).TxHash
 	txStatus, err := t.dasCore.Client().GetTransaction(t.ctx, txHash)
 	if err != nil {
-		return false, fmt.Errorf("doReverseSmtTask GetTransaction err: %s", err)
+		return false, fmt.Errorf("GetTransaction err: %s", err)
 	}
 
 	switch txStatus.TxStatus.Status {
@@ -460,10 +471,10 @@ func (t *TxTimer) reverseSmtPendingCheck(smtPendingTask *tables.ReverseSmtTaskIn
 			"tx_status":  tables.ReverseSmtTxStatusReject,
 		}, "id=?", smtPendingTask.ID)
 	default:
-		return false, fmt.Errorf("doReverseSmtTask GetTransaction status unknown: %s", txStatus.TxStatus.Status)
+		return false, fmt.Errorf("GetTransaction status unknown: %s", txStatus.TxStatus.Status)
 	}
 	if err != nil {
-		return false, fmt.Errorf("doReverseSmtTask update status err: %s", err)
+		return false, fmt.Errorf("update status err: %s", err)
 	}
 	return true, nil
 }

@@ -69,7 +69,7 @@ func (t *TxTimer) Run() error {
 	tickerRefundApply := time.NewTicker(time.Minute * 10)
 	tickerClosedAndUnRefund := time.NewTicker(time.Minute * 20)
 
-	t.wg.Add(5)
+	t.wg.Add(6)
 	go func() {
 		for {
 			select {
@@ -179,33 +179,36 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
-		latestTaskProcessTime := time.Now()
-		reverseSmtTaskTicker := time.NewTicker(time.Second * 10)
+		defer t.wg.Done()
+		latestProcessTime := time.Now()
+		ticker := time.NewTicker(time.Second * 10)
 		for {
 			select {
-			case <-reverseSmtTaskTicker.C:
-				next, err := t.reverseSmtTickerNext()
-				if err != nil {
-					log.Errorf("reverseSmtTaskTicker reverseSmtTickerContinue err: %s", err)
-					break
-				}
-				if time.Now().Before(latestTaskProcessTime.Add(time.Minute*3)) && next {
-					continue
+			case <-ticker.C:
+				if time.Now().Before(latestProcessTime.Add(time.Minute * 3)) {
+					needProcess, err := t.reverseSmtNeedProcess()
+					if err != nil {
+						log.Errorf("reverseSmtTaskTicker reverseSmtTickerContinue err: %s", err)
+						break
+					}
+					if !needProcess {
+						continue
+					}
 				}
 
 				log.Info("doReverseSmtTask start")
 				if err := t.doReverseSmtTask(); err != nil {
-					log.Errorf("reverseSmtTaskTicker doReverseSmtTask err: %s", err)
+					log.Errorf("doReverseSmtTask err: %s", err)
 					break
 				}
 				log.Info("doReverseSmtTask end")
 
 			case <-t.ctx.Done():
-				log.Info("timer done")
-				t.wg.Done()
+				log.Info("reverse smt timer done")
 				return
 			}
-			latestTaskProcessTime = time.Now()
+			// update latest process time
+			latestProcessTime = time.Now()
 		}
 	}()
 	return nil
