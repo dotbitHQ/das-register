@@ -696,12 +696,17 @@ func (h *HttpHandle) checkCoupon(code string, apiResp *api_code.ApiResp) (coupon
 		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
 		return nil
 	}
+	var respData RespCheckCoupon
 	if res.OrderId != "" {
+		respData.CouponType = res.CouponType
+		apiResp.Data = respData
 		apiResp.ApiRespErr(api_code.ApiCodeCouponUsed, "gift card has been used")
 		return nil
 	}
 	nowTime := time.Now().Unix()
 	if nowTime < res.StartAt.Unix() || nowTime > res.ExpiredAt.Unix() {
+		respData.CouponType = res.CouponType
+		apiResp.Data = respData
 		apiResp.ApiRespErr(api_code.ApiCodeCouponUnopen, "gift card time has not arrived or expired")
 		return nil
 	}
