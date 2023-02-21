@@ -366,7 +366,7 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 		idx := i
 		record := v
 		errWg.Go(func() error {
-			preRecord, err := t.dbDao.GetPreRecordByAddressAndNonce(record.Address, record.Nonce)
+			preRecord, err := t.dbDao.GetPreRecordByAddressAndNonce(record.Address, record.AlgorithmID, record.Nonce)
 			if err != nil {
 				return fmt.Errorf("GetPreRecordByAddressAndNonce err: %s", err)
 			}

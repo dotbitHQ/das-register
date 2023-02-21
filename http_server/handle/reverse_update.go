@@ -122,8 +122,8 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 	if err != nil {
 		return fmt.Errorf("SearchLatestReverse err: %s", err)
 	}
-	if reverse.Id > 0 && reverse.ReverseType == dao.ReverseTypeSmt && reverse.Account != req.Account {
-		err = fmt.Errorf("invalid param account: %s ,this reverse no exist", req.Account)
+	if req.Action == tables.SubActionRemove && (reverse.Id == 0 || reverse.ReverseType == dao.ReverseTypeOld) {
+		err = fmt.Errorf("invalid param, reverse no exist")
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 		return err
 	}
@@ -197,7 +197,7 @@ func (cache *ReverseSmtSignCache) GenSignMsg() string {
 func (h *HttpHandle) getReverseSmtNonce(res *core.DasAddressHex, req *ReqReverseUpdate, apiResp *api_code.ApiResp) (uint32, error) {
 	var nonce uint32 = 1
 
-	reverseSmtRecord, err := h.dbDao.GetReverseSmtRecordByAddress(res.AddressHex)
+	reverseSmtRecord, err := h.dbDao.GetReverseSmtRecordByAddress(res.AddressHex, uint8(res.DasAlgorithmId))
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "db err")
 		return nonce, fmt.Errorf("GetReverseSmtRecordByAddress err: %s address: %s account: %s", err, res.AddressHex, req.Account)
