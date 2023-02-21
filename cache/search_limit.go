@@ -31,19 +31,19 @@ func (r *RedisCache) LockWithRedis(chainType common.ChainType, address, action s
 }
 
 func (r *RedisCache) Lock(key string, exp time.Duration, fn func(func())) error {
-	ret := r.red.SetNX(key, "", exp)
-	if err := ret.Err(); err != nil {
+	ok, err := r.red.SetNX(key, "", exp).Result()
+	if err != nil {
 		return err
 	}
-	if !ret.Val() {
+	if !ok {
 		return ErrDistributedLockPreemption
 	}
 
 	lockFn := func() {
-		r.red.Set(key, "", exp)
+		r.red.Expire(key, exp)
 	}
 	go func() {
-		defer r.red.Del(key).Val()
+		defer r.red.Del(key)
 		fn(lockFn)
 	}()
 	return nil

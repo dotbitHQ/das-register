@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"das-account-indexer/http_server/code"
+	"das_database/dao"
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
@@ -64,7 +65,7 @@ func (h *HttpHandle) ReverseUpdate(ctx *gin.Context) {
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
 	if err = h.doReverseUpdate(&req, &apiResp); err != nil {
-		log.Error("doReverseRetract err:", err.Error(), funcName, clientIp)
+		log.Error("doReverseUpdate err:", err.Error(), funcName, clientIp)
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
@@ -94,8 +95,10 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 	}
 
 	lockDone := make(chan struct{})
+	defer close(lockDone)
+
 	lockKey := fmt.Sprintf("lock:doReverseUpdate:%s", res.AddressHex)
-	if err := h.rc.Lock(lockKey, time.Second*3, func(lockFn func()) {
+	if err := h.rc.Lock(lockKey, time.Second*10, func(lockFn func()) {
 		t := time.NewTicker(time.Second)
 		defer t.Stop()
 		for range t.C {
@@ -114,9 +117,16 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeCacheError, "cache error")
 		return fmt.Errorf("cache err: %s", err.Error())
 	}
-	defer func() {
-		close(lockDone)
-	}()
+
+	reverse, err := h.dbDao.SearchLatestReverse(res.ChainType, res.AddressHex)
+	if err != nil {
+		return fmt.Errorf("SearchLatestReverse err: %s", err)
+	}
+	if reverse.Id > 0 && reverse.ReverseType == dao.ReverseTypeSmt && reverse.Account != req.Account {
+		err = fmt.Errorf("invalid param account: %s ,this reverse no exist", req.Account)
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
+		return err
+	}
 
 	// account check
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
