@@ -108,8 +108,9 @@ func (h *HttpHandle) doCheckCoupon(req *ReqCheckCoupon, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "params invalid")
 		return nil
 	}
-	err, respResult := h.getCouponInfo(req.Coupon, apiResp)
+	err, respResult := h.getCouponInfo(req.Coupon)
 	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 		return err
 	}
 	apiResp.ApiRespOK(respResult)
@@ -676,35 +677,29 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 	}
 	return
 }
-func (h *HttpHandle) getCouponInfo(code string, apiResp *api_code.ApiResp) (err error, info *RespCouponInfo) {
+func (h *HttpHandle) getCouponInfo(code string) (err error, info *RespCouponInfo) {
 	info = new(RespCouponInfo)
 	salt := config.Cfg.Server.CouponEncrySalt
 	if salt == "" {
 		log.Error("GetCoupon err: config coupon_encry_salt is empty")
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "system setting error")
-
 		return fmt.Errorf("system setting error"), info
 	}
 	code = couponEncry(code, salt)
 	res, err := h.dbDao.GetCouponByCode(code)
 	if err != nil {
 		log.Error("GetCoupon err:", err.Error())
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "get gift card error")
 		return fmt.Errorf("get gift card error"), info
 	}
 	if res.Id == 0 {
-		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
 		info.CouponStatus = tables.CouponStatusNotfound
 		return nil, info
 	}
 	if res.OrderId != "" {
-		apiResp.ApiRespErr(api_code.ApiCodeCouponUsed, "gift card has been used")
 		info.CouponStatus = tables.CouponStatusUsed
 		return nil, info
 	}
 	nowTime := time.Now().Unix()
 	if nowTime < res.StartAt.Unix() || nowTime > res.ExpiredAt.Unix() {
-		apiResp.ApiRespErr(api_code.ApiCodeCouponUnopen, "gift card time has not arrived or expired")
 		info.CouponStatus = tables.CouponStatusExpired
 		return nil, info
 	}
