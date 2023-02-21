@@ -694,6 +694,7 @@ func (h *HttpHandle) getCouponInfo(code string) (err error, info *RespCouponInfo
 		info.CouponStatus = tables.CouponStatusNotfound
 		return nil, info
 	}
+	info.CouponType = res.CouponType
 	if res.OrderId != "" {
 		info.CouponStatus = tables.CouponStatusUsed
 		return nil, info
@@ -703,7 +704,7 @@ func (h *HttpHandle) getCouponInfo(code string) (err error, info *RespCouponInfo
 		info.CouponStatus = tables.CouponStatusExpired
 		return nil, info
 	}
-	info.CouponType = res.CouponType
+
 	info.CouponStatus = tables.CouponStatusAvailable
 	return nil, info
 }
