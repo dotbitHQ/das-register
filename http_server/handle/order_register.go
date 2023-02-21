@@ -103,35 +103,6 @@ func (h *HttpHandle) CheckCoupon(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) CouponInfo(ctx *gin.Context) {
-	var (
-		funcName = "CouponInfo"
-		clientIp = GetClientIp(ctx)
-		req      ReqCheckCoupon
-		apiResp  api_code.ApiResp
-		err      error
-	)
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp)
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
-		ctx.JSON(http.StatusOK, apiResp)
-		return
-	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
-
-	if err = h.doCouponInfo(&req, &apiResp); err != nil {
-		log.Error("doCheckCoupon err:", err.Error(), funcName, clientIp)
-	}
-
-	ctx.JSON(http.StatusOK, apiResp)
-}
-
-func (h *HttpHandle) doCouponInfo(req *ReqCheckCoupon, apiResp *api_code.ApiResp) error {
-
-	return nil
-}
-
 func (h *HttpHandle) doCheckCoupon(req *ReqCheckCoupon, apiResp *api_code.ApiResp) error {
 	if req.Coupon == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "params invalid")
@@ -706,20 +677,20 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 	return
 }
 func (h *HttpHandle) getCouponInfo(code string, apiResp *api_code.ApiResp) (err error, info *RespCouponInfo) {
-
+	info = new(RespCouponInfo)
 	salt := config.Cfg.Server.CouponEncrySalt
 	if salt == "" {
 		log.Error("GetCoupon err: config coupon_encry_salt is empty")
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "system setting error")
 
-		return fmt.Errorf("system setting error"), nil
+		return fmt.Errorf("system setting error"), info
 	}
 	code = couponEncry(code, salt)
 	res, err := h.dbDao.GetCouponByCode(code)
 	if err != nil {
 		log.Error("GetCoupon err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get gift card error")
-		return fmt.Errorf("get gift card error"), nil
+		return fmt.Errorf("get gift card error"), info
 	}
 	if res.Id == 0 {
 		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
