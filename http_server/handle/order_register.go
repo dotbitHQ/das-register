@@ -38,8 +38,9 @@ type ReqOrderRegister struct {
 type ReqCheckCoupon struct {
 	Coupon string `json:"coupon"`
 }
-type RespCheckCoupon struct {
-	CouponType tables.CouponType `json:"type"`
+type RespCouponInfo struct {
+	CouponType   tables.CouponType   `json:"type"`
+	CouponStatus tables.CouponStatus `json:"status"`
 }
 type ReqOrderRegisterBase struct {
 	RegisterYears  int    `json:"register_years"`
@@ -80,7 +81,7 @@ func (h *HttpHandle) RpcCheckCouponr(p json.RawMessage, apiResp *api_code.ApiRes
 }
 func (h *HttpHandle) CheckCoupon(ctx *gin.Context) {
 	var (
-		funcName = "OrderRegister"
+		funcName = "CheckCoupon"
 		clientIp = GetClientIp(ctx)
 		req      ReqCheckCoupon
 		apiResp  api_code.ApiResp
@@ -102,18 +103,45 @@ func (h *HttpHandle) CheckCoupon(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
+func (h *HttpHandle) CouponInfo(ctx *gin.Context) {
+	var (
+		funcName = "CouponInfo"
+		clientIp = GetClientIp(ctx)
+		req      ReqCheckCoupon
+		apiResp  api_code.ApiResp
+		err      error
+	)
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp)
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		ctx.JSON(http.StatusOK, apiResp)
+		return
+	}
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
+
+	if err = h.doCouponInfo(&req, &apiResp); err != nil {
+		log.Error("doCheckCoupon err:", err.Error(), funcName, clientIp)
+	}
+
+	ctx.JSON(http.StatusOK, apiResp)
+}
+
+func (h *HttpHandle) doCouponInfo(req *ReqCheckCoupon, apiResp *api_code.ApiResp) error {
+
+	return nil
+}
+
 func (h *HttpHandle) doCheckCoupon(req *ReqCheckCoupon, apiResp *api_code.ApiResp) error {
-	var resp RespCheckCoupon
 	if req.Coupon == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "params invalid")
 		return nil
 	}
-	res := h.checkCoupon(req.Coupon, apiResp)
-	if res == nil {
-		return nil
+	err, respResult := h.getCouponInfo(req.Coupon, apiResp)
+	if err != nil {
+		return err
 	}
-	resp.CouponType = res.CouponType
-	apiResp.ApiRespOK(resp)
+	apiResp.ApiRespOK(respResult)
 	return nil
 }
 
@@ -677,6 +705,42 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 	}
 	return
 }
+func (h *HttpHandle) getCouponInfo(code string, apiResp *api_code.ApiResp) (err error, info *RespCouponInfo) {
+
+	salt := config.Cfg.Server.CouponEncrySalt
+	if salt == "" {
+		log.Error("GetCoupon err: config coupon_encry_salt is empty")
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "system setting error")
+
+		return fmt.Errorf("system setting error"), nil
+	}
+	code = couponEncry(code, salt)
+	res, err := h.dbDao.GetCouponByCode(code)
+	if err != nil {
+		log.Error("GetCoupon err:", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "get gift card error")
+		return fmt.Errorf("get gift card error"), nil
+	}
+	if res.Id == 0 {
+		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
+		info.CouponStatus = tables.CouponStatusNotfound
+		return nil, info
+	}
+	if res.OrderId != "" {
+		apiResp.ApiRespErr(api_code.ApiCodeCouponUsed, "gift card has been used")
+		info.CouponStatus = tables.CouponStatusUsed
+		return nil, info
+	}
+	nowTime := time.Now().Unix()
+	if nowTime < res.StartAt.Unix() || nowTime > res.ExpiredAt.Unix() {
+		apiResp.ApiRespErr(api_code.ApiCodeCouponUnopen, "gift card time has not arrived or expired")
+		info.CouponStatus = tables.CouponStatusExpired
+		return nil, info
+	}
+	info.CouponType = res.CouponType
+	info.CouponStatus = tables.CouponStatusAvailable
+	return nil, info
+}
 
 func (h *HttpHandle) checkCoupon(code string, apiResp *api_code.ApiResp) (coupon *tables.TableCoupon) {
 	salt := config.Cfg.Server.CouponEncrySalt
@@ -696,17 +760,12 @@ func (h *HttpHandle) checkCoupon(code string, apiResp *api_code.ApiResp) (coupon
 		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "gift card not found")
 		return nil
 	}
-	var respData RespCheckCoupon
 	if res.OrderId != "" {
-		respData.CouponType = res.CouponType
-		apiResp.Data = respData
 		apiResp.ApiRespErr(api_code.ApiCodeCouponUsed, "gift card has been used")
 		return nil
 	}
 	nowTime := time.Now().Unix()
 	if nowTime < res.StartAt.Unix() || nowTime > res.ExpiredAt.Unix() {
-		respData.CouponType = res.CouponType
-		apiResp.Data = respData
 		apiResp.ApiRespErr(api_code.ApiCodeCouponUnopen, "gift card time has not arrived or expired")
 		return nil
 	}

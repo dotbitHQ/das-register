@@ -3,12 +3,18 @@ package tables
 import "time"
 
 type CouponType int
+type CouponStatus int
 
 const (
 	TableNameCoupon = "t_coupon"
 
 	CouponType4byte CouponType = 1
 	CouponType5byte CouponType = 2
+
+	CouponStatusNotfound  CouponStatus = 1
+	CouponStatusUsed      CouponStatus = 2
+	CouponStatusExpired   CouponStatus = 3
+	CouponStatusAvailable CouponStatus = 4
 )
 
 type TableCoupon struct {
