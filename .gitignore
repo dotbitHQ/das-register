@@ -20,3 +20,4 @@ das_register
 config/config.yaml
 config/config.database.yaml
 mysql-data
+.DS_Store
