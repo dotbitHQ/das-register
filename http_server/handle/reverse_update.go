@@ -10,6 +10,7 @@ import (
 	"das_register_server/tables"
 	"encoding/base64"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -140,6 +141,21 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		return fmt.Errorf("account not exist: %s", req.Account)
 	}
 
+	if acc.Owner != res.AddressHex && acc.Manager != res.AddressHex {
+		record, err := h.dbDao.SearchAccountReverseRecords(acc.Account, res.AddressHex)
+		if err != nil {
+			if err != gorm.ErrRecordNotFound {
+				*apiResp = api_code.ApiRespErr(api_code.ApiCodeDbError, "search account err")
+				return fmt.Errorf("SearchAccount err: %s", err.Error())
+			}
+		}
+		if record.Id == 0 {
+			err = errors.New("you not this account permissions")
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
+			return err
+		}
+	}
+
 	var resp RespReverseUpdate
 
 	resp.SignType = res.DasAlgorithmId
@@ -187,6 +203,8 @@ func (cache *ReverseSmtSignCache) GenSignMsg() string {
 	bys, _ := blake2b.Blake256(data)
 
 	signMsg := common.Bytes2Hex([]byte("from did: "))[2:] + base64.StdEncoding.EncodeToString(bys)
+	signMsg = common.Bytes2Hex([]byte(signMsg))
+
 	cache.SignMsg = signMsg
 	return signMsg
 }
