@@ -3,7 +3,6 @@ package handle
 import (
 	"bytes"
 	"crypto/md5"
-	"das-account-indexer/http_server/code"
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
@@ -76,7 +75,7 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 	}
 
 	res := checkReqKeyInfo(h.dasCore.Daf(), &req.ChainTypeAddress, apiResp)
-	if apiResp.ErrNo != code.ApiCodeSuccess {
+	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		log.Error("checkReqReverseRecord:", apiResp.ErrMsg)
 		return nil
 	}
@@ -236,11 +235,11 @@ func (h *HttpHandle) getReverseSmtNonce(res *core.DasAddressHex, req *ReqReverse
 // checkReqKeyInfo
 func checkReqKeyInfo(daf *core.DasAddressFormat, req *core.ChainTypeAddress, apiResp *api_code.ApiResp) *core.DasAddressHex {
 	if req.Type != "blockchain" {
-		apiResp.ApiRespErr(code.ApiCodeParamsInvalid, fmt.Sprintf("type [%s] is invalid", req.Type))
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("type [%s] is invalid", req.Type))
 		return nil
 	}
 	if req.KeyInfo.Key == "" {
-		apiResp.ApiRespErr(code.ApiCodeParamsInvalid, "key is invalid")
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "key is invalid")
 		return nil
 	}
 	dasChainType := common.FormatCoinTypeToDasChainType(req.KeyInfo.CoinType)
@@ -249,13 +248,13 @@ func checkReqKeyInfo(daf *core.DasAddressFormat, req *core.ChainTypeAddress, api
 	}
 	if dasChainType == -1 {
 		if !strings.HasPrefix(req.KeyInfo.Key, "0x") {
-			apiResp.ApiRespErr(code.ApiCodeParamsInvalid, fmt.Sprintf("coin_type [%s] and chain_id [%s] is invalid", req.KeyInfo.CoinType, req.KeyInfo.ChainId))
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("coin_type [%s] and chain_id [%s] is invalid", req.KeyInfo.CoinType, req.KeyInfo.ChainId))
 			return nil
 		}
 
 		ok, err := regexp.MatchString("^0x[0-9a-fA-F]{40}$", req.KeyInfo.Key)
 		if err != nil {
-			apiResp.ApiRespErr(code.ApiCodeParamsInvalid, err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 			return nil
 		}
 
@@ -264,11 +263,11 @@ func checkReqKeyInfo(daf *core.DasAddressFormat, req *core.ChainTypeAddress, api
 		} else {
 			ok, err = regexp.MatchString("^0x[0-9a-fA-F]{64}$", req.KeyInfo.Key)
 			if err != nil {
-				apiResp.ApiRespErr(code.ApiCodeParamsInvalid, err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 				return nil
 			}
 			if !ok {
-				apiResp.ApiRespErr(code.ApiCodeParamsInvalid, "key is invalid")
+				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "key is invalid")
 				return nil
 			}
 			dasChainType = common.ChainTypeMixin
@@ -280,7 +279,7 @@ func checkReqKeyInfo(daf *core.DasAddressFormat, req *core.ChainTypeAddress, api
 		Is712:         true,
 	})
 	if err != nil {
-		apiResp.ApiRespErr(code.ApiCodeParamsInvalid, err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 		return nil
 	}
 	if addrHex.DasAlgorithmId == common.DasAlgorithmIdEth712 {
