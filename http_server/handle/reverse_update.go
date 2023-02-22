@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/md5"
 	"das-account-indexer/http_server/code"
-	"das_database/dao"
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
@@ -122,7 +121,7 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 	if err != nil {
 		return fmt.Errorf("SearchLatestReverse err: %s", err)
 	}
-	if req.Action == tables.SubActionRemove && (reverse.Id == 0 || reverse.ReverseType == dao.ReverseTypeOld) {
+	if req.Action == tables.SubActionRemove && (reverse.Id == 0 || reverse.ReverseType == 0) {
 		err = fmt.Errorf("invalid param, reverse no exist")
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 		return err
