@@ -20,17 +20,26 @@ const (
 )
 
 func (t *TxTimer) doReverseSmtTask() error {
+	// check reverse_smt_info latest smt_root == online_smt_root
+	rt, err := t.reverseSmtCheckIsLatestTask()
+	if err != nil {
+		return fmt.Errorf("reverseSmtCheckIsLatestTask err: %s", err)
+	}
+	if rt {
+		return nil
+	}
+
 	// update smt_status=3 and tx_status=3 to smt_status=1 and tx_status=0 and retry=retry+1
 	if err := t.dbDao.UpdateAllReverseSmtRollbackToTxPending(); err != nil {
 		return fmt.Errorf("UpdateReverseSmtToTxPending err: %s", err)
 	}
 
 	// rollback smt if retry>=tables.ReverseSmtMaxRetryNum
-	next, err := t.reverseSmtTaskRollback()
+	rt, err = t.reverseSmtTaskRollback()
 	if err != nil {
 		return fmt.Errorf("doReverseSmtTaskRollback err: %s", err)
 	}
-	if next {
+	if rt {
 		return nil
 	}
 
@@ -50,11 +59,11 @@ func (t *TxTimer) doReverseSmtTask() error {
 	}
 
 	// reverseSmtPendingCheck
-	next, err = t.reverseSmtPendingCheck(&smtPendingTask)
+	rt, err = t.reverseSmtPendingCheck(&smtPendingTask)
 	if err != nil {
 		return fmt.Errorf("reverseSmtPendingCheck err: %s", err)
 	}
-	if next {
+	if rt {
 		return nil
 	}
 
@@ -164,13 +173,11 @@ func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
 	}
 
 	// check reverse_smt_info latest smt_root == online_smt_root
-	noUpToDate, onlineSmtRoot, err := t.reverseSmtCheckIsLatestTask()
+	reverseRootCell, err := t.dasCore.GetReverseRecordSmtCell()
 	if err != nil {
-		return false, fmt.Errorf("reverseSmtCheckIsLatestTask err: %s", err)
+		return false, fmt.Errorf("GetReverseRecordSmtCell err: %s", err)
 	}
-	if noUpToDate {
-		return true, nil
-	}
+	onlineSmtRoot := string(reverseRootCell.OutputData)
 
 	rollbackKv := make([]smt.SmtKv, 0)
 	for _, task := range rollbackTaskInfos {
@@ -227,24 +234,26 @@ func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
 }
 
 // reverseSmtCheckIsLatestTask check reverse_smt_info latest smt_root == online_smt_root
-func (t *TxTimer) reverseSmtCheckIsLatestTask() (bool, string, error) {
+func (t *TxTimer) reverseSmtCheckIsLatestTask() (bool, error) {
 	reverseInfo, err := t.dbDao.GetLatestReverseSmtInfo()
 	if err != nil {
-		return false, "", fmt.Errorf("GetLatestReverseSmtInfo err: %s", err)
+		return false, fmt.Errorf("GetLatestReverseSmtInfo err: %s", err)
 	}
+	if reverseInfo.ID == 0 {
+		return false, nil
+	}
+
 	reverseRootCell, err := t.dasCore.GetReverseRecordSmtCell()
 	if err != nil {
-		return false, "", fmt.Errorf("GetReverseRecordSmtCell err: %s", err)
+		return false, fmt.Errorf("GetReverseRecordSmtCell err: %s", err)
 	}
 	onlineSmtRoot := string(reverseRootCell.OutputData)
 
-	if reverseInfo.ID > 0 {
-		if reverseInfo.RootHash != onlineSmtRoot {
-			log.Warnf("doReverseSmtTaskRollback online_smt_root: %s != reverse_smt_info.smt_root: %s", onlineSmtRoot, reverseInfo.RootHash)
-			return true, onlineSmtRoot, nil
-		}
+	if reverseInfo.RootHash != onlineSmtRoot {
+		log.Warnf("doReverseSmtTaskRollback online_smt_root: %s != reverse_smt_info.smt_root: %s", onlineSmtRoot, reverseInfo.RootHash)
+		return true, nil
 	}
-	return false, onlineSmtRoot, nil
+	return false, nil
 }
 
 // reverseSmtTaskAssignment
