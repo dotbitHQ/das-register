@@ -198,38 +198,43 @@ func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
 			if err != nil {
 				return false, fmt.Errorf("GetSmtKey err: %s", err)
 			}
+
+			leafDataHash := smt.H256Zero()
+			if reverseSmtInfo.ID > 0 {
+				leafDataHash = smt.ToSmtH256(reverseSmtInfo.LeafDataHash)
+			}
+
 			rollbackKv = append(rollbackKv, smt.SmtKv{
 				Key:   smtKey,
-				Value: []byte(reverseSmtInfo.LeafDataHash),
+				Value: leafDataHash,
 			})
 		}
 	}
 
 	opt := smt.SmtOpt{GetRoot: true}
 	smtTree := reverse_smt.GetReverseSmt()
-	smtOut, err := smtTree.UpdateSmt(rollbackKv, opt)
-	if err != nil {
-		return false, fmt.Errorf("UpdateSmt err: %s", err)
-	}
-	if smtOut.Root.String() != onlineSmtRoot {
-		log.Warnf("rollback warn, local smtRoot: %s != online smtRoot: %s", smtOut.Root, onlineSmtRoot)
-	}
 
-	errG := errgroup.Group{}
 	// update smt_status=4 and tx_status=3
-	for _, v := range rollbackTaskInfos {
-		task := v
-		errG.Go(func() error {
-			if err := t.dbDao.UpdateReverseSmtTaskInfoStatus(tables.ReverseSmtStatusRollbackConfirm, tables.ReverseSmtTxStatusReject, "id=?", task.ID); err != nil {
-				return fmt.Errorf("UpdateReverseSmtTaskInfoStatus err: %s", err)
+	if err := t.dbDao.DbTransaction(func(tx *gorm.DB) error {
+		for _, task := range rollbackTaskInfos {
+			if err := tx.Model(&tables.ReverseSmtTaskInfo{}).Where("id=?", task.ID).Updates(map[string]interface{}{
+				"smt_status": tables.ReverseSmtStatusRollbackConfirm,
+				"tx_status":  tables.ReverseSmtTxStatusReject,
+			}).Error; err != nil {
+				return err
 			}
-			return nil
-		})
-	}
-	if err := errG.Wait(); err != nil {
+		}
+		smtOut, err := smtTree.UpdateSmt(rollbackKv, opt)
+		if err != nil {
+			return fmt.Errorf("UpdateSmt err: %s", err)
+		}
+		if smtOut.Root.String() != onlineSmtRoot {
+			log.Warnf("rollback warn, local smtRoot: %s != online smtRoot: %s", smtOut.Root, onlineSmtRoot)
+		}
+		return nil
+	}); err != nil {
 		return false, err
 	}
-
 	return false, nil
 }
 
