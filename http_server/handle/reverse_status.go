@@ -45,7 +45,7 @@ func (h *HttpHandle) ReverseStatus(ctx *gin.Context) {
 func (h *HttpHandle) doReverseStatus(req *ReqReverseStatus, apiResp *api_code.ApiResp) error {
 	res := checkReqKeyInfo(h.dasCore.Daf(), &req.ChainTypeAddress, apiResp)
 
-	reverseRecord, err := h.dbDao.GetReverseSmtRecordByAddress(res.AddressHex)
+	reverseRecord, err := h.dbDao.GetReverseSmtRecordByAddress(res.AddressHex, uint8(res.DasAlgorithmId))
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "db error")
 		return fmt.Errorf("GetReverseSmtRecordByAddress err: %s", err)

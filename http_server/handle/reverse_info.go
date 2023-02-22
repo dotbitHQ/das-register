@@ -1,7 +1,6 @@
 package handle
 
 import (
-	"das_database/dao"
 	"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"fmt"
@@ -75,7 +74,7 @@ func (h *HttpHandle) doReverseInfo(req *ReqReverseInfo, apiResp *api_code.ApiRes
 	errWg := errgroup.Group{}
 	errWg.Go(func() error {
 		var err error
-		reverseOld, err = h.dbDao.SearchLatestReverseByType(res.ChainType, res.AddressHex, dao.ReverseTypeOld)
+		reverseOld, err = h.dbDao.SearchLatestReverseByType(res.ChainType, res.AddressHex, tables.ReverseTypeOld)
 		if err != nil {
 			return fmt.Errorf("SearchLatestReverseByType err: %s", err)
 		}
@@ -83,7 +82,7 @@ func (h *HttpHandle) doReverseInfo(req *ReqReverseInfo, apiResp *api_code.ApiRes
 	})
 	errWg.Go(func() error {
 		var err error
-		reverseNew, err = h.dbDao.SearchLatestReverseByType(res.ChainType, res.AddressHex, dao.ReverseTypeSmt)
+		reverseNew, err = h.dbDao.SearchLatestReverseByType(res.ChainType, res.AddressHex, tables.ReverseTypeSmt)
 		if err != nil {
 			return fmt.Errorf("SearchLatestReverseByType err: %s", err)
 		}
