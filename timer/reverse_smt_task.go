@@ -3,6 +3,7 @@ package timer
 import (
 	"das_register_server/internal/reverse_smt"
 	"das_register_server/tables"
+	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -30,6 +31,7 @@ func (t *TxTimer) doReverseSmtTask() error {
 	}
 
 	// update smt_status=3 and tx_status=3 to smt_status=1 and tx_status=0 and retry=retry+1
+	log.Infof("doReverseSmtTask update smt_status=3 and tx_status=3 to smt_status=1 and tx_status=0 and retry=retry+1")
 	if err := t.dbDao.UpdateAllReverseSmtRollbackToTxPending(); err != nil {
 		return fmt.Errorf("UpdateReverseSmtToTxPending err: %s", err)
 	}
@@ -101,12 +103,15 @@ func (t *TxTimer) doReverseSmtTask() error {
 	}
 
 	// update task_info ref_outpoint
+	refOutpoint := common.OutPointStruct2String(reverseRecordSmtLiveCell.OutPoint)
+	outpoint := common.OutPoint2String(txHash.Hex(), 0)
 	if err := t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
-		"ref_outpoint": common.OutPointStruct2String(reverseRecordSmtLiveCell.OutPoint),
-		"outpoint":     common.OutPoint2String(txHash.Hex(), 0),
+		"ref_outpoint": refOutpoint,
+		"outpoint":     outpoint,
 	}, "id=?", smtPendingTask.ID); err != nil {
 		return fmt.Errorf("UpdateReverseSmtTaskInfo err: %s", err)
 	}
+	log.Infof("doReverseSmtTask update task_info ref_outpoint: %s, outpoint: ", refOutpoint, outpoint)
 
 	// send transaction
 	if _, sendTxErr := txBuilder.SendTransaction(); sendTxErr != nil {
@@ -124,6 +129,7 @@ func (t *TxTimer) doReverseSmtTask() error {
 	}, "id=?", smtPendingTask.ID); err != nil {
 		return fmt.Errorf("UpdateReverseSmtTaskInfo err: %s", err)
 	}
+	log.Infof("doReverseSmtTask UpdateReverseSmtTaskInfo, tx_hash: %s tx_status: %d", txHash, tables.ReverseSmtTxStatusPending)
 	return nil
 }
 
@@ -144,6 +150,9 @@ func (t *TxTimer) doReverseSmtUpdateSmt(id uint64, reverseRecordsByTaskID []*tab
 			Value: smtVal,
 		})
 	}
+
+	smtKvsData, _ := json.Marshal(smtKvs)
+	log.Infof("doReverseSmtTask doReverseSmtUpdateSmt update local smt: %s", string(smtKvsData))
 
 	// update smt local
 	opt := smt.SmtOpt{GetProof: true, GetRoot: true}
@@ -173,6 +182,9 @@ func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
 	if len(rollbackTaskInfos) == 0 {
 		return false, nil
 	}
+
+	rollbackTaskInfosData, _ := json.Marshal(rollbackTaskInfos)
+	log.Infof("doReverseSmtTask reverseSmtTaskRollback: %s", string(rollbackTaskInfosData))
 
 	// check reverse_smt_info latest smt_root == online_smt_root
 	reverseRootCell, err := t.dasCore.GetReverseRecordSmtCell()
@@ -210,6 +222,7 @@ func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
 				Key:   smtKey,
 				Value: leafDataHash,
 			})
+			log.Infof("doReverseSmtTask rollback reverse address: %s account: %s toLeafDataHash: %s", record.Address, record.Account, leafDataHash)
 		}
 	}
 
@@ -242,6 +255,8 @@ func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
 
 // reverseSmtCheckIsLatestTask check reverse_smt_info latest smt_root == online_smt_root
 func (t *TxTimer) reverseSmtCheckIsLatestTask() (bool, error) {
+	log.Info("doReverseSmtTask reverseSmtCheckIsLatestTask check smt local root == online_root")
+
 	reverseInfo, err := t.dbDao.GetLatestReverseSmtInfo()
 	if err != nil {
 		return false, fmt.Errorf("GetLatestReverseSmtInfo err: %s", err)
@@ -257,7 +272,7 @@ func (t *TxTimer) reverseSmtCheckIsLatestTask() (bool, error) {
 	onlineSmtRoot := string(reverseRootCell.OutputData)
 
 	if reverseInfo.RootHash != onlineSmtRoot {
-		log.Warnf("doReverseSmtTaskRollback online_smt_root: %s != reverse_smt_info.smt_root: %s", onlineSmtRoot, reverseInfo.RootHash)
+		log.Warnf("doReverseSmtTask reverseSmtCheckIsLatestTask online_smt_root: %s != reverse_smt_info.smt_root: %s", onlineSmtRoot, reverseInfo.RootHash)
 		return true, nil
 	}
 	return false, nil
