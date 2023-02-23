@@ -13,6 +13,7 @@ server:
   split_ckb: 2000
   smt_server: "http://172.17.0.1:9130"
   reverse_smt_pay_server_address: "ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqw6gnkemwts26sxu3ca8gdk5xuzyx08yvs2zxupn"
+  reverse_smt_pay_server_private: "0xa46f1213966ec1c4624557f4f84dee9f07f4faca684b184cc650ceddd21cecf7"
 origins: # cross domain
   - ""
 pay_address_map: # receiver's address

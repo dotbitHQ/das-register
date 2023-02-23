@@ -68,6 +68,7 @@ type CfgServer struct {
 		NotExit                    bool              `json:"not_exit" yaml:"not_exit"`
 		SmtServer                  string            `json:"smt_server" yaml:"smt_server"`
 		ReverseSmtPayServerAddress string            `json:"reverse_smt_pay_server_address" yaml:"reverse_smt_pay_server_address"`
+		ReverseSmtPayServerPrivate string            `json:"reverse_smt_pay_server_private" yaml:"reverse_smt_pay_server_private"`
 	} `json:"server" yaml:"server"`
 	Origins          []string          `json:"origins" yaml:"origins"`
 	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`

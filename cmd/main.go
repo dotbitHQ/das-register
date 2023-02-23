@@ -291,22 +291,32 @@ func initTxBuilder(dasCore *core.DasCore) (*txbuilder.DasTxBuilderBase, *types.S
 }
 
 func initReverseSmtTxBuilder(dasCore *core.DasCore) (*txbuilder.DasTxBuilderBase, *types.Script, error) {
-	parseAddress, err := address.Parse(config.Cfg.Server.ReverseSmtPayServerAddress)
-	if err != nil {
-		log.Error("initReverseSmtTxBuilder address.Parse err: ", err.Error())
-		return nil, nil, err
-	}
-	payServerAddressArgs := common.Bytes2Hex(parseAddress.Script.Args)
-	serverScript := parseAddress.Script
+	payServerAddressArgs := ""
+	var serverScript *types.Script
 
-	remoteSignClient, err := sign.NewClient(ctxServer, config.Cfg.Server.RemoteSignApiUrl)
-	if err != nil {
-		return nil, nil, fmt.Errorf("sign.NewClient err: %s", err.Error())
+	if config.Cfg.Server.ReverseSmtPayServerAddress != "" {
+		parseAddress, err := address.Parse(config.Cfg.Server.ReverseSmtPayServerAddress)
+		if err != nil {
+			log.Error("initReverseSmtTxBuilder address.Parse err: ", err.Error())
+
+		} else {
+			payServerAddressArgs = common.Bytes2Hex(parseAddress.Script.Args)
+			serverScript = parseAddress.Script
+		}
 	}
-	handleSign := sign.RemoteSign(remoteSignClient, config.Cfg.Server.Net, payServerAddressArgs)
+
+	var handleSign sign.HandleSignCkbMessage
+	if config.Cfg.Server.RemoteSignApiUrl != "" && payServerAddressArgs != "" {
+		remoteSignClient, err := sign.NewClient(ctxServer, config.Cfg.Server.RemoteSignApiUrl)
+		if err != nil {
+			return nil, nil, fmt.Errorf("sign.NewClient err: %s", err.Error())
+		}
+		handleSign = sign.RemoteSign(remoteSignClient, config.Cfg.Server.Net, payServerAddressArgs)
+	} else if config.Cfg.Server.ReverseSmtPayServerPrivate != "" {
+		handleSign = sign.LocalSign(config.Cfg.Server.ReverseSmtPayServerPrivate)
+	}
 
 	txBuilderBase := txbuilder.NewDasTxBuilderBase(ctxServer, dasCore, handleSign, payServerAddressArgs)
 	log.Info("reverse smt tx builder ok")
-
 	return txBuilderBase, serverScript, nil
 }
