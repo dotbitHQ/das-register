@@ -409,7 +409,7 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 				Proof:       proof,
 				PrevNonce:   preRecord.Nonce,
 				PrevAccount: preRecord.Account,
-				NextRoot:    smtRoot.String(),
+				NextRoot:    smtRoot,
 				NextAccount: record.Account,
 			})
 			if err != nil {
