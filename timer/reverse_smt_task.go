@@ -93,6 +93,8 @@ func (t *TxTimer) doReverseSmtTask() error {
 	if err := txBuilder.BuildTransaction(txBuilderParams); err != nil {
 		return fmt.Errorf("BuildTransaction err: %s", err)
 	}
+	log.Debugf("doReverseSmtTask tx struct: %s", txBuilder.TxString())
+
 	txHash, err := txBuilder.Transaction.ComputeHash()
 	if err != nil {
 		return fmt.Errorf("BuildTransaction err: %s", err)
