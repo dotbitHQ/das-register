@@ -9,6 +9,7 @@ import (
 	"das_register_server/http_server"
 	"das_register_server/timer"
 	"das_register_server/txtool"
+	"errors"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -291,29 +292,27 @@ func initTxBuilder(dasCore *core.DasCore) (*txbuilder.DasTxBuilderBase, *types.S
 }
 
 func initReverseSmtTxBuilder(dasCore *core.DasCore) (*txbuilder.DasTxBuilderBase, *types.Script, error) {
-	payServerAddressArgs := ""
-	var serverScript *types.Script
-
-	if config.Cfg.Server.ReverseSmtPayServerAddress != "" {
-		parseAddress, err := address.Parse(config.Cfg.Server.ReverseSmtPayServerAddress)
-		if err != nil {
-			log.Error("initReverseSmtTxBuilder address.Parse err: ", err.Error())
-
-		} else {
-			payServerAddressArgs = common.Bytes2Hex(parseAddress.Script.Args)
-			serverScript = parseAddress.Script
-		}
+	if config.Cfg.Server.ReverseSmtPayServerAddress == "" {
+		return nil, nil, errors.New("ReverseSmtPayServerAddress can't be empty")
 	}
 
+	parseAddress, err := address.Parse(config.Cfg.Server.ReverseSmtPayServerAddress)
+	if err != nil {
+		return nil, nil, fmt.Errorf("initReverseSmtTxBuilder address.Parse err: %s", err.Error())
+	}
+	payServerAddressArgs := common.Bytes2Hex(parseAddress.Script.Args)
+	serverScript := parseAddress.Script
+
 	var handleSign sign.HandleSignCkbMessage
-	if config.Cfg.Server.RemoteSignApiUrl != "" && payServerAddressArgs != "" {
+	if config.Cfg.Server.ReverseSmtPayServerAddress != "" &&
+		config.Cfg.Server.ReverseSmtPayServerPrivate != "" {
+		handleSign = sign.LocalSign(config.Cfg.Server.ReverseSmtPayServerPrivate)
+	} else if config.Cfg.Server.RemoteSignApiUrl != "" && payServerAddressArgs != "" {
 		remoteSignClient, err := sign.NewClient(ctxServer, config.Cfg.Server.RemoteSignApiUrl)
 		if err != nil {
 			return nil, nil, fmt.Errorf("sign.NewClient err: %s", err.Error())
 		}
 		handleSign = sign.RemoteSign(remoteSignClient, config.Cfg.Server.Net, payServerAddressArgs)
-	} else if config.Cfg.Server.ReverseSmtPayServerPrivate != "" {
-		handleSign = sign.LocalSign(config.Cfg.Server.ReverseSmtPayServerPrivate)
 	}
 
 	txBuilderBase := txbuilder.NewDasTxBuilderBase(ctxServer, dasCore, handleSign, payServerAddressArgs)
