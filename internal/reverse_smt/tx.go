@@ -31,18 +31,6 @@ func BuildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams
 	txParams.HeadDeps = append(txParams.HeadDeps, *req.PreTx.TxStatus.BlockHash)
 
 	// cell deps
-	soEth, err := core.GetDasSoScript(common.SoScriptTypeEth)
-	if err != nil {
-		return nil, fmt.Errorf("BuildReverseSmtTx GetDasSoScript err: %s", err.Error())
-	}
-	soTron, err := core.GetDasSoScript(common.SoScriptTypeTron)
-	if err != nil {
-		return nil, fmt.Errorf("BuildReverseSmtTx GetDasSoScript err: %s", err.Error())
-	}
-	soEd25519, err := core.GetDasSoScript(common.SoScriptTypeEd25519)
-	if err != nil {
-		return nil, fmt.Errorf("BuildReverseSmtTx GetDasSoScript err: %s", err.Error())
-	}
 	balContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
 	if err != nil {
 		return nil, fmt.Errorf("BuildReverseSmtTx GetDasContractInfo err: %s", err.Error())
@@ -65,9 +53,6 @@ func BuildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams
 	}
 
 	txParams.CellDeps = append(txParams.CellDeps,
-		soEth.ToCellDep(),
-		soTron.ToCellDep(),
-		soEd25519.ToCellDep(),
 		balContract.ToCellDep(),
 		reverseRecordRootContract.ToCellDep(),
 		configCellMain.ToCellDep(),
