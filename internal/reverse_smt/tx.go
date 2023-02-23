@@ -47,12 +47,17 @@ func BuildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams
 	if err != nil {
 		return nil, fmt.Errorf("BuildReverseSmtTx GetDasConfigCellInfo err: %s", err.Error())
 	}
+	configCellTypeArgsSMTNodeWhitelist, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsSMTNodeWhitelist)
+	if err != nil {
+		return nil, fmt.Errorf("BuildReverseSmtTx GetDasConfigCellInfo err: %s", err.Error())
+	}
 
 	txParams.CellDeps = append(txParams.CellDeps,
 		balContract.ToCellDep(),
 		reverseRecordRootContract.ToCellDep(),
 		configCellMain.ToCellDep(),
 		configCellTypeArgsReverseRecord.ToCellDep(),
+		configCellTypeArgsSMTNodeWhitelist.ToCellDep(),
 	)
 
 	// inputs
