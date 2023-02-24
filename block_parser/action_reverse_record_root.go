@@ -70,7 +70,7 @@ func (b *BlockParser) syncOtherProvider(req FuncTransactionHandleReq) error {
 			Nonce:     v.PrevNonce,
 			TaskID:    taskInfo.TaskID,
 			Account:   v.NextAccount,
-			Sign:      v.Signature,
+			Sign:      common.Bytes2Hex(v.Signature),
 			SubAction: string(v.Action),
 		}
 		recordInfos = append(recordInfos, recordInfo)

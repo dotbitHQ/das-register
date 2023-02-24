@@ -418,10 +418,10 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 			witnessData, err := reverseSmtWitnessBuilder.GenWitness(&witness.ReverseSmtRecord{
 				Version:     witness.ReverseSmtRecordVersion1,
 				Action:      witness.ReverseSmtRecordAction(record.SubAction),
-				Signature:   record.Sign,
+				Signature:   common.Hex2Bytes(record.Sign),
 				SignType:    record.AlgorithmID,
 				Address:     common.Hex2Bytes(record.Address),
-				Proof:       proof,
+				Proof:       common.Hex2Bytes(proof),
 				PrevNonce:   preRecord.Nonce,
 				PrevAccount: preRecord.Account,
 				NextRoot:    smtRoot,
