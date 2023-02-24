@@ -111,7 +111,7 @@ func (t *TxTimer) doReverseSmtTask() error {
 	}, "id=?", smtPendingTask.ID); err != nil {
 		return fmt.Errorf("UpdateReverseSmtTaskInfo err: %s", err)
 	}
-	log.Infof("doReverseSmtTask update task_info ref_outpoint: %s, outpoint: ", refOutpoint, outpoint)
+	log.Infof("doReverseSmtTask update task_info ref_outpoint: %s, outpoint: %s", refOutpoint, outpoint)
 
 	// send transaction
 	if _, sendTxErr := txBuilder.SendTransaction(); sendTxErr != nil {

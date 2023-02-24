@@ -2,6 +2,7 @@ package timer
 
 import (
 	"github.com/dotbitHQ/das-lib/sign"
+	"github.com/dotbitHQ/das-lib/witness"
 	"testing"
 )
 
@@ -18,4 +19,32 @@ func TestLocalSign(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(string(bs))
+}
+
+func Test_GenWitness(t *testing.T) {
+
+	builder := witness.NewReverseSmtBuilder()
+
+	record := &witness.ReverseSmtRecord{
+		Version:     1,
+		Action:      "update",
+		Signature:   "0x307836653663396233663732613437656231356565363333366537373665393161656538613264343339306638366666613232366230393934383262393535333761336266643936626236363363666530653136646161343330306331643865623362313361356438666563396339373131326462616661303762353265323966313162",
+		SignType:    3,
+		Address:     "0xc0d0087dA03480f9d7e7E1D76d2DCa4bb0A98B17",
+		Proof:       "0x3078346334663030",
+		PrevNonce:   0,
+		PrevAccount: "",
+		NextRoot:    []byte("df41487f90abe236cfc3b57cd269e50c75cd21a262ce2f8bd141fba8d28ef65d"),
+		NextAccount: "test.bit",
+	}
+	bs, err := record.GenBytes()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	parseRecord, err := builder.FromBytes(bs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(*parseRecord)
 }
