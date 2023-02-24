@@ -8,7 +8,6 @@ import (
 	"das_register_server/http_server/api_code"
 	"das_register_server/internal"
 	"das_register_server/tables"
-	"encoding/base64"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -202,8 +201,7 @@ func (cache *ReverseSmtSignCache) GenSignMsg() string {
 	data = append(data, []byte(cache.Account)...)
 	bys, _ := blake2b.Blake256(data)
 
-	signMsg := common.Bytes2Hex([]byte("from did: "))[2:] + base64.StdEncoding.EncodeToString(bys)
-	signMsg = common.Bytes2Hex([]byte(signMsg))
+	signMsg := common.Bytes2Hex(append([]byte("from did: "), bys...))
 
 	cache.SignMsg = signMsg
 	return signMsg
