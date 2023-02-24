@@ -420,7 +420,7 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 				Action:      witness.ReverseSmtRecordAction(record.SubAction),
 				Signature:   record.Sign,
 				SignType:    record.AlgorithmID,
-				Address:     record.Address,
+				Address:     common.Hex2Bytes(record.Address),
 				Proof:       proof,
 				PrevNonce:   preRecord.Nonce,
 				PrevAccount: preRecord.Account,
