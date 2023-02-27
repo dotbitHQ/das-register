@@ -19,7 +19,7 @@ const (
 
 type TableCoupon struct {
 	Id         uint64     `json:"id" gorm:"column:id;primary_key;AUTO_INCREMENT"`
-	Code       string     `json:"code" gorm:"column:code;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT ''"`
+	Code       string     `json:"code" gorm:"column:code;uniqueIndex:code_unique;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT ''"`
 	CouponType CouponType `json:"type" gorm:"column:type;type:tinyint NOT NULL DEFAULT '0' COMMENT '1:4 2:5'"`
 	OrderId    string     `json:"order_id" gorm:"column:order_id;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''""`
 	CreatedAt  time.Time  `json:"created_at" gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
