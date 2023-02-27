@@ -97,6 +97,9 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 	if err != nil {
 		return err
 	}
+
+	log.Infof("doReverseSend reqSignature: %s, fixSignature: %s", req.Signature, signature)
+
 	if err := h.dbDao.CreateReverseSmtRecord(&tables.ReverseSmtRecordInfo{
 		Address:     cacheData.AddressHex,
 		AlgorithmID: uint8(cacheData.DasAlgorithmId),
@@ -111,12 +114,12 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 }
 
 // doReverseSmtSignCheck
-func doReverseSmtSignCheck(cacheData *ReverseSmtSignCache, signMsg string, apiResp *api_code.ApiResp) (string, error) {
+func doReverseSmtSignCheck(cacheData *ReverseSmtSignCache, signature string, apiResp *api_code.ApiResp) (string, error) {
 	signOk := false
 	var err error
 
 	signAddress := cacheData.AddressHex
-	signMsg, err = fixSignature(cacheData.DasAlgorithmId, signMsg)
+	signature, err = fixSignature(cacheData.DasAlgorithmId, signature)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeSigErr, "sign error")
 		return "", fmt.Errorf("fixSignature err: %s", err)
@@ -124,7 +127,7 @@ func doReverseSmtSignCheck(cacheData *ReverseSmtSignCache, signMsg string, apiRe
 
 	switch cacheData.DasAlgorithmId {
 	case common.DasAlgorithmIdEth:
-		signOk, err = sign.VerifyPersonalSignature(common.Hex2Bytes(signMsg), common.Hex2Bytes(cacheData.SignMsg), signAddress)
+		signOk, err = sign.VerifyPersonalSignature(common.Hex2Bytes(signature), common.Hex2Bytes(cacheData.SignMsg), signAddress)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeSigErr, "eth sign error")
 			return "", fmt.Errorf("VerifyPersonalSignature err: %s", err)
@@ -134,9 +137,9 @@ func doReverseSmtSignCheck(cacheData *ReverseSmtSignCache, signMsg string, apiRe
 			apiResp.ApiRespErr(api_code.ApiCodeSigErr, "TronHexToBase58 error")
 			return "", fmt.Errorf("TronHexToBase58 err: %s [%s]", err, signAddress)
 		}
-		signOk = sign.TronVerifySignature(true, common.Hex2Bytes(signMsg), common.Hex2Bytes(cacheData.SignMsg), signAddress)
+		signOk = sign.TronVerifySignature(true, common.Hex2Bytes(signature), common.Hex2Bytes(cacheData.SignMsg), signAddress)
 	case common.DasAlgorithmIdEd25519:
-		signOk = sign.VerifyEd25519Signature(common.Hex2Bytes(signAddress), common.Hex2Bytes(cacheData.SignMsg), common.Hex2Bytes(signMsg))
+		signOk = sign.VerifyEd25519Signature(common.Hex2Bytes(signAddress), common.Hex2Bytes(cacheData.SignMsg), common.Hex2Bytes(signature))
 	default:
 		apiResp.ApiRespErr(api_code.ApiCodeNotExistSignType, fmt.Sprintf("not exist sign type[%d]", cacheData.DasAlgorithmId))
 		return "", nil
@@ -144,7 +147,7 @@ func doReverseSmtSignCheck(cacheData *ReverseSmtSignCache, signMsg string, apiRe
 	if !signOk {
 		apiResp.ApiRespErr(api_code.ApiCodeSigErr, "res sign error")
 	}
-	return signMsg, nil
+	return signature, nil
 }
 
 func fixSignature(signType common.DasAlgorithmId, signMsg string) (string, error) {
@@ -153,17 +156,17 @@ func fixSignature(signType common.DasAlgorithmId, signMsg string) (string, error
 	case common.DasAlgorithmIdCkb:
 	case common.DasAlgorithmIdEth, common.DasAlgorithmIdEth712:
 		if len(signMsg) >= 132 && signMsg[130:132] == "1b" {
-			res = signMsg[0:130] + "00" + signMsg[132:]
+			res = signMsg[:130] + "00" + signMsg[132:]
 		}
 		if len(signMsg) >= 132 && signMsg[130:132] == "1c" {
-			res = signMsg[0:130] + "01" + signMsg[132:]
+			res = signMsg[:130] + "01" + signMsg[132:]
 		}
 	case common.DasAlgorithmIdTron:
 		if strings.HasSuffix(signMsg, "1b") {
-			res = signMsg[0:len(signMsg)-2] + "00"
+			res = signMsg[:len(signMsg)-2] + "00"
 		}
 		if strings.HasSuffix(signMsg, "1c") {
-			res = signMsg[0:len(signMsg)-2] + "01"
+			res = signMsg[:len(signMsg)-2] + "01"
 		}
 	default:
 		return "", fmt.Errorf("unknown sign type: %d", signType)
