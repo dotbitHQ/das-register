@@ -24,14 +24,14 @@ const (
 // ReverseSmtTaskInfo reverse task info
 type ReverseSmtTaskInfo struct {
 	ID          uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT"`
-	TaskID      string    `gorm:"column:task_id;NOT NULL"`                // 批处理任务ID
-	RefOutpoint string    `gorm:"column:ref_outpoint;NOT NULL"`           // ref sub account cell outpoint
-	BlockNumber uint64    `gorm:"column:block_number;default:0;NOT NULL"` // tx block number
-	Outpoint    string    `gorm:"column:outpoint;NOT NULL"`               // new sub account cell outpoint
-	Timestamp   int64     `gorm:"column:timestamp;default:0;NOT NULL"`    // record timestamp
-	SmtStatus   int       `gorm:"column:smt_status;default:0;NOT NULL"`   // smt的状态
-	TxStatus    int       `gorm:"column:tx_status;default:0;NOT NULL"`    // 交易状态
-	Retry       int       `gorm:"column:retry;default:0;NOT NULL"`        // 失败重试次数
+	TaskID      string    `gorm:"column:task_id;NOT NULL;index:idx_task_id"`   // 批处理任务ID
+	RefOutpoint string    `gorm:"column:ref_outpoint;NOT NULL"`                // ref sub_account cell outpoint
+	BlockNumber uint64    `gorm:"column:block_number;default:0;NOT NULL"`      // tx block number
+	Outpoint    string    `gorm:"column:outpoint;NOT NULL;index:idx_outpoint"` // new sub_account cell outpoint
+	Timestamp   int64     `gorm:"column:timestamp;default:0;NOT NULL"`         // record timestamp
+	SmtStatus   int       `gorm:"column:smt_status;default:0;NOT NULL"`        // smt的状态
+	TxStatus    int       `gorm:"column:tx_status;default:0;NOT NULL"`         // 交易状态
+	Retry       int       `gorm:"column:retry;default:0;NOT NULL"`             // 失败重试次数
 	CreatedAt   time.Time `gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''"`
 }

@@ -16,14 +16,14 @@ const (
 // ReverseSmtRecordInfo reverse smt record info
 type ReverseSmtRecordInfo struct {
 	ID          uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT"`
-	Address     string    `gorm:"column:address;NOT NULL"` // 设置反向解析的地址
-	AlgorithmID uint8     `gorm:"column:algorithm_id;default:0;NOT NULL"`
-	Nonce       uint32    `gorm:"column:nonce;default:0;NOT NULL"`
-	TaskID      string    `gorm:"column:task_id;NOT NULL"`             // 批处理任务ID
-	Account     string    `gorm:"column:account;default:0;NOT NULL"`   // 子账户名
-	Sign        string    `gorm:"column:sign;NOT NULL"`                // 用户签名
-	Timestamp   int64     `gorm:"column:timestamp;default:0;NOT NULL"` // send transaction timestamp
-	SubAction   string    `gorm:"column:sub_action;NOT NULL"`          // 交易的子类型：update, remove
+	Address     string    `gorm:"column:address;NOT NULL;index:idx_address_alg_nonce"` // 设置反向解析的地址
+	AlgorithmID uint8     `gorm:"column:algorithm_id;default:0;NOT NULL;index:idx_address_alg_nonce"`
+	Nonce       uint32    `gorm:"column:nonce;default:0;NOT NULL;index:idx_address_alg_nonce"`
+	TaskID      string    `gorm:"column:task_id;NOT NULL;index:idx_task_id"` // 批处理任务ID
+	Account     string    `gorm:"column:account;default:0;NOT NULL"`         // 子账户名
+	Sign        string    `gorm:"column:sign;NOT NULL"`                      // 用户签名
+	Timestamp   int64     `gorm:"column:timestamp;default:0;NOT NULL"`       // send transaction timestamp
+	SubAction   string    `gorm:"column:sub_action;NOT NULL"`                // 交易的子类型：update, remove
 	CreatedAt   time.Time `gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''"`
 }
