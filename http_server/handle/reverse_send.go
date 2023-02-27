@@ -13,6 +13,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -92,7 +93,8 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 	}()
 
 	// check user sign msg
-	if _, err := doReverseSmtSignCheck(cacheData, req.Signature, apiResp); err != nil {
+	signature, err := doReverseSmtSignCheck(cacheData, req.Signature, apiResp)
+	if err != nil {
 		return err
 	}
 	if err := h.dbDao.CreateReverseSmtRecord(&tables.ReverseSmtRecordInfo{
@@ -100,7 +102,7 @@ func (h *HttpHandle) doReverseSend(req *ReqReverseSend, apiResp *api_code.ApiRes
 		AlgorithmID: uint8(cacheData.DasAlgorithmId),
 		Nonce:       cacheData.Nonce,
 		Account:     cacheData.Account,
-		Sign:        req.Signature,
+		Sign:        signature,
 		SubAction:   cacheData.Action,
 	}); err != nil {
 		return err
@@ -114,17 +116,20 @@ func doReverseSmtSignCheck(cacheData *ReverseSmtSignCache, signMsg string, apiRe
 	var err error
 
 	signAddress := cacheData.AddressHex
+	signMsg, err = fixSignature(cacheData.DasAlgorithmId, signMsg)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeSigErr, "sign error")
+		return "", fmt.Errorf("fixSignature err: %s", err)
+	}
 
 	switch cacheData.DasAlgorithmId {
 	case common.DasAlgorithmIdEth:
-		signMsg = fixSignature(signMsg)
 		signOk, err = sign.VerifyPersonalSignature(common.Hex2Bytes(signMsg), common.Hex2Bytes(cacheData.SignMsg), signAddress)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeSigErr, "eth sign error")
 			return "", fmt.Errorf("VerifyPersonalSignature err: %s", err)
 		}
 	case common.DasAlgorithmIdTron:
-		signMsg = fixSignature(signMsg)
 		if signAddress, err = common.TronHexToBase58(signAddress); err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeSigErr, "TronHexToBase58 error")
 			return "", fmt.Errorf("TronHexToBase58 err: %s [%s]", err, signAddress)
@@ -142,13 +147,26 @@ func doReverseSmtSignCheck(cacheData *ReverseSmtSignCache, signMsg string, apiRe
 	return signMsg, nil
 }
 
-// fixSignature
-func fixSignature(signMsg string) string {
-	if len(signMsg) >= 132 && signMsg[130:132] == "1b" {
-		signMsg = signMsg[0:130] + "00" + signMsg[132:]
+func fixSignature(signType common.DasAlgorithmId, signMsg string) (string, error) {
+	res := ""
+	switch signType {
+	case common.DasAlgorithmIdCkb:
+	case common.DasAlgorithmIdEth, common.DasAlgorithmIdEth712:
+		if len(signMsg) >= 132 && signMsg[130:132] == "1b" {
+			res = signMsg[0:130] + "00" + signMsg[132:]
+		}
+		if len(signMsg) >= 132 && signMsg[130:132] == "1c" {
+			res = signMsg[0:130] + "01" + signMsg[132:]
+		}
+	case common.DasAlgorithmIdTron:
+		if strings.HasSuffix(signMsg, "1b") {
+			res = signMsg[0:len(signMsg)-2] + "00"
+		}
+		if strings.HasSuffix(signMsg, "1c") {
+			res = signMsg[0:len(signMsg)-2] + "01"
+		}
+	default:
+		return "", fmt.Errorf("unknown sign type: %d", signType)
 	}
-	if len(signMsg) >= 132 && signMsg[130:132] == "1c" {
-		signMsg = signMsg[0:130] + "01" + signMsg[132:]
-	}
-	return signMsg
+	return res, nil
 }
