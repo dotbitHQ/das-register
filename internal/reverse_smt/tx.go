@@ -16,7 +16,7 @@ type ReverseSmtParams struct {
 	BalanceCells  []*indexer.LiveCell
 	TotalCapacity uint64
 	FeeCapacity   uint64
-	SmtRoot       string
+	SmtRoot       []byte
 	PreTx         *types.TransactionWithStatus
 }
 
@@ -75,7 +75,7 @@ func BuildReverseSmtTx(req *ReverseSmtParams) (*txbuilder.BuildTransactionParams
 
 	// outputs
 	txParams.Outputs = append(txParams.Outputs, req.PreTx.Transaction.Outputs[0])
-	txParams.OutputsData = append(txParams.OutputsData, []byte(req.SmtRoot))
+	txParams.OutputsData = append(txParams.OutputsData, req.SmtRoot)
 
 	// change
 	changeCapacity := req.TotalCapacity - req.FeeCapacity

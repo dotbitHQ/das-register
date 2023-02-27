@@ -377,7 +377,7 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 		BalanceCells:  liveCells,
 		TotalCapacity: totalCapacity,
 		FeeCapacity:   feeCapacity,
-		SmtRoot:       latestRootHash.String(),
+		SmtRoot:       latestRootHash,
 		PreTx:         preTx,
 	})
 	if err != nil {
