@@ -85,6 +85,7 @@ const (
 	TokenIdWx          PayTokenId = "wx_cny"
 	TokenIdBnb         PayTokenId = "bsc_bnb"
 	TokenIdMatic       PayTokenId = "polygon_matic"
+	TokenCoupon        PayTokenId = "coupon"
 )
 
 func (p PayTokenId) IsTokenIdCkbInternal() bool {

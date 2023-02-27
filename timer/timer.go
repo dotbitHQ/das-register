@@ -61,7 +61,7 @@ func (t *TxTimer) Run() error {
 	}
 	tickerRefundApply := time.NewTicker(time.Minute * 10)
 	tickerClosedAndUnRefund := time.NewTicker(time.Minute * 20)
-
+	tickerResetCoupon := time.NewTicker(time.Minute * 1)
 	t.wg.Add(5)
 	go func() {
 		for {
@@ -162,7 +162,13 @@ func (t *TxTimer) Run() error {
 				if err := t.doCheckClosedAndUnRefund(); err != nil {
 					log.Error("doCheckClosedAndUnRefund err: ", err.Error())
 				}
-				log.Info("doCheckClosedAndUnRefund start ...")
+				log.Info("doCheckClosedAndUnRefund end ...")
+			case <-tickerResetCoupon.C:
+				log.Info("")
+				if err := t.DoResetCoupon(); err != nil {
+					log.Error("doResetCoupon err: ", err.Error())
+				}
+				log.Info("doResetCoupon end ...")
 			case <-t.ctx.Done():
 				log.Info("timer done")
 				t.wg.Done()

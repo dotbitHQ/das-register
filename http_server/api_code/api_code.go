@@ -47,6 +47,9 @@ const (
 	ApiCodeOnCross                      ApiCode = 30035
 	ApiCodeSubAccountNotEnabled         ApiCode = 30036
 	ApiCodeAfterGracePeriod             ApiCode = 30037
+	ApiCodeCouponInvalid                ApiCode = 30038
+	ApiCodeCouponUsed                   ApiCode = 30039
+	ApiCodeCouponUnopen                 ApiCode = 30040
 )
 
 const (
@@ -85,8 +88,8 @@ const (
 	MethodOrderChange      = "das_changeOrder"
 	MethodOrderPayHash     = "das_doOrderPayHash"
 	MethodEditScript       = "das_editScript"
-
-	MethodCkbRpc = "das_ckbRpc"
+	MethodOrderCheckCoupon = "das_checkCoupon"
+	MethodCkbRpc           = "das_ckbRpc"
 )
 
 type ApiResp struct {

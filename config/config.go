@@ -66,6 +66,10 @@ type CfgServer struct {
 		RecyclePreEarly         bool              `json:"recycle_pre_early" yaml:"recycle_pre_early"`
 		RecyclePreEarlyCronSpec string            `json:"recycle_pre_early_cron_spec" yaml:"recycle_pre_early_cron_spec"`
 		NotExit                 bool              `json:"not_exit" yaml:"not_exit"`
+		CouponFilePath          string            `json:"coupon_file_path" yaml:"coupon_file_path"`
+		CouponEncrySalt         string            `json:"coupon_encry_salt" yaml:"coupon_encry_salt"`
+		CouponQrcodePrefix      string            `json:"coupon_qrcode_prefix" yaml:"coupon_qrcode_prefix"`
+		CouponCodeLength        uint8             `json:"coupon_code_length" yaml:"coupon_code_length"`
 	} `json:"server" yaml:"server"`
 	Origins          []string          `json:"origins" yaml:"origins"`
 	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`

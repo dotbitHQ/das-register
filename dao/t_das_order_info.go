@@ -129,6 +129,24 @@ func (d *DbDao) CreateOrder(order *tables.TableDasOrderInfo) error {
 	return d.db.Create(&order).Error
 }
 
+func (d *DbDao) CreateCouponOrder(order *tables.TableDasOrderInfo, coupon string) error {
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(order).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(tables.TableCoupon{}).
+			Where("code = ? and order_id= ? and use_at=? ", coupon, "", 0).
+			Updates(map[string]interface{}{
+				"order_id": order.OrderId,
+				"use_at":   time.Now().Unix(),
+			}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (d *DbDao) GetLatestRegisterOrderBySelf(chainType common.ChainType, address, accountId string) (order tables.TableDasOrderInfo, err error) {
 	err = d.db.Where("chain_type=? AND address=? AND account_id=? AND action=? AND order_type=? AND order_status=?",
 		chainType, address, accountId, common.DasActionApplyRegister, tables.OrderTypeSelf, tables.OrderStatusDefault).
