@@ -1,18 +1,17 @@
 package handle
 
 import (
-	"bytes"
 	"crypto/md5"
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"das_register_server/internal"
 	"das_register_server/tables"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/molecule"
 	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/crypto/blake2b"
 	"github.com/scorpiotzh/toolib"
@@ -193,14 +192,9 @@ func (cache *ReverseSmtSignCache) CacheKey() string {
 
 func (cache *ReverseSmtSignCache) GenSignMsg() string {
 	data := make([]byte, 0)
-	nonceByte := bytes.NewBuffer([]byte{})
-	_ = binary.Write(nonceByte, binary.LittleEndian, cache.Nonce)
-	data = append(data, nonceByte.Bytes()...)
-
-	// account
+	data = append(data, molecule.GoU32ToBytes(1)...)
 	data = append(data, []byte(cache.Account)...)
 	bys, _ := blake2b.Blake256(data)
-
 	signMsg := common.Bytes2Hex(append([]byte("from did: "), bys...))
 
 	cache.SignMsg = signMsg
