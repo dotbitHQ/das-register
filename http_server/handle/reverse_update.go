@@ -192,7 +192,7 @@ func (cache *ReverseSmtSignCache) CacheKey() string {
 
 func (cache *ReverseSmtSignCache) GenSignMsg() string {
 	data := make([]byte, 0)
-	data = append(data, molecule.GoU32ToBytes(1)...)
+	data = append(data, molecule.GoU32ToBytes(cache.Nonce)...)
 	data = append(data, []byte(cache.Account)...)
 	bys, _ := blake2b.Blake256(data)
 	signMsg := common.Bytes2Hex(append([]byte("from did: "), bys...))
