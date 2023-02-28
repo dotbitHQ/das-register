@@ -49,6 +49,7 @@ const (
 	ApiCodeAfterGracePeriod             ApiCode = 30037
 	ApiCodeReverseSmtOnReverse          ApiCode = 30038
 	ApiCodeNotExistSignType             ApiCode = 30039
+	ApiCodeReverseSmtPending            ApiCode = 30040
 )
 
 const (
@@ -99,9 +100,6 @@ type ApiResp struct {
 	ErrNo  ApiCode     `json:"err_no"`
 	ErrMsg string      `json:"err_msg"`
 	Data   interface{} `json:"data"`
-
-
-    
 }
 
 func ApiRespOK(data interface{}) ApiResp {

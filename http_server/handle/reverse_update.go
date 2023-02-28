@@ -116,6 +116,29 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		return fmt.Errorf("cache err: %s", err.Error())
 	}
 
+	reverseSmtRecord, err := h.dbDao.GetReverseSmtRecordByAddress(address, uint8(res.DasAlgorithmId))
+	if err != nil {
+		return fmt.Errorf("GetReverseSmtRecordByAddress err: %s", err.Error())
+	}
+	if reverseSmtRecord.ID > 0 {
+		if reverseSmtRecord.TaskID == "" {
+			err = fmt.Errorf("have pending reverse now, retry later")
+			apiResp.ApiRespErr(api_code.ApiCodeReverseSmtPending, err.Error())
+			return err
+		}
+		taskInfo, err := h.dbDao.GetLatestReverseSmtTaskByTaskID(reverseSmtRecord.TaskID)
+		if err != nil {
+			return fmt.Errorf("GetLatestReverseSmtTaskByTaskID err: %s", err.Error())
+		}
+		if (taskInfo.SmtStatus != tables.ReverseSmtStatusConfirm ||
+			taskInfo.TxStatus != tables.ReverseSmtTxStatusConfirm) &&
+			taskInfo.SmtStatus != tables.ReverseSmtStatusRollbackConfirm {
+			err = fmt.Errorf("have pending reverse now, retry later")
+			apiResp.ApiRespErr(api_code.ApiCodeReverseSmtPending, err.Error())
+			return err
+		}
+	}
+
 	reverse, err := h.dbDao.SearchLatestReverse(res.ChainType, address)
 	if err != nil {
 		return fmt.Errorf("SearchLatestReverse err: %s", err)
