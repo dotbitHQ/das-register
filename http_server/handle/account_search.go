@@ -409,6 +409,9 @@ func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.
 			return
 		}
 		if order.OrderType == tables.OrderTypeSelf {
+			if order.RegisterStatus == tables.RegisterStatusRegistered && order.CrossCoinType != "" {
+				status = tables.SearchStatusOnCross
+			}
 			payInfo, err := h.dbDao.GetPayInfoByOrderId(order.OrderId)
 			if err != nil {
 				log.Error("GetPayInfoByOrderId err:", err.Error())
