@@ -130,8 +130,18 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 			return err
 		}
+
+		reverse, err = h.dbDao.SearchLatestReverseByType(res.ChainType, address, tables.ReverseTypeOld)
+		if err != nil {
+			return fmt.Errorf("SearchLatestReverseByType err: %s", err)
+		}
+		if reverse.Id > 0 && reverse.Account == req.Account {
+			err = fmt.Errorf("invalid param, remove old reverse please use /v1/reverse/retract")
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
+			return err
+		}
 	}
-	if req.Action == tables.SubActionUpdate && (reverse.Id > 0 && reverse.Account == req.Account) {
+	if req.Action == tables.SubActionUpdate && reverse.Id > 0 && reverse.Account == req.Account {
 		err = fmt.Errorf("invalid param, reverse exist")
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 		return err
