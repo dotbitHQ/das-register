@@ -19,6 +19,7 @@ pay_address_map: # receiver's address
   "tron": ""
   "bsc": ""
   "polygon": ""
+  "doge": ""
 chain:
   # Use host.docker.internal instead if running with docker compose.
   ckb_url: "http://127.0.0.1:8114"

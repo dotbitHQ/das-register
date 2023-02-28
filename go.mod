@@ -3,8 +3,7 @@ module das_register_server
 go 1.16
 
 require (
-	github.com/dotbitHQ/das-lib v1.0.1-0.20221229085506-50b5a890b633
-	github.com/elazarl/goproxy v0.0.0-20220417044921-416226498f94 // indirect
+	github.com/dotbitHQ/das-lib v1.0.1-0.20230228090816-0c97fe36e0d7
 	github.com/ethereum/go-ethereum v1.10.17
 	github.com/fsnotify/fsnotify v1.5.3
 	github.com/gin-gonic/gin v1.7.7
@@ -18,7 +17,6 @@ require (
 	github.com/shopspring/decimal v1.3.1
 	github.com/urfave/cli/v2 v2.4.4
 	gorm.io/gorm v1.23.6
-	moul.io/http2curl v1.0.0 // indirect
 )
 
 replace github.com/ethereum/go-ethereum v1.9.14 => github.com/ethereum/go-ethereum v1.10.17

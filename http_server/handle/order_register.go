@@ -303,7 +303,7 @@ func (h *HttpHandle) checkOrderInfo(coinType, crossCoinType string, req *ReqOrde
 		} else if acc.Status == tables.AccountStatusOnCross {
 			apiResp.ApiRespErr(api_code.ApiCodeOnCross, "account on cross")
 			return nil
-		} else if strings.EqualFold(acc.Owner, "0x0000000000000000000000000000000000000000") {
+		} else if strings.EqualFold(acc.Owner, common.BlackHoleAddress) {
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "inviter account owner is 0x0")
 			return nil
 		}

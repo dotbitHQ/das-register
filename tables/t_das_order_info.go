@@ -86,6 +86,7 @@ const (
 	TokenIdBnb         PayTokenId = "bsc_bnb"
 	TokenIdMatic       PayTokenId = "polygon_matic"
 	TokenCoupon        PayTokenId = "coupon"
+	TokenIdDoge        PayTokenId = "doge_doge"
 )
 
 func (p PayTokenId) IsTokenIdCkbInternal() bool {
@@ -104,21 +105,25 @@ func (p PayTokenId) ToChainString() string {
 		return "bsc"
 	case TokenIdMatic:
 		return "polygon"
+	case TokenIdDoge:
+		return "doge"
 	}
 	return ""
 }
 
-func (p PayTokenId) ToChainType() common.ChainType {
-	switch p {
-	case TokenIdDas, TokenIdCkb, TokenIdCkbInternal:
-		return common.ChainTypeCkb
-	case TokenIdEth, TokenIdBnb, TokenIdMatic:
-		return common.ChainTypeEth
-	case TokenIdTrx:
-		return common.ChainTypeTron
-	}
-	return common.ChainTypeEth
-}
+//func (p PayTokenId) ToChainType() common.ChainType {
+//	switch p {
+//	case TokenIdDas, TokenIdCkb, TokenIdCkbInternal:
+//		return common.ChainTypeCkb
+//	case TokenIdEth, TokenIdBnb, TokenIdMatic:
+//		return common.ChainTypeEth
+//	case TokenIdTrx:
+//		return common.ChainTypeTron
+//	case TokenIdDoge:
+//		return common.ChainTypeDogeCoin
+//	}
+//	return common.ChainTypeEth
+//}
 
 type PayType string
 
