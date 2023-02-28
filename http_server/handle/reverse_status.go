@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
+	"strings"
 )
 
 type ReqReverseStatus struct {
@@ -44,8 +45,8 @@ func (h *HttpHandle) ReverseStatus(ctx *gin.Context) {
 // doReverseStatus
 func (h *HttpHandle) doReverseStatus(req *ReqReverseStatus, apiResp *api_code.ApiResp) error {
 	res := checkReqKeyInfo(h.dasCore.Daf(), &req.ChainTypeAddress, apiResp)
-
-	reverseRecord, err := h.dbDao.GetReverseSmtRecordByAddress(res.AddressHex, uint8(res.DasAlgorithmId))
+	address := strings.ToLower(res.AddressHex)
+	reverseRecord, err := h.dbDao.GetReverseSmtRecordByAddress(address, uint8(res.DasAlgorithmId))
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "db error")
 		return fmt.Errorf("GetReverseSmtRecordByAddress err: %s", err)

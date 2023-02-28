@@ -37,6 +37,7 @@ func (t *TxTimer) doReverseSmtTask() error {
 	}
 
 	// rollback smt if retry>=tables.ReverseSmtMaxRetryNum
+	log.Info("doReverseSmtTask reverseSmtTaskRollback")
 	rt, err = t.reverseSmtTaskRollback()
 	if err != nil {
 		return fmt.Errorf("doReverseSmtTaskRollback err: %s", err)
@@ -171,6 +172,7 @@ func (t *TxTimer) doReverseSmtUpdateSmt(id uint64, reverseRecordsByTaskID []*tab
 
 // reverseSmtTaskRollback
 func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
+	log.Info("reverseSmtTaskRollback find all smt_status=1 and tx_status=0 and retry>=tables.ReverseSmtMaxRetryNum, rollback it")
 	// find all smt_status=1 and tx_status=0 and retry>=tables.ReverseSmtMaxRetryNum, rollback it
 	rollbackTaskInfos, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
 		return db.Where("smt_status=? and tx_status=? and retry>=?",
@@ -180,6 +182,7 @@ func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
 		return false, fmt.Errorf("FindReverseSmtTaskInfo err: %s", err)
 	}
 	if len(rollbackTaskInfos) == 0 {
+		log.Info("reverseSmtTaskRollback not found")
 		return false, nil
 	}
 
@@ -326,7 +329,7 @@ func (t *TxTimer) reverseSmtTaskAssignment() error {
 func (t *TxTimer) reverseSmtGetPendingTask() (smtPendingTask tables.ReverseSmtTaskInfo, err error) {
 	smtPendingTasks, err := t.dbDao.FindReverseSmtTaskInfo(func(db *gorm.DB) *gorm.DB {
 		return db.Where(" ( smt_status!=? or tx_status!=? ) and smt_status!=? ",
-			tables.ReverseSmtStatusRollbackConfirm, tables.ReverseSmtTxStatusConfirm, tables.ReverseSmtStatusRollbackConfirm).Limit(1)
+			tables.ReverseSmtStatusConfirm, tables.ReverseSmtTxStatusConfirm, tables.ReverseSmtStatusRollbackConfirm).Limit(1)
 	})
 	if err != nil {
 		err = fmt.Errorf("FindReverseSmtTaskInfo err: %s", err)

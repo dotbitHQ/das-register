@@ -144,8 +144,10 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		return fmt.Errorf("account not exist: %s", req.Account)
 	}
 
-	if !strings.EqualFold(acc.Owner, res.AddressHex) && !strings.EqualFold(acc.Manager, res.AddressHex) {
-		record, err := h.dbDao.SearchAccountReverseRecords(acc.Account, res.AddressHex)
+	address := strings.ToLower(res.AddressHex)
+
+	if !strings.EqualFold(acc.Owner, address) && !strings.EqualFold(acc.Manager, address) {
+		record, err := h.dbDao.SearchAccountReverseRecords(acc.Account, address)
 		if err != nil {
 			if err != gorm.ErrRecordNotFound {
 				*apiResp = api_code.ApiRespErr(api_code.ApiCodeDbError, "search account err")
@@ -175,7 +177,7 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		SignMsg:        resp.SignMsg,
 		ChainType:      res.ChainType,
 		DasAlgorithmId: res.DasAlgorithmId,
-		AddressHex:     res.AddressHex,
+		AddressHex:     address,
 		Nonce:          nonce,
 	}
 	resp.SignMsg = dataCache.GenSignMsg()

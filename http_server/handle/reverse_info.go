@@ -57,7 +57,9 @@ func (h *HttpHandle) ReverseInfo(ctx *gin.Context) {
 // doReverseStatus
 func (h *HttpHandle) doReverseInfo(req *ReqReverseInfo, apiResp *api_code.ApiResp) error {
 	res := checkReqKeyInfo(h.dasCore.Daf(), &req.ChainTypeAddress, apiResp)
-	reverse, err := h.dbDao.SearchLatestReverse(res.ChainType, res.AddressHex)
+	address := strings.ToLower(res.AddressHex)
+
+	reverse, err := h.dbDao.SearchLatestReverse(res.ChainType, address)
 	if err != nil {
 		return fmt.Errorf("SearchLatestReverse err: %s", err)
 	}
@@ -74,7 +76,7 @@ func (h *HttpHandle) doReverseInfo(req *ReqReverseInfo, apiResp *api_code.ApiRes
 	errWg := errgroup.Group{}
 	errWg.Go(func() error {
 		var err error
-		reverseOld, err = h.dbDao.SearchLatestReverseByType(res.ChainType, res.AddressHex, tables.ReverseTypeOld)
+		reverseOld, err = h.dbDao.SearchLatestReverseByType(res.ChainType, address, tables.ReverseTypeOld)
 		if err != nil {
 			return fmt.Errorf("SearchLatestReverseByType err: %s", err)
 		}
@@ -82,7 +84,7 @@ func (h *HttpHandle) doReverseInfo(req *ReqReverseInfo, apiResp *api_code.ApiRes
 	})
 	errWg.Go(func() error {
 		var err error
-		reverseNew, err = h.dbDao.SearchLatestReverseByType(res.ChainType, res.AddressHex, tables.ReverseTypeSmt)
+		reverseNew, err = h.dbDao.SearchLatestReverseByType(res.ChainType, address, tables.ReverseTypeSmt)
 		if err != nil {
 			return fmt.Errorf("SearchLatestReverseByType err: %s", err)
 		}
@@ -114,14 +116,14 @@ func (h *HttpHandle) doReverseInfo(req *ReqReverseInfo, apiResp *api_code.ApiRes
 		return nil
 	}
 
-	if strings.EqualFold(res.AddressHex, acc.Owner) || strings.EqualFold(res.AddressHex, acc.Manager) {
+	if strings.EqualFold(address, acc.Owner) || strings.EqualFold(address, acc.Manager) {
 		resp.IsValid = true
 		apiResp.ApiRespOK(resp)
 		return nil
 	}
 
 	// records
-	record, err := h.dbDao.SearchAccountReverseRecords(acc.Account, res.AddressHex)
+	record, err := h.dbDao.SearchAccountReverseRecords(acc.Account, address)
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
 			*apiResp = api_code.ApiRespErr(api_code.ApiCodeDbError, "search account err")
