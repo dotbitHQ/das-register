@@ -125,7 +125,8 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 			err = fmt.Errorf("invalid param, reverse no exist")
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 			return err
-		} else if reverse.ReverseType == tables.ReverseTypeOld {
+		}
+		if reverse.ReverseType == tables.ReverseTypeOld {
 			err = fmt.Errorf("invalid param, remove old reverse please use /v1/reverse/retract")
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 			return err
