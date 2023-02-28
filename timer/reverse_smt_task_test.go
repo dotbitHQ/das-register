@@ -112,3 +112,19 @@ func Test_ParseWitness(t *testing.T) {
 	t.Log(common.Bytes2Hex(txReverseSmtRecord[0].Proof))
 	t.Log(common.Bytes2Hex(txReverseSmtRecord[0].NextRoot))
 }
+
+func Test_ParseWitnessFromBytes(t *testing.T) {
+	smtBuilder := witness.NewReverseSmtBuilder()
+	dataBys := common.Hex2Bytes("0x6461730a0000000400000001000000060000007570646174654100000006b3abdf1a885d2a4741d39250a1080d66e3ba47add98c091574b1feb886a68e20e587add97c600064f0cace958671ebabe83c351f5d6265f1808d16e2ec653601010000000314000000deefc10a42cd84c072f2b0e2fa99061a74a0698c030000004c4f00000000000000000020000000b4bdcdec0653e52b55db4567a303cf8df35392e9aa687667808ca3cac3cfa5e00f000000726576657273652d736d742e626974")
+	actionDataType := common.Bytes2Hex(dataBys[common.WitnessDasCharLen:common.WitnessDasTableTypeEndIndex])
+	t.Log(actionDataType)
+	smtRecord, err := smtBuilder.FromBytes(dataBys[common.WitnessDasTableTypeEndIndex:])
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("action: %s", smtRecord.Action)
+	t.Logf("signature: %s", common.Bytes2Hex(smtRecord.Signature))
+	t.Logf("address: %s", common.Bytes2Hex(smtRecord.Address))
+	t.Logf("proof: %s", common.Bytes2Hex(smtRecord.Proof))
+	t.Logf("next_root: %s", common.Bytes2Hex(smtRecord.NextRoot))
+}

@@ -124,6 +124,11 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
 		return err
 	}
+	if req.Action == tables.SubActionUpdate && (reverse.Id > 0 && reverse.Account == req.Account) {
+		err = fmt.Errorf("invalid param, reverse exist")
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
+		return err
+	}
 
 	// account check
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
