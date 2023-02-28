@@ -139,7 +139,7 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		return fmt.Errorf("account not exist: %s", req.Account)
 	}
 
-	if acc.Owner != res.AddressHex && acc.Manager != res.AddressHex {
+	if !strings.EqualFold(acc.Owner, res.AddressHex) && !strings.EqualFold(acc.Manager, res.AddressHex) {
 		record, err := h.dbDao.SearchAccountReverseRecords(acc.Account, res.AddressHex)
 		if err != nil {
 			if err != gorm.ErrRecordNotFound {
