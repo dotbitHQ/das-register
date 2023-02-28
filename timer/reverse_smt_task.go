@@ -194,7 +194,7 @@ func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("GetReverseRecordSmtCell err: %s", err)
 	}
-	onlineSmtRoot := string(reverseRootCell.OutputData)
+	onlineSmtRoot := common.Bytes2Hex(reverseRootCell.OutputData)
 
 	rollbackKv := make([]smt.SmtKv, 0)
 	for _, task := range rollbackTaskInfos {
@@ -247,7 +247,7 @@ func (t *TxTimer) reverseSmtTaskRollback() (bool, error) {
 			return fmt.Errorf("UpdateSmt err: %s", err)
 		}
 		if smtOut.Root.String() != onlineSmtRoot {
-			log.Warnf("rollback warn, local smtRoot: %s != online smtRoot: %s", smtOut.Root, onlineSmtRoot)
+			log.Warnf("rollback warn, local smtRoot: %s != online smtRoot: %s", smtOut.Root.String(), onlineSmtRoot)
 		}
 		return nil
 	}); err != nil {
