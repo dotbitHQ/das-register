@@ -78,6 +78,7 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		log.Error("checkReqReverseRecord:", apiResp.ErrMsg)
 		return nil
 	}
+	address := strings.ToLower(res.AddressHex)
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
@@ -115,14 +116,20 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		return fmt.Errorf("cache err: %s", err.Error())
 	}
 
-	reverse, err := h.dbDao.SearchLatestReverse(res.ChainType, res.AddressHex)
+	reverse, err := h.dbDao.SearchLatestReverse(res.ChainType, address)
 	if err != nil {
 		return fmt.Errorf("SearchLatestReverse err: %s", err)
 	}
-	if req.Action == tables.SubActionRemove && (reverse.Id == 0 || reverse.ReverseType == 0) {
-		err = fmt.Errorf("invalid param, reverse no exist")
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
-		return err
+	if req.Action == tables.SubActionRemove {
+		if reverse.Id == 0 {
+			err = fmt.Errorf("invalid param, reverse no exist")
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
+			return err
+		} else if reverse.ReverseType == tables.ReverseTypeOld {
+			err = fmt.Errorf("invalid param, remove old reverse please use /v1/reverse/retract")
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
+			return err
+		}
 	}
 	if req.Action == tables.SubActionUpdate && (reverse.Id > 0 && reverse.Account == req.Account) {
 		err = fmt.Errorf("invalid param, reverse exist")
@@ -143,8 +150,6 @@ func (h *HttpHandle) doReverseUpdate(req *ReqReverseUpdate, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
 		return fmt.Errorf("account not exist: %s", req.Account)
 	}
-
-	address := strings.ToLower(res.AddressHex)
 
 	if !strings.EqualFold(acc.Owner, address) && !strings.EqualFold(acc.Manager, address) {
 		record, err := h.dbDao.SearchAccountReverseRecords(acc.Account, address)

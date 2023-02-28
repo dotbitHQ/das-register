@@ -79,7 +79,7 @@ func (h *HttpHandle) doReverseLatest(req *ReqReverseLatest, apiResp *api_code.Ap
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	var resp RespReverseLatest
 
-	reverse, err := h.dbDao.SearchLatestReverse(req.ChainType, req.Address)
+	reverse, err := h.dbDao.SearchLatestReverseByType(req.ChainType, req.Address, tables.ReverseTypeOld)
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
 			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search reverse err")
