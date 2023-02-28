@@ -269,7 +269,7 @@ func (t *TxTimer) reverseSmtCheckIsLatestTask() (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("GetReverseRecordSmtCell err: %s", err)
 	}
-	onlineSmtRoot := string(reverseRootCell.OutputData)
+	onlineSmtRoot := common.Bytes2Hex(reverseRootCell.OutputData)
 
 	if reverseInfo.RootHash != onlineSmtRoot {
 		log.Warnf("doReverseSmtTask reverseSmtCheckIsLatestTask online_smt_root: %s != reverse_smt_info.smt_root: %s", onlineSmtRoot, reverseInfo.RootHash)
