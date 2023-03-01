@@ -124,7 +124,7 @@ func (b *BlockParser) syncOtherProvider(req FuncTransactionHandleReq) error {
 			return err
 		}
 
-		smtRootHash := string(req.Tx.OutputsData[0])
+		smtRootHash := common.Bytes2Hex(req.Tx.OutputsData[0])
 		if smtOutput.Root.String() != smtRootHash {
 			log.Warnf("ActionReverseRecordRoot smtRoot: %s != txSmtRoot: %s", smtOutput.Root, smtRootHash)
 		}
