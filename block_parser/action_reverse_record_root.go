@@ -85,12 +85,14 @@ func (b *BlockParser) syncOtherProvider(req FuncTransactionHandleReq) error {
 	recordInfos := make([]*tables.ReverseSmtRecordInfo, 0)
 	for _, v := range txReverseSmtRecord {
 		recordInfo := &tables.ReverseSmtRecordInfo{
-			Address:   common.Bytes2Hex(v.Address),
-			Nonce:     v.PrevNonce,
-			TaskID:    taskInfo.TaskID,
-			Account:   v.NextAccount,
-			Sign:      common.Bytes2Hex(v.Signature),
-			SubAction: string(v.Action),
+			Address:     common.Bytes2Hex(v.Address),
+			AlgorithmID: uint8(common.DasAlgorithmIdEth),
+			Nonce:       v.PrevNonce,
+			TaskID:      taskInfo.TaskID,
+			Account:     v.NextAccount,
+			Sign:        common.Bytes2Hex(v.Signature),
+			Timestamp:   int64(req.BlockTimestamp),
+			SubAction:   string(v.Action),
 		}
 		recordInfos = append(recordInfos, recordInfo)
 
