@@ -110,7 +110,6 @@ func (b *BlockParser) syncOtherProvider(req FuncTransactionHandleReq) error {
 		})
 	}
 
-	opt := smt.SmtOpt{GetRoot: true}
 	if err := b.DbDao.DbTransaction(func(tx *gorm.DB) error {
 		if err := tx.Create(taskInfo).Error; err != nil {
 			return err
@@ -119,9 +118,9 @@ func (b *BlockParser) syncOtherProvider(req FuncTransactionHandleReq) error {
 			return err
 		}
 
-		tree := reverse_smt.GetReverseSmt()
 		// update SMT
-		smtOutput, err := tree.UpdateSmt(smtKv, opt)
+		tree := reverse_smt.GetReverseSmt()
+		smtOutput, err := tree.UpdateSmt(smtKv, smt.SmtOpt{GetRoot: true})
 		if err != nil {
 			return err
 		}
