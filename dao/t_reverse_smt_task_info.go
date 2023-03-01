@@ -22,14 +22,6 @@ func (d *DbDao) FindReverseSmtTaskInfo(fn func(db *gorm.DB) *gorm.DB) (reverse [
 	return
 }
 
-func (d *DbDao) UpdateReverseSmtTaskInfoStatus(smtStatus, txStatus int, where string, args ...interface{}) (err error) {
-	err = d.db.Model(&tables.ReverseSmtTaskInfo{}).Where(where, args...).Updates(map[string]interface{}{
-		"smt_status": smtStatus,
-		"tx_status":  txStatus,
-	}).Error
-	return
-}
-
 func (d *DbDao) UpdateAllReverseSmtRollbackToTxPending() (err error) {
 	err = d.db.Exec(fmt.Sprintf("update %s set smt_status=?, tx_status=?, retry=retry+1 where smt_status=? AND tx_status=?", tables.TableNameReverseSmtTaskInfo),
 		tables.ReverseSmtStatusPending, tables.ReverseSmtTxStatusDefault, tables.ReverseSmtStatusRollback, tables.ReverseSmtTxStatusReject).Error

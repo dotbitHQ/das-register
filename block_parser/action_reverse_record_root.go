@@ -34,8 +34,12 @@ func (b *BlockParser) ActionReverseRecordRoot(req FuncTransactionHandleReq) (res
 		}
 		return
 	}
-	// update smt_status=2 and tx_status=2
-	resp.Err = b.DbDao.UpdateReverseSmtTaskInfoStatus(tables.ReverseSmtStatusConfirm, tables.ReverseSmtTxStatusConfirm, "outpoint=?", outpoint)
+	// update smt_status=2, tx_status=2, block_number=req.BlockNumber
+	resp.Err = b.DbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
+		"smt_status":   tables.ReverseSmtStatusConfirm,
+		"tx_status":    tables.ReverseSmtTxStatusConfirm,
+		"block_number": req.BlockNumber,
+	}, "outpoint=?", outpoint)
 	return
 }
 

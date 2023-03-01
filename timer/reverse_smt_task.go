@@ -118,14 +118,17 @@ func (t *TxTimer) doReverseSmtTask() error {
 	// send transaction
 	if _, sendTxErr := txBuilder.SendTransaction(); sendTxErr != nil {
 		// update to smt_status=3 and tx_status=3
-		if updateErr := t.dbDao.UpdateReverseSmtTaskInfoStatus(tables.ReverseSmtStatusRollback, tables.ReverseSmtTxStatusReject, "id=?", smtPendingTask.ID); updateErr != nil {
+		if updateErr := t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
+			"smt_status": tables.ReverseSmtStatusRollback,
+			"tx_status":  tables.ReverseSmtTxStatusReject,
+		}, "id=?", smtPendingTask.ID); updateErr != nil {
 			return fmt.Errorf("SendTransaction err: %s UpdateReverseSmtTaskInfoStatus err: %s", sendTxErr, updateErr)
 		}
 		return fmt.Errorf("SendTransaction err: %s", sendTxErr)
 	}
 	log.Infof("doReverseSmtTask send tx: %s", txHash)
 
-	// smt_status=2 and tx_status=1
+	// update tx_status=1,timestamp=time.Now().Unix()
 	if err := t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
 		"tx_status": tables.ReverseSmtTxStatusPending,
 		"timestamp": time.Now().Unix(),
@@ -166,7 +169,10 @@ func (t *TxTimer) doReverseSmtUpdateSmt(id uint64, reverseRecordsByTaskID []*tab
 	}
 
 	// smt_status=2 and tx_status=0
-	if err := t.dbDao.UpdateReverseSmtTaskInfoStatus(tables.ReverseSmtStatusConfirm, tables.ReverseSmtTxStatusDefault, "id=?", id); err != nil {
+	if  err:= t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
+		"smt_status": tables.ReverseSmtStatusConfirm,
+		"tx_status":  tables.ReverseSmtTxStatusDefault,
+	}, "id=?", id);  err!= nil {
 		return nil, fmt.Errorf("UpdateReverseSmtTaskInfoStatus err: %s", err)
 	}
 	return smtOut, nil
