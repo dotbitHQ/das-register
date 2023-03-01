@@ -185,7 +185,7 @@ func (t *TxTimer) Run() error {
 		for {
 			select {
 			case <-ticker.C:
-				if time.Now().Before(latestProcessTime.Add(time.Minute * 3)) {
+				if time.Now().Before(latestProcessTime.Add(time.Minute)) {
 					needProcess, err := t.reverseSmtNeedProcess()
 					if err != nil {
 						log.Errorf("reverseSmtTaskTicker reverseSmtTickerContinue err: %s", err)
