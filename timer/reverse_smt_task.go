@@ -169,10 +169,10 @@ func (t *TxTimer) doReverseSmtUpdateSmt(id uint64, reverseRecordsByTaskID []*tab
 	}
 
 	// smt_status=2 and tx_status=0
-	if  err:= t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
+	if err := t.dbDao.UpdateReverseSmtTaskInfo(map[string]interface{}{
 		"smt_status": tables.ReverseSmtStatusConfirm,
 		"tx_status":  tables.ReverseSmtTxStatusDefault,
-	}, "id=?", id);  err!= nil {
+	}, "id=?", id); err != nil {
 		return nil, fmt.Errorf("UpdateReverseSmtTaskInfoStatus err: %s", err)
 	}
 	return smtOut, nil
@@ -434,8 +434,6 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 
 	// append witness
 	errWg := &errgroup.Group{}
-	reverseSmtWitnessBuilder := witness.NewReverseSmtBuilder()
-
 	oldWitnessLen := len(txBuilderParams.Witnesses)
 	for range reverseRecordsByTaskID {
 		txBuilderParams.Witnesses = append(txBuilderParams.Witnesses, nil)
@@ -463,7 +461,7 @@ func (t *TxTimer) reverseSmtAssemblyTx(reverseRecordSmtLiveCell *indexer.LiveCel
 				return fmt.Errorf("GetRoots err: %s not in smtOut", smtKey)
 			}
 
-			witnessData, err := reverseSmtWitnessBuilder.GenWitness(&witness.ReverseSmtRecord{
+			witnessData, err := witness.GenDasDataWitnessWithStruct(common.ActionDataTypeReverseSmt, &witness.ReverseSmtRecord{
 				Version:     witness.ReverseSmtRecordVersion1,
 				Action:      witness.ReverseSmtRecordAction(record.SubAction),
 				Signature:   common.Hex2Bytes(record.Sign),

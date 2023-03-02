@@ -55,9 +55,6 @@ func Test_LocalSignVerify(t *testing.T) {
 }
 
 func Test_GenWitness(t *testing.T) {
-
-	builder := witness.NewReverseSmtBuilder()
-
 	record := &witness.ReverseSmtRecord{
 		Version:     1,
 		Action:      "update",
@@ -70,21 +67,19 @@ func Test_GenWitness(t *testing.T) {
 		NextRoot:    []byte("df41487f90abe236cfc3b57cd269e50c75cd21a262ce2f8bd141fba8d28ef65d"),
 		NextAccount: "test.bit",
 	}
-	bs, err := record.GenBytes()
+	bs, err := witness.GenWitnessData(record)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	parseRecord, err := builder.FromBytes(bs)
-	if err != nil {
+	parseRecord := &witness.ReverseSmtRecord{}
+	if err := witness.ParseFromBytes(bs, parseRecord); err != nil {
 		t.Fatal(err)
 	}
 	t.Log(*parseRecord)
 }
 
 func Test_ParseWitness(t *testing.T) {
-	smtBuilder := witness.NewReverseSmtBuilder()
-
 	tx := &types.Transaction{}
 
 	txJson := `
@@ -103,8 +98,8 @@ func Test_ParseWitness(t *testing.T) {
 	}
 	_ = gconv.Struct(inTransaction, tx)
 
-	txReverseSmtRecord, err := smtBuilder.FromTx(tx)
-	if err != nil {
+	txReverseSmtRecord := make([]*witness.ReverseSmtRecord, 0)
+	if err := witness.ParseFromTx(tx, common.ActionDataTypeReverseSmt, &txReverseSmtRecord); err != nil {
 		t.Fatal(err)
 	}
 	t.Log(common.Bytes2Hex(txReverseSmtRecord[0].Signature))
@@ -114,12 +109,12 @@ func Test_ParseWitness(t *testing.T) {
 }
 
 func Test_ParseWitnessFromBytes(t *testing.T) {
-	smtBuilder := witness.NewReverseSmtBuilder()
 	dataBys := common.Hex2Bytes("0x6461730a0000000400000001000000060000007570646174654100000006b3abdf1a885d2a4741d39250a1080d66e3ba47add98c091574b1feb886a68e20e587add97c600064f0cace958671ebabe83c351f5d6265f1808d16e2ec653601010000000314000000deefc10a42cd84c072f2b0e2fa99061a74a0698c030000004c4f00000000000000000020000000b4bdcdec0653e52b55db4567a303cf8df35392e9aa687667808ca3cac3cfa5e00f000000726576657273652d736d742e626974")
 	actionDataType := common.Bytes2Hex(dataBys[common.WitnessDasCharLen:common.WitnessDasTableTypeEndIndex])
 	t.Log(actionDataType)
-	smtRecord, err := smtBuilder.FromBytes(dataBys[common.WitnessDasTableTypeEndIndex:])
-	if err != nil {
+
+	smtRecord := &witness.ReverseSmtRecord{}
+	if err := witness.ParseFromBytes(dataBys[common.WitnessDasTableTypeEndIndex:], smtRecord); err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("action: %s", smtRecord.Action)

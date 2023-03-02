@@ -61,9 +61,8 @@ func (b *BlockParser) ActionReverseRecordRoot(req FuncTransactionHandleReq) (res
 // syncOtherProvider sync reverse record from other provider
 func (b *BlockParser) syncOtherProvider(req FuncTransactionHandleReq) error {
 	// This situation does not exist in the first phase, parse the witness synchronous transaction to the local task_info reverse_record table
-	smtBuilder := witness.NewReverseSmtBuilder()
-	txReverseSmtRecord, err := smtBuilder.FromTx(req.Tx)
-	if err != nil {
+	txReverseSmtRecord := make([]*witness.ReverseSmtRecord, 0)
+	if err := witness.ParseFromTx(req.Tx, common.ActionDataTypeReverseSmt, &txReverseSmtRecord); err != nil {
 		return err
 	}
 
