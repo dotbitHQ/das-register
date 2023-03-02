@@ -16,6 +16,7 @@ import (
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
+	"math/rand"
 	"net/http"
 	"regexp"
 	"strings"
@@ -674,6 +675,8 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 		decCeil := decimal.NewFromInt(1e6)
 		amountTotalPayToken = amountTotalPayToken.DivRound(decCeil, 6).Ceil().Mul(decCeil)
 		log.Info("amountTotalPayToken:", amountTotalPayToken.String())
+	} else if payToken.TokenId == tables.TokenIdDoge && h.dasCore.NetType() != common.DasNetTypeMainNet {
+		amountTotalPayToken = decimal.NewFromInt(rand.Int63n(1000000) + 10000000)
 	}
 	return
 }
