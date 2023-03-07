@@ -27,9 +27,9 @@ func (b *BlockParser) registerTransactionHandle() {
 	b.mapTransactionHandle[common.DasActionEditManager] = b.ActionEditManager
 	b.mapTransactionHandle[common.DasActionTransferAccount] = b.ActionTransferAccount
 	//
-	//b.mapTransactionHandle[common.DasActionDeclareReverseRecord] = b.ActionDeclareReverseRecord
-	//b.mapTransactionHandle[common.DasActionRedeclareReverseRecord] = b.ActionRedeclareReverseRecord
-	//b.mapTransactionHandle[common.DasActionRetractReverseRecord] = b.ActionRetractReverseRecord
+	b.mapTransactionHandle[common.DasActionDeclareReverseRecord] = b.ActionDeclareReverseRecord
+	b.mapTransactionHandle[common.DasActionRedeclareReverseRecord] = b.ActionRedeclareReverseRecord
+	b.mapTransactionHandle[common.DasActionRetractReverseRecord] = b.ActionRetractReverseRecord
 	//b.mapTransactionHandle[common.DasActionUpdateReverseRecordRoot] = b.ActionReverseRecordRoot
 }
 
