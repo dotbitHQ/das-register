@@ -197,10 +197,10 @@ func (t *TxTimer) Run() error {
 				}
 
 				log.Info("doReverseSmtTask start")
-				if err := t.doReverseSmtTask(); err != nil {
-					log.Errorf("doReverseSmtTask err: %s", err)
-					break
-				}
+				//if err := t.doReverseSmtTask(); err != nil {
+				//	log.Errorf("doReverseSmtTask err: %s", err)
+				//	break
+				//}
 				log.Info("doReverseSmtTask end")
 
 			case <-t.ctx.Done():
