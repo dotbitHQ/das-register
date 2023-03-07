@@ -185,8 +185,8 @@ func runServer(ctx *cli.Context) error {
 	hs.Run()
 	log.Info("httpserver ok")
 
-	nameDaoTimer := timer.NameDaoTimer{DbDao: dbDao}
-	nameDaoTimer.RunCheckNameDaoMember()
+	//nameDaoTimer := timer.NameDaoTimer{DbDao: dbDao}
+	//nameDaoTimer.RunCheckNameDaoMember()
 
 	// ============= service end =============
 	toolib.ExitMonitoring(func(sig os.Signal) {
@@ -197,7 +197,7 @@ func runServer(ctx *cli.Context) error {
 		}
 		cancel()
 		hs.Shutdown()
-		nameDaoTimer.CloseCron()
+		//nameDaoTimer.CloseCron()
 		txTimer.CloseCron()
 
 		wgServer.Wait()
