@@ -15,8 +15,9 @@ import (
 )
 
 type ReqSignTx struct {
-	ChainId int    `json:"chain_id"`
-	Private string `json:"private"`
+	ChainId  int    `json:"chain_id"`
+	Private  string `json:"private"`
+	Compress bool   `json:"compress"`
 	SignInfo
 }
 
@@ -117,6 +118,13 @@ func (h *HttpHandle) doSignTx(req *ReqSignTx, apiResp *api_code.ApiResp) error {
 			hexChainId := fmt.Sprintf("%x", req.ChainId)
 			chainIdData := common.Hex2Bytes(fmt.Sprintf("%016s", hexChainId))
 			signData = append(signData, chainIdData...)
+		case common.DasAlgorithmIdDogeChain:
+			signData, err = sign.DogeSignature(common.Hex2Bytes(v.SignMsg), req.Private, req.Compress)
+			if err != nil {
+				err = fmt.Errorf("sign.DogeSignature err: %s", err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+				return err
+			}
 		default:
 			//apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not support sign type [%d]", v.SignType))
 			//return nil
