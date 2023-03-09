@@ -447,6 +447,23 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/list -d'{"chain_type":1,"address":
 
 * path: /transaction/status
 * param:
+  * actions: business transaction type
+    * ActionWithdrawFromWallet TxAction = 0  // withdraw
+    * ActionConsolidateIncome  TxAction = 1  // rewards
+    * ActionStartAccountSale   TxAction = 2  // on sale
+    * ActionEditAccountSale    TxAction = 3  // edit sale
+    * ActionCancelAccountSale  TxAction = 4  // cancel sale
+    * ActionBuyAccount         TxAction = 5  // buy account
+    * ActionSaleAccount        TxAction = 6  // sale account
+    * ActionTransferBalance    TxAction = 7  // transfer balance
+    * ActionDeclareReverseRecord   TxAction = 8  // declare reverse
+    * ActionRedeclareReverseRecord TxAction = 9  // edit reverse
+    * ActionRetractReverseRecord   TxAction = 10 // delete reverse
+    * ActionDasBalanceTransfer TxAction = 11 // das balance pay
+    * ActionEditRecords        TxAction = 12 // edit records
+    * ActionTransferAccount    TxAction = 13 // edit owner
+    * ActionEditManager        TxAction = 14 // edit manager
+    * ActionRenewAccount       TxAction = 15 // renew
 
 ```json
 {
@@ -460,6 +477,7 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/list -d'{"chain_type":1,"address":
 ```
 
 **Response**
+  * status: tx pending
 
 ```json
 {
