@@ -676,7 +676,7 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 		amountTotalPayToken = amountTotalPayToken.DivRound(decCeil, 6).Ceil().Mul(decCeil)
 		log.Info("amountTotalPayToken:", amountTotalPayToken.String())
 	} else if payToken.TokenId == tables.TokenIdDoge && h.dasCore.NetType() != common.DasNetTypeMainNet {
-		amountTotalPayToken = decimal.NewFromInt(rand.Int63n(1000000) + 10000000)
+		amountTotalPayToken = decimal.NewFromInt(rand.Int63n(10000000) + 100000000)
 	}
 	return
 }
