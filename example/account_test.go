@@ -20,7 +20,7 @@ const (
 )
 
 func TestTransactionSend(t *testing.T) {
-	str := `{"sign_key":"102424b2c6cf7d47212cc917c7941bf6","sign_list":[{"sign_type":5,"sign_msg":"0xfecf358206bc9ec5a5791021cf7ea2f8d12d2175676bcb7fc4291a196d89dbd52ecabc91c1451421d5d8343b9cb329bd3f0024b5b2407737647585089654ded91cef950e46fb9d6d633eab8373cbca930580b7e55b1866628a77fa409fd92d562b0000000000000005"}],"mm_json":null}`
+	str := `{"sign_key":"f4ecb014be94784065eab77bdd25b47d","sign_list":[{"sign_type":7,"sign_msg":"0x78a66e6fa283f5da55c98e917647fe783931bd0a22e16aadcad32711f65a06493e29a3aa41c753ddd476a228cd1d7074f261076c77686849d45e2fba1f1b0b850100"}],"mm_json":null}`
 
 	var req handle.ReqTransactionSend
 	if err := json.Unmarshal([]byte(str), &req); err != nil {
@@ -52,11 +52,11 @@ func TestEditManager(t *testing.T) {
 	url := TestUrl + "/account/edit/manager"
 
 	var req handle.ReqEditManager
-	req.ChainType = common.ChainTypeMixin
-	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
-	req.Account = "1234567871.bit"
-	req.RawParam.ManagerChainType = common.ChainTypeMixin
-	req.RawParam.ManagerAddress = "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58"
+	req.ChainType = common.ChainTypeEth
+	req.Address = "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"
+	req.Account = "tzh2022070401.bit"
+	req.RawParam.ManagerChainType = common.ChainTypeDogeCoin
+	req.RawParam.ManagerAddress = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
 	var data handle.RespEditManager
 
 	if err := doReq(url, req, &data); err != nil {
