@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/nervosnetwork/ckb-sdk-go/rpc"
 	"github.com/parnurzeal/gorequest"
 	"github.com/scorpiotzh/toolib"
@@ -166,4 +167,59 @@ func TestEditRecords2(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(toolib.JsonString(apiResp.Data))
+}
+
+func TestReverse(t *testing.T) {
+	type ReqReverseUpdate struct {
+		core.ChainTypeAddress
+		Action  string `json:"action"`
+		Account string `json:"account"`
+	}
+
+	type RespReverseUpdate struct {
+		SignMsg  string                `json:"sign_msg"`
+		SignType common.DasAlgorithmId `json:"sign_type"`
+		SignKey  string                `json:"sign_key"`
+	}
+	req := ReqReverseUpdate{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: "60",
+				ChainId:  "",
+				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+			},
+		},
+		Action:  "update",
+		Account: "20230301.bit",
+	}
+	var data RespReverseUpdate
+
+	url := "https://test-reverse-api.did.id/v1/reverse/update"
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println("data:", toolib.JsonString(&data))
+
+	privateKey := ""
+	res, err := sign.PersonalSignature(common.Hex2Bytes(data.SignMsg), privateKey) //sign.DogeSignature(common.Hex2Bytes(data.SignMsg), privateKey, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type ReqReverseSend struct {
+		SignKey   string `json:"sign_key"`
+		Signature string `json:"signature"`
+	}
+	req2 := ReqReverseSend{
+		SignKey:   data.SignKey,
+		Signature: common.Bytes2Hex(res),
+	}
+
+	url = "https://test-reverse-api.did.id/v1/reverse/send"
+	var str = ""
+	if err := doReq(url, req2, str); err != nil {
+		t.Fatal(err)
+	}
+
 }

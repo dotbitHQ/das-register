@@ -3,12 +3,14 @@ module das_register_server
 go 1.16
 
 require (
-	github.com/dotbitHQ/das-lib v1.0.1-0.20230314032650-2def7a20eeaa
+	github.com/dotbitHQ/das-lib v1.0.1-0.20230315015624-b04a37db4cd6
 	github.com/ethereum/go-ethereum v1.10.17
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/gogf/gf/v2 v2.3.2 // indirect
+	github.com/google/go-cmp v0.5.7 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/minio/blake2b-simd v0.0.0-20160723061019-3f5f724cb5b1
 	github.com/nervosnetwork/ckb-sdk-go v0.101.3
 	github.com/parnurzeal/gorequest v0.2.16
@@ -16,7 +18,10 @@ require (
 	github.com/scorpiotzh/mylog v1.0.10
 	github.com/scorpiotzh/toolib v1.1.6-0.20230210123015-9770bc1afe72
 	github.com/shopspring/decimal v1.3.1
+	github.com/stretchr/testify v1.7.1 // indirect
 	github.com/urfave/cli/v2 v2.4.4
+	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
+	golang.org/x/text v0.3.8-0.20211105212822-18b340fc7af2 // indirect
 	gorm.io/gorm v1.23.6
 )
 
