@@ -17,11 +17,12 @@ Backend of DAS registration service. You can use this repo to build your own DAS
 * Ubuntu 18.04 or newer
 * MYSQL >= 8.0
 * Redis >= 5.0 (for cache) 
-* GO version >= 1.15.0
+* GO version >= 1.17.10
 * [CKB Node](https://github.com/nervosnetwork/ckb)
 * [CKB Indexer](https://github.com/nervosnetwork/ckb-indexer)
 * [das-database](https://github.com/dotbitHQ/das-database)
 * [das-pay](https://github.com/dotbitHQ/das-pay)
+* If the version of the dependency package is too low, please install `gcc-multilib` (apt install gcc-multilib)
 
 
 ## Install & Run
