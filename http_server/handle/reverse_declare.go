@@ -17,6 +17,7 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"gorm.io/gorm"
 	"net/http"
+	"strings"
 )
 
 type ReqReverseDeclare struct {
@@ -279,6 +280,17 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	si.MMJson = mmJsonObj
 
 	return &si, nil
+}
+
+func doBuildTxErr(err error, apiResp *api_code.ApiResp) {
+	if err == nil || apiResp == nil {
+		return
+	}
+	if strings.Contains(err.Error(), "not live") && strings.Contains(err.Error(), "addInputsForBaseTx err") {
+		apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, "build tx err: "+err.Error())
+	} else {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
+	}
 }
 
 func (h *HttpHandle) buildDeclareReverseRecordTx(req *reqBuildTx, p *DeclareParams) (*txbuilder.BuildTransactionParams, error) {
