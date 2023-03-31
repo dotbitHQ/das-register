@@ -129,8 +129,8 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 	if acc.Id == 0 {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
 		return nil
-	} else if acc.Status == tables.AccountStatusOnSale || acc.Status == tables.AccountStatusOnAuction {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountStatusOnSaleOrAuction, "account on sale or auction")
+	} else if statusOk := acc.CheckStatus(); !statusOk {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountStatusNotNormal, "account status is not normal")
 		return nil
 	} else if acc.IsExpired() {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")

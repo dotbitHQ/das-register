@@ -102,7 +102,7 @@ func (h *HttpHandle) doEditScript(req *ReqEditScript, apiResp *api_code.ApiResp)
 		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
 		return nil
 	} else if acc.Status != tables.AccountStatusNormal {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountStatusOnSaleOrAuction, "account on sale or auction")
+		apiResp.ApiRespErr(api_code.ApiCodeAccountStatusNotNormal, "account on sale or auction")
 		return nil
 	} else if acc.IsExpired() {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")

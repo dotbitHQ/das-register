@@ -72,6 +72,13 @@ func (t *TableAccountInfo) IsExpired() bool {
 	return false
 }
 
+func (t *TableAccountInfo) CheckStatus() bool {
+	if t.Status != AccountStatusNormal {
+		return false
+	}
+	return true
+}
+
 func (t *TableAccountInfo) TableName() string {
 	return TableNameAccountInfo
 }
