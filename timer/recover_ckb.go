@@ -39,6 +39,9 @@ func (t *TxTimer) doRecoverCkb() error {
 	// inputs
 	total := uint64(0)
 	for _, v := range liveCells.Objects {
+		if v.Output.Type != nil {
+			continue
+		}
 		txParams.Inputs = append(txParams.Inputs, &types.CellInput{
 			PreviousOutput: v.OutPoint,
 		})
