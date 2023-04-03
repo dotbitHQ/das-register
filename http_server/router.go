@@ -44,8 +44,8 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/mine", api_code.DoMonitorLog(api_code.MethodAccountMine), cacheHandleLong, h.h.AccountMine) // user's accounts by pagination
 		v1.POST("/account/detail", api_code.DoMonitorLog(api_code.MethodAccountDetail), cacheHandleLong, h.h.AccountDetail)
 		v1.POST("/account/records", api_code.DoMonitorLog(api_code.MethodAccountRecords), cacheHandleShort, h.h.AccountRecords)
-		v1.POST("/reverse/latest", api_code.DoMonitorLog(api_code.MethodReverseLatest), cacheHandleShort, h.h.ReverseLatest)
-		v1.POST("/reverse/list", api_code.DoMonitorLog(api_code.MethodReverseList), cacheHandleShort, h.h.ReverseList)
+		//v1.POST("/reverse/latest", api_code.DoMonitorLog(api_code.MethodReverseLatest), cacheHandleShort, h.h.ReverseLatest)
+		//v1.POST("/reverse/list", api_code.DoMonitorLog(api_code.MethodReverseList), cacheHandleShort, h.h.ReverseList)
 		v1.POST("/transaction/status", api_code.DoMonitorLog(api_code.MethodTransactionStatus), cacheHandleShort, h.h.TransactionStatus)
 		v1.POST("/balance/info", api_code.DoMonitorLog(api_code.MethodBalanceInfo), cacheHandleLong, h.h.BalanceInfo) // balance（712，not 712，sort address）
 		v1.POST("/transaction/list", api_code.DoMonitorLog(api_code.MethodTransactionList), cacheHandleLong, h.h.TransactionList)
@@ -58,9 +58,9 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/character/set/list", api_code.DoMonitorLog(api_code.MethodCharacterSetList), cacheHandleLong, h.h.CharacterSetList)
 
 		// operate
-		v1.POST("/reverse/declare", api_code.DoMonitorLog(api_code.MethodReverseDeclare), h.h.ReverseDeclare)
-		v1.POST("/reverse/redeclare", api_code.DoMonitorLog(api_code.MethodReverseRedeclare), h.h.ReverseRedeclare)
-		v1.POST("/reverse/retract", api_code.DoMonitorLog(api_code.MethodReverseRetract), h.h.ReverseRetract)
+		//v1.POST("/reverse/declare", api_code.DoMonitorLog(api_code.MethodReverseDeclare), h.h.ReverseDeclare)
+		//v1.POST("/reverse/redeclare", api_code.DoMonitorLog(api_code.MethodReverseRedeclare), h.h.ReverseRedeclare)
+		//v1.POST("/reverse/retract", api_code.DoMonitorLog(api_code.MethodReverseRetract), h.h.ReverseRetract)
 		v1.POST("/transaction/send", api_code.DoMonitorLog(api_code.MethodTransactionSend), h.h.TransactionSend)
 		v1.POST("/balance/pay", api_code.DoMonitorLog(api_code.MethodBalancePay), h.h.BalancePay)
 		v1.POST("/balance/withdraw", api_code.DoMonitorLog(api_code.MethodBalanceWithdraw), h.h.BalanceWithdraw)
