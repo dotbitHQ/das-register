@@ -369,7 +369,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/detail -d'{"account":"king.bit"}'
 curl -X POST http://127.0.0.1:8120/v1/account/records -d'{"account":"king.bit"}'
 ```
 
-#### Reverse Latest
+#### Reverse Latest (Deprecated)
 
 **Request**
 
@@ -402,7 +402,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/records -d'{"account":"king.bit"}'
 curl -X POST http://127.0.0.1:8120/v1/reverse/latest -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad"}'
 ```
 
-#### Reverse List
+#### Reverse List (Deprecated)
 
 **Request**
 
@@ -932,7 +932,7 @@ curl -X POST http://127.0.0.1:8120/v1/character/set/list -d'{}'
 
 ### OPERATE API LIST
 
-#### Reverse Declare
+#### Reverse Declare (Deprecated)
 
 **Request**
 
@@ -974,7 +974,7 @@ curl -X POST http://127.0.0.1:8120/v1/character/set/list -d'{}'
 curl -X POST http://127.0.0.1:8120/v1/reverse/declare -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"aaaa.bit","evm_chain_id":5}'
 ```
 
-#### Reverse Redeclare
+#### Reverse Redeclare (Deprecated)
 
 **Request**
 
@@ -1015,7 +1015,7 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/declare -d'{"chain_type":1,"addres
 curl -X POST http://127.0.0.1:8120/v1/reverse/redeclare -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"9aaaaaaa.bit","evm_chain_id":5}'
 ```
 
-#### Reverse Retract
+#### Reverse Retract (Deprecated)
 
 **Request**
 
