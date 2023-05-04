@@ -690,11 +690,13 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
 
 * path: /account/search
 * param:
-
+  * account_char_str <sup>[1](https://github.com/dotbitHQ/cell-data-generator/tree/master/data)</sup>: 
+    * char_set_name: 0-emoji,1-digit,2-en,3-Chinese Simplified,4-Chinese Traditional,5-Japanese,6-Korean,7-Russian,8-Turkish,9-Thai,10-Vietnamese
+    * char: account name single character
 ```json
 {
   "account": "aaaa.bit",
-  "chain_type": 1,
+  "chain_type": 1, // 1-evm, 3-tron, 7-doge
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account_char_str": [
     {
@@ -734,6 +736,20 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
 ```
 
 **Response**
+  * status: 
+    * -1: Not open for registration
+    * 0: Can be registered
+    * 1: confirm payment
+    * 2: send apply tx
+    * 3: send pre tx
+    * 4: send propose tx
+    * 5: send confirm propose tx
+    * 6: registered
+    * 7: reserved account
+    * 8: on sale at did.top
+    * 13: unregisterable
+    * 14: unminted subaccount
+    * 15: waiting for cross-chain eth nft
 
 ```json
 {
@@ -742,10 +758,21 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
   "data": {
     "status": -1,
     "account": "aaaa.bit",
-    "account_price": "0",
-    "base_amount": "0",
-    "is_self": false,
-    "register_tx_map": {}
+    "account_price": "0", // account price
+    "base_amount": "0", // basic storage fee of ckb cell
+    "is_self": false, // whether the register tx info is the current address
+    "register_tx_map": {// tx info for each step
+      "1": {
+        "chain_id":1, // 0-ckb, 1-evm, 3-tron, 7-doge
+        "hash": "", // pay hash
+        "token_id": "eth_eth" //
+      }, 
+      "2": {}, // apply tx hash
+      "3": {}, // pre tx hash
+      "4": {},// propose tx hash
+      "5": {}// confirm propose tx hash
+    }
+    
   }
 }
 ```
@@ -802,15 +829,15 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
 
 ```json
 {
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
-  "account": "xasdaaxaaa.bit",
-  "action": "apply_register"
+  "chain_type": 1, // 1-evm, 3-tron, 7-doge
+  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad", 
+  "account": "xasdaaxaaa.bit"
 }
 ```
 
 **Response**
-
+  * status: 0-unpaid, 1-confirm payment, 2-account is being registered
+  * coin_type<sup>[1](https://github.com/satoshilabs/slips/blob/master/slip-0044.md)</sup>: 60-eth, 195-trx, 9006-bsc, 966-matic, doge-3
 ```json
 {
   "err_no": 0,
@@ -818,19 +845,16 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
   "data": {
     "order_id": "780bb68a7dd3b0554d95d6e0b3ca3ef3",
     "account": "asxasadasx.bit",
-    "action": "apply_register",
     "status": 0,
-    "timestamp": 1642059562457,
-    "pay_token_id": "ckb_das",
-    "pay_amount": "50502165739",
-    "pay_type": "",
-    "receipt_address": "ckt1qyqvsej8jggu4hmr45g4h8d9pfkpd0fayfksz44t9q",
-    "inviter_account": "",
-    "channel_account": "",
-    "register_years": 1,
-    "code_url": "",
-    "coin_type": "",
-    "cross_coin_type": ""
+    "timestamp": 1642059562457, // order time
+    "pay_token_id": "ckb_das", // payment token type
+    "pay_amount": "50502165739", // payment amount, token minimum precision
+    "receipt_address": "ckt1qyqvsej8jggu4hmr45g4h8d9pfkpd0fayfksz44t9q", // user payment address
+    "inviter_account": "", // inviter account of order
+    "channel_account": "", // channel account of order
+    "register_years": 1, // number of years of account registration
+    "coin_type": "", // used to init account records
+    "cross_coin_type": "" // used to cross chain
   }
 }
 ```
