@@ -70,6 +70,8 @@ type CfgServer struct {
 		CouponEncrySalt         string            `json:"coupon_encry_salt" yaml:"coupon_encry_salt"`
 		CouponQrcodePrefix      string            `json:"coupon_qrcode_prefix" yaml:"coupon_qrcode_prefix"`
 		CouponCodeLength        uint8             `json:"coupon_code_length" yaml:"coupon_code_length"`
+		UniPayUrl               string            `json:"uni_pay_url" yaml:"uni_pay_url"`
+		RefundSwitch            bool              `json:"refund_switch" yaml:"refund_switch"`
 	} `json:"server" yaml:"server"`
 	Origins          []string          `json:"origins" yaml:"origins"`
 	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`
