@@ -114,7 +114,8 @@ func (d *DbDao) DoActionConfirmProposal(orderIds, okOrderIds, accountIds []strin
 			Where("account_id IN(?) AND order_id NOT IN(?) AND refund_status=?",
 				accountIds, okOrderIds, tables.TxStatusDefault).
 			Updates(map[string]interface{}{
-				"refund_status": tables.TxStatusSending,
+				"refund_status":         tables.TxStatusSending,
+				"uni_pay_refund_status": tables.UniPayRefundStatusUnRefund,
 			}).Error; err != nil {
 			return err
 		}
@@ -319,13 +320,6 @@ func (d *DbDao) UpdateOrderToRefund(orderId string) error {
 			}).Error; err != nil {
 			return err
 		}
-		//if err := tx.Model(tables.TableDasOrderPayInfo{}).
-		//	Where("order_id=? AND refund_status=?", orderId, tables.TxStatusDefault).
-		//	Updates(map[string]interface{}{
-		//		"refund_status": tables.TxStatusSending,
-		//	}).Error; err != nil {
-		//	return err
-		//}
 		return nil
 	})
 }
@@ -396,5 +390,15 @@ func (d *DbDao) GetHistoryOkOrders(accountIds []string) (list []tables.TableDasO
 	err = d.db.Where("account_id IN(?) AND order_type=? AND pay_status!=? AND order_status=?",
 		accountIds, tables.OrderTypeSelf, tables.TxStatusDefault, tables.OrderStatusClosed).
 		Find(&list).Error
+	return
+}
+
+// unipay
+func (d *DbDao) GetIsUniPayInfoByOrderIds(orderIds []string) (list []tables.TableDasOrderInfo, err error) {
+	if len(orderIds) == 0 {
+		return
+	}
+	err = d.db.Select("order_id,is_uni_pay").
+		Where("order_id IN(?)", orderIds).Find(&list).Error
 	return
 }

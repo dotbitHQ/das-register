@@ -24,14 +24,9 @@ func (d *DbDao) UpdatePayToRefund(orderId string) error {
 		Where("order_id=? AND `status`=? AND refund_status=?",
 			orderId, tables.OrderTxStatusConfirm, tables.TxStatusDefault).
 		Updates(map[string]interface{}{
-			"refund_status": tables.TxStatusSending,
+			"refund_status":         tables.TxStatusSending,
+			"uni_pay_refund_status": tables.UniPayRefundStatusUnRefund,
 		}).Error
-}
-
-func (d *DbDao) GetUnRefundTxCount() (count int64, err error) {
-	err = d.db.Model(tables.TableDasOrderPayInfo{}).
-		Where("`status`=? AND refund_status=?", tables.OrderTxStatusConfirm, tables.TxStatusSending).Count(&count).Error
-	return
 }
 
 // unipay
@@ -113,5 +108,14 @@ func (d *DbDao) UpdateRefundStatusToRefundIng(ids []uint64) error {
 			ids, tables.OrderTxStatusConfirm, tables.UniPayRefundStatusUnRefund).
 		Updates(map[string]interface{}{
 			"uni_pay_refund_status": tables.UniPayRefundStatusRefunded,
+		}).Error
+}
+
+func (d *DbDao) UpdateUniPayRefundStatusToDefaultForNotUniPayOrder(payHash, orderId string) error {
+	return d.db.Model(tables.TableDasOrderPayInfo{}).
+		Where("hash=? AND order_id=? AND `status`=?",
+			payHash, orderId, tables.OrderTxStatusConfirm).
+		Updates(map[string]interface{}{
+			"uni_pay_refund_status": tables.UniPayRefundStatusDefault,
 		}).Error
 }
