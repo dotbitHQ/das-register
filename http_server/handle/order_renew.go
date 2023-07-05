@@ -240,9 +240,10 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 					Key:      addrNormal.AddressNormal,
 				},
 			},
-			BusinessId: unipay.BusinessIdDasRegisterSvr,
-			Amount:     amountTotalPayToken,
-			PayTokenId: req.PayTokenId,
+			BusinessId:     unipay.BusinessIdDasRegisterSvr,
+			Amount:         amountTotalPayToken,
+			PayTokenId:     req.PayTokenId,
+			PaymentAddress: config.GetUnipayAddress(req.PayTokenId),
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to create order by unipay")

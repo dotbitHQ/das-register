@@ -1,6 +1,7 @@
 package config
 
 import (
+	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/fsnotify/fsnotify"
@@ -118,4 +119,22 @@ type DbMysql struct {
 	DbName      string `json:"db_name" yaml:"db_name"`
 	MaxOpenConn int    `json:"max_open_conn" yaml:"max_open_conn"`
 	MaxIdleConn int    `json:"max_idle_conn" yaml:"max_idle_conn"`
+}
+
+func GetUnipayAddress(tokenId tables.PayTokenId) string {
+	switch tokenId {
+	case tables.TokenIdEth:
+		return Cfg.PayAddressMap["eth"]
+	case tables.TokenIdBnb:
+		return Cfg.PayAddressMap["bsc"]
+	case tables.TokenIdMatic:
+		return Cfg.PayAddressMap["polygon"]
+	case tables.TokenIdTrx:
+		return Cfg.PayAddressMap["tron"]
+	case tables.TokenIdCkb, tables.TokenIdDas:
+		return Cfg.PayAddressMap["ckb"]
+	case tables.TokenIdDoge:
+		return Cfg.PayAddressMap["doge"]
+	}
+	return ""
 }
