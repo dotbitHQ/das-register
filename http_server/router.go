@@ -91,7 +91,7 @@ func (h *HttpServer) initRouter() {
 		internalV1.POST("/account/renew", h.h.AccountRenew)
 		internalV1.POST("/order/detail", h.h.DasOrderDetail)
 		internalV1.POST("/create/coupon", h.h.CreateCoupon)
-
+		internalV1.POST("/unipay/notice", h.h.UniPayNotice)
 	}
 }
 
