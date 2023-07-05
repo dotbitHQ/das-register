@@ -32,7 +32,7 @@ func (t *ToolUniPay) RunOrderRefund() {
 }
 
 func (t *ToolUniPay) doRefund() error {
-	if !config.Cfg.Server.RefundSwitch {
+	if !config.Cfg.Server.UniPayRefundSwitch {
 		return nil
 	}
 	//get payment list
