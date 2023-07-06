@@ -402,3 +402,17 @@ func (d *DbDao) GetIsUniPayInfoByOrderIds(orderIds []string) (list []tables.Tabl
 		Where("order_id IN(?)", orderIds).Find(&list).Error
 	return
 }
+
+func (d *DbDao) GetNeedHedgeOrderList() (list []tables.TableDasOrderInfo, err error) {
+	err = d.db.Where("order_type=? AND hedge_status=?", tables.OrderTypeSelf, tables.TxStatusSending).Find(&list).Error
+	return
+}
+
+func (d *DbDao) UpdateHedgeStatus(orderId string, oldStatus, newStatus tables.TxStatus) error {
+	return d.db.Model(tables.TableDasOrderInfo{}).
+		Where("order_id=? AND order_type=? AND hedge_status=?",
+			orderId, tables.OrderTypeSelf, oldStatus).
+		Updates(map[string]interface{}{
+			"hedge_status": newStatus,
+		}).Error
+}

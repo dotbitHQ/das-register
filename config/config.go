@@ -73,6 +73,7 @@ type CfgServer struct {
 		CouponCodeLength        uint8             `json:"coupon_code_length" yaml:"coupon_code_length"`
 		UniPayUrl               string            `json:"uni_pay_url" yaml:"uni_pay_url"`
 		UniPayRefundSwitch      bool              `json:"uni_pay_refund_switch" yaml:"uni_pay_refund_switch"`
+		HedgeUrl                string            `json:"hedge_url" yaml:"hedge_url"`
 	} `json:"server" yaml:"server"`
 	Origins          []string          `json:"origins" yaml:"origins"`
 	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`
@@ -80,6 +81,7 @@ type CfgServer struct {
 		LarkErrorKey      string `json:"lark_error_key" yaml:"lark_error_key"`
 		LarkRegisterKey   string `json:"lark_register_key" yaml:"lark_register_key"`
 		LarkRegisterOkKey string `json:"lark_register_ok_key" yaml:"lark_register_ok_key"`
+		LarkDasInfoKey    string `json:"lark_das_info_key" yaml:"lark_das_info_key"`
 		DiscordWebhook    string `json:"discord_webhook" yaml:"discord_webhook"`
 	} `json:"notify" yaml:"notify"`
 	PayAddressMap map[string]string `json:"pay_address_map" yaml:"pay_address_map"`

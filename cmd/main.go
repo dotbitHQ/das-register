@@ -9,6 +9,7 @@ import (
 	"das_register_server/http_server"
 	"das_register_server/timer"
 	"das_register_server/txtool"
+	"das_register_server/unipay"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -108,6 +109,18 @@ func runServer(ctx *cli.Context) error {
 	}
 	txTimer.DoRecyclePreEarly()
 	log.Info("timer ok")
+
+	if config.Cfg.Server.UniPayUrl != "" {
+		toolUniPay := unipay.ToolUniPay{
+			Ctx:   ctxServer,
+			Wg:    &wgServer,
+			DbDao: dbDao,
+		}
+		toolUniPay.RunConfirmStatus()
+		toolUniPay.RunOrderRefund()
+		toolUniPay.RunDoOrderHedge()
+		toolUniPay.RunRegisterInfo()
+	}
 
 	// tx timer
 	txTool := txtool.TxTool{
