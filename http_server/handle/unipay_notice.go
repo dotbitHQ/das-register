@@ -7,6 +7,7 @@ import (
 	"das_register_server/tables"
 	"das_register_server/unipay"
 	"fmt"
+	"github.com/dotbitHQ/das-lib/common"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
@@ -24,6 +25,8 @@ type EventInfo struct {
 	OrderId      string                    `json:"order_id"`
 	PayStatus    tables.UniPayStatus       `json:"pay_status"`
 	PayHash      string                    `json:"pay_hash"`
+	PayAddress   string                    `json:"pay_address"`
+	AlgorithmId  common.DasAlgorithmId     `json:"algorithm_id"`
 	RefundStatus tables.UniPayRefundStatus `json:"refund_status"`
 	RefundHash   string                    `json:"refund_hash"`
 }
@@ -72,7 +75,7 @@ func (h *HttpHandle) doUniPayNotice(req *ReqUniPayNotice, apiResp *api_code.ApiR
 	for _, v := range req.EventList {
 		switch v.EventType {
 		case EventTypeOrderPay:
-			if err := unipay.DoPaymentConfirm(h.dbDao, v.OrderId, v.PayHash); err != nil {
+			if err := unipay.DoPaymentConfirm(h.dbDao, v.OrderId, v.PayHash, v.PayAddress, v.AlgorithmId); err != nil {
 				log.Error("DoPaymentConfirm err: ", err.Error(), v.OrderId, v.PayHash)
 				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "DoPaymentConfirm", err.Error())
 			}
