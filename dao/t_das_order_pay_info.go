@@ -73,7 +73,7 @@ func (d *DbDao) UpdatePayment(paymentInfo tables.TableDasOrderPayInfo) error {
 }
 
 func (d *DbDao) GetPayHashStatusPendingList() (list []tables.TableDasOrderPayInfo, err error) {
-	timestamp := tables.GetPaymentInfoTimestamp()
+	timestamp := tables.GetPaymentInfoTimestampBefore24h()
 	err = d.db.Where("timestamp>=? AND `status`=?",
 		timestamp, tables.OrderTxStatusDefault).Find(&list).Error
 	return

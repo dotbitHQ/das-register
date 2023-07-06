@@ -82,14 +82,12 @@ func (t *ToolUniPay) doConfirmStatus() error {
 		if !ok {
 			min := pending.PayHashUnconfirmedMin()
 			log.Info("PayHashUnconfirmedMin:", pending.OrderId, min)
-			if min > 10 {
-				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "Payment not completed", pending.OrderId)
-			}
-			if min > 60 {
-				if err := t.DbDao.UpdateUniPayUnconfirmedToRejected(pending.OrderId, pending.Hash); err != nil {
-					return fmt.Errorf("UpdateUniPayUnconfirmedToRejected err: %s", err.Error())
-				}
-			}
+			//if min > 60 {
+			//	notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "Payment not completed", pending.OrderId)
+			//	if err := t.DbDao.UpdateUniPayUnconfirmedToRejected(pending.OrderId, pending.Hash); err != nil {
+			//		return fmt.Errorf("UpdateUniPayUnconfirmedToRejected err: %s", err.Error())
+			//	}
+			//}
 			continue
 		}
 		for _, v := range paymentInfoList {
