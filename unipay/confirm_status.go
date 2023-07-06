@@ -6,6 +6,7 @@ import (
 	"das_register_server/notify"
 	"das_register_server/tables"
 	"fmt"
+	"github.com/dotbitHQ/das-lib/common"
 	"time"
 )
 
@@ -94,7 +95,7 @@ func (t *ToolUniPay) doConfirmStatus() error {
 			if v.PayHashStatus != tables.PayHashStatusConfirmed {
 				continue
 			}
-			if err = DoPaymentConfirm(t.DbDao, v.OrderId, v.PayHash); err != nil {
+			if err = DoPaymentConfirm(t.DbDao, v.OrderId, v.PayHash, v.PayAddress, v.AlgorithmId); err != nil {
 				log.Errorf("DoPaymentConfirm err: %s", err.Error())
 				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "DoPaymentConfirm", err.Error())
 			}
@@ -119,7 +120,7 @@ func (t *ToolUniPay) doConfirmStatus() error {
 	return nil
 }
 
-func DoPaymentConfirm(dbDao *dao.DbDao, orderId, payHash string) error {
+func DoPaymentConfirm(dbDao *dao.DbDao, orderId, payHash, payAddress string, algorithmId common.DasAlgorithmId) error {
 	orderInfo, err := dbDao.GetOrderByOrderId(orderId)
 	if err != nil {
 		return fmt.Errorf("GetOrderByOrderId err: %s", err.Error())
@@ -128,8 +129,8 @@ func DoPaymentConfirm(dbDao *dao.DbDao, orderId, payHash string) error {
 		Id:                 0,
 		Hash:               payHash,
 		OrderId:            orderId,
-		ChainType:          orderInfo.ChainType, // todo
-		Address:            orderInfo.Address,   // todo
+		ChainType:          algorithmId.ToChainType(),
+		Address:            payAddress,
 		Status:             tables.OrderTxStatusConfirm,
 		Timestamp:          time.Now().UnixNano() / 1e6,
 		AccountId:          orderInfo.AccountId,

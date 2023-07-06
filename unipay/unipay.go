@@ -6,6 +6,7 @@ import (
 	"das_register_server/dao"
 	"das_register_server/tables"
 	"fmt"
+	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/scorpiotzh/mylog"
@@ -75,6 +76,8 @@ type RespPaymentInfo struct {
 type PaymentInfo struct {
 	OrderId       string                    `json:"order_id"`
 	PayHash       string                    `json:"pay_hash"`
+	PayAddress    string                    `json:"pay_address"`
+	AlgorithmId   common.DasAlgorithmId     `json:"algorithm_id"`
 	PayHashStatus tables.PayHashStatus      `json:"pay_hash_status"`
 	RefundStatus  tables.UniPayRefundStatus `json:"refund_status"`
 	RefundHash    string                    `json:"refund_hash"`
