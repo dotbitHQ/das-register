@@ -28,24 +28,20 @@ func (t *TxTimer) doTxRejected() error {
 		} else {
 			log.Info("GetTransaction:", v.OrderId, v.Hash, txRes.TxStatus.Status)
 			if txRes.TxStatus.Status == types.TransactionStatusRejected {
-				notify.SendLarkTextNotifyAtAll(config.Cfg.Notify.LarkErrorKey, "doTxRejected", v.OrderId)
+				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "UpdateRejectedTx", v.OrderId)
 				if err := t.dbDao.UpdateRejectedTx(v.Action, v.OrderId); err != nil {
 					log.Error("UpdateRejectedTx err: ", err.Error())
 				}
-			} else if txRes.TxStatus.Status != types.TransactionStatusCommitted && txRes.TxStatus.Status != types.TransactionStatusPending {
-				//sinceMin := time.Since(time.Unix(v.Timestamp/1000, 0)).Minutes()
-				//if sinceMin > 20 {
-				//	if err := t.dbDao.UpdateRejectedTx(v.Action, v.OrderId); err != nil {
-				//		log.Error("UpdateRejectedTx err: %s", err.Error())
-				//	}
-				//}
+				continue
 			}
 		}
 		//
 		sinceMin := time.Since(time.Unix(v.Timestamp/1000, 0)).Minutes()
 		orderList = append(orderList, fmt.Sprintf("%s : %s (%.2f min)", v.Action, v.OrderId, sinceMin))
 	}
-	msg = fmt.Sprintf(msg, len(list), strings.Join(orderList, "\n"))
-	notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "Rejected Txs", msg)
+	if len(orderList) > 0 {
+		msg = fmt.Sprintf(msg, len(list), strings.Join(orderList, "\n"))
+		notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "Rejected Txs", msg)
+	}
 	return nil
 }
