@@ -4,7 +4,6 @@ import (
 	"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -155,21 +154,23 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 				continue
 			}
 			idx := -1
-			for i := 0; i < int(keyList.Len()); i++ {
-				mainAlgId := common.DasAlgorithmId(keyList.Get(uint(i)).MainAlgId().RawData()[0])
-				subAlgId := common.DasSubAlgorithmId(keyList.Get(uint(i)).SubAlgId().RawData()[0])
-				cid1 := keyList.Get(uint(i)).Cid().RawData()
-				pk1 := keyList.Get(uint(i)).Pubkey().RawData()
-				addressHex := common.Bytes2Hex(append(cid1, pk1...))
-				if dasAddressHex.DasAlgorithmId == mainAlgId &&
-					dasAddressHex.DasSubAlgorithmId == subAlgId &&
-					addressHex == dasAddressHex.AddressHex {
-					idx = i
-					break
+			if keyList != nil {
+				for i := 0; i < int(keyList.Len()); i++ {
+					mainAlgId := common.DasAlgorithmId(keyList.Get(uint(i)).MainAlgId().RawData()[0])
+					subAlgId := common.DasSubAlgorithmId(keyList.Get(uint(i)).SubAlgId().RawData()[0])
+					cid1 := keyList.Get(uint(i)).Cid().RawData()
+					pk1 := keyList.Get(uint(i)).Pubkey().RawData()
+					addressHex := common.Bytes2Hex(append(cid1, pk1...))
+					if dasAddressHex.DasAlgorithmId == mainAlgId &&
+						dasAddressHex.DasSubAlgorithmId == subAlgId &&
+						addressHex == dasAddressHex.AddressHex {
+						idx = i
+						break
+					}
 				}
-			}
-			if idx == -1 {
-				return errors.New("the current signing device is not in the authorized list")
+				if idx == -1 {
+					return fmt.Errorf("the current signing device is not in the authorized list")
+				}
 			}
 
 			if sic.KeyListCfgCellOpt == "" {
