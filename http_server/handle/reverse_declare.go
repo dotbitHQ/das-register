@@ -268,6 +268,28 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	sic.Account = req.Account
 	sic.Capacity = req.Capacity
 	sic.BuilderTx = txBuilder.DasTxBuilderTransaction
+	//if login status is webauthn
+	if req.ChainType == common.ChainTypeWebauthn {
+		dasLockKey := core.DasAddressHex{
+			DasAlgorithmId:    common.DasAlgorithmIdWebauthn,
+			DasSubAlgorithmId: common.DasWebauthnSubAlgorithmIdES256,
+			AddressHex:        req.Address,
+			AddressPayload:    common.Hex2Bytes(req.Address),
+			ChainType:         common.ChainTypeWebauthn,
+		}
+		lockArgs, err := h.dasCore.Daf().HexToArgs(dasLockKey, dasLockKey)
+		cell, err := h.dasCore.GetKeyListCell(lockArgs)
+		if err != nil {
+			return nil, fmt.Errorf("GetKeyListCell(webauthn keyListCell) : %s", err.Error())
+		}
+		if cell != nil {
+			sic.KeyListCfgCellOpt = common.OutPoint2String(cell.OutPoint.TxHash.Hex(), 0)
+		} else {
+			sic.KeyListCfgCellOpt = ""
+		}
+
+	}
+
 	signKey := sic.SignKey()
 	cacheStr := toolib.JsonString(&sic)
 	if err = h.rc.SetSignTxCache(signKey, cacheStr); err != nil {

@@ -33,9 +33,10 @@ func (p Pagination) GetOffset() int {
 // ======
 
 type SignInfo struct {
-	SignKey  string               `json:"sign_key"`  // sign tx key
-	SignList []txbuilder.SignData `json:"sign_list"` // sign list
-	MMJson   *common.MMJsonObj    `json:"mm_json"`   // 712 mmjson
+	SignKey     string               `json:"sign_key"`               // sign tx key
+	SignAddress string               `json:"sign_address,omitempty"` // sign address
+	SignList    []txbuilder.SignData `json:"sign_list"`              // sign list
+	MMJson      *common.MMJsonObj    `json:"mm_json"`                // 712 mmjson
 }
 
 func (s *SignInfo) SignListString() string {
@@ -43,12 +44,13 @@ func (s *SignInfo) SignListString() string {
 }
 
 type SignInfoCache struct {
-	ChainType common.ChainType                   `json:"chain_type"`
-	Address   string                             `json:"address"`
-	Action    string                             `json:"action"`
-	Account   string                             `json:"account"`
-	Capacity  uint64                             `json:"capacity"`
-	BuilderTx *txbuilder.DasTxBuilderTransaction `json:"builder_tx"`
+	ChainType         common.ChainType                   `json:"chain_type"`
+	Address           string                             `json:"address"`
+	Action            string                             `json:"action"`
+	Account           string                             `json:"account"`
+	Capacity          uint64                             `json:"capacity"`
+	KeyListCfgCellOpt string                             `json:"key_list_cfg_cell_opt"`
+	BuilderTx         *txbuilder.DasTxBuilderTransaction `json:"builder_tx"`
 }
 
 func (s *SignInfoCache) SignKey() string {

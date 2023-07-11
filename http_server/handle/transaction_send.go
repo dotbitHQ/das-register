@@ -4,8 +4,11 @@ import (
 	"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/molecule"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
@@ -82,6 +85,105 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "json.Unmarshal err")
 		return fmt.Errorf("json.Unmarshal err: %s", err.Error())
 	}
+
+	hasWebAuthn := false
+	for _, v := range req.SignList {
+		if v.SignType == common.DasAlgorithmIdWebauthn {
+			hasWebAuthn = true
+			break
+		}
+	}
+	if hasWebAuthn {
+		//addHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		//	ChainType:     common.ChainTypeWebauthn,
+		//	AddressNormal: sic.Address,
+		//})
+		//if err != nil {
+		//	return err
+		//}
+		//webAuthnLockScript, _, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
+		//	DasAlgorithmId: common.DasAlgorithmIdWebauthn,
+		//	ChainType:      common.ChainTypeWebauthn,
+		//	AddressHex:     sic.Address,
+		//})
+		//keyListConfigCellContract, err := core.GetDasContractInfo(common.DasKeyListCellType)
+		//if err != nil {
+		//	return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+		//}
+		//searchKey := &indexer.SearchKey{
+		//	Script:     webAuthnLockScript,
+		//	ScriptType: indexer.ScriptTypeLock,
+		//	Filter: &indexer.CellsFilter{
+		//		Script: keyListConfigCellContract.ToScript(webAuthnLockScript.Args),
+		//	},
+		//}
+		//res, err := h.dasCore.Client().GetCells(h.ctx, searchKey, indexer.SearchOrderDesc, 1, "")
+		//if err != nil {
+		//	return fmt.Errorf("GetCells err: %s", err.Error())
+		//}
+		//if len(res.Objects) == 0 {
+		//	return fmt.Errorf("can't find GetCells type: %s", common.DasKeyListCellType)
+		//}
+
+		//login status didn`t enable authorize
+		var keyList *molecule.DeviceKeyList
+		if sic.KeyListCfgCellOpt != "" {
+			keyListCfgOutPoint := common.String2OutPointStruct(sic.KeyListCfgCellOpt)
+
+			keyListConfigTx, err := h.dasCore.Client().GetTransaction(h.ctx, keyListCfgOutPoint.TxHash)
+			if err != nil {
+				return err
+			}
+			webAuthnKeyListConfigBuilder, err := witness.WebAuthnKeyListDataBuilderFromTx(keyListConfigTx.Transaction, common.DataTypeNew)
+			if err != nil {
+				return err
+			}
+			dataBuilder := webAuthnKeyListConfigBuilder.DeviceKeyListCellData.AsBuilder()
+			deviceKeyListCellDataBuilder := dataBuilder.Build()
+			keyList = deviceKeyListCellDataBuilder.Keys()
+		}
+
+		dasAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+			ChainType:     common.ChainTypeWebauthn,
+			AddressNormal: req.SignAddress, //Signed address
+		})
+		if err != nil {
+			return err
+		}
+		for i, v := range req.SignList {
+			if v.SignType != common.DasAlgorithmIdWebauthn {
+				continue
+			}
+			idx := -1
+			for i := 0; i < int(keyList.Len()); i++ {
+				mainAlgId := common.DasAlgorithmId(keyList.Get(uint(i)).MainAlgId().RawData()[0])
+				subAlgId := common.DasSubAlgorithmId(keyList.Get(uint(i)).SubAlgId().RawData()[0])
+				cid1 := keyList.Get(uint(i)).Cid().RawData()
+				pk1 := keyList.Get(uint(i)).Pubkey().RawData()
+				addressHex := common.Bytes2Hex(append(cid1, pk1...))
+				if dasAddressHex.DasAlgorithmId == mainAlgId &&
+					dasAddressHex.DasSubAlgorithmId == subAlgId &&
+					addressHex == dasAddressHex.AddressHex {
+					idx = i
+					break
+				}
+			}
+			if idx == -1 {
+				return errors.New("the current signing device is not in the authorized list")
+			}
+
+			if sic.KeyListCfgCellOpt == "" {
+				idx = 255
+			}
+			signMsg := common.Hex2Bytes(req.SignList[i].SignMsg)
+			idxMolecule := molecule.GoU8ToMoleculeU8(uint8(idx))
+			idxLen := molecule.GoU8ToMoleculeU8(uint8(len(idxMolecule.RawData())))
+			signMsgRes := append(idxLen.RawData(), idxMolecule.RawData()...)
+			signMsgRes = append(signMsgRes, signMsg...)
+			req.SignList[i].SignMsg = common.Bytes2Hex(signMsgRes)
+		}
+	}
+
 	// sign
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, sic.BuilderTx)
 	if err := txBuilder.AddSignatureForTx(req.SignList); err != nil {
