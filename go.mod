@@ -3,8 +3,8 @@ module das_register_server
 go 1.16
 
 require (
-	github.com/dotbitHQ/das-lib v1.0.2-0.20230414093428-df86fbc5e925
-	github.com/ethereum/go-ethereum v1.10.17
+	github.com/dotbitHQ/das-lib v1.0.2-0.20230711020734-3cdc4255e94d
+	github.com/ethereum/go-ethereum v1.10.26
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-redis/redis v6.15.9+incompatible
@@ -15,7 +15,7 @@ require (
 	github.com/scorpiotzh/mylog v1.0.10
 	github.com/scorpiotzh/toolib v1.1.6-0.20230210123015-9770bc1afe72
 	github.com/shopspring/decimal v1.3.1
-	github.com/urfave/cli/v2 v2.4.4
+	github.com/urfave/cli/v2 v2.10.2
 	gorm.io/gorm v1.23.6
 )
 
