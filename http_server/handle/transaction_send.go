@@ -99,7 +99,17 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		var keyList *molecule.DeviceKeyList
 		idx := -1
 		//login address is sign address
-		if sic.Address == req.SignAddress {
+
+		dasAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+			ChainType:     common.ChainTypeWebauthn,
+			AddressNormal: req.SignAddress,
+		})
+		if err != nil {
+			return err
+		}
+		fmt.Println("sic.Address: ", sic.Address)
+		fmt.Println("dasAddressHex.AddressHex: ", dasAddressHex.AddressHex)
+		if sic.Address == dasAddressHex.AddressHex {
 			idx = 255
 		} else {
 			//search login address keyList
@@ -129,14 +139,6 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			if keyList == nil {
 				return fmt.Errorf("login status has not enable authorize")
 			}
-			//Signed address
-			dasAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-				ChainType:     common.ChainTypeWebauthn,
-				AddressNormal: req.SignAddress,
-			})
-			if err != nil {
-				return err
-			}
 
 			for i := 0; i < int(keyList.Len()); i++ {
 				mainAlgId := common.DasAlgorithmId(keyList.Get(uint(i)).MainAlgId().RawData()[0])
@@ -155,7 +157,6 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 				apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "permission denied")
 				return fmt.Errorf("the current signing device is not in the authorized list")
 			}
-
 		}
 		for i, v := range req.SignList {
 			if v.SignType != common.DasAlgorithmIdWebauthn {
