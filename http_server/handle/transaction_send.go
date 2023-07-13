@@ -12,6 +12,7 @@ import (
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
+	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
 	"strings"
@@ -92,44 +93,29 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			break
 		}
 	}
+
 	if hasWebAuthn {
-		//addHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		//	ChainType:     common.ChainTypeWebauthn,
-		//	AddressNormal: sic.Address,
-		//})
-		//if err != nil {
-		//	return err
-		//}
-		//webAuthnLockScript, _, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
-		//	DasAlgorithmId: common.DasAlgorithmIdWebauthn,
-		//	ChainType:      common.ChainTypeWebauthn,
-		//	AddressHex:     sic.Address,
-		//})
-		//keyListConfigCellContract, err := core.GetDasContractInfo(common.DasKeyListCellType)
-		//if err != nil {
-		//	return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
-		//}
-		//searchKey := &indexer.SearchKey{
-		//	Script:     webAuthnLockScript,
-		//	ScriptType: indexer.ScriptTypeLock,
-		//	Filter: &indexer.CellsFilter{
-		//		Script: keyListConfigCellContract.ToScript(webAuthnLockScript.Args),
-		//	},
-		//}
-		//res, err := h.dasCore.Client().GetCells(h.ctx, searchKey, indexer.SearchOrderDesc, 1, "")
-		//if err != nil {
-		//	return fmt.Errorf("GetCells err: %s", err.Error())
-		//}
-		//if len(res.Objects) == 0 {
-		//	return fmt.Errorf("can't find GetCells type: %s", common.DasKeyListCellType)
-		//}
-
-		//login status didn`t enable authorize
+		var KeyListCfgCell *indexer.LiveCell
 		var keyList *molecule.DeviceKeyList
-		if sic.KeyListCfgCellOpt != "" {
-			keyListCfgOutPoint := common.String2OutPointStruct(sic.KeyListCfgCellOpt)
-
-			keyListConfigTx, err := h.dasCore.Client().GetTransaction(h.ctx, keyListCfgOutPoint.TxHash)
+		idx := -1
+		//login address is sign address
+		if sic.Address == req.SignAddress {
+			idx = 255
+		} else {
+			//search login address keyList
+			dasLockKey := core.DasAddressHex{
+				DasAlgorithmId:    common.DasAlgorithmIdWebauthn,
+				DasSubAlgorithmId: common.DasWebauthnSubAlgorithmIdES256,
+				AddressHex:        sic.Address,
+				AddressPayload:    common.Hex2Bytes(sic.Address),
+				ChainType:         common.ChainTypeWebauthn,
+			}
+			lockArgs, err := h.dasCore.Daf().HexToArgs(dasLockKey, dasLockKey)
+			KeyListCfgCell, err = h.dasCore.GetKeyListCell(lockArgs)
+			if err != nil {
+				return fmt.Errorf("GetKeyListCell(webauthn keyListCell) : %s", err.Error())
+			}
+			keyListConfigTx, err := h.dasCore.Client().GetTransaction(h.ctx, KeyListCfgCell.OutPoint.TxHash)
 			if err != nil {
 				return err
 			}
@@ -140,41 +126,40 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			dataBuilder := webAuthnKeyListConfigBuilder.DeviceKeyListCellData.AsBuilder()
 			deviceKeyListCellDataBuilder := dataBuilder.Build()
 			keyList = deviceKeyListCellDataBuilder.Keys()
-		}
+			if keyList == nil {
+				return fmt.Errorf("login status has not enable authorize")
+			}
+			//Signed address
+			dasAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+				ChainType:     common.ChainTypeWebauthn,
+				AddressNormal: req.SignAddress,
+			})
+			if err != nil {
+				return err
+			}
 
-		dasAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-			ChainType:     common.ChainTypeWebauthn,
-			AddressNormal: req.SignAddress, //Signed address
-		})
-		if err != nil {
-			return err
+			for i := 0; i < int(keyList.Len()); i++ {
+				mainAlgId := common.DasAlgorithmId(keyList.Get(uint(i)).MainAlgId().RawData()[0])
+				subAlgId := common.DasSubAlgorithmId(keyList.Get(uint(i)).SubAlgId().RawData()[0])
+				cid1 := keyList.Get(uint(i)).Cid().RawData()
+				pk1 := keyList.Get(uint(i)).Pubkey().RawData()
+				addressHex := common.Bytes2Hex(append(cid1, pk1...))
+				if dasAddressHex.DasAlgorithmId == mainAlgId &&
+					dasAddressHex.DasSubAlgorithmId == subAlgId &&
+					addressHex == dasAddressHex.AddressHex {
+					idx = i
+					break
+				}
+			}
+			if idx == -1 {
+				apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "permission denied")
+				return fmt.Errorf("the current signing device is not in the authorized list")
+			}
+
 		}
 		for i, v := range req.SignList {
 			if v.SignType != common.DasAlgorithmIdWebauthn {
 				continue
-			}
-			idx := -1
-			if keyList != nil {
-				for i := 0; i < int(keyList.Len()); i++ {
-					mainAlgId := common.DasAlgorithmId(keyList.Get(uint(i)).MainAlgId().RawData()[0])
-					subAlgId := common.DasSubAlgorithmId(keyList.Get(uint(i)).SubAlgId().RawData()[0])
-					cid1 := keyList.Get(uint(i)).Cid().RawData()
-					pk1 := keyList.Get(uint(i)).Pubkey().RawData()
-					addressHex := common.Bytes2Hex(append(cid1, pk1...))
-					if dasAddressHex.DasAlgorithmId == mainAlgId &&
-						dasAddressHex.DasSubAlgorithmId == subAlgId &&
-						addressHex == dasAddressHex.AddressHex {
-						idx = i
-						break
-					}
-				}
-				if idx == -1 {
-					return fmt.Errorf("the current signing device is not in the authorized list")
-				}
-			}
-
-			if sic.KeyListCfgCellOpt == "" {
-				idx = 255
 			}
 			signMsg := common.Hex2Bytes(req.SignList[i].SignMsg)
 			idxMolecule := molecule.GoU8ToMoleculeU8(uint8(idx))

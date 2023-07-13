@@ -44,13 +44,12 @@ func (s *SignInfo) SignListString() string {
 }
 
 type SignInfoCache struct {
-	ChainType         common.ChainType                   `json:"chain_type"`
-	Address           string                             `json:"address"`
-	Action            string                             `json:"action"`
-	Account           string                             `json:"account"`
-	Capacity          uint64                             `json:"capacity"`
-	KeyListCfgCellOpt string                             `json:"key_list_cfg_cell_opt"`
-	BuilderTx         *txbuilder.DasTxBuilderTransaction `json:"builder_tx"`
+	ChainType common.ChainType                   `json:"chain_type"`
+	Address   string                             `json:"address"`
+	Action    string                             `json:"action"`
+	Account   string                             `json:"account"`
+	Capacity  uint64                             `json:"capacity"`
+	BuilderTx *txbuilder.DasTxBuilderTransaction `json:"builder_tx"`
 }
 
 func (s *SignInfoCache) SignKey() string {
