@@ -3,6 +3,8 @@ package dao
 import (
 	"das_register_server/tables"
 	"fmt"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func (d *DbDao) GetPayInfoByOrderId(orderId string) (pay tables.TableDasOrderPayInfo, err error) {
@@ -22,12 +24,98 @@ func (d *DbDao) UpdatePayToRefund(orderId string) error {
 		Where("order_id=? AND `status`=? AND refund_status=?",
 			orderId, tables.OrderTxStatusConfirm, tables.TxStatusDefault).
 		Updates(map[string]interface{}{
-			"refund_status": tables.TxStatusSending,
+			"refund_status":         tables.TxStatusSending,
+			"uni_pay_refund_status": tables.UniPayRefundStatusUnRefund,
 		}).Error
 }
 
-func (d *DbDao) GetUnRefundTxCount() (count int64, err error) {
-	err = d.db.Model(tables.TableDasOrderPayInfo{}).
-		Where("`status`=? AND refund_status=?", tables.OrderTxStatusConfirm, tables.TxStatusSending).Count(&count).Error
+// unipay
+func (d *DbDao) UpdateUniPayRefundStatusToRefunded(payHash, orderId, refundHash string) error {
+	return d.db.Model(tables.TableDasOrderPayInfo{}).
+		Where("hash=? AND order_id=? AND `status`=? AND uni_pay_refund_status=?",
+			payHash, orderId, tables.OrderTxStatusConfirm, tables.UniPayRefundStatusRefunding).
+		Updates(map[string]interface{}{
+			"uni_pay_refund_status": tables.UniPayRefundStatusRefunded,
+			"refund_hash":           refundHash,
+		}).Error
+}
+
+func (d *DbDao) UpdatePayment(paymentInfo tables.TableDasOrderPayInfo) error {
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(tables.TableDasOrderInfo{}).
+			Where("order_id=? AND order_type=? AND pay_status=?",
+				paymentInfo.OrderId, tables.OrderTypeSelf, tables.TxStatusDefault).
+			Updates(map[string]interface{}{
+				"pay_status":      tables.TxStatusSending,
+				"register_status": tables.RegisterStatusApplyRegister,
+			}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Clauses(clause.Insert{
+			Modifier: "IGNORE",
+		}).Create(&paymentInfo).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(tables.TableDasOrderPayInfo{}).
+			Where("`hash`=? AND order_id=? AND `status`=?",
+				paymentInfo.Hash, paymentInfo.OrderId, tables.OrderTxStatusDefault).
+			Updates(map[string]interface{}{
+				"chain_type": paymentInfo.ChainType,
+				"address":    paymentInfo.Address,
+				"status":     paymentInfo.Status,
+			}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (d *DbDao) GetPayHashStatusPendingList() (list []tables.TableDasOrderPayInfo, err error) {
+	timestamp := tables.GetPaymentInfoTimestampBefore24h()
+	err = d.db.Where("timestamp>=? AND `status`=?",
+		timestamp, tables.OrderTxStatusDefault).Find(&list).Error
 	return
+}
+
+func (d *DbDao) GetRefundStatusRefundingList() (list []tables.TableDasOrderPayInfo, err error) {
+	timestamp := tables.GetPaymentInfoTimestamp()
+	err = d.db.Where("timestamp>=? AND `status`=? AND uni_pay_refund_status=?",
+		timestamp, tables.OrderTxStatusConfirm, tables.UniPayRefundStatusRefunding).Find(&list).Error
+	return
+}
+
+func (d *DbDao) UpdateUniPayUnconfirmedToRejected(orderId, payHash string) error {
+	return d.db.Model(tables.TableDasOrderPayInfo{}).
+		Where("`hash`=? AND order_id=? AND `status`=? AND uni_pay_refund_status=?",
+			payHash, orderId, tables.OrderTxStatusDefault, tables.UniPayRefundStatusDefault).
+		Updates(map[string]interface{}{
+			"status": tables.OrderTxStatusRejected,
+		}).Error
+}
+
+func (d *DbDao) GetUnRefundList() (list []tables.TableDasOrderPayInfo, err error) {
+	timestamp := tables.GetPaymentInfoTimestamp()
+	err = d.db.Where("timestamp>=? AND `status`=? AND uni_pay_refund_status=?",
+		timestamp, tables.OrderTxStatusConfirm, tables.UniPayRefundStatusUnRefund).Find(&list).Error
+	return
+}
+
+func (d *DbDao) UpdateRefundStatusToRefundIng(ids []uint64) error {
+	return d.db.Model(tables.TableDasOrderPayInfo{}).
+		Where("id IN(?) AND `status`=? AND uni_pay_refund_status=?",
+			ids, tables.OrderTxStatusConfirm, tables.UniPayRefundStatusUnRefund).
+		Updates(map[string]interface{}{
+			"uni_pay_refund_status": tables.UniPayRefundStatusRefunded,
+		}).Error
+}
+
+func (d *DbDao) UpdateUniPayRefundStatusToDefaultForNotUniPayOrder(payHash, orderId string) error {
+	return d.db.Model(tables.TableDasOrderPayInfo{}).
+		Where("hash=? AND order_id=? AND `status`=?",
+			payHash, orderId, tables.OrderTxStatusConfirm).
+		Updates(map[string]interface{}{
+			"uni_pay_refund_status": tables.UniPayRefundStatusDefault,
+		}).Error
 }

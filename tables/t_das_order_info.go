@@ -31,6 +31,7 @@ type TableDasOrderInfo struct {
 	OrderStatus       OrderStatus      `json:"order_status" gorm:"column:order_status;index:k_order_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-closed'"`
 	CoinType          string           `json:"coin_type" gorm:"column:coin_type; type:varchar(255) NOT NULL DEFAULT '';"`
 	CrossCoinType     string           `json:"cross_coin_type" gorm:"column:cross_coin_type; type:varchar(255) NOT NULL DEFAULT '';"`
+	IsUniPay          IsUniPay         `json:"is_uni_pay" gorm:"column:is_uni_pay; type:smallint(6) NOT NULL DEFAULT '0' COMMENT '0-no 1-yes';"`
 	CreatedAt         time.Time        `json:"created_at" gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
 	UpdatedAt         time.Time        `json:"updated_at" gorm:"column:updated_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''"`
 }
@@ -42,10 +43,6 @@ const (
 func (t *TableDasOrderInfo) TableName() string {
 	return TableNameDasOrderInfo
 }
-
-//func (t *TableDasOrderInfo) IsExpired() bool {
-//	return time.Now().Unix() > time.Unix(t.Timestamp/1000, 0).Add(time.Hour*24).Unix()
-//}
 
 func (t *TableDasOrderInfo) CreateOrderId() {
 	t.OrderId = CreateOrderId(t.OrderType, t.AccountId, t.Action, t.ChainType, t.Address, t.Timestamp)
@@ -66,6 +63,13 @@ func (t *TableDasOrderInfo) GetContent() (TableOrderContent, error) {
 	}
 	return content, nil
 }
+
+type IsUniPay int
+
+const (
+	IsUniPayFalse IsUniPay = 0
+	IsUniPayTrue  IsUniPay = 1
+)
 
 type OrderType int
 
@@ -110,20 +114,6 @@ func (p PayTokenId) ToChainString() string {
 	}
 	return ""
 }
-
-//func (p PayTokenId) ToChainType() common.ChainType {
-//	switch p {
-//	case TokenIdDas, TokenIdCkb, TokenIdCkbInternal:
-//		return common.ChainTypeCkb
-//	case TokenIdEth, TokenIdBnb, TokenIdMatic:
-//		return common.ChainTypeEth
-//	case TokenIdTrx:
-//		return common.ChainTypeTron
-//	case TokenIdDoge:
-//		return common.ChainTypeDogeCoin
-//	}
-//	return common.ChainTypeEth
-//}
 
 type PayType string
 

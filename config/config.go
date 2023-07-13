@@ -1,6 +1,7 @@
 package config
 
 import (
+	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/fsnotify/fsnotify"
@@ -70,6 +71,9 @@ type CfgServer struct {
 		CouponEncrySalt         string            `json:"coupon_encry_salt" yaml:"coupon_encry_salt"`
 		CouponQrcodePrefix      string            `json:"coupon_qrcode_prefix" yaml:"coupon_qrcode_prefix"`
 		CouponCodeLength        uint8             `json:"coupon_code_length" yaml:"coupon_code_length"`
+		UniPayUrl               string            `json:"uni_pay_url" yaml:"uni_pay_url"`
+		UniPayRefundSwitch      bool              `json:"uni_pay_refund_switch" yaml:"uni_pay_refund_switch"`
+		HedgeUrl                string            `json:"hedge_url" yaml:"hedge_url"`
 	} `json:"server" yaml:"server"`
 	Origins          []string          `json:"origins" yaml:"origins"`
 	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`
@@ -77,6 +81,7 @@ type CfgServer struct {
 		LarkErrorKey      string `json:"lark_error_key" yaml:"lark_error_key"`
 		LarkRegisterKey   string `json:"lark_register_key" yaml:"lark_register_key"`
 		LarkRegisterOkKey string `json:"lark_register_ok_key" yaml:"lark_register_ok_key"`
+		LarkDasInfoKey    string `json:"lark_das_info_key" yaml:"lark_das_info_key"`
 		DiscordWebhook    string `json:"discord_webhook" yaml:"discord_webhook"`
 	} `json:"notify" yaml:"notify"`
 	PayAddressMap map[string]string `json:"pay_address_map" yaml:"pay_address_map"`
@@ -116,4 +121,22 @@ type DbMysql struct {
 	DbName      string `json:"db_name" yaml:"db_name"`
 	MaxOpenConn int    `json:"max_open_conn" yaml:"max_open_conn"`
 	MaxIdleConn int    `json:"max_idle_conn" yaml:"max_idle_conn"`
+}
+
+func GetUnipayAddress(tokenId tables.PayTokenId) string {
+	switch tokenId {
+	case tables.TokenIdEth:
+		return Cfg.PayAddressMap["eth"]
+	case tables.TokenIdBnb:
+		return Cfg.PayAddressMap["bsc"]
+	case tables.TokenIdMatic:
+		return Cfg.PayAddressMap["polygon"]
+	case tables.TokenIdTrx:
+		return Cfg.PayAddressMap["tron"]
+	case tables.TokenIdCkb, tables.TokenIdDas:
+		return Cfg.PayAddressMap["ckb"]
+	case tables.TokenIdDoge:
+		return Cfg.PayAddressMap["doge"]
+	}
+	return ""
 }

@@ -7,6 +7,7 @@ import (
 	"das_register_server/internal"
 	"das_register_server/notify"
 	"das_register_server/tables"
+	"das_register_server/unipay"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -199,29 +200,86 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "json marshal fail")
 		return
 	}
-	order := tables.TableDasOrderInfo{
-		Id:                0,
-		OrderType:         tables.OrderTypeSelf,
-		OrderId:           "",
-		AccountId:         accountId,
-		Account:           req.Account,
-		Action:            common.DasActionApplyRegister,
-		ChainType:         req.ChainType,
-		Address:           req.Address,
-		Timestamp:         time.Now().UnixNano() / 1e6,
-		PayTokenId:        req.PayTokenId,
-		PayType:           req.PayType,
-		PayAmount:         amountTotalPayToken,
-		Content:           string(contentDataStr),
-		PayStatus:         tables.TxStatusDefault,
-		HedgeStatus:       tables.TxStatusDefault,
-		PreRegisterStatus: tables.TxStatusDefault,
-		RegisterStatus:    tables.RegisterStatusConfirmPayment,
-		OrderStatus:       tables.OrderStatusDefault,
-		CoinType:          req.CoinType,
-		CrossCoinType:     req.CrossCoinType,
+
+	var order tables.TableDasOrderInfo
+	// unipay
+	if config.Cfg.Server.UniPayUrl != "" {
+		addrNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
+			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
+			AddressHex:     req.Address,
+			AddressPayload: nil,
+			IsMulti:        false,
+			ChainType:      req.ChainType,
+		})
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("HexToNormal err: %s", err.Error()))
+			return
+		}
+		res, err := unipay.CreateOrder(unipay.ReqOrderCreate{
+			ChainTypeAddress: core.ChainTypeAddress{
+				Type: "blockchain",
+				KeyInfo: core.KeyInfo{
+					CoinType: addrNormal.ChainType.ToDasAlgorithmId(true).ToCoinType(),
+					Key:      addrNormal.AddressNormal,
+				},
+			},
+			BusinessId:     unipay.BusinessIdDasRegisterSvr,
+			Amount:         amountTotalPayToken,
+			PayTokenId:     req.PayTokenId,
+			PaymentAddress: config.GetUnipayAddress(req.PayTokenId),
+		})
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to create order by unipay")
+			return
+		}
+		order = tables.TableDasOrderInfo{
+			OrderType:         tables.OrderTypeSelf,
+			OrderId:           res.OrderId,
+			AccountId:         accountId,
+			Account:           req.Account,
+			Action:            common.DasActionApplyRegister,
+			ChainType:         req.ChainType,
+			Address:           req.Address,
+			Timestamp:         time.Now().UnixNano() / 1e6,
+			PayTokenId:        req.PayTokenId,
+			PayType:           req.PayType,
+			PayAmount:         amountTotalPayToken,
+			Content:           string(contentDataStr),
+			PayStatus:         tables.TxStatusDefault,
+			HedgeStatus:       tables.TxStatusDefault,
+			PreRegisterStatus: tables.TxStatusDefault,
+			OrderStatus:       tables.OrderStatusDefault,
+			RegisterStatus:    tables.RegisterStatusConfirmPayment,
+			CoinType:          req.CoinType,
+			CrossCoinType:     req.CrossCoinType,
+			IsUniPay:          tables.IsUniPayTrue,
+		}
+	} else {
+		order = tables.TableDasOrderInfo{
+			Id:                0,
+			OrderType:         tables.OrderTypeSelf,
+			OrderId:           "",
+			AccountId:         accountId,
+			Account:           req.Account,
+			Action:            common.DasActionApplyRegister,
+			ChainType:         req.ChainType,
+			Address:           req.Address,
+			Timestamp:         time.Now().UnixNano() / 1e6,
+			PayTokenId:        req.PayTokenId,
+			PayType:           req.PayType,
+			PayAmount:         amountTotalPayToken,
+			Content:           string(contentDataStr),
+			PayStatus:         tables.TxStatusDefault,
+			HedgeStatus:       tables.TxStatusDefault,
+			PreRegisterStatus: tables.TxStatusDefault,
+			RegisterStatus:    tables.RegisterStatusConfirmPayment,
+			OrderStatus:       tables.OrderStatusDefault,
+			CoinType:          req.CoinType,
+			CrossCoinType:     req.CrossCoinType,
+		}
+		order.CreateOrderId()
 	}
-	order.CreateOrderId()
+
 	resp.OrderId = order.OrderId
 	resp.TokenId = req.PayTokenId
 	resp.PayType = req.PayType
