@@ -99,14 +99,21 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		var keyList *molecule.DeviceKeyList
 		idx := -1
 		//login address is sign address
-
-		dasAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-			ChainType:     common.ChainTypeWebauthn,
-			AddressNormal: req.SignAddress,
-		})
-		if err != nil {
-			return err
+		var dasAddressHex core.DasAddressHex
+		if req.SignAddress == "" {
+			dasAddressHex.AddressHex = sic.Address
+		} else {
+			res, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+				ChainType:     common.ChainTypeWebauthn,
+				AddressNormal: req.SignAddress,
+			})
+			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "sign address NormalToHex err")
+				return err
+			}
+			dasAddressHex = res
 		}
+
 		fmt.Println("sic.Address: ", sic.Address)
 		fmt.Println("dasAddressHex.AddressHex: ", dasAddressHex.AddressHex)
 		if sic.Address == dasAddressHex.AddressHex {
