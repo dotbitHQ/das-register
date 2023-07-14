@@ -130,20 +130,24 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			lockArgs, err := h.dasCore.Daf().HexToArgs(dasLockKey, dasLockKey)
 			KeyListCfgCell, err = h.dasCore.GetKeyListCell(lockArgs)
 			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "GetKeyListCell err: " + err.Error())
 				return fmt.Errorf("GetKeyListCell(webauthn keyListCell) : %s", err.Error())
 			}
 			keyListConfigTx, err := h.dasCore.Client().GetTransaction(h.ctx, KeyListCfgCell.OutPoint.TxHash)
 			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "GetTransaction err: " + err.Error())
 				return err
 			}
 			webAuthnKeyListConfigBuilder, err := witness.WebAuthnKeyListDataBuilderFromTx(keyListConfigTx.Transaction, common.DataTypeNew)
 			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "WebAuthnKeyListDataBuilderFromTx err: " + err.Error())
 				return err
 			}
 			dataBuilder := webAuthnKeyListConfigBuilder.DeviceKeyListCellData.AsBuilder()
 			deviceKeyListCellDataBuilder := dataBuilder.Build()
 			keyList = deviceKeyListCellDataBuilder.Keys()
 			if keyList == nil {
+				apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "login status has not enable authorize")
 				return fmt.Errorf("login status has not enable authorize")
 			}
 
