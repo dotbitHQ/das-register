@@ -11,6 +11,9 @@ server:
   recover_ckb: 1000
   recover_time: 1 # min
   split_ckb: 2000
+  uni_pay_url: "" # url for Payment service unipay
+  uni_pay_refund_switch: true # Whether to enable payment refunds
+  hedge_url: "" # Services for exchanging payment currencies
 origins: # cross domain
   - ""
 pay_address_map: # receiver's address

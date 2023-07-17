@@ -20,7 +20,7 @@ Backend of DAS registration service. You can use this repo to build your own DAS
 * GO version >= 1.17.10
 * [ckb-node](https://github.com/nervosnetwork/ckb) (Must be synced to latest height and add `Indexer` module to ckb.toml)
 * [das-database](https://github.com/dotbitHQ/das-database)
-* [das-pay](https://github.com/dotbitHQ/das-pay)
+* [unipay](https://github.com/dotbitHQ/unipay) (Payment service used for registered accounts)
 * If the version of the dependency package is too low, please install `gcc-multilib` (apt install gcc-multilib)
 * Machine configuration: 4c8g200G
 

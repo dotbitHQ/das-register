@@ -221,12 +221,11 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 	var order tables.TableDasOrderInfo
 	if config.Cfg.Server.UniPayUrl != "" {
 		addrNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
-			DasAlgorithmId:    req.ChainType.ToDasAlgorithmId(true),
-			DasSubAlgorithmId: 0,
-			AddressHex:        req.Address,
-			AddressPayload:    nil,
-			IsMulti:           false,
-			ChainType:         req.ChainType,
+			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
+			AddressHex:     req.Address,
+			AddressPayload: nil,
+			IsMulti:        false,
+			ChainType:      req.ChainType,
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("HexToNormal err: %s", err.Error()))
