@@ -51,12 +51,16 @@ type ReqOrderRegisterBase struct {
 }
 
 type RespOrderRegister struct {
-	OrderId        string            `json:"order_id"`
-	TokenId        tables.PayTokenId `json:"token_id"`
-	ReceiptAddress string            `json:"receipt_address"`
-	Amount         decimal.Decimal   `json:"amount"`
-	CodeUrl        string            `json:"code_url"`
-	PayType        tables.PayType    `json:"pay_type"`
+	OrderId           string            `json:"order_id"`
+	TokenId           tables.PayTokenId `json:"token_id"`
+	ReceiptAddress    string            `json:"receipt_address"`
+	Amount            decimal.Decimal   `json:"amount"`
+	ContractAddress   string            `json:"contract_address"`
+	ClientSecret      string            `json:"client_secret"`
+	PremiumPercentage decimal.Decimal   `json:"premium_percentage"`
+	PremiumBase       decimal.Decimal   `json:"premium_base"`
+	//CodeUrl        string            `json:"code_url"`
+	//PayType        tables.PayType    `json:"pay_type"`
 }
 
 type AccountAttr struct {
@@ -420,6 +424,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	}
 
 	var order tables.TableDasOrderInfo
+	var paymentInfo tables.TableDasOrderPayInfo
 	// unipay
 	if config.Cfg.Server.UniPayUrl != "" {
 		addrNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
@@ -461,7 +466,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
 			PayType:           req.PayType,
-			PayAmount:         amountTotalPayToken,
+			PayAmount:         res.Amount,
 			Content:           string(contentDataStr),
 			PayStatus:         tables.TxStatusDefault,
 			HedgeStatus:       tables.TxStatusDefault,
@@ -471,7 +476,24 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			CoinType:          req.CoinType,
 			CrossCoinType:     req.CrossCoinType,
 			IsUniPay:          tables.IsUniPayTrue,
+			PremiumPercentage: res.PremiumPercentage,
+			PremiumBase:       res.PremiumBase,
 		}
+		if req.PayTokenId == tables.TokenIdStripeUSD && res.StripePaymentIntentId != "" {
+			paymentInfo = tables.TableDasOrderPayInfo{
+				Hash:      res.StripePaymentIntentId,
+				OrderId:   res.OrderId,
+				ChainType: order.ChainType,
+				Address:   order.Address,
+				Status:    tables.OrderTxStatusDefault,
+				Timestamp: time.Now().UnixMilli(),
+				AccountId: order.AccountId,
+			}
+		}
+		resp.ContractAddress = res.ContractAddress
+		resp.ClientSecret = res.ClientSecret
+		resp.PremiumPercentage = res.PremiumPercentage
+		resp.PremiumBase = res.PremiumBase
 	} else {
 		order = tables.TableDasOrderInfo{
 			OrderType:         tables.OrderTypeSelf,
@@ -499,9 +521,9 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 
 	resp.OrderId = order.OrderId
 	resp.TokenId = req.PayTokenId
-	resp.PayType = req.PayType
+	//resp.PayType = req.PayType
 	resp.Amount = order.PayAmount
-	resp.CodeUrl = ""
+	//resp.CodeUrl = ""
 
 	if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
@@ -510,7 +532,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		resp.ReceiptAddress = addr
 	}
 
-	if err := h.dbDao.CreateOrder(&order); err != nil {
+	if err := h.dbDao.CreateOrderWithPayment(order, paymentInfo); err != nil {
 		log.Error("CreateOrder err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
 		return
@@ -635,9 +657,9 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 
 	resp.OrderId = order.OrderId
 	resp.TokenId = req.PayTokenId
-	resp.PayType = req.PayType
+	//resp.PayType = req.PayType
 	resp.Amount = order.PayAmount
-	resp.CodeUrl = ""
+	//resp.CodeUrl = ""
 
 	err = h.dbDao.CreateCouponOrder(&order, coupon.Code)
 	if redisErr := h.rc.DeleteCouponLockWithRedis(coupon.Code); redisErr != nil {

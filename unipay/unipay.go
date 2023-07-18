@@ -31,11 +31,14 @@ type ReqOrderCreate struct {
 }
 
 type RespOrderCreate struct {
-	OrderId               string `json:"order_id"`
-	PaymentAddress        string `json:"payment_address"`
-	ContractAddress       string `json:"contract_address"`
-	StripePaymentIntentId string `json:"stripe_payment_intent_id"`
-	ClientSecret          string `json:"client_secret"`
+	OrderId               string          `json:"order_id"`
+	PaymentAddress        string          `json:"payment_address"`
+	ContractAddress       string          `json:"contract_address"`
+	StripePaymentIntentId string          `json:"stripe_payment_intent_id"`
+	ClientSecret          string          `json:"client_secret"`
+	Amount                decimal.Decimal `json:"amount"`
+	PremiumPercentage     decimal.Decimal `json:"premium_percentage"`
+	PremiumBase           decimal.Decimal `json:"premium_base"`
 }
 
 func CreateOrder(req ReqOrderCreate) (resp RespOrderCreate, err error) {
