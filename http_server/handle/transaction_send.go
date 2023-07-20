@@ -3,6 +3,7 @@ package handle
 import (
 	"das_register_server/http_server/api_code"
 	"das_register_server/tables"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -130,17 +131,17 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			lockArgs, err := h.dasCore.Daf().HexToArgs(dasLockKey, dasLockKey)
 			KeyListCfgCell, err = h.dasCore.GetKeyListCell(lockArgs)
 			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeError500, "GetKeyListCell err: " + err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "GetKeyListCell err: "+err.Error())
 				return fmt.Errorf("GetKeyListCell(webauthn keyListCell) : %s", err.Error())
 			}
 			keyListConfigTx, err := h.dasCore.Client().GetTransaction(h.ctx, KeyListCfgCell.OutPoint.TxHash)
 			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeError500, "GetTransaction err: " + err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "GetTransaction err: "+err.Error())
 				return err
 			}
 			webAuthnKeyListConfigBuilder, err := witness.WebAuthnKeyListDataBuilderFromTx(keyListConfigTx.Transaction, common.DataTypeNew)
 			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeError500, "WebAuthnKeyListDataBuilderFromTx err: " + err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "WebAuthnKeyListDataBuilderFromTx err: "+err.Error())
 				return err
 			}
 			dataBuilder := webAuthnKeyListConfigBuilder.DeviceKeyListCellData.AsBuilder()
@@ -156,7 +157,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 				subAlgId := common.DasSubAlgorithmId(keyList.Get(uint(i)).SubAlgId().RawData()[0])
 				cid1 := keyList.Get(uint(i)).Cid().RawData()
 				pk1 := keyList.Get(uint(i)).Pubkey().RawData()
-				addressHex := common.Bytes2Hex(append(cid1, pk1...))
+				addressHex := hex.EncodeToString(append(cid1, pk1...))
 				if dasAddressHex.DasAlgorithmId == mainAlgId &&
 					dasAddressHex.DasSubAlgorithmId == subAlgId &&
 					addressHex == dasAddressHex.AddressHex {
