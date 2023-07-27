@@ -40,6 +40,20 @@ func (d *DbDao) UpdateUniPayRefundStatusToRefunded(payHash, orderId, refundHash 
 		}).Error
 }
 
+func (d *DbDao) UpdatePayHashStatusToFailByDispute(payHash, orderId string) error {
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(tables.TableDasOrderPayInfo{}).
+			Where("`hash`=? AND order_id=? AND `status`=?",
+				payHash, orderId, tables.OrderTxStatusConfirm).
+			Updates(map[string]interface{}{
+				"status": tables.OrderTxStatusDispute,
+			}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (d *DbDao) UpdatePayment(paymentInfo tables.TableDasOrderPayInfo) error {
 	return d.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(tables.TableDasOrderInfo{}).
