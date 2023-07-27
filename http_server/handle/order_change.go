@@ -218,10 +218,11 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 		}
 		premiumPercentage := decimal.Zero
 		premiumBase := decimal.Zero
-		premiumAmount := amountTotalPayToken
+		premiumAmount := decimal.Zero
 		if req.PayTokenId == tables.TokenIdStripeUSD {
 			premiumPercentage = config.Cfg.Stripe.PremiumPercentage
 			premiumBase = config.Cfg.Stripe.PremiumBase
+			premiumAmount = amountTotalPayToken
 			amountTotalPayToken = amountTotalPayToken.Mul(premiumPercentage.Add(decimal.NewFromInt(1))).Add(premiumBase.Mul(decimal.NewFromInt(100)))
 			amountTotalPayToken = decimal.NewFromInt(amountTotalPayToken.IntPart())
 			premiumAmount = amountTotalPayToken.Sub(premiumAmount)
