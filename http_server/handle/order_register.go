@@ -436,11 +436,13 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		}
 		premiumPercentage := decimal.Zero
 		premiumBase := decimal.Zero
+		premiumAmount := amountTotalPayToken
 		if req.PayTokenId == tables.TokenIdStripeUSD {
 			premiumPercentage = config.Cfg.Stripe.PremiumPercentage
 			premiumBase = config.Cfg.Stripe.PremiumBase
 			amountTotalPayToken = amountTotalPayToken.Mul(premiumPercentage.Add(decimal.NewFromInt(1))).Add(premiumBase.Mul(decimal.NewFromInt(100)))
 			amountTotalPayToken = decimal.NewFromInt(amountTotalPayToken.IntPart())
+			premiumAmount = amountTotalPayToken.Sub(premiumAmount)
 		}
 		res, err := unipay.CreateOrder(unipay.ReqOrderCreate{
 			ChainTypeAddress: core.ChainTypeAddress{
@@ -456,6 +458,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			PaymentAddress:    config.GetUnipayAddress(req.PayTokenId),
 			PremiumPercentage: premiumPercentage,
 			PremiumBase:       premiumBase,
+			PremiumAmount:     premiumAmount,
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to create order by unipay")
@@ -484,6 +487,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			IsUniPay:          tables.IsUniPayTrue,
 			PremiumPercentage: premiumPercentage,
 			PremiumBase:       premiumBase,
+			PremiumAmount:     premiumAmount,
 		}
 		if req.PayTokenId == tables.TokenIdStripeUSD && res.StripePaymentIntentId != "" {
 			paymentInfo = tables.TableDasOrderPayInfo{
