@@ -47,6 +47,7 @@ const (
 	OrderTxStatusDefault  OrderTxStatus = 0
 	OrderTxStatusConfirm  OrderTxStatus = 1
 	OrderTxStatusRejected OrderTxStatus = 2
+	OrderTxStatusDispute  OrderTxStatus = 3
 )
 
 // unipay
