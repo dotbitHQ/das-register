@@ -24,13 +24,15 @@ type ReqAccountSearch struct {
 }
 
 type RespAccountSearch struct {
-	Status        tables.SearchStatus                  `json:"status"`
-	Account       string                               `json:"account"`
-	AccountPrice  decimal.Decimal                      `json:"account_price"`
-	BaseAmount    decimal.Decimal                      `json:"base_amount"`
-	IsSelf        bool                                 `json:"is_self"`
-	RegisterTxMap map[tables.RegisterStatus]RegisterTx `json:"register_tx_map"`
-	OpenTimestamp int64                                `json:"open_timestamp"`
+	Status            tables.SearchStatus                  `json:"status"`
+	Account           string                               `json:"account"`
+	AccountPrice      decimal.Decimal                      `json:"account_price"`
+	BaseAmount        decimal.Decimal                      `json:"base_amount"`
+	IsSelf            bool                                 `json:"is_self"`
+	RegisterTxMap     map[tables.RegisterStatus]RegisterTx `json:"register_tx_map"`
+	OpenTimestamp     int64                                `json:"open_timestamp"`
+	PremiumPercentage decimal.Decimal                      `json:"premium_percentage"`
+	PremiumBase       decimal.Decimal                      `json:"premium_base"`
 }
 
 type RegisterTx struct {
@@ -83,6 +85,8 @@ func (h *HttpHandle) AccountSearch(ctx *gin.Context) {
 func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.ApiResp) error {
 	var resp RespAccountSearch
 	resp.RegisterTxMap = make(map[tables.RegisterStatus]RegisterTx)
+	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
+	resp.PremiumBase = config.Cfg.Stripe.PremiumBase
 
 	if req.ChainType == common.ChainTypeCkb || req.Address == "" {
 

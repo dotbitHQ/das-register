@@ -24,10 +24,12 @@ const (
 
 type ReqOrderCreate struct {
 	core.ChainTypeAddress
-	BusinessId     string            `json:"business_id"`
-	Amount         decimal.Decimal   `json:"amount"`
-	PayTokenId     tables.PayTokenId `json:"pay_token_id"`
-	PaymentAddress string            `json:"payment_address"`
+	BusinessId        string            `json:"business_id"`
+	Amount            decimal.Decimal   `json:"amount"`
+	PayTokenId        tables.PayTokenId `json:"pay_token_id"`
+	PaymentAddress    string            `json:"payment_address"`
+	PremiumPercentage decimal.Decimal   `json:"premium_percentage"`
+	PremiumBase       decimal.Decimal   `json:"premium_base"`
 }
 
 type RespOrderCreate struct {

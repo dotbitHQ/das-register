@@ -130,6 +130,20 @@ func (d *DbDao) CreateOrder(order *tables.TableDasOrderInfo) error {
 	return d.db.Create(&order).Error
 }
 
+func (d *DbDao) CreateOrderWithPayment(order tables.TableDasOrderInfo, payment tables.TableDasOrderPayInfo) error {
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&order).Error; err != nil {
+			return err
+		}
+		if payment.Hash != "" {
+			if err := tx.Create(&payment).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func (d *DbDao) CreateCouponOrder(order *tables.TableDasOrderInfo, coupon string) error {
 	return d.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(order).Error; err != nil {

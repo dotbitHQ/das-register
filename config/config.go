@@ -112,6 +112,10 @@ type CfgServer struct {
 		Premium              decimal.Decimal `json:"premium" yaml:"premium"`
 		Discount             decimal.Decimal `json:"discount" yaml:"discount"`
 	} `json:"das" yaml:"das"`
+	Stripe struct {
+		PremiumPercentage decimal.Decimal `json:"premium_percentage" yaml:"premium_percentage"`
+		PremiumBase       decimal.Decimal `json:"premium_base" yaml:"premium_base"`
+	} `json:"stripe" yaml:"stripe"`
 }
 
 type DbMysql struct {

@@ -32,6 +32,8 @@ type TableDasOrderInfo struct {
 	CoinType          string           `json:"coin_type" gorm:"column:coin_type; type:varchar(255) NOT NULL DEFAULT '';"`
 	CrossCoinType     string           `json:"cross_coin_type" gorm:"column:cross_coin_type; type:varchar(255) NOT NULL DEFAULT '';"`
 	IsUniPay          IsUniPay         `json:"is_uni_pay" gorm:"column:is_uni_pay; type:smallint(6) NOT NULL DEFAULT '0' COMMENT '0-no 1-yes';"`
+	PremiumPercentage decimal.Decimal  `json:"premium_percentage" gorm:"column:premium_percentage; type:decimal(20,10) NOT NULL DEFAULT '0' COMMENT '';"`
+	PremiumBase       decimal.Decimal  `json:"premium_base" gorm:"column:premium_base; type:decimal(20,10) NOT NULL DEFAULT '0' COMMENT '';"`
 	CreatedAt         time.Time        `json:"created_at" gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
 	UpdatedAt         time.Time        `json:"updated_at" gorm:"column:updated_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''"`
 }
@@ -91,6 +93,10 @@ const (
 	TokenIdMatic       PayTokenId = "polygon_matic"
 	TokenCoupon        PayTokenId = "coupon"
 	TokenIdDoge        PayTokenId = "doge_doge"
+	TokenIdStripeUSD   PayTokenId = "stripe_usd"
+	TokenIdErc20USDT   PayTokenId = "eth_erc20_usdt"
+	TokenIdTrc20USDT   PayTokenId = "tron_trc20_usdt"
+	TokenIdBep20USDT   PayTokenId = "bsc_bep20_usdt"
 )
 
 func (p PayTokenId) IsTokenIdCkbInternal() bool {
