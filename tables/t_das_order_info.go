@@ -34,6 +34,7 @@ type TableDasOrderInfo struct {
 	IsUniPay          IsUniPay         `json:"is_uni_pay" gorm:"column:is_uni_pay; type:smallint(6) NOT NULL DEFAULT '0' COMMENT '0-no 1-yes';"`
 	PremiumPercentage decimal.Decimal  `json:"premium_percentage" gorm:"column:premium_percentage; type:decimal(20,10) NOT NULL DEFAULT '0' COMMENT '';"`
 	PremiumBase       decimal.Decimal  `json:"premium_base" gorm:"column:premium_base; type:decimal(20,10) NOT NULL DEFAULT '0' COMMENT '';"`
+	PremiumAmount     decimal.Decimal  `json:"premium_amount" gorm:"column:premium_amount; type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT '';"`
 	CreatedAt         time.Time        `json:"created_at" gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
 	UpdatedAt         time.Time        `json:"updated_at" gorm:"column:updated_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''"`
 }

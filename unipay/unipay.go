@@ -30,6 +30,7 @@ type ReqOrderCreate struct {
 	PaymentAddress    string            `json:"payment_address"`
 	PremiumPercentage decimal.Decimal   `json:"premium_percentage"`
 	PremiumBase       decimal.Decimal   `json:"premium_base"`
+	PremiumAmount     decimal.Decimal   `json:"premium_amount"`
 }
 
 type RespOrderCreate struct {
