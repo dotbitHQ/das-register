@@ -35,16 +35,12 @@ type ReqOrderChange struct {
 }
 
 type RespOrderChange struct {
-	OrderId        string            `json:"order_id"`
-	TokenId        tables.PayTokenId `json:"token_id"`
-	ReceiptAddress string            `json:"receipt_address"`
-	Amount         decimal.Decimal   `json:"amount"`
-	//CodeUrl        string            `json:"code_url"`
-	//PayType        tables.PayType    `json:"pay_type"`
-	ContractAddress   string          `json:"contract_address"`
-	ClientSecret      string          `json:"client_secret"`
-	PremiumPercentage decimal.Decimal `json:"premium_percentage"`
-	PremiumBase       decimal.Decimal `json:"premium_base"`
+	OrderId         string            `json:"order_id"`
+	TokenId         tables.PayTokenId `json:"token_id"`
+	ReceiptAddress  string            `json:"receipt_address"`
+	Amount          decimal.Decimal   `json:"amount"`
+	ContractAddress string            `json:"contract_address"`
+	ClientSecret    string            `json:"client_secret"`
 }
 
 func (h *HttpHandle) RpcOrderChange(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -220,6 +216,14 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("HexToNormal err: %s", err.Error()))
 			return
 		}
+		premiumPercentage := decimal.Zero
+		premiumBase := decimal.Zero
+		if req.PayTokenId == tables.TokenIdStripeUSD {
+			premiumPercentage = config.Cfg.Stripe.PremiumPercentage
+			premiumBase = config.Cfg.Stripe.PremiumBase
+			amountTotalPayToken = amountTotalPayToken.Mul(premiumPercentage.Add(decimal.NewFromInt(1))).Add(premiumBase.Mul(decimal.NewFromInt(100)))
+			amountTotalPayToken = decimal.NewFromInt(amountTotalPayToken.IntPart())
+		}
 		res, err := unipay.CreateOrder(unipay.ReqOrderCreate{
 			ChainTypeAddress: core.ChainTypeAddress{
 				Type: "blockchain",
@@ -228,10 +232,12 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 					Key:      addrNormal.AddressNormal,
 				},
 			},
-			BusinessId:     unipay.BusinessIdDasRegisterSvr,
-			Amount:         amountTotalPayToken,
-			PayTokenId:     req.PayTokenId,
-			PaymentAddress: config.GetUnipayAddress(req.PayTokenId),
+			BusinessId:        unipay.BusinessIdDasRegisterSvr,
+			Amount:            amountTotalPayToken,
+			PayTokenId:        req.PayTokenId,
+			PaymentAddress:    config.GetUnipayAddress(req.PayTokenId),
+			PremiumPercentage: premiumPercentage,
+			PremiumBase:       premiumBase,
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to create order by unipay")
@@ -248,7 +254,7 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
 			PayType:           req.PayType,
-			PayAmount:         res.Amount,
+			PayAmount:         amountTotalPayToken,
 			Content:           string(contentDataStr),
 			PayStatus:         tables.TxStatusDefault,
 			HedgeStatus:       tables.TxStatusDefault,
@@ -258,6 +264,8 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 			CoinType:          req.CoinType,
 			CrossCoinType:     req.CrossCoinType,
 			IsUniPay:          tables.IsUniPayTrue,
+			PremiumPercentage: premiumPercentage,
+			PremiumBase:       premiumBase,
 		}
 		if req.PayTokenId == tables.TokenIdStripeUSD && res.StripePaymentIntentId != "" {
 			paymentInfo = tables.TableDasOrderPayInfo{
@@ -272,8 +280,6 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 		}
 		resp.ContractAddress = res.ContractAddress
 		resp.ClientSecret = res.ClientSecret
-		resp.PremiumPercentage = res.PremiumPercentage
-		resp.PremiumBase = res.PremiumBase
 	} else {
 		order = tables.TableDasOrderInfo{
 			Id:                0,
@@ -302,9 +308,7 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 
 	resp.OrderId = order.OrderId
 	resp.TokenId = req.PayTokenId
-	//resp.PayType = req.PayType
 	resp.Amount = order.PayAmount
-	//resp.CodeUrl = ""
 	if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
 		return

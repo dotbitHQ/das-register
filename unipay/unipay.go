@@ -24,21 +24,20 @@ const (
 
 type ReqOrderCreate struct {
 	core.ChainTypeAddress
-	BusinessId     string            `json:"business_id"`
-	Amount         decimal.Decimal   `json:"amount"`
-	PayTokenId     tables.PayTokenId `json:"pay_token_id"`
-	PaymentAddress string            `json:"payment_address"`
+	BusinessId        string            `json:"business_id"`
+	Amount            decimal.Decimal   `json:"amount"`
+	PayTokenId        tables.PayTokenId `json:"pay_token_id"`
+	PaymentAddress    string            `json:"payment_address"`
+	PremiumPercentage decimal.Decimal   `json:"premium_percentage"`
+	PremiumBase       decimal.Decimal   `json:"premium_base"`
 }
 
 type RespOrderCreate struct {
-	OrderId               string          `json:"order_id"`
-	PaymentAddress        string          `json:"payment_address"`
-	ContractAddress       string          `json:"contract_address"`
-	StripePaymentIntentId string          `json:"stripe_payment_intent_id"`
-	ClientSecret          string          `json:"client_secret"`
-	Amount                decimal.Decimal `json:"amount"`
-	PremiumPercentage     decimal.Decimal `json:"premium_percentage"`
-	PremiumBase           decimal.Decimal `json:"premium_base"`
+	OrderId               string `json:"order_id"`
+	PaymentAddress        string `json:"payment_address"`
+	ContractAddress       string `json:"contract_address"`
+	StripePaymentIntentId string `json:"stripe_payment_intent_id"`
+	ClientSecret          string `json:"client_secret"`
 }
 
 func CreateOrder(req ReqOrderCreate) (resp RespOrderCreate, err error) {
