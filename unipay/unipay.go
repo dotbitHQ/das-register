@@ -116,3 +116,19 @@ type ToolUniPay struct {
 	Wg    *sync.WaitGroup
 	DbDao *dao.DbDao
 }
+
+func RoundAmount(amount decimal.Decimal, tokenId tables.PayTokenId) decimal.Decimal {
+	switch tokenId {
+	case tables.TokenIdEth, tables.TokenIdBnb, tables.TokenIdMatic:
+		dec := decimal.New(1, 8)
+		amount = amount.Div(dec).Ceil().Mul(dec)
+	case tables.TokenIdDas, tables.TokenIdCkb, tables.TokenIdCkbInternal, tables.TokenIdDoge:
+		dec := decimal.New(1, 4)
+		amount = amount.Div(dec).Ceil().Mul(dec)
+	case tables.TokenIdTrx, tables.TokenIdErc20USDT,
+		tables.TokenIdBep20USDT, tables.TokenIdTrc20USDT:
+		dec := decimal.New(1, 3)
+		amount = amount.Div(dec).Ceil().Mul(dec)
+	}
+	return amount
+}

@@ -373,6 +373,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
+	amountTotalPayToken = unipay.RoundAmount(amountTotalPayToken, req.PayTokenId)
 
 	inviterAccountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.InviterAccount))
 	if _, ok := config.Cfg.InviterWhitelist[inviterAccountId]; ok {
