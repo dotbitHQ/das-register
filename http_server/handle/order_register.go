@@ -443,7 +443,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			premiumBase = config.Cfg.Stripe.PremiumBase
 			premiumAmount = amountTotalPayToken
 			amountTotalPayToken = amountTotalPayToken.Mul(premiumPercentage.Add(decimal.NewFromInt(1))).Add(premiumBase.Mul(decimal.NewFromInt(100)))
-			amountTotalPayToken = decimal.NewFromInt(amountTotalPayToken.IntPart())
+			amountTotalPayToken = decimal.NewFromInt(amountTotalPayToken.Ceil().IntPart())
 			premiumAmount = amountTotalPayToken.Sub(premiumAmount)
 		}
 		res, err := unipay.CreateOrder(unipay.ReqOrderCreate{
