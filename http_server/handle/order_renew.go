@@ -182,6 +182,7 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
+	amountTotalPayToken = unipay.RoundAmount(amountTotalPayToken, req.PayTokenId)
 	//
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	orderContent := tables.TableOrderContent{
