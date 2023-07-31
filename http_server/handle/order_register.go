@@ -373,7 +373,6 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
-	amountTotalPayToken = unipay.RoundAmount(amountTotalPayToken, req.PayTokenId)
 
 	inviterAccountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.InviterAccount))
 	if _, ok := config.Cfg.InviterWhitelist[inviterAccountId]; ok {
@@ -533,7 +532,8 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	resp.TokenId = req.PayTokenId
 	resp.Amount = order.PayAmount
 
-	if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
+	addr := config.GetUnipayAddress(order.PayTokenId)
+	if addr == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
 		return
 	} else {
@@ -755,14 +755,17 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 	log.Info("getOrderAmount:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
 	if payToken.TokenId == tables.TokenIdCkb {
 		amountTotalPayToken = amountTotalCKB
-	} else if payToken.TokenId == tables.TokenIdMatic || payToken.TokenId == tables.TokenIdBnb || payToken.TokenId == tables.TokenIdEth {
-		log.Info("amountTotalPayToken:", amountTotalPayToken.String())
-		decCeil := decimal.NewFromInt(1e6)
-		amountTotalPayToken = amountTotalPayToken.DivRound(decCeil, 6).Ceil().Mul(decCeil)
-		log.Info("amountTotalPayToken:", amountTotalPayToken.String())
-	} else if payToken.TokenId == tables.TokenIdDoge && h.dasCore.NetType() != common.DasNetTypeMainNet {
+	}
+	//if payToken.TokenId == tables.TokenIdMatic || payToken.TokenId == tables.TokenIdBnb || payToken.TokenId == tables.TokenIdEth {
+	//	log.Info("amountTotalPayToken:", amountTotalPayToken.String())
+	//	decCeil := decimal.NewFromInt(1e6)
+	//	amountTotalPayToken = amountTotalPayToken.DivRound(decCeil, 6).Ceil().Mul(decCeil)
+	//	log.Info("amountTotalPayToken:", amountTotalPayToken.String())
+	//}
+	if payToken.TokenId == tables.TokenIdDoge && h.dasCore.NetType() != common.DasNetTypeMainNet {
 		amountTotalPayToken = decimal.NewFromInt(rand.Int63n(10000000) + 100000000)
 	}
+	amountTotalPayToken = unipay.RoundAmount(amountTotalPayToken, payToken.TokenId)
 	return
 }
 func (h *HttpHandle) getCouponInfo(code string) (err error, info *RespCouponInfo) {
