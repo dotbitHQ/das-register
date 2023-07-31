@@ -129,7 +129,8 @@ func (h *HttpHandle) doOrderDetail(req *ReqOrderDetail, apiResp *api_code.ApiRes
 		resp.RegisterYears = contentData.RegisterYears
 		resp.ChannelAccount = contentData.ChannelAccount
 	}
-	if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
+	addr := config.GetUnipayAddress(order.PayTokenId)
+	if addr == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
 		return nil
 	} else {

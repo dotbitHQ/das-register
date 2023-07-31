@@ -180,7 +180,6 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
-	amountTotalPayToken = unipay.RoundAmount(amountTotalPayToken, req.PayTokenId)
 	//
 	inviterAccountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.InviterAccount))
 	if _, ok := config.Cfg.InviterWhitelist[inviterAccountId]; ok {
@@ -315,7 +314,8 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 	resp.OrderId = order.OrderId
 	resp.TokenId = req.PayTokenId
 	resp.Amount = order.PayAmount
-	if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
+	addr := config.GetUnipayAddress(order.PayTokenId)
+	if addr == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
 		return
 	} else {

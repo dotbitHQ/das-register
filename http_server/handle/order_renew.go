@@ -182,7 +182,6 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
-	amountTotalPayToken = unipay.RoundAmount(amountTotalPayToken, req.PayTokenId)
 	//
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	orderContent := tables.TableOrderContent{
@@ -326,7 +325,8 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 	resp.OrderId = order.OrderId
 	resp.TokenId = req.PayTokenId
 	resp.Amount = order.PayAmount
-	if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
+	addr := config.GetUnipayAddress(order.PayTokenId)
+	if addr == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
 		return
 	} else {
