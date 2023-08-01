@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
-	"github.com/dotbitHQ/das-lib/molecule"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
@@ -94,7 +93,6 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 	}
 
 	if hasWebAuthn {
-		var signAddressHex core.DasAddressHex
 		loginAddrHex := core.DasAddressHex{
 			DasAlgorithmId:    common.DasAlgorithmIdWebauthn,
 			DasSubAlgorithmId: common.DasWebauthnSubAlgorithmIdES256,
@@ -104,21 +102,20 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		}
 
 		if req.SignAddress == "" {
-			signAddressHex.AddressHex = loginAddrHex.AddressHex
-		} else {
-			res, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-				ChainType:     common.ChainTypeWebauthn,
-				AddressNormal: req.SignAddress,
-			})
-			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "sign address NormalToHex err")
-				return err
-			}
-			signAddressHex = res
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "SignAddress err")
+			return nil
 		}
 
-		fmt.Println("loginAddrHex.AddressHex: ", loginAddrHex.AddressHex)
-		fmt.Println("signAddressHex.AddressHex: ", signAddressHex.AddressHex)
+		signAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+			ChainType:     common.ChainTypeWebauthn,
+			AddressNormal: req.SignAddress,
+		})
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "sign address NormalToHex err")
+			return err
+		}
+		log.Info("loginAddrHex.AddressHex: ", loginAddrHex.AddressHex)
+		log.Info("signAddressHex.AddressHex: ", signAddressHex.AddressHex)
 		idx, err := h.dasCore.GetIdxOfKeylist(loginAddrHex, signAddressHex)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "GetIdxOfKeylist err: "+err.Error())
@@ -130,15 +127,9 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		}
 
 		for i, v := range req.SignList {
-			if v.SignType != common.DasAlgorithmIdWebauthn {
-				continue
+			if v.SignType == common.DasAlgorithmIdWebauthn {
+				h.dasCore.AddPkIndexForSignMsg(&req.SignList[i].SignMsg, idx)
 			}
-			signMsg := common.Hex2Bytes(req.SignList[i].SignMsg)
-			idxMolecule := molecule.GoU8ToMoleculeU8(uint8(idx))
-			idxLen := molecule.GoU8ToMoleculeU8(uint8(len(idxMolecule.RawData())))
-			signMsgRes := append(idxLen.RawData(), idxMolecule.RawData()...)
-			signMsgRes = append(signMsgRes, signMsg...)
-			req.SignList[i].SignMsg = common.Bytes2Hex(signMsgRes)
 		}
 	}
 
