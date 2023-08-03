@@ -771,8 +771,10 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
       "3": {}, // pre tx hash
       "4": {},// propose tx hash
       "5": {}// confirm propose tx hash
-    }
-    
+    },
+    "open_timestamp": 0, // 
+    "premium_percentage": "",// for usd premium
+    "premium_base": "" // for usd premium
   }
 }
 ```
