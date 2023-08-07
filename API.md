@@ -860,7 +860,9 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
     "channel_account": "", // channel account of order
     "register_years": 1, // number of years of account registration
     "coin_type": "", // used to init account records
-    "cross_coin_type": "" // used to cross chain
+    "cross_coin_type": "", // used to cross chain
+    "contract_address": "",// for usdt
+    "client_secret": ""// for stripe usd
   }
 }
 ```
