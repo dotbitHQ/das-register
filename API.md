@@ -319,7 +319,9 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
     "status": 6,
     "account_price": "10",
     "base_amount": "3.89",
-    "confirm_proposal_hash": "0xec7bec47a4d3ad467253925a7e097f311e0738d625d55f8b3420cabaaa9b5201"
+    "confirm_proposal_hash": "0xec7bec47a4d3ad467253925a7e097f311e0738d625d55f8b3420cabaaa9b5201",
+    "premium_percentage": "",// for stripe usd premium
+    "premium_base": "" // for stripe usd premium
   }
 }
 ```
@@ -773,8 +775,8 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
       "5": {}// confirm propose tx hash
     },
     "open_timestamp": 0, // 
-    "premium_percentage": "",// for usd premium
-    "premium_base": "" // for usd premium
+    "premium_percentage": "",// for stripe usd premium
+    "premium_base": "" // for stripe usd premium
   }
 }
 ```
@@ -1561,8 +1563,8 @@ curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_t
     "token_id": "ckb_das",
     "receipt_address": "ckt1qyqvsej8jggu4hmr45g4h8d9pfkpd0fayfksz44t9q",
     "amount": "50502165739",
-    "code_url": "",
-    "pay_type": ""
+    "contract_address": "",// for usdt
+    "client_secret": ""// for stripe usd
   }
 }
 ```
