@@ -29,6 +29,8 @@ type RespConfigInfo struct {
 	IncomeCellMinTransferValue   uint64          `json:"income_cell_min_transfer_value"`
 	Premium                      decimal.Decimal `json:"premium" yaml:"premium"`
 	TimestampOnChain             int64           `json:"timestamp_on_chain"`
+	PremiumPercentage            decimal.Decimal `json:"premium_percentage"`
+	PremiumBase                  decimal.Decimal `json:"premium_base"`
 }
 
 func (h *HttpHandle) RpcConfigInfo(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -56,6 +58,8 @@ func (h *HttpHandle) ConfigInfo(ctx *gin.Context) {
 
 func (h *HttpHandle) doConfigInfo(apiResp *api_code.ApiResp) error {
 	var resp RespConfigInfo
+	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
+	resp.PremiumBase = config.Cfg.Stripe.PremiumBase
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())

@@ -2,6 +2,7 @@ package handle
 
 import (
 	"bytes"
+	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"encoding/binary"
@@ -39,6 +40,8 @@ type RespAccountDetail struct {
 	RenewSubAccountPrice uint64                  `json:"renew_sub_account_price"`
 	Nonce                uint64                  `json:"nonce"`
 	CustomScript         string                  `json:"custom_script"`
+	PremiumPercentage    decimal.Decimal         `json:"premium_percentage"`
+	PremiumBase          decimal.Decimal         `json:"premium_base"`
 }
 
 func (h *HttpHandle) RpcAccountDetail(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -145,6 +148,8 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 	var resp RespAccountDetail
 	resp.Account = req.Account
 	resp.Status = tables.SearchStatusRegisterAble
+	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
+	resp.PremiumBase = config.Cfg.Stripe.PremiumBase
 
 	// acc
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
