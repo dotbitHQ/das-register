@@ -165,7 +165,9 @@ curl -X POST http://127.0.0.1:8120/v1/token/list
     "transfer_throttle": 300,
     "income_cell_min_transfer_value": 11600000000,
     "premium": "0.1",
-    "timestamp_on_chain": 1647589995
+    "timestamp_on_chain": 1647589995,
+    "premium_percentage": "",// for stripe usd premium
+    "premium_base": "" // for stripe usd premium
   }
 }
 ```
