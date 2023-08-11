@@ -3,7 +3,7 @@ module das_register_server
 go 1.17
 
 require (
-	github.com/dotbitHQ/das-lib v1.0.2-0.20230811074734-8a6aea75eafe
+	github.com/dotbitHQ/das-lib v1.0.2-0.20230811091958-05217b83dcdd
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/gin-gonic/gin v1.7.7
@@ -20,7 +20,6 @@ require (
 )
 
 require (
-	github.com/Andrew-M-C/go.emoji v1.0.1 // indirect
 	github.com/Andrew-M-C/go.emoji v1.0.1 // indirect
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
 	github.com/btcsuite/btcd v0.23.3 // indirect
