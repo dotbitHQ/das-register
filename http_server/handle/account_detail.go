@@ -2,13 +2,14 @@ package handle
 
 import (
 	"bytes"
-	"das_register_server/http_server/api_code"
+	//"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/blake2b-simd"

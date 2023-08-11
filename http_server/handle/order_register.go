@@ -3,7 +3,6 @@ package handle
 import (
 	"das_register_server/cache"
 	"das_register_server/config"
-	"das_register_server/http_server/api_code"
 	"das_register_server/internal"
 	"das_register_server/notify"
 	"das_register_server/tables"
@@ -12,6 +11,7 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/scorpiotzh/toolib"

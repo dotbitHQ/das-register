@@ -3,11 +3,11 @@ package handle
 import (
 	"das_register_server/config"
 	"das_register_server/dao"
-	"das_register_server/http_server/api_code"
 	"das_register_server/notify"
 	"das_register_server/timer"
 	"encoding/json"
 	"fmt"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"

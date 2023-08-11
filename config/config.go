@@ -17,7 +17,7 @@ var (
 
 func InitCfg(configFilePath string) error {
 	if configFilePath == "" {
-		configFilePath = "./config/config.yaml"
+		configFilePath = "../config/config.yaml"
 	}
 	log.Info("config file：", configFilePath)
 	if err := toolib.UnmarshalYamlFile(configFilePath, &Cfg); err != nil {
@@ -32,7 +32,7 @@ func InitCfg(configFilePath string) error {
 
 func AddCfgFileWatcher(configFilePath string) (*fsnotify.Watcher, error) {
 	if configFilePath == "" {
-		configFilePath = "./config/config.yaml"
+		configFilePath = "../config/config.yaml"
 	}
 	return toolib.AddFileWatcher(configFilePath, func() {
 		log.Info("update config file：", configFilePath)

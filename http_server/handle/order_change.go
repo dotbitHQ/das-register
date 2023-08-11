@@ -3,7 +3,7 @@ package handle
 import (
 	"das_register_server/cache"
 	"das_register_server/config"
-	"das_register_server/http_server/api_code"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"das_register_server/internal"
 	"das_register_server/notify"
 	"das_register_server/tables"

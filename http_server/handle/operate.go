@@ -1,8 +1,9 @@
 package handle
 
 import (
-	"das_register_server/http_server/api_code"
+	api_code_local "das_register_server/http_server/api_code"
 	"fmt"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
@@ -31,42 +32,42 @@ func (h *HttpHandle) Operate(ctx *gin.Context) {
 	log.Info("Operate:", req.Method, clientIp, toolib.JsonString(req))
 
 	switch req.Method {
-	case api_code.MethodReverseDeclare:
+	case api_code_local.MethodReverseDeclare:
 		h.RpcReverseDeclare(req.Params, &apiResp)
-	case api_code.MethodReverseRedeclare:
+	case api_code_local.MethodReverseRedeclare:
 		h.RpcReverseRedeclare(req.Params, &apiResp)
-	case api_code.MethodReverseRetract:
+	case api_code_local.MethodReverseRetract:
 		h.RpcReverseRetract(req.Params, &apiResp)
-	case api_code.MethodTransactionSend:
+	case api_code_local.MethodTransactionSend:
 		h.RpcTransactionSend(req.Params, &apiResp)
-	case api_code.MethodBalancePay:
+	case api_code_local.MethodBalancePay:
 		h.RpcBalancePay(req.Params, &apiResp)
-	case api_code.MethodBalanceWithdraw:
+	case api_code_local.MethodBalanceWithdraw:
 		h.RpcBalanceWithdraw(req.Params, &apiResp)
-	case api_code.MethodBalanceTransfer:
+	case api_code_local.MethodBalanceTransfer:
 		h.RpcBalanceTransfer(req.Params, &apiResp)
-	case api_code.MethodEditManager:
+	case api_code_local.MethodEditManager:
 		h.RpcEditManager(req.Params, &apiResp)
-	case api_code.MethodEditOwner:
+	case api_code_local.MethodEditOwner:
 		h.RpcEditOwner(req.Params, &apiResp)
-	case api_code.MethodEditRecords:
+	case api_code_local.MethodEditRecords:
 		h.RpcEditRecords(req.Params, &apiResp)
-	case api_code.MethodOrderRenew:
+	case api_code_local.MethodOrderRenew:
 		h.RpcOrderRenew(req.Params, &apiResp)
-	case api_code.MethodOrderRegister:
+	case api_code_local.MethodOrderRegister:
 		h.RpcOrderRegister(req.Params, &apiResp)
-	case api_code.MethodOrderChange:
+	case api_code_local.MethodOrderChange:
 		h.RpcOrderChange(req.Params, &apiResp)
-	case api_code.MethodOrderPayHash:
+	case api_code_local.MethodOrderPayHash:
 		h.RpcOrderPayHash(req.Params, &apiResp)
-	case api_code.MethodOrderCheckCoupon:
+	case api_code_local.MethodOrderCheckCoupon:
 		h.RpcCheckCouponr(req.Params, &apiResp)
 	default:
 		log.Error("method not exist:", req.Method)
 		apiResp.ApiRespErr(api_code.ApiCodeMethodNotExist, fmt.Sprintf("method [%s] not exits", req.Method))
 	}
 
-	api_code.DoMonitorLogRpc(&apiResp, req.Method, clientIp, startTime)
+	api_code_local.DoMonitorLogRpc(&apiResp, req.Method, clientIp, startTime)
 
 	ctx.JSON(http.StatusOK, resp)
 	return
