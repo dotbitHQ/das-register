@@ -1,8 +1,9 @@
 package handle
 
 import (
-	"das_register_server/http_server/api_code"
+	api_code_local "das_register_server/http_server/api_code"
 	"fmt"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
@@ -31,44 +32,44 @@ func (h *HttpHandle) Query(ctx *gin.Context) {
 	log.Info("Query:", req.Method, clientIp, toolib.JsonString(req))
 
 	switch req.Method {
-	case api_code.MethodTokenList:
+	case api_code_local.MethodTokenList:
 		h.RpcTokenList(req.Params, &apiResp)
-	case api_code.MethodConfigInfo:
+	case api_code_local.MethodConfigInfo:
 		h.RpcConfigInfo(req.Params, &apiResp)
-	case api_code.MethodAccountList:
+	case api_code_local.MethodAccountList:
 		h.RpcAccountList(req.Params, &apiResp)
-	case api_code.MethodAccountMine:
+	case api_code_local.MethodAccountMine:
 		h.RpcAccountMine(req.Params, &apiResp)
-	case api_code.MethodAccountDetail:
+	case api_code_local.MethodAccountDetail:
 		h.RpcAccountDetail(req.Params, &apiResp)
-	case api_code.MethodAccountRecords:
+	case api_code_local.MethodAccountRecords:
 		h.RpcAccountRecords(req.Params, &apiResp)
-	case api_code.MethodReverseLatest:
+	case api_code_local.MethodReverseLatest:
 		h.RpcReverseLatest(req.Params, &apiResp)
-	case api_code.MethodReverseList:
+	case api_code_local.MethodReverseList:
 		h.RpcReverseList(req.Params, &apiResp)
-	case api_code.MethodTransactionStatus:
+	case api_code_local.MethodTransactionStatus:
 		h.RpcTransactionStatus(req.Params, &apiResp)
-	case api_code.MethodBalanceInfo:
+	case api_code_local.MethodBalanceInfo:
 		h.RpcBalanceInfo(req.Params, &apiResp)
-	case api_code.MethodTransactionList:
+	case api_code_local.MethodTransactionList:
 		h.RpcTransactionList(req.Params, &apiResp)
-	case api_code.MethodRewardsMine:
+	case api_code_local.MethodRewardsMine:
 		h.RpcRewardsMine(req.Params, &apiResp)
-	case api_code.MethodWithdrawList:
+	case api_code_local.MethodWithdrawList:
 		h.RpcWithdrawList(req.Params, &apiResp)
-	case api_code.MethodAccountSearch:
+	case api_code_local.MethodAccountSearch:
 		h.RpcAccountSearch(req.Params, &apiResp)
-	case api_code.MethodRegisteringList:
+	case api_code_local.MethodRegisteringList:
 		h.RpcRegisteringList(req.Params, &apiResp)
-	case api_code.MethodOrderDetail:
+	case api_code_local.MethodOrderDetail:
 		h.RpcOrderDetail(req.Params, &apiResp)
 	default:
 		log.Error("method not exist:", req.Method)
 		apiResp.ApiRespErr(api_code.ApiCodeMethodNotExist, fmt.Sprintf("method [%s] not exits", req.Method))
 	}
 
-	api_code.DoMonitorLogRpc(&apiResp, req.Method, clientIp, startTime)
+	api_code_local.DoMonitorLogRpc(&apiResp, req.Method, clientIp, startTime)
 
 	ctx.JSON(http.StatusOK, resp)
 	return

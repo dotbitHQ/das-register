@@ -1,10 +1,10 @@
 package handle
 
 import (
-	"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"das_register_server/timer"
 	"encoding/json"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 	"net/http"

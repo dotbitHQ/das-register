@@ -5,6 +5,7 @@ import (
 	"das_register_server/config"
 	"encoding/json"
 	"fmt"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/parnurzeal/gorequest"
 	"github.com/scorpiotzh/mylog"
@@ -50,15 +51,15 @@ func DoMonitorLog(method string) gin.HandlerFunc {
 		if statusCode == http.StatusOK && blw.body.String() != "" {
 			var resp ApiResp
 			if err := json.Unmarshal(blw.body.Bytes(), &resp); err == nil {
-				if resp.ErrNo != ApiCodeSuccess {
+				if resp.ErrNo != api_code.ApiCodeSuccess {
 					log.Warn("DoMonitorLog:", method, resp.ErrNo, resp.ErrMsg)
 				}
-				if method == MethodTransactionStatus && resp.ErrNo == ApiCodeTransactionNotExist {
-					resp.ErrNo = ApiCodeSuccess
-				} else if method == MethodOrderDetail && resp.ErrNo == ApiCodeOrderNotExist {
-					resp.ErrNo = ApiCodeSuccess
-				} else if method == MethodAccountDetail && resp.ErrNo == ApiCodeAccountNotExist {
-					resp.ErrNo = ApiCodeSuccess
+				if method == MethodTransactionStatus && resp.ErrNo == api_code.ApiCodeTransactionNotExist {
+					resp.ErrNo = api_code.ApiCodeSuccess
+				} else if method == MethodOrderDetail && resp.ErrNo == api_code.ApiCodeOrderNotExist {
+					resp.ErrNo = api_code.ApiCodeSuccess
+				} else if method == MethodAccountDetail && resp.ErrNo == api_code.ApiCodeAccountNotExist {
+					resp.ErrNo = api_code.ApiCodeSuccess
 				}
 				pushLog := ReqPushLog{
 					Index:   config.Cfg.Server.PushLogIndex,
@@ -74,7 +75,7 @@ func DoMonitorLog(method string) gin.HandlerFunc {
 	}
 }
 
-func DoMonitorLogRpc(apiResp *ApiResp, method, clientIp string, startTime time.Time) {
+func DoMonitorLogRpc(apiResp *api_code.ApiResp, method, clientIp string, startTime time.Time) {
 	pushLog := ReqPushLog{
 		Index:   config.Cfg.Server.PushLogIndex,
 		Method:  method,
@@ -83,7 +84,7 @@ func DoMonitorLogRpc(apiResp *ApiResp, method, clientIp string, startTime time.T
 		ErrMsg:  apiResp.ErrMsg,
 		ErrNo:   apiResp.ErrNo,
 	}
-	if apiResp.ErrNo != ApiCodeSuccess {
+	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		log.Warn("DoMonitorLog:", method, apiResp.ErrNo, apiResp.ErrMsg)
 	}
 	PushLog(config.Cfg.Server.PushLogUrl, pushLog)

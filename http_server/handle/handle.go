@@ -5,7 +5,7 @@ import (
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/dao"
-	"das_register_server/http_server/api_code"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
