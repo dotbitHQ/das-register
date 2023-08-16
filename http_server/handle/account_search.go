@@ -431,11 +431,13 @@ func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.
 				case tables.TokenIdTrx:
 					chainType = common.ChainTypeTron
 				}
-
 				mapTx[tables.RegisterStatusConfirmPayment] = RegisterTx{
 					ChainType: chainType,
 					TokenId:   order.PayTokenId,
 					Hash:      payInfo.Hash,
+				}
+				if order.PayTokenId == tables.TokenIdStripeUSD && payInfo.Status != tables.OrderTxStatusConfirm {
+					delete(mapTx, tables.RegisterStatusConfirmPayment)
 				}
 			}
 		}

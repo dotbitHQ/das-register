@@ -3,7 +3,6 @@ package handle
 import (
 	"bytes"
 	"das_register_server/config"
-	//"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"encoding/binary"
 	"encoding/json"

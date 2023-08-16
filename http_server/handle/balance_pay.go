@@ -2,12 +2,12 @@ package handle
 
 import (
 	"das_register_server/config"
-	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
