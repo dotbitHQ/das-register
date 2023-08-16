@@ -1,7 +1,7 @@
 package handle
 
 import (
-	"das_register_server/http_server/api_code"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"

@@ -3,11 +3,11 @@ package handle
 import (
 	"crypto/sha256"
 	"das_register_server/config"
-	"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"encoding/csv"
 	"encoding/hex"
 	"fmt"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"math/rand"

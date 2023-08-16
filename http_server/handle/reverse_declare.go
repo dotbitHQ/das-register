@@ -2,7 +2,7 @@ package handle
 
 import (
 	"das_register_server/config"
-	"das_register_server/http_server/api_code"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"das_register_server/internal"
 	"das_register_server/tables"
 	"encoding/json"
@@ -268,6 +268,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	sic.Account = req.Account
 	sic.Capacity = req.Capacity
 	sic.BuilderTx = txBuilder.DasTxBuilderTransaction
+
 	signKey := sic.SignKey()
 	cacheStr := toolib.JsonString(&sic)
 	if err = h.rc.SetSignTxCache(signKey, cacheStr); err != nil {

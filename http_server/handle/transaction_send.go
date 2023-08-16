@@ -1,11 +1,12 @@
 package handle
 
 import (
-	"das_register_server/http_server/api_code"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
@@ -82,6 +83,56 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "json.Unmarshal err")
 		return fmt.Errorf("json.Unmarshal err: %s", err.Error())
 	}
+
+	hasWebAuthn := false
+	for _, v := range req.SignList {
+		if v.SignType == common.DasAlgorithmIdWebauthn {
+			hasWebAuthn = true
+			break
+		}
+	}
+
+	if hasWebAuthn {
+		loginAddrHex := core.DasAddressHex{
+			DasAlgorithmId:    common.DasAlgorithmIdWebauthn,
+			DasSubAlgorithmId: common.DasWebauthnSubAlgorithmIdES256,
+			AddressHex:        sic.Address,
+			AddressPayload:    common.Hex2Bytes(sic.Address),
+			ChainType:         common.ChainTypeWebauthn,
+		}
+
+		if req.SignAddress == "" {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "SignAddress err")
+			return nil
+		}
+
+		signAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+			ChainType:     common.ChainTypeWebauthn,
+			AddressNormal: req.SignAddress,
+		})
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "sign address NormalToHex err")
+			return err
+		}
+		log.Info("loginAddrHex.AddressHex: ", loginAddrHex.AddressHex)
+		log.Info("signAddressHex.AddressHex: ", signAddressHex.AddressHex)
+		idx, err := h.dasCore.GetIdxOfKeylist(loginAddrHex, signAddressHex)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "GetIdxOfKeylist err: "+err.Error())
+			return fmt.Errorf("GetIdxOfKeylist err: %s", err.Error())
+		}
+		if idx == -1 {
+			apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "permission denied")
+			return fmt.Errorf("permission denied")
+		}
+
+		for i, v := range req.SignList {
+			if v.SignType == common.DasAlgorithmIdWebauthn {
+				h.dasCore.AddPkIndexForSignMsg(&req.SignList[i].SignMsg, idx)
+			}
+		}
+	}
+
 	// sign
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, sic.BuilderTx)
 	if err := txBuilder.AddSignatureForTx(req.SignList); err != nil {

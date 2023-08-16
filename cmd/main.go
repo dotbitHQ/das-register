@@ -237,7 +237,7 @@ func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
 		common.DasContractNameBalanceCellType, common.DasContractNameDispatchCellType, common.DasContractNameApplyRegisterCellType,
 		common.DasContractNamePreAccountCellType, common.DasContractNameProposalCellType, common.DasContractNameReverseRecordCellType,
 		common.DasContractNameIncomeCellType, common.DasContractNameAlwaysSuccess, common.DASContractNameEip712LibCellType,
-		common.DASContractNameSubAccountCellType)
+		common.DASContractNameSubAccountCellType, common.DasKeyListCellType)
 	ops := []core.DasCoreOption{
 		core.WithClient(ckbClient),
 		core.WithDasContractArgs(env.ContractArgs),

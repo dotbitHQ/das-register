@@ -5,7 +5,7 @@ import (
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/dao"
-	"das_register_server/http_server/api_code"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -88,7 +88,7 @@ func (h *HttpHandle) checkSystemUpgrade(apiResp *api_code.ApiResp) error {
 
 func checkChainType(chainType common.ChainType) bool {
 	switch chainType {
-	case common.ChainTypeTron, common.ChainTypeMixin, common.ChainTypeEth, common.ChainTypeDogeCoin:
+	case common.ChainTypeTron, common.ChainTypeMixin, common.ChainTypeEth, common.ChainTypeDogeCoin, common.ChainTypeWebauthn:
 		return true
 	}
 	return false
