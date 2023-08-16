@@ -3,6 +3,7 @@ package handle
 import (
 	"das_register_server/config"
 	"das_register_server/tables"
+	"das_register_server/unipay"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -34,9 +35,11 @@ type RespOrderDetail struct {
 	InviterAccount string            `json:"inviter_account"`
 	ChannelAccount string            `json:"channel_account"`
 	RegisterYears  int               `json:"register_years"`
-	CodeUrl        string            `json:"code_url"` // wx pay code
-	CoinType       string            `json:"coin_type"`
-	CrossCoinType  string            `json:"cross_coin_type"`
+	//CodeUrl        string            `json:"code_url"` // wx pay code
+	//CoinType       string            `json:"coin_type"`
+	CrossCoinType   string `json:"cross_coin_type"`
+	ContractAddress string `json:"contract_address"`
+	ClientSecret    string `json:"client_secret"`
 }
 
 func (h *HttpHandle) RpcOrderDetail(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -116,8 +119,23 @@ func (h *HttpHandle) doOrderDetail(req *ReqOrderDetail, apiResp *api_code.ApiRes
 	resp.PayAmount = order.PayAmount
 	resp.Timestamp = order.Timestamp
 	resp.Status = order.PayStatus
-	resp.CoinType = order.CoinType
+	//resp.CoinType = order.CoinType
 	resp.CrossCoinType = order.CrossCoinType
+
+	switch order.PayTokenId {
+	case tables.TokenIdStripeUSD, tables.TokenIdTrc20USDT,
+		tables.TokenIdBep20USDT, tables.TokenIdErc20USDT:
+		unipayRes, err := unipay.GetOrderInfo(unipay.ReqOrderInfo{
+			BusinessId: unipay.BusinessIdDasRegisterSvr,
+			OrderId:    order.OrderId,
+		})
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to call unipay.GetOrderInfo")
+			return fmt.Errorf("unipay.GetOrderInfo err: %s[%s]", err.Error(), order.OrderId)
+		}
+		resp.ContractAddress = unipayRes.ContractAddress
+		resp.ClientSecret = unipayRes.ClientSecret
+	}
 
 	if req.Action == common.DasActionApplyRegister {
 		var contentData tables.TableOrderContent
@@ -129,13 +147,14 @@ func (h *HttpHandle) doOrderDetail(req *ReqOrderDetail, apiResp *api_code.ApiRes
 		resp.RegisterYears = contentData.RegisterYears
 		resp.ChannelAccount = contentData.ChannelAccount
 	}
-	if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
+	addr := config.GetUnipayAddress(order.PayTokenId)
+	if addr == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
 		return nil
 	} else {
 		resp.ReceiptAddress = addr
 	}
-	resp.CodeUrl = ""
+	//resp.CodeUrl = ""
 
 	apiResp.ApiRespOK(resp)
 	return nil

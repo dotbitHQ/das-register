@@ -24,10 +24,13 @@ const (
 
 type ReqOrderCreate struct {
 	core.ChainTypeAddress
-	BusinessId     string            `json:"business_id"`
-	Amount         decimal.Decimal   `json:"amount"`
-	PayTokenId     tables.PayTokenId `json:"pay_token_id"`
-	PaymentAddress string            `json:"payment_address"`
+	BusinessId        string            `json:"business_id"`
+	Amount            decimal.Decimal   `json:"amount"`
+	PayTokenId        tables.PayTokenId `json:"pay_token_id"`
+	PaymentAddress    string            `json:"payment_address"`
+	PremiumPercentage decimal.Decimal   `json:"premium_percentage"`
+	PremiumBase       decimal.Decimal   `json:"premium_base"`
+	PremiumAmount     decimal.Decimal   `json:"premium_amount"`
 }
 
 type RespOrderCreate struct {
@@ -98,6 +101,7 @@ type RespOrderInfo struct {
 	OrderId         string `json:"order_id"`
 	PaymentAddress  string `json:"payment_address"`
 	ContractAddress string `json:"contract_address"`
+	ClientSecret    string `json:"client_secret"`
 }
 
 func GetOrderInfo(req ReqOrderInfo) (resp RespOrderInfo, err error) {
@@ -112,4 +116,20 @@ type ToolUniPay struct {
 	Ctx   context.Context
 	Wg    *sync.WaitGroup
 	DbDao *dao.DbDao
+}
+
+func RoundAmount(amount decimal.Decimal, tokenId tables.PayTokenId) decimal.Decimal {
+	switch tokenId {
+	case tables.TokenIdEth, tables.TokenIdBnb, tables.TokenIdMatic:
+		dec := decimal.New(1, 8)
+		amount = amount.Div(dec).Ceil().Mul(dec)
+	case tables.TokenIdDas, tables.TokenIdCkb, tables.TokenIdCkbInternal, tables.TokenIdDoge:
+		dec := decimal.New(1, 4)
+		amount = amount.Div(dec).Ceil().Mul(dec)
+	case tables.TokenIdTrx, tables.TokenIdErc20USDT,
+		tables.TokenIdBep20USDT, tables.TokenIdTrc20USDT:
+		dec := decimal.New(1, 3)
+		amount = amount.Div(dec).Ceil().Mul(dec)
+	}
+	return amount
 }

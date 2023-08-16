@@ -112,6 +112,10 @@ type CfgServer struct {
 		Premium              decimal.Decimal `json:"premium" yaml:"premium"`
 		Discount             decimal.Decimal `json:"discount" yaml:"discount"`
 	} `json:"das" yaml:"das"`
+	Stripe struct {
+		PremiumPercentage decimal.Decimal `json:"premium_percentage" yaml:"premium_percentage"`
+		PremiumBase       decimal.Decimal `json:"premium_base" yaml:"premium_base"`
+	} `json:"stripe" yaml:"stripe"`
 }
 
 type DbMysql struct {
@@ -125,18 +129,21 @@ type DbMysql struct {
 
 func GetUnipayAddress(tokenId tables.PayTokenId) string {
 	switch tokenId {
-	case tables.TokenIdEth:
+	case tables.TokenIdEth, tables.TokenIdErc20USDT:
 		return Cfg.PayAddressMap["eth"]
-	case tables.TokenIdBnb:
+	case tables.TokenIdBnb, tables.TokenIdBep20USDT:
 		return Cfg.PayAddressMap["bsc"]
 	case tables.TokenIdMatic:
 		return Cfg.PayAddressMap["polygon"]
-	case tables.TokenIdTrx:
+	case tables.TokenIdTrx, tables.TokenIdTrc20USDT:
 		return Cfg.PayAddressMap["tron"]
 	case tables.TokenIdCkb, tables.TokenIdDas:
 		return Cfg.PayAddressMap["ckb"]
 	case tables.TokenIdDoge:
 		return Cfg.PayAddressMap["doge"]
+	case tables.TokenIdStripeUSD:
+		return "stripe"
 	}
+	log.Error("GetUnipayAddress not supported:", tokenId)
 	return ""
 }

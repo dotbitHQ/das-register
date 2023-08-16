@@ -3,7 +3,7 @@ module das_register_server
 go 1.17
 
 require (
-	github.com/dotbitHQ/das-lib v1.0.2-0.20230816015355-2dea1da4af7b
+	github.com/dotbitHQ/das-lib v1.0.2-0.20230816015623-b291d5c47f78
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/gin-gonic/gin v1.7.7
@@ -13,7 +13,7 @@ require (
 	github.com/parnurzeal/gorequest v0.2.16
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/scorpiotzh/mylog v1.0.10
-	github.com/scorpiotzh/toolib v1.1.6-0.20230210123015-9770bc1afe72
+	github.com/scorpiotzh/toolib v1.1.6
 	github.com/shopspring/decimal v1.3.1
 	github.com/urfave/cli/v2 v2.10.2
 	gorm.io/gorm v1.23.6
@@ -42,7 +42,6 @@ require (
 	github.com/gogf/gf/v2 v2.3.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/jinzhu/gorm v1.9.16 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect

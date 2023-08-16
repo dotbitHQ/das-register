@@ -2,7 +2,6 @@ package handle
 
 import (
 	"das_register_server/config"
-	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"das_register_server/internal"
 	"das_register_server/notify"
 	"das_register_server/tables"
@@ -11,6 +10,7 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
@@ -35,12 +35,12 @@ type ReqOrderRenew struct {
 }
 
 type RespOrderRenew struct {
-	OrderId        string            `json:"order_id"`
-	TokenId        tables.PayTokenId `json:"token_id"`
-	ReceiptAddress string            `json:"receipt_address"`
-	Amount         decimal.Decimal   `json:"amount"`
-	CodeUrl        string            `json:"code_url"`
-	PayType        tables.PayType    `json:"pay_type"`
+	OrderId         string            `json:"order_id"`
+	TokenId         tables.PayTokenId `json:"token_id"`
+	ReceiptAddress  string            `json:"receipt_address"`
+	Amount          decimal.Decimal   `json:"amount"`
+	ContractAddress string            `json:"contract_address"`
+	ClientSecret    string            `json:"client_secret"`
 }
 
 func (h *HttpHandle) RpcOrderRenew(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -219,6 +219,7 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 	}
 	// unipay
 	var order tables.TableDasOrderInfo
+	var paymentInfo tables.TableDasOrderPayInfo
 	if config.Cfg.Server.UniPayUrl != "" {
 		addrNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
 			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
@@ -231,6 +232,17 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("HexToNormal err: %s", err.Error()))
 			return
 		}
+		premiumPercentage := decimal.Zero
+		premiumBase := decimal.Zero
+		premiumAmount := decimal.Zero
+		if req.PayTokenId == tables.TokenIdStripeUSD {
+			premiumPercentage = config.Cfg.Stripe.PremiumPercentage
+			premiumBase = config.Cfg.Stripe.PremiumBase
+			premiumAmount = amountTotalPayToken
+			amountTotalPayToken = amountTotalPayToken.Mul(premiumPercentage.Add(decimal.NewFromInt(1))).Add(premiumBase.Mul(decimal.NewFromInt(100)))
+			amountTotalPayToken = decimal.NewFromInt(amountTotalPayToken.Ceil().IntPart())
+			premiumAmount = amountTotalPayToken.Sub(premiumAmount)
+		}
 		res, err := unipay.CreateOrder(unipay.ReqOrderCreate{
 			ChainTypeAddress: core.ChainTypeAddress{
 				Type: "blockchain",
@@ -239,10 +251,13 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 					Key:      addrNormal.AddressNormal,
 				},
 			},
-			BusinessId:     unipay.BusinessIdDasRegisterSvr,
-			Amount:         amountTotalPayToken,
-			PayTokenId:     req.PayTokenId,
-			PaymentAddress: config.GetUnipayAddress(req.PayTokenId),
+			BusinessId:        unipay.BusinessIdDasRegisterSvr,
+			Amount:            amountTotalPayToken,
+			PayTokenId:        req.PayTokenId,
+			PaymentAddress:    config.GetUnipayAddress(req.PayTokenId),
+			PremiumPercentage: premiumPercentage,
+			PremiumBase:       premiumBase,
+			PremiumAmount:     premiumAmount,
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to create order by unipay")
@@ -267,7 +282,23 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 			RegisterStatus:    tables.RegisterStatusDefault,
 			OrderStatus:       tables.OrderStatusDefault,
 			IsUniPay:          tables.IsUniPayTrue,
+			PremiumPercentage: premiumPercentage,
+			PremiumBase:       premiumBase,
+			PremiumAmount:     premiumAmount,
 		}
+		if req.PayTokenId == tables.TokenIdStripeUSD && res.StripePaymentIntentId != "" {
+			paymentInfo = tables.TableDasOrderPayInfo{
+				Hash:      res.StripePaymentIntentId,
+				OrderId:   res.OrderId,
+				ChainType: order.ChainType,
+				Address:   order.Address,
+				Status:    tables.OrderTxStatusDefault,
+				Timestamp: time.Now().UnixMilli(),
+				AccountId: order.AccountId,
+			}
+		}
+		resp.ContractAddress = res.ContractAddress
+		resp.ClientSecret = res.ClientSecret
 	} else {
 		order = tables.TableDasOrderInfo{
 			OrderType:         tables.OrderTypeSelf,
@@ -293,17 +324,16 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 
 	resp.OrderId = order.OrderId
 	resp.TokenId = req.PayTokenId
-	resp.PayType = req.PayType
 	resp.Amount = order.PayAmount
-	resp.CodeUrl = ""
-	if addr, ok := config.Cfg.PayAddressMap[order.PayTokenId.ToChainString()]; !ok {
+	addr := config.GetUnipayAddress(order.PayTokenId)
+	if addr == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
 		return
 	} else {
 		resp.ReceiptAddress = addr
 	}
 
-	if err := h.dbDao.CreateOrder(&order); err != nil {
+	if err := h.dbDao.CreateOrderWithPayment(order, paymentInfo); err != nil {
 		log.Error("CreateOrder err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
 		return
