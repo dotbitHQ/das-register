@@ -14,6 +14,7 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
+	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
@@ -65,6 +66,12 @@ func runServer(ctx *cli.Context) error {
 		return err
 	}
 	// ============= service start =============
+
+	//sentry
+	if err := http_api.SentryInit(config.Cfg.Notify.SentryDsn); err != nil {
+		return fmt.Errorf("SentryInit err: %s", err.Error())
+	}
+	defer http_api.RecoverPanic()
 
 	// db
 	dbDao, err := dao.NewGormDB(config.Cfg.DB.Mysql, config.Cfg.DB.ParserMysql)

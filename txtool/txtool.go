@@ -8,6 +8,7 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
+	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/mylog"
@@ -35,6 +36,7 @@ func (t *TxTool) Run() {
 	t.Wg.Add(1)
 	errCountApply, errCountPre, errCountRenew := 0, 0, 0
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerApply.C:

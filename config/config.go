@@ -83,6 +83,7 @@ type CfgServer struct {
 		LarkRegisterOkKey string `json:"lark_register_ok_key" yaml:"lark_register_ok_key"`
 		LarkDasInfoKey    string `json:"lark_das_info_key" yaml:"lark_das_info_key"`
 		DiscordWebhook    string `json:"discord_webhook" yaml:"discord_webhook"`
+		SentryDsn         string `json:"sentry_dsn" yaml:"sentry_dsn"`
 	} `json:"notify" yaml:"notify"`
 	PayAddressMap map[string]string `json:"pay_address_map" yaml:"pay_address_map"`
 	Chain         struct {

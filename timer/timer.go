@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
+	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/robfig/cron/v3"
 	"github.com/scorpiotzh/mylog"
@@ -93,6 +94,7 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerExpired.C:
@@ -110,6 +112,7 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerRefundApply.C:
@@ -138,6 +141,7 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerRecover.C:
@@ -155,6 +159,7 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerClosedAndUnRefund.C:

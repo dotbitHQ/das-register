@@ -6,6 +6,7 @@ import (
 	"das_register_server/tables"
 	"das_register_server/timer"
 	"fmt"
+	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/parnurzeal/gorequest"
 	"github.com/shopspring/decimal"
 	"net/http"
@@ -17,6 +18,7 @@ func (t *ToolUniPay) RunDoOrderHedge() {
 
 	t.Wg.Add(1)
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerHedge.C:

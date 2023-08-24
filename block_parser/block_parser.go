@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/mylog"
@@ -46,6 +47,7 @@ func (b *BlockParser) Run() error {
 	atomic.AddUint64(&b.CurrentBlockNumber, 1)
 	b.Wg.Add(1)
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			default:
