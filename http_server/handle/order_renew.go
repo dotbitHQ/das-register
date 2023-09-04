@@ -258,6 +258,12 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 			PremiumPercentage: premiumPercentage,
 			PremiumBase:       premiumBase,
 			PremiumAmount:     premiumAmount,
+			MetaData: map[string]string{
+				"account":      req.Account,
+				"algorithm_id": req.ChainType.ToString(),
+				"address":      addrNormal.AddressNormal,
+				"action":       "renew",
+			},
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to create order by unipay")
