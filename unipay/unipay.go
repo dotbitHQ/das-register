@@ -31,6 +31,7 @@ type ReqOrderCreate struct {
 	PremiumPercentage decimal.Decimal   `json:"premium_percentage"`
 	PremiumBase       decimal.Decimal   `json:"premium_base"`
 	PremiumAmount     decimal.Decimal   `json:"premium_amount"`
+	MetaData          map[string]string `json:"meta_data"`
 }
 
 type RespOrderCreate struct {

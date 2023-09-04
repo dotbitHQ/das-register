@@ -242,6 +242,12 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 			PremiumPercentage: premiumPercentage,
 			PremiumBase:       premiumBase,
 			PremiumAmount:     premiumAmount,
+			MetaData: map[string]string{
+				"account":      req.Account,
+				"algorithm_id": req.ChainType.ToString(),
+				"address":      addrNormal.AddressNormal,
+				"action":       "register",
+			},
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to create order by unipay")
