@@ -14,6 +14,7 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
+	"github.com/dotbitHQ/das-lib/remote_sign"
 	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
@@ -281,11 +282,12 @@ func initTxBuilder(dasCore *core.DasCore) (*txbuilder.DasTxBuilderBase, *types.S
 	}
 	var handleSign sign.HandleSignCkbMessage
 	if config.Cfg.Server.RemoteSignApiUrl != "" && payServerAddressArgs != "" {
-		remoteSignClient, err := sign.NewClient(ctxServer, config.Cfg.Server.RemoteSignApiUrl)
-		if err != nil {
-			return nil, nil, fmt.Errorf("sign.NewClient err: %s", err.Error())
-		}
-		handleSign = sign.RemoteSign(remoteSignClient, config.Cfg.Server.Net, payServerAddressArgs)
+		//remoteSignClient, err := sign.NewClient(ctxServer, config.Cfg.Server.RemoteSignApiUrl)
+		//if err != nil {
+		//	return nil, nil, fmt.Errorf("sign.NewClient err: %s", err.Error())
+		//}
+		//handleSign = sign.RemoteSign(remoteSignClient, config.Cfg.Server.Net, payServerAddressArgs)
+		handleSign = remote_sign.SignTxForCKBHandle(config.Cfg.Server.RemoteSignApiUrl, config.Cfg.Server.PayServerAddress)
 	} else if config.Cfg.Server.PayPrivate != "" {
 		handleSign = sign.LocalSign(config.Cfg.Server.PayPrivate)
 	}
