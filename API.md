@@ -226,12 +226,13 @@ curl -X POST http://127.0.0.1:8120/v1/account/list -d'{"chain_type":1,"address":
     * get user's accounts by pagination
 * param:
     * CategoryDefault Category = 0
-    * CategoryMainAccount Category = 1 (CategoryMainAccountEnableSecondLevelDID)
+    * CategoryMainAccount Category = 1 
     * CategorySubAccount Category = 2
     * CategoryOnSale Category = 3
     * CategoryExpireSoon Category = 4
     * CategoryToBeRecycled Category = 5
     * CategoryMainAccountDisableSecondLevelDID = 6
+    * CategoryMainAccountEnableSecondLevelDID = 7
 
 ```json
 

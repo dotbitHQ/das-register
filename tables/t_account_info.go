@@ -110,4 +110,5 @@ const (
 	CategoryExpireSoon                       Category = 4
 	CategoryToBeRecycled                     Category = 5
 	CategoryMainAccountDisableSecondLevelDID Category = 6
+	CategoryMainAccountEnableSecondLevelDID  Category = 7
 )
