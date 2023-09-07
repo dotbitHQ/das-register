@@ -26,9 +26,11 @@ func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, k
 	switch category {
 	//case tables.CategoryDefault:
 	case tables.CategoryMainAccount:
-		db = db.Where("parent_account_id='' AND enable_sub_account=1")
+		db = db.Where("parent_account_id=''")
 	case tables.CategoryMainAccountDisableSecondLevelDID:
 		db = db.Where("parent_account_id='' AND enable_sub_account=0")
+	case tables.CategoryMainAccountEnableSecondLevelDID:
+		db = db.Where("parent_account_id='' AND enable_sub_account=1")
 	case tables.CategorySubAccount:
 		db = db.Where("parent_account_id!=''")
 	case tables.CategoryOnSale:
@@ -61,9 +63,11 @@ func (d *DbDao) GetAccountsCount(chainType common.ChainType, address, keyword st
 	switch category {
 	//case tables.CategoryDefault:
 	case tables.CategoryMainAccount:
-		db = db.Where("parent_account_id='' AND enable_sub_account=1")
+		db = db.Where("parent_account_id=''")
 	case tables.CategoryMainAccountDisableSecondLevelDID:
 		db = db.Where("parent_account_id='' AND enable_sub_account=0")
+	case tables.CategoryMainAccountEnableSecondLevelDID:
+		db = db.Where("parent_account_id='' AND enable_sub_account=1")
 	case tables.CategorySubAccount:
 		db = db.Where("parent_account_id!=''")
 	case tables.CategoryOnSale:
