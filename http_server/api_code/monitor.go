@@ -60,6 +60,8 @@ func DoMonitorLog(method string) gin.HandlerFunc {
 					resp.ErrNo = api_code.ApiCodeSuccess
 				} else if method == MethodAccountDetail && resp.ErrNo == api_code.ApiCodeAccountNotExist {
 					resp.ErrNo = api_code.ApiCodeSuccess
+				} else if resp.ErrNo == api_code.ApiCodeOperationFrequent {
+					resp.ErrNo = api_code.ApiCodeSuccess
 				}
 				pushLog := ReqPushLog{
 					Index:   config.Cfg.Server.PushLogIndex,
