@@ -7,6 +7,6 @@ func (t *TxTool) IsRebootTxOK() bool {
 	if rebootSeconds > 60 {
 		return true
 	}
-	log.Info("IsRebootTxOK:", rebootSeconds)
+	log.Debug("IsRebootTxOK:", rebootSeconds)
 	return false
 }
