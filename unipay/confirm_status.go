@@ -20,14 +20,14 @@ func (t *ToolUniPay) RunConfirmStatus() {
 		for {
 			select {
 			case <-tickerSearchStatus.C:
-				log.Info("doConfirmStatus start")
+				log.Debug("doConfirmStatus start")
 				if err := t.doConfirmStatus(); err != nil {
 					log.Errorf("doConfirmStatus err: %s", err.Error())
 					notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "doConfirmStatus", err.Error())
 				}
-				log.Info("doConfirmStatus end")
+				log.Debug("doConfirmStatus end")
 			case <-t.Ctx.Done():
-				log.Info("RunRefund done")
+				log.Debug("RunRefund done")
 				t.Wg.Done()
 				return
 			}

@@ -40,7 +40,7 @@ func (t *TxTool) Run() {
 		for {
 			select {
 			case <-tickerApply.C:
-				log.Info("doOrderApplyTx start ...")
+				log.Debug("doOrderApplyTx start ...")
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderApplyTx(); err != nil {
 						log.Error("doOrderApplyTx err: ", err.Error())
@@ -52,9 +52,9 @@ func (t *TxTool) Run() {
 						errCountApply = 0
 					}
 				}
-				log.Info("doOrderApplyTx end ...")
+				log.Debug("doOrderApplyTx end ...")
 			case <-tickerPreRegister.C:
-				log.Info("doOrderPreRegisterTx start ...")
+				log.Debug("doOrderPreRegisterTx start ...")
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderPreRegisterTx(); err != nil {
 						log.Error("doOrderPreRegisterTx err: ", err.Error())
@@ -66,9 +66,9 @@ func (t *TxTool) Run() {
 						errCountPre = 0
 					}
 				}
-				log.Info("doOrderPreRegisterTx end ...")
+				log.Debug("doOrderPreRegisterTx end ...")
 			case <-tickerRenew.C:
-				log.Info("doOrderRenewTx start ...")
+				log.Debug("doOrderRenewTx start ...")
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderRenewTx(); err != nil {
 						log.Error("doOrderRenewTx err: ", err.Error())
@@ -80,9 +80,9 @@ func (t *TxTool) Run() {
 						errCountRenew = 0
 					}
 				}
-				log.Info("doOrderRenewTx end ...")
+				log.Debug("doOrderRenewTx end ...")
 			case <-t.Ctx.Done():
-				log.Info("tx tool done")
+				log.Debug("tx tool done")
 				t.Wg.Done()
 				return
 			}
