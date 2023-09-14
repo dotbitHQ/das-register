@@ -6,14 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/parnurzeal/gorequest"
-	"github.com/scorpiotzh/mylog"
 	"net/http"
 	"time"
 )
 
-var log = mylog.NewLogger("api_code", mylog.LevelDebug)
+var log = logger.NewLogger("api_code", logger.LevelDebug)
 
 type ReqPushLog struct {
 	Index   string        `json:"index"`
@@ -29,6 +29,7 @@ func PushLog(url string, req ReqPushLog) {
 		return
 	}
 	go func() {
+		defer api_code.RecoverPanic()
 		resp, _, errs := gorequest.New().Post(url).SendStruct(&req).End()
 		if len(errs) > 0 {
 			log.Error("PushLog err:", errs)

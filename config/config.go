@@ -4,8 +4,8 @@ import (
 	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/fsnotify/fsnotify"
-	"github.com/scorpiotzh/mylog"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"time"
@@ -13,7 +13,7 @@ import (
 
 var (
 	Cfg CfgServer
-	log = mylog.NewLogger("config", mylog.LevelDebug)
+	log = logger.NewLogger("config", logger.LevelDebug)
 )
 
 func InitCfg(configFilePath string) error {

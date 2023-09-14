@@ -9,14 +9,14 @@ import (
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
 	"github.com/dotbitHQ/das-lib/http_api"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
-	"github.com/scorpiotzh/mylog"
 	"sync"
 	"time"
 )
 
-var log = mylog.NewLogger("txtool", mylog.LevelDebug)
+var log = logger.NewLogger("txtool", logger.LevelDebug)
 
 type TxTool struct {
 	Ctx           context.Context

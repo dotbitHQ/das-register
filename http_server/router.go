@@ -26,7 +26,9 @@ func (h *HttpServer) initRouter() {
 		toolib.AllowOriginList = append(toolib.AllowOriginList, originList...)
 	}
 	h.engine.Use(toolib.MiddlewareCors())
-	h.engine.Use(sentrygin.New(sentrygin.Options{}))
+	h.engine.Use(sentrygin.New(sentrygin.Options{
+		Repanic: true,
+	}))
 	v1 := h.engine.Group("v1")
 	{
 		// cache

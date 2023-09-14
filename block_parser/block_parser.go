@@ -10,15 +10,15 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/http_api"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
-	"github.com/scorpiotzh/mylog"
 	"sync"
 	"sync/atomic"
 	"time"
 )
 
-var log = mylog.NewLogger("block_parser", mylog.LevelDebug)
+var log = logger.NewLogger("block_parser", logger.LevelDebug)
 
 type BlockParser struct {
 	DasCore              *core.DasCore

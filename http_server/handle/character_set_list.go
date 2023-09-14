@@ -1,9 +1,9 @@
 package handle
 
 import (
-	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"encoding/json"
 	"github.com/dotbitHQ/das-lib/common"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
@@ -51,15 +51,15 @@ func (h *HttpHandle) CharacterSetList(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
 
 	if err = h.doCharacterSetList(&req, &apiResp); err != nil {
-		log.Error("doCharacterSetList err:", err.Error(), funcName, clientIp)
+		log.Error("doCharacterSetList err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)

@@ -2,12 +2,12 @@ package notify
 
 import (
 	"fmt"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/parnurzeal/gorequest"
-	"github.com/scorpiotzh/mylog"
 	"time"
 )
 
-var log = mylog.NewLogger("notify", mylog.LevelDebug)
+var log = logger.NewLogger("notify", logger.LevelDebug)
 
 const (
 	LarkNotifyUrl = "https://open.larksuite.com/open-apis/bot/v2/hook/%s"

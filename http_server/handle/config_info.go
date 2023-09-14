@@ -47,10 +47,10 @@ func (h *HttpHandle) ConfigInfo(ctx *gin.Context) {
 		err      error
 	)
 
-	log.Info("ApiReq:", funcName, clientIp)
+	log.Info("ApiReq:", funcName, clientIp, ctx)
 
 	if err = h.doConfigInfo(&apiResp); err != nil {
-		log.Error("doConfigInfo err:", err.Error(), funcName, clientIp)
+		log.Error("doConfigInfo err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)

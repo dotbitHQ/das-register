@@ -2,9 +2,9 @@ package handle
 
 import (
 	"das_register_server/config"
-	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"encoding/json"
 	"fmt"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/parnurzeal/gorequest"
 	"github.com/scorpiotzh/toolib"
@@ -52,11 +52,11 @@ func (h *HttpHandle) CkbRpc(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
 		ctx.JSON(http.StatusOK, ApiRespErr(req.ID, api_code.ApiCodeParamsInvalid, "params invalid"))
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
 
 	h.doCkbRpc(ctx, &req)
 }
@@ -77,7 +77,7 @@ func (h *HttpHandle) doCkbRpc(ctx *gin.Context, req *ReqCkbRpc) {
 
 	res, body, errs := gorequest.New().Post(url).SendStruct(&req).EndStruct(&resp)
 	if len(errs) > 0 {
-		log.Errorf("call rpc err: %v", errs)
+		log.Errorf("call rpc err: %v", errs, ctx)
 		ctx.JSON(http.StatusOK, ApiRespErr(req.ID, api_code.ApiCodeError500, fmt.Sprintf("call rpc err: %v", errs)))
 		return
 	} else if res.StatusCode != http.StatusOK {
