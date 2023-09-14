@@ -22,14 +22,14 @@ func (t *ToolUniPay) RunDoOrderHedge() {
 		for {
 			select {
 			case <-tickerHedge.C:
-				log.Info("doOrderHedge start")
+				log.Debug("doOrderHedge start")
 				if err := t.doOrderHedge(); err != nil {
 					log.Errorf("doOrderHedge err: %s", err.Error())
 					notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "doOrderHedge", err.Error())
 				}
-				log.Info("doOrderHedge end")
+				log.Debug("doOrderHedge end")
 			case <-t.Ctx.Done():
-				log.Info("RunDoOrderHedge done")
+				log.Debug("RunDoOrderHedge done")
 				t.Wg.Done()
 				return
 			}

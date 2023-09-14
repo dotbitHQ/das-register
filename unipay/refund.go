@@ -18,14 +18,14 @@ func (t *ToolUniPay) RunOrderRefund() {
 		for {
 			select {
 			case <-tickerRefund.C:
-				log.Info("doRefund start")
+				log.Debug("doRefund start")
 				if err := t.doRefund(); err != nil {
 					log.Errorf("doRefund err: %s", err.Error())
 					notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "doRefund", err.Error())
 				}
-				log.Info("doRefund end")
+				log.Debug("doRefund end")
 			case <-t.Ctx.Done():
-				log.Info("RunRefund done")
+				log.Debug("RunRefund done")
 				t.Wg.Done()
 				return
 			}

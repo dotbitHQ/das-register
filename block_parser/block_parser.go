@@ -68,7 +68,7 @@ func (b *BlockParser) Run() error {
 						}
 						log.Warn("parserSubMode time:", time.Since(nowTime).Seconds())
 					} else {
-						log.Info("RunParser:", b.CurrentBlockNumber, latestBlockNumber)
+						log.Debug("RunParser:", b.CurrentBlockNumber, latestBlockNumber)
 						time.Sleep(time.Second * 10)
 					}
 					time.Sleep(time.Millisecond * 300)
@@ -94,14 +94,14 @@ func (b *BlockParser) initCurrentBlockNumber(currentBlockNumber uint64) error {
 }
 
 func (b *BlockParser) parserSubMode() error {
-	log.Info("parserSubMode:", b.CurrentBlockNumber)
+	log.Debug("parserSubMode:", b.CurrentBlockNumber)
 	block, err := b.DasCore.Client().GetBlockByNumber(b.Ctx, b.CurrentBlockNumber)
 	if err != nil {
 		return fmt.Errorf("GetBlockByNumber err: %s", err.Error())
 	} else {
 		blockHash := block.Header.Hash.Hex()
 		parentHash := block.Header.ParentHash.Hex()
-		log.Info("parserSubMode:", b.CurrentBlockNumber, blockHash, parentHash)
+		log.Debug("parserSubMode:", b.CurrentBlockNumber, blockHash, parentHash)
 		if fork, err := b.checkFork(parentHash); err != nil {
 			return fmt.Errorf("checkFork err: %s", err.Error())
 		} else if fork {
@@ -138,7 +138,7 @@ func (b *BlockParser) checkFork(parentHash string) (bool, error) {
 }
 
 func (b *BlockParser) parserConcurrencyMode() error {
-	log.Info("parserConcurrencyMode:", b.CurrentBlockNumber, b.ConcurrencyNum)
+	log.Debug("parserConcurrencyMode:", b.CurrentBlockNumber, b.ConcurrencyNum)
 	for i := uint64(0); i < b.ConcurrencyNum; i++ {
 		block, err := b.DasCore.Client().GetBlockByNumber(b.Ctx, b.CurrentBlockNumber)
 		if err != nil {
@@ -146,7 +146,7 @@ func (b *BlockParser) parserConcurrencyMode() error {
 		}
 		blockHash := block.Header.Hash.Hex()
 		parentHash := block.Header.ParentHash.Hex()
-		log.Info("parserConcurrencyMode:", b.CurrentBlockNumber, blockHash, parentHash)
+		log.Debug("parserConcurrencyMode:", b.CurrentBlockNumber, blockHash, parentHash)
 
 		if err = b.parsingBlockData(block); err != nil {
 			return fmt.Errorf("parsingBlockData err: %s", err.Error())
@@ -223,7 +223,7 @@ func (b *BlockParser) checkContractVersion() error {
 	}
 	for _, v := range contractNames {
 		defaultVersion, chainVersion, err := b.DasCore.CheckContractVersionV2(sysStatus, v)
-		log.Info("checkContractVersion:", defaultVersion, chainVersion, v)
+		log.Debug("checkContractVersion:", defaultVersion, chainVersion, v)
 		if err != nil {
 			if err == core.ErrContractMajorVersionDiff {
 				log.Errorf("contract[%s] version diff, chain[%s], service[%s].", v, chainVersion, defaultVersion)

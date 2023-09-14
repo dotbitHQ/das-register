@@ -18,14 +18,14 @@ func (t *ToolUniPay) RunRegisterInfo() {
 		for {
 			select {
 			case <-tickerRegister.C:
-				log.Info("doRegisterInfo start")
+				log.Debug("doRegisterInfo start")
 				if err := t.doRegisterInfo(); err != nil {
 					log.Errorf("doRegisterInfo err: %s", err.Error())
 					notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "doRegisterInfo", err.Error())
 				}
-				log.Info("doRegisterInfo end")
+				log.Debug("doRegisterInfo end")
 			case <-t.Ctx.Done():
-				log.Info("RunRegisterInfo done")
+				log.Debug("RunRegisterInfo done")
 				t.Wg.Done()
 				return
 			}
