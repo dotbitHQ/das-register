@@ -7,14 +7,14 @@ import (
 	"das_register_server/http_server/handle"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/gin-gonic/gin"
-	"github.com/scorpiotzh/mylog"
 	"net/http"
 )
 
 var (
-	log = mylog.NewLogger("http_server", mylog.LevelDebug)
+	log = logger.NewLogger("http_server", logger.LevelDebug)
 )
 
 type HttpServer struct {

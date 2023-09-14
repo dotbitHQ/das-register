@@ -5,18 +5,18 @@ import (
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/dao"
-	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/gin-gonic/gin"
-	"github.com/scorpiotzh/mylog"
 )
 
 var (
-	log = mylog.NewLogger("http_handle", mylog.LevelDebug)
+	log = logger.NewLogger("http_handle", logger.LevelDebug)
 )
 
 type HttpHandle struct {

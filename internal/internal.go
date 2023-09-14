@@ -1,11 +1,11 @@
 package internal
 
 import (
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/parnurzeal/gorequest"
-	"github.com/scorpiotzh/mylog"
 )
 
-var log = mylog.NewLogger("internal", mylog.LevelDebug)
+var log = logger.NewLogger("internal", logger.LevelDebug)
 
 type RespApi struct {
 	ErrNo  int         `json:"err_no"`

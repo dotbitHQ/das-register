@@ -38,10 +38,10 @@ func (h *HttpHandle) TokenList(ctx *gin.Context) {
 		apiResp  api_code.ApiResp
 		err      error
 	)
-	log.Info("ApiReq:", funcName, clientIp)
+	log.Info("ApiReq:", funcName, clientIp, ctx)
 
 	if err = h.doTokenList(&apiResp); err != nil {
-		log.Error("doTokenList err:", err.Error(), funcName, clientIp)
+		log.Error("doTokenList err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)

@@ -1,10 +1,10 @@
 package handle
 
 import (
-	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
@@ -53,15 +53,15 @@ func (h *HttpHandle) SignTx(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
 
 	if err = h.doSignTx(&req, &apiResp); err != nil {
-		log.Error("doSignTx err:", err.Error(), funcName, clientIp)
+		log.Error("doSignTx err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)

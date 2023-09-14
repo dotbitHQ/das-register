@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
+	"github.com/dotbitHQ/das-lib/http_api"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/robfig/cron/v3"
-	"github.com/scorpiotzh/mylog"
 	"sync"
 	"time"
 )
 
-var log = mylog.NewLogger("timer", mylog.LevelDebug)
+var log = logger.NewLogger("timer", logger.LevelDebug)
 
 type TxTimer struct {
 	ctx           context.Context
@@ -64,6 +65,7 @@ func (t *TxTimer) Run() error {
 	tickerResetCoupon := time.NewTicker(time.Minute * 1)
 	t.wg.Add(5)
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerToken.C:
@@ -93,6 +95,7 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerExpired.C:
@@ -110,6 +113,7 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerRefundApply.C:
@@ -138,6 +142,7 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerRecover.C:
@@ -155,6 +160,7 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerClosedAndUnRefund.C:

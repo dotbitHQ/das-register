@@ -9,13 +9,13 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/http_api"
-	"github.com/scorpiotzh/mylog"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/shopspring/decimal"
 	"sync"
 )
 
 var (
-	log = mylog.NewLogger("unipay", mylog.LevelDebug)
+	log = logger.NewLogger("unipay", logger.LevelDebug)
 )
 
 const (
