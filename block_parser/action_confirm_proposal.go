@@ -6,6 +6,7 @@ import (
 	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/witness"
 	"strings"
 )
@@ -133,6 +134,7 @@ func doDiscordNotify(inviters []tables.TableAccountInfo, builderPreMap map[strin
 		contentList = append(contentList, content)
 	}
 	go func() {
+		defer http_api.RecoverPanic()
 		log.Info("doDiscordNotify:", len(contentList))
 		for _, v := range contentList {
 			if err := notify.SendNotifyDiscord(config.Cfg.Notify.DiscordWebhook, v); err != nil {
@@ -186,6 +188,7 @@ func (b *BlockParser) doLarkNotify(inviters []tables.TableAccountInfo, builderPr
 		contentList = append(contentList, content)
 	}
 	go func() {
+		defer http_api.RecoverPanic()
 		for _, v := range contentList {
 			notify.SendLarkTextNotify(config.Cfg.Notify.LarkRegisterOkKey, "", v)
 		}

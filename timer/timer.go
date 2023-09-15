@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
+	"github.com/dotbitHQ/das-lib/http_api"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/robfig/cron/v3"
-	"github.com/scorpiotzh/mylog"
 	"sync"
 	"time"
 )
 
-var log = mylog.NewLogger("timer", mylog.LevelDebug)
+var log = logger.NewLogger("timer", logger.LevelDebug)
 
 type TxTimer struct {
 	ctx           context.Context
@@ -64,28 +65,29 @@ func (t *TxTimer) Run() error {
 	tickerResetCoupon := time.NewTicker(time.Minute * 1)
 	t.wg.Add(5)
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerToken.C:
-				log.Info("doUpdateTokenMap start ...")
+				log.Debug("doUpdateTokenMap start ...")
 				if err := t.doUpdateTokenMap(); err != nil {
 					log.Error("doUpdateTokenMap err:", err)
 				}
-				log.Info("doUpdateTokenMap end ...")
+				log.Debug("doUpdateTokenMap end ...")
 			case <-tickerRejected.C:
-				log.Info("checkRejected start ...")
+				log.Debug("checkRejected start ...")
 				if err := t.checkRejected(); err != nil {
 					log.Error("checkRejected err: ", err.Error())
 				}
-				log.Info("checkRejected end ...")
+				log.Debug("checkRejected end ...")
 			case <-tickerTxRejected.C:
-				log.Info("doTxRejected start ...")
+				log.Debug("doTxRejected start ...")
 				if err := t.doTxRejected(); err != nil {
 					log.Error("doTxRejected err: ", err.Error())
 				}
-				log.Info("doTxRejected end ...")
+				log.Debug("doTxRejected end ...")
 			case <-t.ctx.Done():
-				log.Info("timer done")
+				log.Debug("timer done")
 				t.wg.Done()
 				return
 			}
@@ -93,16 +95,17 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerExpired.C:
-				log.Info("checkExpired start ...")
+				log.Debug("checkExpired start ...")
 				if err := t.checkExpired(); err != nil {
 					log.Error("checkExpired err: ", err.Error())
 				}
-				log.Info("checkExpired end ...")
+				log.Debug("checkExpired end ...")
 			case <-t.ctx.Done():
-				log.Info("timer done")
+				log.Debug("timer done")
 				t.wg.Done()
 				return
 			}
@@ -110,10 +113,11 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerRefundApply.C:
-				log.Info("doRefundApply start ...")
+				log.Debug("doRefundApply start ...")
 				//if err := t.doRefundApply(); err != nil {
 				//	log.Error("doRefundApply err: ", err.Error())
 				//}
@@ -128,9 +132,9 @@ func (t *TxTimer) Run() error {
 						log.Error("doRecyclePre err: ", err.Error())
 					}
 				}
-				log.Info("doRefundApply end ...")
+				log.Debug("doRefundApply end ...")
 			case <-t.ctx.Done():
-				log.Info("timer done")
+				log.Debug("timer done")
 				t.wg.Done()
 				return
 			}
@@ -138,16 +142,17 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerRecover.C:
-				log.Info("doRecoverCkb start ...")
+				log.Debug("doRecoverCkb start ...")
 				if err := t.doRecoverCkb(); err != nil {
 					log.Error("doRecoverCkb err: ", err.Error())
 				}
-				log.Info("doRecoverCkb end ...")
+				log.Debug("doRecoverCkb end ...")
 			case <-t.ctx.Done():
-				log.Info("timer done")
+				log.Debug("timer done")
 				t.wg.Done()
 				return
 			}
@@ -155,22 +160,23 @@ func (t *TxTimer) Run() error {
 	}()
 
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerClosedAndUnRefund.C:
-				log.Info("doCheckClosedAndUnRefund start ...")
+				log.Debug("doCheckClosedAndUnRefund start ...")
 				if err := t.doCheckClosedAndUnRefund(); err != nil {
 					log.Error("doCheckClosedAndUnRefund err: ", err.Error())
 				}
-				log.Info("doCheckClosedAndUnRefund end ...")
+				log.Debug("doCheckClosedAndUnRefund end ...")
 			case <-tickerResetCoupon.C:
-				log.Info("")
+				log.Debug("")
 				if err := t.DoResetCoupon(); err != nil {
 					log.Error("doResetCoupon err: ", err.Error())
 				}
-				log.Info("doResetCoupon end ...")
+				log.Debug("doResetCoupon end ...")
 			case <-t.ctx.Done():
-				log.Info("timer done")
+				log.Debug("timer done")
 				t.wg.Done()
 				return
 			}

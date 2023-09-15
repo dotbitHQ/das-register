@@ -8,14 +8,15 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
+	"github.com/dotbitHQ/das-lib/http_api"
+	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
-	"github.com/scorpiotzh/mylog"
 	"sync"
 	"time"
 )
 
-var log = mylog.NewLogger("txtool", mylog.LevelDebug)
+var log = logger.NewLogger("txtool", logger.LevelDebug)
 
 type TxTool struct {
 	Ctx           context.Context
@@ -35,10 +36,11 @@ func (t *TxTool) Run() {
 	t.Wg.Add(1)
 	errCountApply, errCountPre, errCountRenew := 0, 0, 0
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerApply.C:
-				log.Info("doOrderApplyTx start ...")
+				log.Debug("doOrderApplyTx start ...")
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderApplyTx(); err != nil {
 						log.Error("doOrderApplyTx err: ", err.Error())
@@ -50,9 +52,9 @@ func (t *TxTool) Run() {
 						errCountApply = 0
 					}
 				}
-				log.Info("doOrderApplyTx end ...")
+				log.Debug("doOrderApplyTx end ...")
 			case <-tickerPreRegister.C:
-				log.Info("doOrderPreRegisterTx start ...")
+				log.Debug("doOrderPreRegisterTx start ...")
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderPreRegisterTx(); err != nil {
 						log.Error("doOrderPreRegisterTx err: ", err.Error())
@@ -64,9 +66,9 @@ func (t *TxTool) Run() {
 						errCountPre = 0
 					}
 				}
-				log.Info("doOrderPreRegisterTx end ...")
+				log.Debug("doOrderPreRegisterTx end ...")
 			case <-tickerRenew.C:
-				log.Info("doOrderRenewTx start ...")
+				log.Debug("doOrderRenewTx start ...")
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderRenewTx(); err != nil {
 						log.Error("doOrderRenewTx err: ", err.Error())
@@ -78,9 +80,9 @@ func (t *TxTool) Run() {
 						errCountRenew = 0
 					}
 				}
-				log.Info("doOrderRenewTx end ...")
+				log.Debug("doOrderRenewTx end ...")
 			case <-t.Ctx.Done():
-				log.Info("tx tool done")
+				log.Debug("tx tool done")
 				t.Wg.Done()
 				return
 			}

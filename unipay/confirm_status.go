@@ -7,6 +7,7 @@ import (
 	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/http_api"
 	"time"
 )
 
@@ -15,17 +16,18 @@ func (t *ToolUniPay) RunConfirmStatus() {
 
 	t.Wg.Add(1)
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerSearchStatus.C:
-				log.Info("doConfirmStatus start")
+				log.Debug("doConfirmStatus start")
 				if err := t.doConfirmStatus(); err != nil {
 					log.Errorf("doConfirmStatus err: %s", err.Error())
 					notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "doConfirmStatus", err.Error())
 				}
-				log.Info("doConfirmStatus end")
+				log.Debug("doConfirmStatus end")
 			case <-t.Ctx.Done():
-				log.Info("RunRefund done")
+				log.Debug("RunRefund done")
 				t.Wg.Done()
 				return
 			}

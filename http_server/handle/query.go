@@ -22,14 +22,14 @@ func (h *HttpHandle) Query(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		log.Error("ShouldBindJSON err:", err.Error())
+		log.Error("ShouldBindJSON err:", err.Error(), ctx)
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, resp)
 		return
 	}
 
 	resp.ID, resp.JsonRpc = req.ID, req.JsonRpc
-	log.Info("Query:", req.Method, clientIp, toolib.JsonString(req))
+	log.Info("Query:", req.Method, clientIp, toolib.JsonString(req), ctx)
 
 	switch req.Method {
 	case api_code_local.MethodTokenList:
@@ -65,7 +65,7 @@ func (h *HttpHandle) Query(ctx *gin.Context) {
 	case api_code_local.MethodOrderDetail:
 		h.RpcOrderDetail(req.Params, &apiResp)
 	default:
-		log.Error("method not exist:", req.Method)
+		log.Error("method not exist:", req.Method, ctx)
 		apiResp.ApiRespErr(api_code.ApiCodeMethodNotExist, fmt.Sprintf("method [%s] not exits", req.Method))
 	}
 

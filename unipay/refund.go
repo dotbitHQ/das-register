@@ -5,6 +5,7 @@ import (
 	"das_register_server/notify"
 	"das_register_server/tables"
 	"fmt"
+	"github.com/dotbitHQ/das-lib/http_api"
 	"time"
 )
 
@@ -13,17 +14,18 @@ func (t *ToolUniPay) RunOrderRefund() {
 
 	t.Wg.Add(1)
 	go func() {
+		defer http_api.RecoverPanic()
 		for {
 			select {
 			case <-tickerRefund.C:
-				log.Info("doRefund start")
+				log.Debug("doRefund start")
 				if err := t.doRefund(); err != nil {
 					log.Errorf("doRefund err: %s", err.Error())
 					notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "doRefund", err.Error())
 				}
-				log.Info("doRefund end")
+				log.Debug("doRefund end")
 			case <-t.Ctx.Done():
-				log.Info("RunRefund done")
+				log.Debug("RunRefund done")
 				t.Wg.Done()
 				return
 			}
