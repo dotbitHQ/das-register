@@ -10,9 +10,9 @@ update:
 	go mod tidy
 
 docker:
-	docker build --network host -t dotbitteam/das-register:latest .
+	docker build --network host -t admindid/das-register:latest .
 
 docker-publish:
-	docker image push dotbitteam/das-register:latest
+	docker image push admindid/das-register:latest
 
 default:register
