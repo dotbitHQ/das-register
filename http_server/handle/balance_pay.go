@@ -19,6 +19,7 @@ import (
 )
 
 type ReqBalancePay struct {
+	core.ChainTypeAddress
 	ChainType  common.ChainType `json:"chain_type"`
 	Address    string           `json:"address"`
 	OrderId    string           `json:"order_id"`
@@ -72,14 +73,19 @@ func (h *HttpHandle) BalancePay(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp) error {
-	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.ChainType,
-		AddressNormal: req.Address,
-		Is712:         true,
-	})
+	//addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+	//	ChainType:     req.ChainType,
+	//	AddressNormal: req.Address,
+	//	Is712:         true,
+	//})
+	//if err != nil {
+	//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+	//	return fmt.Errorf("NormalToHex err: %s", err.Error())
+	//}
+	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-		return fmt.Errorf("NormalToHex err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	var resp RespBalancePay
@@ -108,7 +114,7 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 	}
 
 	// check balance
-	dasLock, dasType, err := h.dasCore.Daf().HexToScript(addressHex)
+	dasLock, dasType, err := h.dasCore.Daf().HexToScript(*addressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 		return fmt.Errorf("HexToScript err: %s", err.Error())

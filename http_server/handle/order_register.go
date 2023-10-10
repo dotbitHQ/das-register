@@ -27,7 +27,7 @@ import (
 type ReqOrderRegister struct {
 	ReqAccountSearch
 	ReqOrderRegisterBase
-
+	core.ChainTypeAddress
 	PayChainType  common.ChainType  `json:"pay_chain_type"`
 	PayAddress    string            `json:"pay_address"`
 	PayTokenId    tables.PayTokenId `json:"pay_token_id"`
@@ -173,14 +173,19 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 
-	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.ChainType,
-		AddressNormal: req.Address,
-		Is712:         true,
-	})
+	//addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+	//	ChainType:     req.ChainType,
+	//	AddressNormal: req.Address,
+	//	Is712:         true,
+	//})
+	//if err != nil {
+	//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+	//	return fmt.Errorf("NormalToHex err: %s", err.Error())
+	//}
+	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-		return fmt.Errorf("NormalToHex err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
