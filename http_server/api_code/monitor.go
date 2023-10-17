@@ -3,7 +3,7 @@ package api_code
 import (
 	"bytes"
 	"das_register_server/config"
-	"das_register_server/txtool"
+	"das_register_server/prometheus"
 	"encoding/json"
 	"fmt"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
@@ -68,7 +68,7 @@ func DoMonitorLog(method string) gin.HandlerFunc {
 				resp.ErrNo = api_code.ApiCodeSuccess
 			}
 		}
-		txtool.Tools.Metrics.Api().WithLabelValues(method, fmt.Sprint(statusCode), fmt.Sprint(resp.ErrNo), resp.ErrMsg).Observe(time.Since(startTime).Seconds())
+		prometheus.Tools.Metrics.Api().WithLabelValues(method, fmt.Sprint(statusCode), fmt.Sprint(resp.ErrNo), resp.ErrMsg).Observe(time.Since(startTime).Seconds())
 	}
 }
 
