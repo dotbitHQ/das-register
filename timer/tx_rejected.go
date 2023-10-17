@@ -1,7 +1,6 @@
 package timer
 
 import (
-	"das_register_server/config"
 	"das_register_server/notify"
 	"fmt"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
@@ -28,7 +27,7 @@ func (t *TxTimer) doTxRejected() error {
 		} else {
 			log.Info("GetTransaction:", v.OrderId, v.Hash, txRes.TxStatus.Status)
 			if txRes.TxStatus.Status == types.TransactionStatusRejected {
-				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "UpdateRejectedTx", v.OrderId)
+				notify.SendLarkErrNotify("UpdateRejectedTx", v.OrderId)
 				if err := t.dbDao.UpdateRejectedTx(v.Action, v.OrderId); err != nil {
 					log.Error("UpdateRejectedTx err: ", err.Error())
 				}
@@ -41,7 +40,7 @@ func (t *TxTimer) doTxRejected() error {
 	}
 	if len(orderList) > 0 {
 		msg = fmt.Sprintf(msg, len(list), strings.Join(orderList, "\n"))
-		notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "Rejected Txs", msg)
+		notify.SendLarkErrNotify("Rejected Txs", msg)
 	}
 	return nil
 }

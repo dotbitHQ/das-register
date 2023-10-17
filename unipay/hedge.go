@@ -25,7 +25,7 @@ func (t *ToolUniPay) RunDoOrderHedge() {
 				log.Debug("doOrderHedge start")
 				if err := t.doOrderHedge(); err != nil {
 					log.Errorf("doOrderHedge err: %s", err.Error())
-					notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "doOrderHedge", err.Error())
+					notify.SendLarkErrNotify("doOrderHedge", err.Error())
 				}
 				log.Debug("doOrderHedge end")
 			case <-t.Ctx.Done():
@@ -69,7 +69,7 @@ func (t *ToolUniPay) doOrderHedge() error {
 		//
 		if err := t.doHedge(req); err != nil {
 			log.Error("doHedge err: ", err.Error(), req.OrderId)
-			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "do hedge", notify.GetLarkTextNotifyStr("doHedge", req.OrderId, err.Error()))
+			notify.SendLarkErrNotify("do hedge", notify.GetLarkTextNotifyStr("doHedge", req.OrderId, err.Error()))
 			continue
 		}
 	}

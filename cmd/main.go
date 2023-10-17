@@ -131,7 +131,7 @@ func runServer(ctx *cli.Context) error {
 	}
 
 	// tx timer
-	txTool := txtool.TxTool{
+	txTool := &txtool.TxTool{
 		Ctx:           ctxServer,
 		Wg:            &wgServer,
 		DbDao:         dbDao,
@@ -141,6 +141,7 @@ func runServer(ctx *cli.Context) error {
 		ServerScript:  serverScript,
 		RebootTime:    time.Now(),
 	}
+	txtool.Init(txTool)
 	txTool.Run()
 
 	// block parser

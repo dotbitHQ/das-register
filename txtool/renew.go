@@ -47,7 +47,7 @@ func (t *TxTool) DoOrderRenewTx(order *tables.TableDasOrderInfo) error {
 	} else if acc.Status == tables.AccountStatusOnCross {
 		log.Error("DoOrderRenewTx:", order.OrderId, acc.Status)
 		msg := fmt.Sprintf(`order id: %s, account on cross`, order.OrderId)
-		notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionRenewAccount, msg)
+		notify.SendLarkErrNotify(common.DasActionRenewAccount, msg)
 		if err := t.DbDao.UpdateOrderStatusClosed(order.OrderId); err != nil {
 			return fmt.Errorf("UpdateOrderStatusClosed err: %s", err.Error())
 		}
@@ -86,7 +86,7 @@ func (t *TxTool) DoOrderRenewTx(order *tables.TableDasOrderInfo) error {
 		// update order
 		if err := t.DbDao.UpdatePayStatus(order.OrderId, tables.TxStatusOk, tables.TxStatusSending); err != nil {
 			log.Error("UpdatePayStatus err:", err.Error(), order.OrderId)
-			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionRenewAccount, notify.GetLarkTextNotifyStr("UpdatePayStatus", order.OrderId, err.Error()))
+			notify.SendLarkErrNotify(common.DasActionRenewAccount, notify.GetLarkTextNotifyStr("UpdatePayStatus", order.OrderId, err.Error()))
 		}
 		return fmt.Errorf("SendTransaction err: %s", err.Error())
 	} else {
@@ -102,7 +102,7 @@ func (t *TxTool) DoOrderRenewTx(order *tables.TableDasOrderInfo) error {
 		}
 		if err := t.DbDao.CreateOrderTx(&orderTx); err != nil {
 			log.Error("CreateOrderTx err:", err.Error(), order.OrderId, hash.Hex())
-			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionRenewAccount, notify.GetLarkTextNotifyStr("CreateOrderTx", order.OrderId, err.Error()))
+			notify.SendLarkErrNotify(common.DasActionRenewAccount, notify.GetLarkTextNotifyStr("CreateOrderTx", order.OrderId, err.Error()))
 		}
 	}
 

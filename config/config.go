@@ -49,6 +49,7 @@ func AddCfgFileWatcher(configFilePath string) (*fsnotify.Watcher, error) {
 
 type CfgServer struct {
 	Server struct {
+		Name                    string            `json:"name" yaml:"name"`
 		IsUpdate                bool              `json:"is_update" yaml:"is_update"`
 		Net                     common.DasNetType `json:"net" yaml:"net"`
 		HttpServerAddr          string            `json:"http_server_addr" yaml:"http_server_addr"`
@@ -74,6 +75,7 @@ type CfgServer struct {
 		UniPayUrl               string            `json:"uni_pay_url" yaml:"uni_pay_url"`
 		UniPayRefundSwitch      bool              `json:"uni_pay_refund_switch" yaml:"uni_pay_refund_switch"`
 		HedgeUrl                string            `json:"hedge_url" yaml:"hedge_url"`
+		PrometheusPushGateway   string            `json:"prometheus_push_gateway" yaml:"prometheus_push_gateway"`
 	} `json:"server" yaml:"server"`
 	Origins          []string          `json:"origins" yaml:"origins"`
 	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`

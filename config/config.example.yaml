@@ -1,4 +1,5 @@
 server:
+  name: "register"
   is_update: false # stop send tx or system update
   net: 1 # 1 mainnet 2 testnet
   http_server_addr: ":8120"
@@ -14,6 +15,7 @@ server:
   uni_pay_url: "" # url for Payment service unipay
   uni_pay_refund_switch: true # Whether to enable payment refunds
   hedge_url: "" # Services for exchanging payment currencies
+  prometheus_push_gateway: "http://127.0.0.1:9091"
 origins: # cross domain
   - ""
 pay_address_map: # receiver's address

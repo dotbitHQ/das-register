@@ -78,7 +78,7 @@ func (t *TxTool) DoOrderApplyTx(order *tables.TableDasOrderInfo) error {
 		// update order
 		if err := t.DbDao.UpdatePayStatus(order.OrderId, tables.TxStatusOk, tables.TxStatusSending); err != nil {
 			log.Error("UpdatePayStatus err:", err.Error(), order.OrderId)
-			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionApplyRegister, notify.GetLarkTextNotifyStr("UpdatePayStatus", order.OrderId, err.Error()))
+			notify.SendLarkErrNotify(common.DasActionApplyRegister, notify.GetLarkTextNotifyStr("UpdatePayStatus", order.OrderId, err.Error()))
 		}
 		return fmt.Errorf("SendTransaction err: %s", err.Error())
 	} else {
@@ -94,7 +94,7 @@ func (t *TxTool) DoOrderApplyTx(order *tables.TableDasOrderInfo) error {
 		}
 		if err := t.DbDao.CreateOrderTx(&orderTx); err != nil {
 			log.Error("CreateOrderTx err:", err.Error(), order.OrderId, hash.Hex())
-			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionApplyRegister, notify.GetLarkTextNotifyStr("CreateOrderTx", order.OrderId, err.Error()))
+			notify.SendLarkErrNotify(common.DasActionApplyRegister, notify.GetLarkTextNotifyStr("CreateOrderTx", order.OrderId, err.Error()))
 		}
 	}
 	return nil

@@ -21,7 +21,7 @@ func (t *ToolUniPay) RunRegisterInfo() {
 				log.Debug("doRegisterInfo start")
 				if err := t.doRegisterInfo(); err != nil {
 					log.Errorf("doRegisterInfo err: %s", err.Error())
-					notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "doRegisterInfo", err.Error())
+					notify.SendLarkErrNotify("doRegisterInfo", err.Error())
 				}
 				log.Debug("doRegisterInfo end")
 			case <-t.Ctx.Done():
