@@ -68,6 +68,9 @@ func DoMonitorLog(method string) gin.HandlerFunc {
 				resp.ErrNo = api_code.ApiCodeSuccess
 			}
 		}
+		if resp.ErrNo == api_code.ApiCodeSuccess {
+			resp.ErrMsg = ""
+		}
 		prometheus.Tools.Metrics.Api().WithLabelValues(method, fmt.Sprint(statusCode), fmt.Sprint(resp.ErrNo), resp.ErrMsg).Observe(time.Since(startTime).Seconds())
 	}
 }
