@@ -1,7 +1,6 @@
 package handle
 
 import (
-	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"das_register_server/notify"
 	"das_register_server/tables"
@@ -78,17 +77,17 @@ func (h *HttpHandle) doUniPayNotice(req *ReqUniPayNotice, apiResp *api_code.ApiR
 		case EventTypeOrderPay:
 			if err := unipay.DoPaymentConfirm(h.dbDao, v.OrderId, v.PayHash, v.PayAddress, v.AlgorithmId); err != nil {
 				log.Error("DoPaymentConfirm err: ", err.Error(), v.OrderId, v.PayHash)
-				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "DoPaymentConfirm", err.Error())
+				notify.SendLarkErrNotify("DoPaymentConfirm", err.Error())
 			}
 		case EventTypeOrderRefund:
 			if err := h.dbDao.UpdateUniPayRefundStatusToRefunded(v.PayHash, v.OrderId, v.RefundHash); err != nil {
 				log.Error("UpdateUniPayRefundStatusToRefunded err: ", err.Error())
-				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "UpdateUniPayRefundStatusToRefunded", err.Error())
+				notify.SendLarkErrNotify("UpdateUniPayRefundStatusToRefunded", err.Error())
 			}
 		case EventTypePaymentDispute:
 			if err := h.dbDao.UpdatePayHashStatusToFailByDispute(v.PayHash, v.OrderId); err != nil {
 				log.Error("UpdatePayHashStatusToFailByDispute err: ", err.Error())
-				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "UpdatePayHashStatusToFailByDispute", err.Error())
+				notify.SendLarkErrNotify("UpdatePayHashStatusToFailByDispute", err.Error())
 			}
 		default:
 			log.Error("EventType invalid:", v.EventType)

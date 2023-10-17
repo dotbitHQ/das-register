@@ -3,6 +3,7 @@ package api_code
 import (
 	"bytes"
 	"das_register_server/config"
+	"das_register_server/txtool"
 	"encoding/json"
 	"fmt"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
@@ -42,39 +43,32 @@ func PushLog(url string, req ReqPushLog) {
 func DoMonitorLog(method string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		startTime := time.Now()
-		ip := getClientIp(ctx)
+		//ip := getClientIp(ctx)
 
 		blw := &bodyWriter{body: bytes.NewBufferString(""), ResponseWriter: ctx.Writer}
 		ctx.Writer = blw
 		ctx.Next()
 		statusCode := ctx.Writer.Status()
 
+		var resp ApiResp
 		if statusCode == http.StatusOK && blw.body.String() != "" {
-			var resp ApiResp
-			if err := json.Unmarshal(blw.body.Bytes(), &resp); err == nil {
-				if resp.ErrNo != api_code.ApiCodeSuccess {
-					log.Warn("DoMonitorLog:", method, resp.ErrNo, resp.ErrMsg)
-				}
-				if method == MethodTransactionStatus && resp.ErrNo == api_code.ApiCodeTransactionNotExist {
-					resp.ErrNo = api_code.ApiCodeSuccess
-				} else if method == MethodOrderDetail && resp.ErrNo == api_code.ApiCodeOrderNotExist {
-					resp.ErrNo = api_code.ApiCodeSuccess
-				} else if method == MethodAccountDetail && resp.ErrNo == api_code.ApiCodeAccountNotExist {
-					resp.ErrNo = api_code.ApiCodeSuccess
-				} else if resp.ErrNo == api_code.ApiCodeOperationFrequent {
-					resp.ErrNo = api_code.ApiCodeSuccess
-				}
-				pushLog := ReqPushLog{
-					Index:   config.Cfg.Server.PushLogIndex,
-					Method:  method,
-					Ip:      ip,
-					Latency: time.Since(startTime),
-					ErrMsg:  resp.ErrMsg,
-					ErrNo:   resp.ErrNo,
-				}
-				PushLog(config.Cfg.Server.PushLogUrl, pushLog)
+			if err := json.Unmarshal(blw.body.Bytes(), &resp); err != nil {
+				log.Warn("DoMonitorLog:", method, err.Error())
+			}
+			if resp.ErrNo != api_code.ApiCodeSuccess {
+				log.Warn("DoMonitorLog:", method, resp.ErrNo, resp.ErrMsg)
+			}
+			if method == MethodTransactionStatus && resp.ErrNo == api_code.ApiCodeTransactionNotExist {
+				resp.ErrNo = api_code.ApiCodeSuccess
+			} else if method == MethodOrderDetail && resp.ErrNo == api_code.ApiCodeOrderNotExist {
+				resp.ErrNo = api_code.ApiCodeSuccess
+			} else if method == MethodAccountDetail && resp.ErrNo == api_code.ApiCodeAccountNotExist {
+				resp.ErrNo = api_code.ApiCodeSuccess
+			} else if resp.ErrNo == api_code.ApiCodeOperationFrequent {
+				resp.ErrNo = api_code.ApiCodeSuccess
 			}
 		}
+		txtool.Tools.Metrics.Api().WithLabelValues(method, fmt.Sprint(statusCode), fmt.Sprint(resp.ErrNo), resp.ErrMsg).Observe(time.Since(startTime).Seconds())
 	}
 }
 

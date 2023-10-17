@@ -1,7 +1,6 @@
 package unipay
 
 import (
-	"das_register_server/config"
 	"das_register_server/dao"
 	"das_register_server/notify"
 	"das_register_server/tables"
@@ -23,7 +22,7 @@ func (t *ToolUniPay) RunConfirmStatus() {
 				log.Debug("doConfirmStatus start")
 				if err := t.doConfirmStatus(); err != nil {
 					log.Errorf("doConfirmStatus err: %s", err.Error())
-					notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "doConfirmStatus", err.Error())
+					notify.SendLarkErrNotify("doConfirmStatus", err.Error())
 				}
 				log.Debug("doConfirmStatus end")
 			case <-t.Ctx.Done():
@@ -99,7 +98,7 @@ func (t *ToolUniPay) doConfirmStatus() error {
 			}
 			if err = DoPaymentConfirm(t.DbDao, v.OrderId, v.PayHash, v.PayAddress, v.AlgorithmId); err != nil {
 				log.Errorf("DoPaymentConfirm err: %s", err.Error())
-				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "DoPaymentConfirm", err.Error())
+				notify.SendLarkErrNotify("DoPaymentConfirm", err.Error())
 			}
 		}
 	}
@@ -115,7 +114,7 @@ func (t *ToolUniPay) doConfirmStatus() error {
 		}
 		if err := t.DbDao.UpdateUniPayRefundStatusToRefunded(paymentInfo.PayHash, paymentInfo.OrderId, paymentInfo.RefundHash); err != nil {
 			log.Error("UpdateUniPayRefundStatusToRefunded err: ", err.Error())
-			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "UpdateUniPayRefundStatusToRefunded", err.Error())
+			notify.SendLarkErrNotify("UpdateUniPayRefundStatusToRefunded", err.Error())
 		}
 	}
 

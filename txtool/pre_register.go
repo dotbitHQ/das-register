@@ -31,7 +31,7 @@ func (t *TxTool) doOrderPreRegisterTx() error {
 		if err = t.DoOrderPreRegisterTx(&list[i]); err != nil {
 			if strings.Contains(err.Error(), "Unknown(OutPoint") || strings.Contains(err.Error(), "ValidationFailure: see the error code") {
 				log.Error("DoOrderPreRegisterTx err:", err.Error(), list[i].AccountId)
-				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister, notify.GetLarkTextNotifyStr("DoOrderPreRegisterTx", "", err.Error()))
+				notify.SendLarkErrNotify(common.DasActionPreRegister, notify.GetLarkTextNotifyStr("DoOrderPreRegisterTx", "", err.Error()))
 				continue
 			}
 			return fmt.Errorf("DoOrderPreRegisterTx err: %s", err.Error())
@@ -153,19 +153,16 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 	if hash, err := txBuilder.SendTransaction(); err != nil {
 		if strings.Contains(err.Error(), "see the error code 35 in the page") || strings.Contains(err.Error(), "see the error code 53 in the page") {
 			log.Error("err see the error code 35 || 53:", order.OrderId, err.Error())
-			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister,
-				notify.GetLarkTextNotifyStr("UpdateOrderToClosedAndRefund", order.OrderId, order.Account))
-
+			notify.SendLarkErrNotify(common.DasActionPreRegister, notify.GetLarkTextNotifyStr("UpdateOrderToClosedAndRefund", order.OrderId, order.Account))
 			if err := t.DbDao.UpdateOrderToClosedAndRefund(order.OrderId); err != nil {
 				log.Error("UpdateOrderToClosed err:", err.Error())
-				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister, notify.GetLarkTextNotifyStr("UpdateOrderToClosedAndRefund", order.OrderId, err.Error()))
+				notify.SendLarkErrNotify(common.DasActionPreRegister, notify.GetLarkTextNotifyStr("UpdateOrderToClosedAndRefund", order.OrderId, err.Error()))
 			}
-
 		} else {
 			// update order
 			if err := t.DbDao.UpdatePreRegisterStatus(order.OrderId, tables.TxStatusOk, tables.TxStatusSending); err != nil {
 				log.Error("UpdatePayStatus err:", err.Error(), order.OrderId)
-				notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister, notify.GetLarkTextNotifyStr("UpdatePayStatus", order.OrderId, err.Error()))
+				notify.SendLarkErrNotify(common.DasActionPreRegister, notify.GetLarkTextNotifyStr("UpdatePayStatus", order.OrderId, err.Error()))
 			}
 			return fmt.Errorf("SendTransaction err: %s", err.Error())
 		}
@@ -182,7 +179,7 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 		}
 		if err := t.DbDao.CreateOrderTx(&orderTx); err != nil {
 			log.Error("CreateOrderTx err:", err.Error(), order.OrderId, hash.Hex())
-			notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, common.DasActionPreRegister, notify.GetLarkTextNotifyStr("CreateOrderTx", order.OrderId, err.Error()))
+			notify.SendLarkErrNotify(common.DasActionPreRegister, notify.GetLarkTextNotifyStr("CreateOrderTx", order.OrderId, err.Error()))
 		}
 	}
 

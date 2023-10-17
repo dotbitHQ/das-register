@@ -190,7 +190,7 @@ func (b *BlockParser) parsingBlockData(block *types.Block) error {
 					b.errCountHandle++
 					log.Error("action handle resp:", builder.Action, blockNumber, txHash, resp.Err.Error())
 					if b.errCountHandle < 100 {
-						notify.SendLarkTextNotify(config.Cfg.Notify.LarkErrorKey, "Block Parse", notify.GetLarkTextNotifyStr("TransactionHandle", txHash, resp.Err.Error()))
+						notify.SendLarkErrNotify("Block Parse", notify.GetLarkTextNotifyStr("TransactionHandle", txHash, resp.Err.Error()))
 					}
 					return resp.Err
 				}

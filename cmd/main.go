@@ -14,9 +14,9 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
-	"github.com/dotbitHQ/das-lib/remote_sign"
 	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/http_api/logger"
+	"github.com/dotbitHQ/das-lib/remote_sign"
 	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
@@ -131,7 +131,7 @@ func runServer(ctx *cli.Context) error {
 	}
 
 	// tx timer
-	txTool := txtool.TxTool{
+	txTool := &txtool.TxTool{
 		Ctx:           ctxServer,
 		Wg:            &wgServer,
 		DbDao:         dbDao,
@@ -141,6 +141,7 @@ func runServer(ctx *cli.Context) error {
 		ServerScript:  serverScript,
 		RebootTime:    time.Now(),
 	}
+	txtool.Init(txTool)
 	txTool.Run()
 
 	// block parser
