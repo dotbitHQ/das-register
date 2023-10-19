@@ -1179,6 +1179,11 @@ curl -X POST http://127.0.0.1:8120/v1/balance/withdraw -d'{"evm_chain_id":5,"cha
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "transfer_address": ""
@@ -1258,6 +1263,11 @@ curl -X POST http://127.0.0.1:8120/v1/balance/deposit -d'{"from_ckb_address":"",
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "evm_chain_id": 5,
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
@@ -1303,6 +1313,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/manager -d'{"evm_chain_id":5,
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "0001.bit",
@@ -1348,6 +1363,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/owner -d'{"evm_chain_id":5,"c
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "evm_chain_id": 5,
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
@@ -1401,6 +1421,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "11111111.bit",
@@ -1444,6 +1469,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/renew -d'{"chain_type":1,"ad
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "evm_chain_id": 97,
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
@@ -1485,6 +1515,11 @@ curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_t
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "asxasadasx.bit",
@@ -1590,6 +1625,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"chain_type":1,
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "asxasadasx.bit",
@@ -1637,6 +1677,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/change -d'{"chain_type":1,"a
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "asxasadasx.bit",
