@@ -58,6 +58,7 @@
       {
         "token_id": "ckb_ckb",
         "chain_type": 0,
+        "coin_type": "309",
         "contract": "",
         "name": "Nervos Network",
         "symbol": "CKB",
@@ -321,8 +322,10 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
     "account": "king.bit",
     "owner": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
     "owner_chain_type": 1,
+    "owner_coin_type": "60",
     "manager": "0x3919a8eb619ccae32fba88d333829929db2f4324",
     "manager_chain_type": 1,
+    "manager_coin_type": "60",
     "registered_at": 1632983024000,
     "expired_at": 1664519024000,
     "status": 6,

@@ -9,6 +9,7 @@ type TableTokenPriceInfo struct {
 	TokenId   PayTokenId      `json:"token_id" gorm:"column:token_id"`
 	GeckoId   string          `json:"gecko_id" gorm:"column:gecko_id"`
 	ChainType int             `json:"chain_type" gorm:"column:chain_type"`
+	CoinType  string          `json:"coin_type" gorm:"column:coin_type"`
 	Name      string          `json:"name" gorm:"column:name"`
 	Symbol    string          `json:"symbol" gorm:"column:symbol"`
 	Decimals  int32           `json:"decimals" gorm:"column:decimals"`
