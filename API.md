@@ -1502,7 +1502,8 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,
     "token_id": "ckb_das",
     "receipt_address": "ckt1qyqvsej8jggu4hmr45g4h8d9pfkpd0fayfksz44t9q",
     "amount": "28498885953",
-    "code_url": ""
+    "contract_address": "",
+    "client_secret": ""
   }
 }
 ```
