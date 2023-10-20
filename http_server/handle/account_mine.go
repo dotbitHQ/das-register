@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/cache"
+	"das_register_server/config"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 )
 
 type ReqAccountMine struct {
+	core.ChainTypeAddress
 	ChainType common.ChainType `json:"chain_type"`
 	Address   string           `json:"address"`
 	Pagination
@@ -74,14 +76,19 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 	resp.List = make([]AccountData, 0)
 
 	action := "AccountMine"
-	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.ChainType,
-		AddressNormal: req.Address,
-		Is712:         true,
-	})
+	//addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+	//	ChainType:     req.ChainType,
+	//	AddressNormal: req.Address,
+	//	Is712:         true,
+	//})
+	//if err != nil {
+	//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+	//	return fmt.Errorf("NormalToHex err: %s", err.Error())
+	//}
+	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-		return fmt.Errorf("NormalToHex err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 

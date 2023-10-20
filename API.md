@@ -188,6 +188,11 @@ curl -X POST http://127.0.0.1:8120/v1/config/info
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
 }
@@ -473,6 +478,11 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/list -d'{"chain_type":1,"address":
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "actions": [
@@ -521,6 +531,11 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/status -d'{"chain_type":1,"add
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "transfer_address": "ckt1qyq9k9w0anm56x8denhq3u6cvag637tzs68sn6f99z"
@@ -555,6 +570,11 @@ curl -X POST http://127.0.0.1:8120/v1/balance/info -d'{"chain_type":1,"address":
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "page": 1,
@@ -607,6 +627,11 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/list -d'{"chain_type":1,"addre
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "page": 1,
@@ -652,6 +677,11 @@ curl -X POST http://127.0.0.1:8120/v1/rewards/mine -d'{"chain_type":1,"address":
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "page": 1,
@@ -702,6 +732,11 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
 ```json
 {
   "account": "aaaa.bit",
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1, // 1-evm, 3-tron, 7-doge
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account_char_str": [
@@ -800,6 +835,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/search -d'{"account":"aaaa.bit","c
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad"
 }
@@ -837,6 +877,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1, // 1-evm, 3-tron, 7-doge
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad", 
   "account": "xasdaaxaaa.bit"
@@ -1136,6 +1181,11 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/send -d'{"sign_key": "","sign_
 ```json
 {
   "evm_chain_id": 5,
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "receiver_chain_type": 0,
