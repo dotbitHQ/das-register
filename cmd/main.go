@@ -7,7 +7,6 @@ import (
 	"das_register_server/config"
 	"das_register_server/dao"
 	"das_register_server/http_server"
-	"das_register_server/prometheus"
 	"das_register_server/timer"
 	"das_register_server/txtool"
 	"das_register_server/unipay"
@@ -145,8 +144,8 @@ func runServer(ctx *cli.Context) error {
 	txTool.Run()
 
 	// prometheus
-	prometheus.Init()
-	prometheus.Tools.Run()
+	//prometheus.Init()
+	//prometheus.Tools.Run()
 
 	// block parser
 	bp := block_parser.BlockParser{

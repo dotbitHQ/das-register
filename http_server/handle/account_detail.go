@@ -3,6 +3,7 @@ package handle
 import (
 	"bytes"
 	"das_register_server/config"
+	"time"
 
 	//"das_register_server/http_server/api_code"
 	"das_register_server/tables"
@@ -44,6 +45,7 @@ type RespAccountDetail struct {
 	CustomScript         string                  `json:"custom_script"`
 	PremiumPercentage    decimal.Decimal         `json:"premium_percentage"`
 	PremiumBase          decimal.Decimal         `json:"premium_base"`
+	ReRegisterTime       uint64                  `json:"re_registered_time"`
 }
 
 func (h *HttpHandle) RpcAccountDetail(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -163,8 +165,29 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 
 	// check sub account
 	count := strings.Count(req.Account, ".")
-
 	if count == 1 && acc.Id > 0 {
+		//now < expired_at + 90 + 27 => expired_at > now-90-27
+		//expired_at+90 < now => expired_at < now - 90
+		//now > expired_at+90+27
+		//now < expired_at+90+30
+		nowTime := uint64(time.Now().Unix())
+		//27 days : watting for bid
+		if nowTime-117*24*3600 < acc.ExpiredAt && acc.ExpiredAt < nowTime-90*24*3600 {
+			resp.Status = tables.SearchStatusOnDutchAuction
+			//resp.AuctionInfo.StartPremium = common.StartPremium
+			//resp.AuctionInfo.StartTime = acc.ExpiredAt + 90*24*3600
+			//resp.AuctionInfo.EndTime = acc.ExpiredAt + 117*24*3600
+			//resp.AuctionInfo.TotalDays = common.TOTALDAYS
+			apiResp.ApiRespOK(resp)
+			return nil
+		}
+		//3 days : can`t bid or register or renew, watting for recycle by keeper
+		if nowTime-120*24*3600 < acc.ExpiredAt && acc.ExpiredAt < nowTime-117*24*3600 {
+			resp.Status = tables.SearchStatusAuctionRecycling
+			resp.ReRegisterTime = acc.ExpiredAt + 120*24*3600
+			apiResp.ApiRespOK(resp)
+			return nil
+		}
 		accOutpoint := common.String2OutPointStruct(acc.Outpoint)
 		accTx, er := h.dasCore.Client().GetTransaction(h.ctx, accOutpoint.TxHash)
 		if er != nil {
@@ -190,7 +213,6 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 			return fmt.Errorf("getAccountPrice err: %s", err.Error())
 		}
 	}
-
 	if acc.Id > 0 {
 		resp.Status = acc.FormatAccountStatus()
 		resp.ExpiredAt = int64(acc.ExpiredAt) * 1e3
@@ -245,6 +267,7 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		return nil
 	}
 
+	//主账号
 	if count == 1 {
 		// reserve account
 		accountName := strings.ToLower(strings.TrimSuffix(req.Account, common.DasAccountSuffix))

@@ -5,7 +5,6 @@ import (
 	"das_register_server/http_server/api_code"
 	"encoding/json"
 	"github.com/dotbitHQ/das-lib/common"
-	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
@@ -26,9 +25,9 @@ func (h *HttpServer) initRouter() {
 		toolib.AllowOriginList = append(toolib.AllowOriginList, originList...)
 	}
 	h.engine.Use(toolib.MiddlewareCors())
-	h.engine.Use(sentrygin.New(sentrygin.Options{
-		Repanic: true,
-	}))
+	//h.engine.Use(sentrygin.New(sentrygin.Options{
+	//	Repanic: true,
+	//}))
 	v1 := h.engine.Group("v1")
 	{
 		// cache
@@ -60,6 +59,10 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/order/detail", api_code.DoMonitorLog(api_code.MethodOrderDetail), h.h.OrderDetail)
 		v1.POST("/address/deposit", api_code.DoMonitorLog(api_code.MethodAddressDeposit), cacheHandleLong, h.h.AddressDeposit)
 		v1.POST("/character/set/list", api_code.DoMonitorLog(api_code.MethodCharacterSetList), cacheHandleLong, h.h.CharacterSetList)
+		v1.POST("/account/auction/info", api_code.DoMonitorLog(api_code.MethodCharacterSetList), cacheHandleLong, h.h.GetAccountAuctionInfo)
+		v1.POST("/account/auction/price", api_code.DoMonitorLog(api_code.MethodCharacterSetList), cacheHandleLong, h.h.GetAccountAuctionPrice)
+		v1.POST("/account/auction/order-status", api_code.DoMonitorLog(api_code.MethodCharacterSetList), cacheHandleLong, h.h.GetAuctionOrderStatus)
+		v1.POST("/account/auction/pending-order", api_code.DoMonitorLog(api_code.MethodCharacterSetList), cacheHandleLong, h.h.GetPendingAuctionOrder)
 
 		// operate
 		//v1.POST("/reverse/declare", api_code.DoMonitorLog(api_code.MethodReverseDeclare), h.h.ReverseDeclare)
