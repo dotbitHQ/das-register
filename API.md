@@ -58,6 +58,7 @@
       {
         "token_id": "ckb_ckb",
         "chain_type": 0,
+        "coin_type": "309",
         "contract": "",
         "name": "Nervos Network",
         "symbol": "CKB",
@@ -188,6 +189,11 @@ curl -X POST http://127.0.0.1:8120/v1/config/info
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
 }
@@ -316,8 +322,10 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
     "account": "king.bit",
     "owner": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
     "owner_chain_type": 1,
+    "owner_coin_type": "60",
     "manager": "0x3919a8eb619ccae32fba88d333829929db2f4324",
     "manager_chain_type": 1,
+    "manager_coin_type": "60",
     "registered_at": 1632983024000,
     "expired_at": 1664519024000,
     "status": 6,
@@ -473,6 +481,11 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/list -d'{"chain_type":1,"address":
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "actions": [
@@ -521,6 +534,11 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/status -d'{"chain_type":1,"add
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "transfer_address": "ckt1qyq9k9w0anm56x8denhq3u6cvag637tzs68sn6f99z"
@@ -555,6 +573,11 @@ curl -X POST http://127.0.0.1:8120/v1/balance/info -d'{"chain_type":1,"address":
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "page": 1,
@@ -607,6 +630,11 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/list -d'{"chain_type":1,"addre
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "page": 1,
@@ -652,6 +680,11 @@ curl -X POST http://127.0.0.1:8120/v1/rewards/mine -d'{"chain_type":1,"address":
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "page": 1,
@@ -702,6 +735,11 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
 ```json
 {
   "account": "aaaa.bit",
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1, // 1-evm, 3-tron, 7-doge
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account_char_str": [
@@ -800,6 +838,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/search -d'{"account":"aaaa.bit","c
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad"
 }
@@ -837,6 +880,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1, // 1-evm, 3-tron, 7-doge
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad", 
   "account": "xasdaaxaaa.bit"
@@ -1136,6 +1184,11 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/send -d'{"sign_key": "","sign_
 ```json
 {
   "evm_chain_id": 5,
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "receiver_chain_type": 0,
@@ -1179,6 +1232,11 @@ curl -X POST http://127.0.0.1:8120/v1/balance/withdraw -d'{"evm_chain_id":5,"cha
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "transfer_address": ""
@@ -1258,6 +1316,11 @@ curl -X POST http://127.0.0.1:8120/v1/balance/deposit -d'{"from_ckb_address":"",
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "evm_chain_id": 5,
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
@@ -1303,6 +1366,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/manager -d'{"evm_chain_id":5,
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "0001.bit",
@@ -1348,6 +1416,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/owner -d'{"evm_chain_id":5,"c
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "evm_chain_id": 5,
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
@@ -1401,6 +1474,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "11111111.bit",
@@ -1424,7 +1502,8 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,
     "token_id": "ckb_das",
     "receipt_address": "ckt1qyqvsej8jggu4hmr45g4h8d9pfkpd0fayfksz44t9q",
     "amount": "28498885953",
-    "code_url": ""
+    "contract_address": "",
+    "client_secret": ""
   }
 }
 ```
@@ -1444,6 +1523,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/renew -d'{"chain_type":1,"ad
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "evm_chain_id": 97,
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
@@ -1485,6 +1569,11 @@ curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_t
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "asxasadasx.bit",
@@ -1590,6 +1679,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"chain_type":1,
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "asxasadasx.bit",
@@ -1637,6 +1731,11 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/change -d'{"chain_type":1,"a
 
 ```json
 {
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "asxasadasx.bit",

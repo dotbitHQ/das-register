@@ -17,6 +17,7 @@ type RespTokenList struct {
 type TokenData struct {
 	TokenId   tables.PayTokenId `json:"token_id"`
 	ChainType int               `json:"chain_type"`
+	CoinType  string            `json:"coin_type"`
 	Contract  string            `json:"contract"`
 	Name      string            `json:"name"`
 	Symbol    string            `json:"symbol"`
@@ -56,6 +57,7 @@ func (h *HttpHandle) doTokenList(apiResp *api_code.ApiResp) error {
 		resp.TokenList = append(resp.TokenList, TokenData{
 			TokenId:   v.TokenId,
 			ChainType: v.ChainType,
+			CoinType:  v.CoinType,
 			Name:      v.Name,
 			Symbol:    v.Symbol,
 			Decimals:  v.Decimals,

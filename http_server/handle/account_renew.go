@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/config"
+	"das_register_server/http_server/compatible"
 	"das_register_server/internal"
 	"das_register_server/notify"
 	"das_register_server/tables"
@@ -20,6 +21,7 @@ import (
 )
 
 type ReqAccountRenew struct {
+	core.ChainTypeAddress
 	ChainType  common.ChainType `json:"chain_type"`
 	Address    string           `json:"address"`
 	Account    string           `json:"account"`
@@ -83,14 +85,10 @@ func (h *HttpHandle) doAccountRenew(req *ReqAccountRenew, apiResp *api_code.ApiR
 		return nil
 	}
 
-	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.ChainType,
-		AddressNormal: req.Address,
-		Is712:         true,
-	})
+	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-		return fmt.Errorf("NormalToHex err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
