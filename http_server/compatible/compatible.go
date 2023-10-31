@@ -8,7 +8,7 @@ import (
 	"reflect"
 )
 
-func ChaintyeAndCoinType(req interface{}, dc *core.DasCore) (err error, dasAddressHex core.DasAddressHex) {
+func ChaintyeAndCoinType(req interface{}, dc *core.DasCore) (dasAddressHex core.DasAddressHex, err error) {
 	var address string
 	var chainType common.ChainType
 	var coinType string
@@ -42,7 +42,7 @@ func ChaintyeAndCoinType(req interface{}, dc *core.DasCore) (err error, dasAddre
 		if err != nil {
 			err = fmt.Errorf("NormalToHex err: %s", err.Error())
 		}
-		return err, dasAddressHex
+		return dasAddressHex, err
 	} else {
 		chainTypeAddress := core.ChainTypeAddress{
 			Type:    coinType,
@@ -51,9 +51,9 @@ func ChaintyeAndCoinType(req interface{}, dc *core.DasCore) (err error, dasAddre
 		res, err := chainTypeAddress.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 		if err != nil {
 			err = fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
-			return err, dasAddressHex
+			return dasAddressHex, err
 		}
-		return err, *res
+		return *res, err
 	}
 }
 

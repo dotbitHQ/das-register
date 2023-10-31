@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/config"
+	"das_register_server/http_server/compatible"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
@@ -82,7 +83,7 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 	//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
 	//	return fmt.Errorf("NormalToHex err: %s", err.Error())
 	//}
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
@@ -114,7 +115,7 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 	}
 
 	// check balance
-	dasLock, dasType, err := h.dasCore.Daf().HexToScript(*addressHex)
+	dasLock, dasType, err := h.dasCore.Daf().HexToScript(addressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 		return fmt.Errorf("HexToScript err: %s", err.Error())

@@ -1,7 +1,7 @@
 package handle
 
 import (
-	"das_register_server/config"
+	"das_register_server/http_server/compatible"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -69,16 +69,7 @@ func (h *HttpHandle) BalanceInfo(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiResp) error {
-	//addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-	//	ChainType:     req.ChainType,
-	//	AddressNormal: req.Address,
-	//	Is712:         true,
-	//})
-	//if err != nil {
-	//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-	//	return fmt.Errorf("NormalToHex err: %s", err.Error())
-	//}
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
