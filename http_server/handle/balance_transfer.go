@@ -74,18 +74,16 @@ func (h *HttpHandle) BalanceTransfer(ctx *gin.Context) {
 
 func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_code.ApiResp) error {
 	var resp RespBalanceTransfer
-
-	if req.ChainType != common.ChainTypeEth {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support this chain type")
-		return nil
-	}
 	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
-
+	if req.ChainType != common.ChainTypeEth {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support this chain type")
+		return nil
+	}
 	// das-lock
 	toLock, toType, err := h.dasCore.Daf().HexToScript(addressHex)
 	if err != nil {
