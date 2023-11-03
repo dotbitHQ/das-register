@@ -104,6 +104,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 
 	// check sub account
 	isSubAccount := false
+	fmt.Println("--------", req.ChainType, req.Address)
 	resp.Status, resp.IsSelf, isSubAccount = h.checkSubAccount(req, apiResp)
 	if isSubAccount {
 		if apiResp.ErrNo != api_code.ApiCodeSuccess {
