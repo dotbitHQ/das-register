@@ -201,6 +201,7 @@ func runServer(ctx *cli.Context) error {
 		DasCore:                dasCore,
 		DasCache:               dasCache,
 		TxBuilderBase:          txBuilderBase,
+		ServerScript:           serverScript,
 		MapReservedAccounts:    builderConfigCell.ConfigCellPreservedAccountMap,
 		MapUnAvailableAccounts: builderConfigCell.ConfigCellUnavailableAccountMap,
 	})
