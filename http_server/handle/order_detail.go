@@ -38,7 +38,7 @@ type RespOrderDetail struct {
 	ChannelAccount string            `json:"channel_account"`
 	RegisterYears  int               `json:"register_years"`
 	//CodeUrl        string            `json:"code_url"` // wx pay code
-	//CoinType       string            `json:"coin_type"`
+	CoinType        string `json:"coin_type"`
 	CrossCoinType   string `json:"cross_coin_type"`
 	ContractAddress string `json:"contract_address"`
 	ClientSecret    string `json:"client_secret"`
@@ -117,7 +117,7 @@ func (h *HttpHandle) doOrderDetail(req *ReqOrderDetail, apiResp *api_code.ApiRes
 	resp.PayAmount = order.PayAmount
 	resp.Timestamp = order.Timestamp
 	resp.Status = order.PayStatus
-	//resp.CoinType = order.CoinType
+	resp.CoinType = order.CoinType
 	resp.CrossCoinType = order.CrossCoinType
 
 	switch order.PayTokenId {
