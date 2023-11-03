@@ -89,7 +89,7 @@ func (h *HttpHandle) OrderChange(ctx *gin.Context) {
 
 func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiResp) error {
 	var resp RespOrderChange
-	if req.Address == "" {
+	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
