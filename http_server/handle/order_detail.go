@@ -88,7 +88,7 @@ func (h *HttpHandle) OrderDetail(ctx *gin.Context) {
 
 func (h *HttpHandle) doOrderDetail(req *ReqOrderDetail, apiResp *api_code.ApiResp) error {
 	var resp RespOrderDetail
-	if req.Account == "" || req.Address == "" {
+	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
