@@ -8,7 +8,7 @@ import (
 	"reflect"
 )
 
-func ChaintyeAndCoinType(req interface{}, dc *core.DasCore) (dasAddressHex core.DasAddressHex, err error) {
+func ChainTypeAndCoinType(req interface{}, dc *core.DasCore) (dasAddressHex core.DasAddressHex, err error) {
 	var address string
 	var chainType common.ChainType
 	var coinType string

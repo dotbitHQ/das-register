@@ -80,7 +80,7 @@ func (h *HttpHandle) EditManager(ctx *gin.Context) {
 
 func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiResp) error {
 	var resp RespEditManager
-	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
