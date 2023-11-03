@@ -78,7 +78,7 @@ func (h *HttpHandle) doWithdrawList(req *ReqWithdrawList, apiResp *api_code.ApiR
 	var resp RespWithdrawList
 	resp.List = make([]WithdrawListData, 0)
 
-	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err

@@ -79,7 +79,7 @@ func (h *HttpHandle) doRewardsMine(req *ReqRewardsMine, apiResp *api_code.ApiRes
 	var resp RespRewardsMine
 	resp.List = make([]RewardsData, 0)
 
-	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err

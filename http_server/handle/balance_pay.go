@@ -83,7 +83,7 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 	//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
 	//	return fmt.Errorf("NormalToHex err: %s", err.Error())
 	//}
-	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err

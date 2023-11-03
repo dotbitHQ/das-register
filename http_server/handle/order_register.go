@@ -165,7 +165,7 @@ func (h *HttpHandle) OrderRegister(ctx *gin.Context) {
 func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.ApiResp) error {
 	var resp RespOrderRegister
 
-	if req.Address == "" || req.Account == "" {
+	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
@@ -174,7 +174,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 
-	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err

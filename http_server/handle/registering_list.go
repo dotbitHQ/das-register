@@ -73,7 +73,7 @@ func (h *HttpHandle) RegisteringList(ctx *gin.Context) {
 
 func (h *HttpHandle) doRegisteringList(req *ReqRegisteringList, apiResp *api_code.ApiResp) error {
 	var resp RespRegisteringList
-	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err

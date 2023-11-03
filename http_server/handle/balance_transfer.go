@@ -74,7 +74,7 @@ func (h *HttpHandle) BalanceTransfer(ctx *gin.Context) {
 
 func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_code.ApiResp) error {
 	var resp RespBalanceTransfer
-	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err

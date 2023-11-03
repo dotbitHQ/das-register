@@ -76,7 +76,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 	resp.List = make([]AccountData, 0)
 
 	action := "AccountMine"
-	addressHex, err := compatible.ChaintyeAndCoinType(*req, h.dasCore)
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
