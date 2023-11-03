@@ -90,16 +90,13 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
 	resp.PremiumBase = config.Cfg.Stripe.PremiumBase
 
-	if req.ChainType == common.ChainTypeCkb {
-
-	} else {
-		addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-			return err
-		}
-		req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return err
 	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
+
 	resp.Account = req.Account
 
 	// check sub account
@@ -129,7 +126,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	}
 	// account price
 	argsStr := ""
-	if req.ChainType == common.ChainTypeCkb || req.Address == "" {
+	if req.Address == "" {
 
 	} else {
 		hexAddress := core.DasAddressHex{
