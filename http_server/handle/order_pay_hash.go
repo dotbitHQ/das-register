@@ -71,7 +71,7 @@ func (h *HttpHandle) OrderPayHash(ctx *gin.Context) {
 
 func (h *HttpHandle) doOrderPayHash(req *ReqOrderPayHash, apiResp *api_code.ApiResp) error {
 	var resp RespOrderPayHash
-	if req.Address == "" || req.Account == "" || req.OrderId == "" || req.PayHash == "" {
+	if req.Account == "" || req.OrderId == "" || req.PayHash == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
