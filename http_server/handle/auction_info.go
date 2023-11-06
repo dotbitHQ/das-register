@@ -257,10 +257,6 @@ func (h *HttpHandle) doGetAuctionOrderStatus(req *ReqGetAuctionOrder, apiResp *h
 		return nil
 	}
 	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
-	if req.chainType != 1 {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-		return nil
-	}
 	order, err := h.dbDao.GetAuctionOrderStatus(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex, req.Account)
 	if err != nil {
 		fmt.Println("11111111 ", err)
