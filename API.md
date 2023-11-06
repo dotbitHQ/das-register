@@ -314,6 +314,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
   * 15: cross-chain
   * 17: on dutch auction period
   * 18: on dutch auction deliver period
+* re_registered_time: Time for re registration
 ```json
 {
   "err_no": 0,
@@ -331,7 +332,8 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
     "base_amount": "3.89",
     "confirm_proposal_hash": "0xec7bec47a4d3ad467253925a7e097f311e0738d625d55f8b3420cabaaa9b5201",
     "premium_percentage": "",// for stripe usd premium
-    "premium_base": "" // for stripe usd premium
+    "premium_base": "", // for stripe usd premium
+    "re_registered_time": 1672211096
   }
 }
 ```
