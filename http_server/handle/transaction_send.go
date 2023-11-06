@@ -187,6 +187,32 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			if err = h.dbDao.CreatePending(&pending); err != nil {
 				log.Error("CreatePending err: ", err.Error(), toolib.JsonString(pending))
 			}
+
+			if sic.Action == common.DasBidExpiredAccountAuction {
+				addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+					ChainType:     sic.ChainType,
+					AddressNormal: sic.Address,
+					Is712:         true,
+				})
+				if err != nil {
+					apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+					return fmt.Errorf("NormalToHex err: %s", err.Error())
+				}
+				auctionOrder := tables.TableAuctionOrder{
+					Account:        sic.Account,
+					AccountId:      common.Bytes2Hex(common.GetAccountIdByAccount(sic.Account)),
+					Address:        sic.Address,
+					BasicPrice:     sic.AuctionInfo.BasicPrice,
+					PremiumPrice:   sic.AuctionInfo.PremiumPrice,
+					BidTime:        sic.AuctionInfo.BidTime,
+					AlgorithmId:    addressHex.DasAlgorithmId,
+					SubAlgorithmId: addressHex.DasSubAlgorithmId,
+					ChainType:      sic.ChainType,
+				}
+				if err = h.dbDao.CreateAuctionOrder(auctionOrder); err != nil {
+					log.Error("CreateAuctionOrder err: ", err.Error(), toolib.JsonString(auctionOrder))
+				}
+			}
 		}
 	}
 

@@ -26,3 +26,7 @@ func (d *DbDao) GetAuctionOrderStatus(algorithmId common.DasAlgorithmId, subAlgi
 	err = d.db.Raw(sql).First(&list).Error
 	return list, nil
 }
+
+func (d *DbDao) CreateAuctionOrder(auctionOrder tables.TableAuctionOrder) (err error) {
+	return d.db.Create(&auctionOrder).Error
+}

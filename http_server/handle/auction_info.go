@@ -83,7 +83,7 @@ func (h *HttpHandle) doGetAccountAuctionPrice(req *ReqAuctionPrice, apiResp *htt
 	}
 	resp.BasicPrice = baseAmount.Add(accountPrice)
 	fmt.Println(acc.ExpiredAt)
-	resp.PremiumPrice = common.Premium(int64(acc.ExpiredAt))
+	resp.PremiumPrice = common.Premium(int64(acc.ExpiredAt), int64(nowTime))
 	apiResp.ApiRespOK(resp)
 	return
 }
@@ -259,7 +259,7 @@ func (h *HttpHandle) doGetAuctionOrderStatus(req *ReqGetAuctionOrder, apiResp *h
 	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 	order, err := h.dbDao.GetAuctionOrderStatus(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex, req.Account)
 	if err != nil {
-		fmt.Println("11111111 ", err)
+
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")
 		return
 	}
@@ -309,7 +309,6 @@ func (h *HttpHandle) GetPendingAuctionOrder(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doGetPendingAuctionOrder(req *ReqGetGetPendingAuctionOrder, apiResp *http_api.ApiResp) (err error) {
-	//var resp []RepReqGetAuctionOrder
 	resp := make([]RepReqGetAuctionOrder, 0)
 	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {

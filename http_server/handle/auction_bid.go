@@ -32,9 +32,9 @@ type RespAuctionBid struct {
 }
 
 //查询价格
-func (h *HttpHandle) GetAccountAuctionBid(ctx *gin.Context) {
+func (h *HttpHandle) AccountAuctionBid(ctx *gin.Context) {
 	var (
-		funcName = "GetAccountAuctionPrice"
+		funcName = "AccountAuctionBid"
 		clientIp = GetClientIp(ctx)
 		req      ReqAuctionBid
 		apiResp  http_api.ApiResp
@@ -49,13 +49,21 @@ func (h *HttpHandle) GetAccountAuctionBid(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
-	if err = h.doGetAccountAuctionBid(&req, &apiResp); err != nil {
+	if err = h.doAccountAuctionBid(&req, &apiResp); err != nil {
 		log.Error("GetAccountAuctionInfo err:", err.Error(), funcName, clientIp)
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
-func (h *HttpHandle) doGetAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.ApiResp) (err error) {
+func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.ApiResp) (err error) {
 	var resp RespAuctionBid
+	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return nil
+	}
+	fmt.Println(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex)
+	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
+
 	if req.Account == "" {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid: account is empty")
 		return
@@ -89,17 +97,10 @@ func (h *HttpHandle) doGetAccountAuctionBid(req *ReqAuctionBid, apiResp *http_ap
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
 	}
 	basicPrice := baseAmount.Add(accountPrice)
-	premiumPrice := decimal.NewFromInt(common.Premium(int64(acc.ExpiredAt)))
+	premiumPrice := decimal.NewFromInt(common.Premium(int64(acc.ExpiredAt), int64(nowTime)))
 	//check user`s DP
 
 	//
-	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
-	if err != nil {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-		return nil
-	}
-	fmt.Println(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex)
-	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasBidExpiredAccountAuction
@@ -107,6 +108,11 @@ func (h *HttpHandle) doGetAccountAuctionBid(req *ReqAuctionBid, apiResp *http_ap
 	reqBuild.ChainType = req.chainType
 	reqBuild.Address = req.address
 	reqBuild.Capacity = 0
+	reqBuild.AuctionInfo = AuctionInfo{
+		BasicPrice:   basicPrice,
+		PremiumPrice: premiumPrice,
+		BidTime:      int64(nowTime),
+	}
 	var p auctionBidParams
 	p.account = &acc
 	p.basicPrice = basicPrice
