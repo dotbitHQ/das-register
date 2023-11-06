@@ -201,12 +201,13 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 }
 
 type reqBuildTx struct {
-	Action     common.DasAction
-	ChainType  common.ChainType `json:"chain_type"`
-	Address    string           `json:"address"`
-	Account    string           `json:"account"`
-	Capacity   uint64           `json:"capacity"`
-	EvmChainId int64            `json:"evm_chain_id"`
+	Action      common.DasAction
+	ChainType   common.ChainType `json:"chain_type"`
+	Address     string           `json:"address"`
+	Account     string           `json:"account"`
+	Capacity    uint64           `json:"capacity"`
+	EvmChainId  int64            `json:"evm_chain_id"`
+	AuctionInfo AuctionInfo      `json:"auction_info"`
 }
 
 type DeclareParams struct {
@@ -216,7 +217,6 @@ type DeclareParams struct {
 	TotalCapacity   uint64
 	DeclareCapacity uint64
 	FeeCapacity     uint64
-	//AccountInfo     *tables.TableAccountInfo
 }
 
 func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (*SignInfo, error) {
@@ -236,7 +236,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity + common.OneCkb - sizeInBlock - 1000
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
-	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount:
+	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount, common.DasBidExpiredAccountAuction:
 		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - sizeInBlock - 1000
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
@@ -268,6 +268,11 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	sic.Account = req.Account
 	sic.Capacity = req.Capacity
 	sic.BuilderTx = txBuilder.DasTxBuilderTransaction
+
+	//dutch auction
+	if req.Action == common.DasBidExpiredAccountAuction {
+		sic.AuctionInfo = req.AuctionInfo
+	}
 
 	signKey := sic.SignKey()
 	cacheStr := toolib.JsonString(&sic)

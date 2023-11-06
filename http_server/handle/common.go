@@ -6,6 +6,7 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/scorpiotzh/toolib"
+	"github.com/shopspring/decimal"
 	"time"
 )
 
@@ -43,13 +44,20 @@ func (s *SignInfo) SignListString() string {
 	return toolib.JsonString(s.SignList)
 }
 
+type AuctionInfo struct {
+	BasicPrice   decimal.Decimal `json:"basic_price"`
+	PremiumPrice decimal.Decimal `json:"premium_price"`
+	BidTime      int64           `json:"bid_time"`
+}
+
 type SignInfoCache struct {
-	ChainType common.ChainType                   `json:"chain_type"`
-	Address   string                             `json:"address"`
-	Action    string                             `json:"action"`
-	Account   string                             `json:"account"`
-	Capacity  uint64                             `json:"capacity"`
-	BuilderTx *txbuilder.DasTxBuilderTransaction `json:"builder_tx"`
+	ChainType   common.ChainType                   `json:"chain_type"`
+	Address     string                             `json:"address"`
+	Action      string                             `json:"action"`
+	Account     string                             `json:"account"`
+	Capacity    uint64                             `json:"capacity"`
+	BuilderTx   *txbuilder.DasTxBuilderTransaction `json:"builder_tx"`
+	AuctionInfo AuctionInfo                        `json:"auction_info"`
 }
 
 func (s *SignInfoCache) SignKey() string {

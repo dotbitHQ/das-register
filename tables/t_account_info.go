@@ -63,6 +63,12 @@ const (
 	SearchStatusUnAvailableAccount   SearchStatus = 13
 	SearchStatusSubAccountUnRegister SearchStatus = 14
 	SearchStatusOnCross              SearchStatus = 15
+	SearchStatusOnDutchAuction       SearchStatus = 17
+	SearchStatusAuctionRecycling     SearchStatus = 18
+
+	// 90天之后 三天以内 弹第一个框 dutchAuctionRecycling 18 // 荷兰拍结束的 后三天 ：返回可以开始注册的时间
+	// 90天之内 第二个弹框取消
+	//90天之后 27天以内 荷兰拍阶段 弹第三个框  dutchAuction 17 //
 )
 
 func (t *TableAccountInfo) IsExpired() bool {

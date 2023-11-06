@@ -3,7 +3,6 @@ package api_code
 import (
 	"bytes"
 	"das_register_server/config"
-	"das_register_server/prometheus"
 	"encoding/json"
 	"fmt"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
@@ -42,7 +41,7 @@ func PushLog(url string, req ReqPushLog) {
 
 func DoMonitorLog(method string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		startTime := time.Now()
+		//startTime := time.Now()
 		//ip := getClientIp(ctx)
 
 		blw := &bodyWriter{body: bytes.NewBufferString(""), ResponseWriter: ctx.Writer}
@@ -71,7 +70,7 @@ func DoMonitorLog(method string) gin.HandlerFunc {
 		if resp.ErrNo == api_code.ApiCodeSuccess {
 			resp.ErrMsg = ""
 		}
-		prometheus.Tools.Metrics.Api().WithLabelValues(method, fmt.Sprint(statusCode), fmt.Sprint(resp.ErrNo), resp.ErrMsg).Observe(time.Since(startTime).Seconds())
+		//prometheus.Tools.Metrics.Api().WithLabelValues(method, fmt.Sprint(statusCode), fmt.Sprint(resp.ErrNo), resp.ErrMsg).Observe(time.Since(startTime).Seconds())
 	}
 }
 

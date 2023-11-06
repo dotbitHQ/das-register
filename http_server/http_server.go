@@ -10,6 +10,7 @@ import (
 	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/gin-gonic/gin"
+	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"net/http"
 )
 
@@ -38,6 +39,7 @@ type HttpServerParams struct {
 	DasCore                *core.DasCore
 	DasCache               *dascache.DasCache
 	TxBuilderBase          *txbuilder.DasTxBuilderBase
+	ServerScript           *types.Script
 	MapReservedAccounts    map[string]struct{}
 	MapUnAvailableAccounts map[string]struct{}
 }
@@ -58,6 +60,7 @@ func Initialize(p HttpServerParams) (*HttpServer, error) {
 			TxBuilderBase:          p.TxBuilderBase,
 			MapReservedAccounts:    p.MapReservedAccounts,
 			MapUnAvailableAccounts: p.MapUnAvailableAccounts,
+			ServerScript:           p.ServerScript,
 		}),
 		rc: p.Rc,
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/gin-gonic/gin"
+	"github.com/nervosnetwork/ckb-sdk-go/types"
 )
 
 var (
@@ -26,6 +27,7 @@ type HttpHandle struct {
 	dasCore                *core.DasCore
 	dasCache               *dascache.DasCache
 	txBuilderBase          *txbuilder.DasTxBuilderBase
+	serverScript           *types.Script
 	mapReservedAccounts    map[string]struct{}
 	mapUnAvailableAccounts map[string]struct{}
 }
@@ -37,6 +39,7 @@ type HttpHandleParams struct {
 	DasCore                *core.DasCore
 	DasCache               *dascache.DasCache
 	TxBuilderBase          *txbuilder.DasTxBuilderBase
+	ServerScript           *types.Script
 	MapReservedAccounts    map[string]struct{}
 	MapUnAvailableAccounts map[string]struct{}
 }
@@ -49,6 +52,7 @@ func Initialize(p HttpHandleParams) *HttpHandle {
 		dasCore:                p.DasCore,
 		dasCache:               p.DasCache,
 		txBuilderBase:          p.TxBuilderBase,
+		serverScript:           p.ServerScript,
 		mapReservedAccounts:    p.MapReservedAccounts,
 		mapUnAvailableAccounts: p.MapUnAvailableAccounts,
 	}
