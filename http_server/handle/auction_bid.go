@@ -78,9 +78,12 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	//exp + 90 + 27 +3
 	//now > exp+117 exp< now - 117
 	//now< exp+90 exp>now -90
-	if acc.ExpiredAt > nowTime-90*24*3600 || acc.ExpiredAt < nowTime-117*24*3600 {
+	if status, _, err := h.checkDutchAuction(acc.ExpiredAt); err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "checkDutchAuction err")
+		return fmt.Errorf("checkDutchAuction err: %s", err.Error())
+	} else if status != tables.SearchStatusOnDutchAuction {
 		apiResp.ApiRespErr(http_api.ApiCodeAuctionAccountNotFound, "This account has not been in dutch auction")
-		return
+		return nil
 	}
 	//计算长度
 	_, accLen, err := common.GetDotBitAccountLength(req.Account)

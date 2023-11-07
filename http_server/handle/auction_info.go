@@ -153,15 +153,22 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "search account err")
 		return fmt.Errorf("SearchAccount err: %s", err.Error())
 	}
-	nowTime := uint64(time.Now().Unix())
 	if acc.Id == 0 {
 		apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, fmt.Sprintf("account [%s] not exist", req.Account))
 		return
 	}
-	if acc.ExpiredAt > nowTime-90*24*3600 || acc.ExpiredAt < nowTime-117*24*3600 {
+
+	if status, _, err := h.checkDutchAuction(acc.ExpiredAt); err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "checkDutchAuction err")
+		return fmt.Errorf("checkDutchAuction err: %s", err.Error())
+	} else if status != tables.SearchStatusOnDutchAuction {
 		apiResp.ApiRespErr(http_api.ApiCodeAuctionAccountNotFound, "This account has not been in dutch auction")
-		return
+		return nil
 	}
+	//if acc.ExpiredAt > nowTime-90*24*3600 || acc.ExpiredAt < nowTime-117*24*3600 {
+	//	apiResp.ApiRespErr(http_api.ApiCodeAuctionAccountNotFound, "This account has not been in dutch auction")
+	//	return
+	//}
 
 	//查询账号的竞拍状态
 	list, err := h.dbDao.GetAuctionOrderByAccount(req.Account)
