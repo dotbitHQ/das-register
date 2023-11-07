@@ -48,7 +48,6 @@ func NewTxTimer(p TxTimerParam) *TxTimer {
 }
 
 func (t *TxTimer) Run() error {
-	return nil
 	if err := t.doUpdateTokenMap(); err != nil {
 		return fmt.Errorf("doUpdateTokenMap init token err: %s", err.Error())
 	}

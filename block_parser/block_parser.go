@@ -35,7 +35,6 @@ type BlockParser struct {
 }
 
 func (b *BlockParser) Run() error {
-	return nil
 	b.registerTransactionHandle()
 	currentBlockNumber, err := b.DasCore.Client().GetTipBlockNumber(b.Ctx)
 	if err != nil {

@@ -32,7 +32,6 @@ type TxTool struct {
 }
 
 func (t *TxTool) Run() {
-	return
 	tickerApply := time.NewTicker(time.Second * 5)
 	tickerPreRegister := time.NewTicker(time.Second * 6)
 	tickerRenew := time.NewTicker(time.Second * 7)
