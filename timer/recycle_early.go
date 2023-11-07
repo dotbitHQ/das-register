@@ -254,7 +254,6 @@ func (t *TxTimer) doRecyclePreEarly() error {
 }
 
 func (t *TxTimer) DoRecyclePreEarly() {
-	return
 	if config.Cfg.Server.RecyclePreEarlyCronSpec == "" {
 		return
 	}
