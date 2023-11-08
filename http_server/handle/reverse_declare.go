@@ -254,7 +254,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	case common.DasActionConfigSubAccountCustomScript:
 	default:
 		mmJsonObj, err = txBuilder.BuildMMJsonObj(req.EvmChainId)
-		if req.Action != tables.DasActionTransferBalance && err != nil {
+		if req.Action != tables.DasActionTransferBalance && req.Action != common.DasBidExpiredAccountAuction && err != nil {
 			return nil, fmt.Errorf("txBuilder.BuildMMJsonObj err: %s", err.Error())
 		} else {
 			log.Info("BuildTx:", mmJsonObj.String())
