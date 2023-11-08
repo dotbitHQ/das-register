@@ -102,7 +102,8 @@ type RespAccountAuctionInfo struct {
 	StartsaleTime uint64           `json:"start_auction_time"`
 	EndSaleTime   uint64           `json:"end_auction_time"`
 	ExipiredTime  uint64           `json:"expired_at"`
-	BasicPrice    decimal.Decimal  `json:"basic_price"`
+	AccountPrice  decimal.Decimal  `json:"account_price"`
+	BaseAmount    decimal.Decimal  `json:"base_amount"`
 }
 
 func (h *HttpHandle) GetAccountAuctionInfo(ctx *gin.Context) {
@@ -210,7 +211,8 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 	resp.Account = req.Account
 	resp.StartsaleTime = acc.ExpiredAt + 90*86400
 	resp.EndSaleTime = acc.ExpiredAt + 27*86400
-	resp.BasicPrice = accountPrice.Add(baseAmount)
+	resp.AccountPrice = accountPrice
+	resp.BaseAmount = baseAmount
 	resp.ExipiredTime = acc.ExpiredAt
 	apiResp.ApiRespOK(resp)
 	return
