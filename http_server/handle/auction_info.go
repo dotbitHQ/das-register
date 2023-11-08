@@ -219,15 +219,14 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 }
 
 type ReqGetAuctionOrder struct {
-	Account string `json:"account"`
+	Hash string `json:"hash" binding:"required"`
 	core.ChainTypeAddress
 	address   string
 	chainType common.ChainType
 }
 type RepReqGetAuctionOrder struct {
 	Account      string          `json:"account"`
-	OrderId      string          `json:"order_id"`
-	Outpoint     string          `json:"outpoint"`
+	Hash         string          `json:"hash"`
 	Status       int             `json:"status"`
 	BasicPrice   decimal.Decimal `json:"basic_price" gorm:"column:basic_price;type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT ''"`
 	PremiumPrice decimal.Decimal `json:"premium_price" gorm:"column:premium_price;type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT ''"`
@@ -266,9 +265,8 @@ func (h *HttpHandle) doGetAuctionOrderStatus(req *ReqGetAuctionOrder, apiResp *h
 		return nil
 	}
 	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
-	order, err := h.dbDao.GetAuctionOrderStatus(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex, req.Account)
+	order, err := h.dbDao.GetAuctionOrderStatus(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex, req.Hash)
 	if err != nil {
-
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")
 		return
 	}
@@ -276,12 +274,11 @@ func (h *HttpHandle) doGetAuctionOrderStatus(req *ReqGetAuctionOrder, apiResp *h
 		apiResp.ApiRespErr(http_api.ApiCodeAuctionOrderNotFound, "order not found")
 		return
 	}
-	fmt.Println(order)
-	resp.OrderId = order.OrderId
+
 	resp.Account = order.Account
 	resp.PremiumPrice = order.PremiumPrice
 	resp.BasicPrice = order.BasicPrice
-	resp.Outpoint = order.Outpoint
+	resp.Hash, _ = common.String2OutPoint(order.Outpoint)
 	resp.Status = order.Status
 	apiResp.ApiRespOK(resp)
 	return
@@ -335,12 +332,12 @@ func (h *HttpHandle) doGetPendingAuctionOrder(req *ReqGetGetPendingAuctionOrder,
 		return
 	}
 	for _, v := range list {
+		hash, _ := common.String2OutPoint(v.Outpoint)
 		resp = append(resp, RepReqGetAuctionOrder{
-			OrderId:      v.OrderId,
 			Account:      v.Account,
 			PremiumPrice: v.PremiumPrice,
 			BasicPrice:   v.BasicPrice,
-			Outpoint:     v.Outpoint,
+			Hash:         hash,
 			Status:       v.Status,
 		})
 	}
