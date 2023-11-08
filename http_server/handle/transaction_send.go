@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"crypto/sha256"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
@@ -155,8 +156,8 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		_ = h.rc.SetApiLimit(sic.ChainType, sic.Address, sic.Action)
 		_ = h.rc.SetAccountLimit(sic.Account, time.Minute*2)
 
-		hash := sic.BuilderTx.Transaction.Hash
-		resp.Hash = hash.Hex()
+		hash := sha256.Sum256([]byte(randStr(10)))
+		resp.Hash = common.Bytes2Hex(hash[:])
 		// cache tx inputs
 		h.dasCache.AddCellInputByAction("", sic.BuilderTx.Transaction.Inputs)
 		// pending tx
@@ -166,7 +167,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			ChainType:      sic.ChainType,
 			Address:        sic.Address,
 			Capacity:       sic.Capacity,
-			Outpoint:       common.OutPoint2String(hash.Hex(), 0),
+			Outpoint:       common.OutPoint2String(resp.Hash, 0),
 			BlockTimestamp: uint64(time.Now().UnixNano() / 1e6),
 		}
 		if err := h.dbDao.CreatePending(&pending); err != nil {
@@ -193,6 +194,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 				AlgorithmId:    addressHex.DasAlgorithmId,
 				SubAlgorithmId: addressHex.DasSubAlgorithmId,
 				ChainType:      sic.ChainType,
+				Outpoint:       pending.Outpoint,
 			}
 			if err = h.dbDao.CreateAuctionOrder(auctionOrder); err != nil {
 				log.Error("CreateAuctionOrder err: ", err.Error(), toolib.JsonString(auctionOrder))
@@ -262,6 +264,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 					AlgorithmId:    addressHex.DasAlgorithmId,
 					SubAlgorithmId: addressHex.DasSubAlgorithmId,
 					ChainType:      sic.ChainType,
+					Outpoint:       pending.Outpoint,
 				}
 				if err = h.dbDao.CreateAuctionOrder(auctionOrder); err != nil {
 					log.Error("CreateAuctionOrder err: ", err.Error(), toolib.JsonString(auctionOrder))
