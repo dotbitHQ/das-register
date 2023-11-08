@@ -1947,6 +1947,7 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/price' \
 ```json
 {
   "account":"michaeltest1.bit",
+  "hash": "0xb9e094dd6fcaa6c68d44233cb5331e63bd966fa86659fc45d30089336021f26e",
   "type":"blockchain",
   "key_info":{
     "coin_type":"60",
@@ -1963,8 +1964,7 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/price' \
   "err_msg": "",
   "data": {
     "account": "michaeltest1.bit",
-    "order_id": "abc123123",
-    "outpoint": "0xeb4871b7af2ca7129a43c5991c408148abd195eb5699223fad11a712b1e1d584-0",
+    "hash": "0xeb4871b7af2ca7129a43c5991c408148abd195eb5699223fad11a712b1e1d584",
     "status": 0,
     "basic_price": "6",
     "premium_price": "100"
@@ -2014,7 +2014,6 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/order-status' \
   "data": [
     {
       "account": "michaeltest1.bit",
-      "order_id": "abc123123",
       "outpoint": "0xeb4871b7af2ca7129a43c5991c408148abd195eb5699223fad11a712b1e1d584-0",
       "status": 0,
       "basic_price": "6",
