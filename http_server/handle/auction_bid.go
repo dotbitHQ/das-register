@@ -225,6 +225,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		NewIndex:              0,
 		Action:                common.DasBidExpiredAccountAuction,
 		LastTransferAccountAt: timeCell.Timestamp(),
+		RegisterAt:            uint64(timeCell.Timestamp()),
 	})
 	txParams.Witnesses = append(txParams.Witnesses, accWitness)
 
@@ -247,7 +248,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		Lock:     contractDas.ToScript(lockArgs),
 		Type:     accTx.Transaction.Outputs[builder.Index].Type,
 	})
-	newExpiredAt := int64(builder.ExpiredAt) + common.OneYearSec
+	newExpiredAt := timeCell.Timestamp() + common.OneYearSec
 	byteExpiredAt := molecule.Go64ToBytes(newExpiredAt)
 	accData = append(accData, accTx.Transaction.OutputsData[builder.Index][32:]...)
 	accData1 := accData[:common.ExpireTimeEndIndex-common.ExpireTimeLen]
@@ -355,7 +356,6 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		timeCell.ToCellDep(),
 		accContract.ToCellDep(),
 		contractDas.ToCellDep(),
-
 	)
 	return &txParams, nil
 }
