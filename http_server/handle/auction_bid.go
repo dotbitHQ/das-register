@@ -298,7 +298,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	//input dp cell capacity > output dp cell capacity : has been return in "h.dasCore.SplitDPCell"
 	normalCells, totalNormal, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
 		DasCache:          h.dasCache,
-		LockScript:        p.NormalCellLock,
+		LockScript:        h.serverScript,
 		CapacityNeed:      normalCellCapacity + accCellCapacity,
 		CapacityForChange: common.MinCellOccupiedCkb,
 		SearchOrder:       indexer.SearchOrderAsc,
