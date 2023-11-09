@@ -324,7 +324,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	if change := totalNormal - normalCellCapacity - accCellCapacity; change > 0 {
 		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 			Capacity: change,
-			Lock:     p.NormalCellLock,
+			Lock:     h.serverScript,
 			Type:     nil,
 		})
 		txParams.OutputsData = append(txParams.OutputsData, []byte{})
