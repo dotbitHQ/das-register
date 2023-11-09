@@ -20,7 +20,9 @@ type ReqAuctionPrice struct {
 }
 
 type RespAuctionPrice struct {
-	BasicPrice   decimal.Decimal `json:"basic_price"`
+	//BasicPrice   decimal.Decimal `json:"basic_price"`
+	AccountPrice decimal.Decimal `json:"account_price"`
+	BaseAmount   decimal.Decimal `json:"base_amount"`
 	PremiumPrice int64           `json:"premium_price"`
 }
 
@@ -81,8 +83,8 @@ func (h *HttpHandle) doGetAccountAuctionPrice(req *ReqAuctionPrice, apiResp *htt
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
 	}
-	resp.BasicPrice = baseAmount.Add(accountPrice)
-	fmt.Println(acc.ExpiredAt)
+	resp.BaseAmount = baseAmount
+	resp.AccountPrice = accountPrice
 	resp.PremiumPrice = common.Premium(int64(acc.ExpiredAt), int64(nowTime))
 	apiResp.ApiRespOK(resp)
 	return
