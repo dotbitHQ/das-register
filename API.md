@@ -1920,7 +1920,8 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/info' \
   "err_no": 0,
   "err_msg": "",
   "data": {
-    "basic_price": "5.8",
+    "account_price": "5",
+    "base_amount": "0.82",
     "premium_price": 20
   }
 }
