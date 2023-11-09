@@ -122,7 +122,6 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
 		return fmt.Errorf("dasCore.GetDpCells err: ", err.Error())
 	}
-	fmt.Println("11111111111111")
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasBidExpiredAccountAuction
 	reqBuild.Account = req.Account
@@ -157,10 +156,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	p.FromLock = fromLock
 	p.ToLock = toLock.Script
 	p.NormalCellLock = normalCellLock.Script
-	//p.basicPrice = basicPrice
-	//p.premiumPrice = premiumPrice
 	txParams, err := h.buildAuctionBidTx(&reqBuild, &p)
-	fmt.Println("2222222222222")
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
@@ -186,11 +182,6 @@ type auctionBidParams struct {
 
 func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*txbuilder.BuildTransactionParams, error) {
 	var txParams txbuilder.BuildTransactionParams
-	fmt.Println("44444444444")
-	//contractAcc, err := core.GetDasContractInfo(common.DasContractNameAccountCellType)
-	//if err != nil {
-	//	return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
-	//}
 	contractDas, err := core.GetDasContractInfo(common.DasContractNameDispatchCellType)
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
@@ -221,10 +212,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	}
 	accCellCapacity := accTx.Transaction.Outputs[builder.Index].Capacity
 	oldAccOwnerArgs := accTx.Transaction.Outputs[builder.Index].Lock.Args
-	fmt.Println("55555555555")
-	//
-	//witness
-	//-----witness action
+
 	actionWitness, err := witness.GenActionDataWitness(common.DasBidExpiredAccountAuction, nil)
 	if err != nil {
 		return nil, fmt.Errorf("GenActionDataWitness err: %s", err.Error())
@@ -341,27 +329,6 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		})
 		txParams.OutputsData = append(txParams.OutputsData, []byte{})
 	}
-
-	//注册商支付older owner的account cell的capacity
-
-	//-----AccountCell
-
-	//DPCell
-
-	//oldowner balanceCell
-	oldOwnerAddrHex := core.DasAddressHex{
-		DasAlgorithmId: p.Account.OwnerChainType.ToDasAlgorithmId(true),
-		AddressHex:     p.Account.Owner,
-		IsMulti:        false,
-		ChainType:      p.Account.OwnerChainType,
-	}
-	oldOwnerLockArgs, err := h.dasCore.Daf().HexToArgs(oldOwnerAddrHex, oldOwnerAddrHex)
-	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
-		Capacity: accCellCapacity,
-		Lock:     contractDas.ToScript(oldOwnerLockArgs),
-		Type:     balanceContract.ToScript(nil),
-	})
-	txParams.OutputsData = append(txParams.OutputsData, []byte{})
 
 	return &txParams, nil
 }
