@@ -1,7 +1,6 @@
 package handle
 
 import (
-	"crypto/sha256"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
@@ -148,61 +147,6 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		} else {
 			log.Info("edit records:", sic.Account, sic.ChainType, sic.Address, toolib.JsonString(builder.Records))
 		}
-	}
-
-	//test for dutch auction
-	if sic.Action == common.DasBidExpiredAccountAuction {
-		// operate limit
-		_ = h.rc.SetApiLimit(sic.ChainType, sic.Address, sic.Action)
-		_ = h.rc.SetAccountLimit(sic.Account, time.Minute*2)
-
-		hash := sha256.Sum256([]byte(randStr(10)))
-		resp.Hash = common.Bytes2Hex(hash[:])
-		// cache tx inputs
-		h.dasCache.AddCellInputByAction("", sic.BuilderTx.Transaction.Inputs)
-		// pending tx
-		pending := tables.TableRegisterPendingInfo{
-			Account:        sic.Account,
-			Action:         sic.Action,
-			ChainType:      sic.ChainType,
-			Address:        sic.Address,
-			Capacity:       sic.Capacity,
-			Outpoint:       common.OutPoint2String(resp.Hash, 0),
-			BlockTimestamp: uint64(time.Now().UnixNano() / 1e6),
-		}
-		if err := h.dbDao.CreatePending(&pending); err != nil {
-			log.Error("CreatePending err: ", err.Error(), toolib.JsonString(pending))
-		}
-
-		if sic.Action == common.DasBidExpiredAccountAuction {
-			addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-				ChainType:     sic.ChainType,
-				AddressNormal: sic.Address,
-				Is712:         true,
-			})
-			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-				return fmt.Errorf("NormalToHex err: %s", err.Error())
-			}
-			auctionOrder := tables.TableAuctionOrder{
-				Account:        sic.Account,
-				AccountId:      common.Bytes2Hex(common.GetAccountIdByAccount(sic.Account)),
-				Address:        sic.Address,
-				BasicPrice:     sic.AuctionInfo.BasicPrice,
-				PremiumPrice:   sic.AuctionInfo.PremiumPrice,
-				BidTime:        sic.AuctionInfo.BidTime,
-				AlgorithmId:    addressHex.DasAlgorithmId,
-				SubAlgorithmId: addressHex.DasSubAlgorithmId,
-				ChainType:      sic.ChainType,
-				Outpoint:       pending.Outpoint,
-			}
-			if err = h.dbDao.CreateAuctionOrder(auctionOrder); err != nil {
-				log.Error("CreateAuctionOrder err: ", err.Error(), toolib.JsonString(auctionOrder))
-			}
-		}
-
-		apiResp.ApiRespOK(resp)
-		return nil
 	}
 
 	// send tx
