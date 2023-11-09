@@ -190,6 +190,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
+
 	timeCell, err := h.dasCore.GetTimeCell()
 	if err != nil {
 		return nil, fmt.Errorf("GetTimeCell err: %s", err.Error())
@@ -330,5 +331,31 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		txParams.OutputsData = append(txParams.OutputsData, []byte{})
 	}
 
+	// cell deps
+	accContract, err := core.GetDasContractInfo(common.DasContractNameAccountCellType)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+	}
+	configCellMain, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsMain)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
+	configCellDP, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsDPoint)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
+	contractDP, err := core.GetDasContractInfo(common.DasContractNameDpCellType)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+	}
+	txParams.CellDeps = append(txParams.CellDeps,
+		configCellMain.ToCellDep(),
+		configCellDP.ToCellDep(),
+		contractDP.ToCellDep(),
+		timeCell.ToCellDep(),
+		accContract.ToCellDep(),
+		contractDas.ToCellDep(),
+
+	)
 	return &txParams, nil
 }
