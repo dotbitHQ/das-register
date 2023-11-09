@@ -21,7 +21,7 @@ type TableAuctionOrder struct {
 	SubAlgorithmId common.DasSubAlgorithmId `json:"sub_algorithm_id" gorm:"column:sub_algorithm_id"`
 	BasicPrice     decimal.Decimal          `json:"basic_price" gorm:"column:basic_price;type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT ''"`
 	PremiumPrice   decimal.Decimal          `json:"premium_price" gorm:"column:premium_price;type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT ''"`
-	Status         int                      `json:"status"`
+	Status         int                      `json:"status" `
 	BidTime        int64                    `json:"bid_time" gorm:"column:bid_time;type:bigint NOT NULL DEFAULT '0'"`
 	Outpoint       string                   `json:"outpoint" gorm:"column:outpoint;type:varchar(255) DEFAULT NULL"`
 	CreatedAt      time.Time                `json:"created_at" gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`

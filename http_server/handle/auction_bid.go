@@ -11,6 +11,7 @@ import (
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
+	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
@@ -62,6 +63,11 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		return nil
 	}
 	fmt.Println(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex)
+	fromLock, _, err := h.dasCore.Daf().HexToScript(*addrHex)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "key info is invalid: "+err.Error())
+		return nil
+	}
 	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 
 	if req.Account == "" {
@@ -101,10 +107,22 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	}
 	basicPrice := baseAmount.Add(accountPrice)
 	premiumPrice := decimal.NewFromInt(common.Premium(int64(acc.ExpiredAt), int64(nowTime)))
+	//totalPrice := basicPrice.Add(premiumPrice)
 	//check user`s DP
-
-	//
-
+	amountDP := basicPrice.Add(premiumPrice).BigInt().Uint64() * common.UsdRateBase
+	log.Info("GetDpCells:", common.Bytes2Hex(fromLock.Args), amountDP)
+	_, _, _, err = h.dasCore.GetDpCells(&core.ParamGetDpCells{
+		DasCache:           h.dasCache,
+		LockScript:         fromLock,
+		AmountNeed:         amountDP,
+		CurrentBlockNumber: 0,
+		SearchOrder:        indexer.SearchOrderAsc,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
+		return fmt.Errorf("dasCore.GetDpCells err: ", err.Error())
+	}
+	fmt.Println("11111111111111")
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasBidExpiredAccountAuction
 	reqBuild.Account = req.Account
@@ -116,12 +134,33 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		PremiumPrice: premiumPrice,
 		BidTime:      int64(nowTime),
 	}
-	var p auctionBidParams
-	p.account = &acc
-	p.basicPrice = basicPrice
-	p.premiumPrice = premiumPrice
-	txParams, err := h.buildAuctionBidTx(&reqBuild, &p)
 
+	// to lock & normal cell lock
+	//转账地址 用于接收荷兰拍竞拍dp的地址
+	if config.Cfg.Server.TransferWhitelist == "" || config.Cfg.Server.CapacityWhitelist == "" {
+		return fmt.Errorf("TransferWhitelist or CapacityWhitelist is empty")
+	}
+	toLock, err := address.Parse(config.Cfg.Server.TransferWhitelist)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
+		return fmt.Errorf("address.Parse err: %s", err.Error())
+	}
+	//回收地址（接收dpcell 释放的capacity）
+	normalCellLock, err := address.Parse(config.Cfg.Server.CapacityWhitelist)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
+		return fmt.Errorf("address.Parse err: %s", err.Error())
+	}
+	var p auctionBidParams
+	p.Account = &acc
+	p.AmountDP = amountDP
+	p.FromLock = fromLock
+	p.ToLock = toLock.Script
+	p.NormalCellLock = normalCellLock.Script
+	//p.basicPrice = basicPrice
+	//p.premiumPrice = premiumPrice
+	txParams, err := h.buildAuctionBidTx(&reqBuild, &p)
+	fmt.Println("2222222222222")
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
@@ -138,34 +177,41 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 }
 
 type auctionBidParams struct {
-	account      *tables.TableAccountInfo
-	basicPrice   decimal.Decimal
-	premiumPrice decimal.Decimal
+	Account        *tables.TableAccountInfo
+	AmountDP       uint64
+	FromLock       *types.Script
+	ToLock         *types.Script
+	NormalCellLock *types.Script
 }
 
 func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*txbuilder.BuildTransactionParams, error) {
 	var txParams txbuilder.BuildTransactionParams
-
-	contractAcc, err := core.GetDasContractInfo(common.DasContractNameAccountCellType)
-	if err != nil {
-		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
-	}
+	fmt.Println("44444444444")
+	//contractAcc, err := core.GetDasContractInfo(common.DasContractNameAccountCellType)
+	//if err != nil {
+	//	return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+	//}
 	contractDas, err := core.GetDasContractInfo(common.DasContractNameDispatchCellType)
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
-	// inputs account cell
-	accOutPoint := common.String2OutPointStruct(p.account.Outpoint)
-	txParams.Inputs = append(txParams.Inputs, &types.CellInput{
-		PreviousOutput: accOutPoint,
-	})
+	balanceContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+	}
+	timeCell, err := h.dasCore.GetTimeCell()
+	if err != nil {
+		return nil, fmt.Errorf("GetTimeCell err: %s", err.Error())
+	}
 
+	accOutPoint := common.String2OutPointStruct(p.Account.Outpoint)
 	// witness account cell
-	res, err := h.dasCore.Client().GetTransaction(h.ctx, accOutPoint.TxHash)
+	accTx, err := h.dasCore.Client().GetTransaction(h.ctx, accOutPoint.TxHash)
 	if err != nil {
 		return nil, fmt.Errorf("GetTransaction err: %s", err.Error())
 	}
-	builderMap, err := witness.AccountCellDataBuilderMapFromTx(res.Transaction, common.DataTypeNew)
+
+	builderMap, err := witness.AccountCellDataBuilderMapFromTx(accTx.Transaction, common.DataTypeNew)
 	if err != nil {
 		return nil, fmt.Errorf("AccountCellDataBuilderMapFromTx err: %s", err.Error())
 	}
@@ -173,12 +219,10 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	if !ok {
 		return nil, fmt.Errorf("builderMap not exist account: %s", req.Account)
 	}
-
-	timeCell, err := h.dasCore.GetTimeCell()
-	if err != nil {
-		return nil, fmt.Errorf("GetTimeCell err: %s", err.Error())
-	}
-
+	accCellCapacity := accTx.Transaction.Outputs[builder.Index].Capacity
+	oldAccOwnerArgs := accTx.Transaction.Outputs[builder.Index].Lock.Args
+	fmt.Println("55555555555")
+	//
 	//witness
 	//-----witness action
 	actionWitness, err := witness.GenActionDataWitness(common.DasBidExpiredAccountAuction, nil)
@@ -195,90 +239,127 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	})
 	txParams.Witnesses = append(txParams.Witnesses, accWitness)
 
-	// inputs
-	//-----AccountCell
-	accOutpoint := common.String2OutPointStruct(p.account.Outpoint)
+	//input account cell
 	txParams.Inputs = append(txParams.Inputs, &types.CellInput{
-		PreviousOutput: accOutpoint,
+		PreviousOutput: accOutPoint,
 	})
 
-	//------DPCell
+	//output account cell
+	newOwnerAddrHex := core.DasAddressHex{
+		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
+		AddressHex:     req.Address,
+		IsMulti:        false,
+		ChainType:      req.ChainType,
+	}
+	lockArgs, err := h.dasCore.Daf().HexToArgs(newOwnerAddrHex, newOwnerAddrHex)
 
-	//------NormalCell
-	needCapacity := res.Transaction.Outputs[builder.Index].Capacity
-	liveCell, totalCapacity, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
-		DasCache:          h.dasCache,
-		LockScript:        h.serverScript,
-		CapacityNeed:      needCapacity,
-		CapacityForChange: common.MinCellOccupiedCkb,
-		SearchOrder:       indexer.SearchOrderAsc,
+	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
+		Capacity: accTx.Transaction.Outputs[builder.Index].Capacity,
+		Lock:     contractDas.ToScript(lockArgs),
+		Type:     accTx.Transaction.Outputs[builder.Index].Type,
+	})
+	newExpiredAt := int64(builder.ExpiredAt) + common.OneYearSec
+	byteExpiredAt := molecule.Go64ToBytes(newExpiredAt)
+	accData = append(accData, accTx.Transaction.OutputsData[builder.Index][32:]...)
+	accData1 := accData[:common.ExpireTimeEndIndex-common.ExpireTimeLen]
+	accData2 := accData[common.ExpireTimeEndIndex:]
+	newAccData := append(accData1, byteExpiredAt...)
+	newAccData = append(newAccData, accData2...)
+	fmt.Println("newAccData: ", newAccData)
+	txParams.OutputsData = append(txParams.OutputsData, newAccData) // change expired_at
+
+	//dp
+	liveCell, totalDP, totalCapacity, err := h.dasCore.GetDpCells(&core.ParamGetDpCells{
+		DasCache:           h.dasCache,
+		LockScript:         p.FromLock,
+		AmountNeed:         p.AmountDP,
+		CurrentBlockNumber: 0,
+		SearchOrder:        indexer.SearchOrderAsc,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("GetBalanceCells err: %s", err.Error())
+		return nil, fmt.Errorf("GetDpCells err: %s", err.Error())
 	}
-	if change := totalCapacity - needCapacity; change > 0 {
-		splitCkb := 2000 * common.OneCkb
-		if config.Cfg.Server.SplitCkb > 0 {
-			splitCkb = config.Cfg.Server.SplitCkb * common.OneCkb
-		}
-		changeList, err := core.SplitOutputCell2(change, splitCkb, 200, h.serverScript, nil, indexer.SearchOrderAsc)
-		if err != nil {
-			return nil, fmt.Errorf("SplitOutputCell2 err: %s", err.Error())
-		}
-		for i := 0; i < len(changeList); i++ {
-			txParams.Outputs = append(txParams.Outputs, changeList[i])
-			txParams.OutputsData = append(txParams.OutputsData, []byte{})
-		}
-	}
-	// inputs
+
 	for _, v := range liveCell {
 		txParams.Inputs = append(txParams.Inputs, &types.CellInput{
 			PreviousOutput: v.OutPoint,
 		})
 	}
 
-	//output
+	// outputs
+	outputs, outputsData, normalCellCapacity, err := h.dasCore.SplitDPCell(&core.ParamSplitDPCell{
+		FromLock:           p.FromLock,    //发送dp方的lock
+		ToLock:             p.ToLock,      //接收dp方的lock
+		DPLiveCell:         liveCell,      //发送方的dp cell
+		DPLiveCellCapacity: totalCapacity, //发送方dp的capacity
+		DPTotalAmount:      totalDP,       //总的dp金额
+		DPTransferAmount:   p.AmountDP,    //要转账的dp金额
+		DPSplitCount:       config.Cfg.Server.SplitCount,
+		DPSplitAmount:      config.Cfg.Server.SplitAmount,
+		NormalCellLock:     p.NormalCellLock, //回收dp cell的ckb的接收地址
+	})
+	if err != nil {
+		return nil, fmt.Errorf("SplitDPCell err: %s", err.Error())
+	}
+	for i, _ := range outputs {
+		txParams.Outputs = append(txParams.Outputs, outputs[i])
+		txParams.OutputsData = append(txParams.OutputsData, outputsData[i])
+	}
+
+	//input dp cell capacity < output dp cell capacity 需要用注册商的nomal cell 来垫付
+	//input dp cell capacity > output dp cell capacity : has been return in "h.dasCore.SplitDPCell"
+	normalCells, totalNormal, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+		DasCache:          h.dasCache,
+		LockScript:        p.NormalCellLock,
+		CapacityNeed:      normalCellCapacity + accCellCapacity,
+		CapacityForChange: common.MinCellOccupiedCkb,
+		SearchOrder:       indexer.SearchOrderAsc,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("GetBalanceCells err: %s", err.Error())
+	}
+	for _, v := range normalCells {
+		txParams.Inputs = append(txParams.Inputs, &types.CellInput{
+			PreviousOutput: v.OutPoint,
+		})
+	}
+	//返还给旧账户的 capacity
+	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
+		Capacity: accCellCapacity,
+		Lock:     contractDas.ToScript(oldAccOwnerArgs),
+		Type:     balanceContract.ToScript(nil),
+	})
+	txParams.OutputsData = append(txParams.OutputsData, []byte{})
+
+	log.Info("normalCellCapacity:", normalCellCapacity, common.Bytes2Hex(p.NormalCellLock.Args))
+	//找零
+	if change := totalNormal - normalCellCapacity - accCellCapacity; change > 0 {
+		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
+			Capacity: change,
+			Lock:     p.NormalCellLock,
+			Type:     nil,
+		})
+		txParams.OutputsData = append(txParams.OutputsData, []byte{})
+	}
+
+	//注册商支付older owner的account cell的capacity
 
 	//-----AccountCell
-	lockArgs, err := h.dasCore.Daf().HexToArgs(core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
-		IsMulti:        false,
-		ChainType:      req.ChainType,
-	}, core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
-		IsMulti:        false,
-		ChainType:      req.ChainType,
-	})
-	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
-		Capacity: res.Transaction.Outputs[builder.Index].Capacity,
-		Lock:     contractDas.ToScript(lockArgs),
-		Type:     contractAcc.ToScript(nil),
-	})
-	newExpiredAt := int64(builder.ExpiredAt) + common.OneYearSec
-	byteExpiredAt := molecule.Go64ToBytes(newExpiredAt)
-	accData = append(accData, res.Transaction.OutputsData[builder.Index][32:]...)
-	accData1 := accData[:common.ExpireTimeEndIndex-common.ExpireTimeLen]
-	accData2 := accData[common.ExpireTimeEndIndex:]
-	newAccData := append(accData1, byteExpiredAt...)
-	newAccData = append(newAccData, accData2...)
-	txParams.OutputsData = append(txParams.OutputsData, newAccData) // change expired_at
 
 	//DPCell
 
 	//oldowner balanceCell
 	oldOwnerAddrHex := core.DasAddressHex{
-		DasAlgorithmId: p.account.OwnerChainType.ToDasAlgorithmId(true),
-		AddressHex:     p.account.Owner,
+		DasAlgorithmId: p.Account.OwnerChainType.ToDasAlgorithmId(true),
+		AddressHex:     p.Account.Owner,
 		IsMulti:        false,
-		ChainType:      p.account.OwnerChainType,
+		ChainType:      p.Account.OwnerChainType,
 	}
 	oldOwnerLockArgs, err := h.dasCore.Daf().HexToArgs(oldOwnerAddrHex, oldOwnerAddrHex)
 	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
-		Capacity: res.Transaction.Outputs[builder.Index].Capacity,
+		Capacity: accCellCapacity,
 		Lock:     contractDas.ToScript(oldOwnerLockArgs),
-		Type:     contractAcc.ToScript(nil),
+		Type:     balanceContract.ToScript(nil),
 	})
 	txParams.OutputsData = append(txParams.OutputsData, []byte{})
 
