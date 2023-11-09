@@ -1874,6 +1874,7 @@ curl -X POST http://127.0.0.1:8120/v1/node/ckb/rpc -d'{"jsonrpc":"2.0","id":2976
     "account_id": "",
     "account": "",
     "bid_status": 2,
+    "hash": "",
     "start_auction_time": 0,
     "end_auction_time": 0,
     "expired_at": 0,

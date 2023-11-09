@@ -101,6 +101,7 @@ type RespAccountAuctionInfo struct {
 	AccountId     string           `json:"account_id"`
 	Account       string           `json:"account"`
 	BidStatus     tables.BidStatus `json:"bid_status"`
+	Hash          string           `json:"hash"`
 	StartsaleTime uint64           `json:"start_auction_time"`
 	EndSaleTime   uint64           `json:"end_auction_time"`
 	ExipiredTime  uint64           `json:"expired_at"`
@@ -189,6 +190,7 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 			//被自己竞拍
 			if v.AlgorithmId == addrHex.DasAlgorithmId && v.SubAlgorithmId == addrHex.DasSubAlgorithmId && v.Address == addrHex.AddressHex {
 				resp.BidStatus = tables.BidStatusByMe
+				resp.Hash, _ = common.String2OutPoint(v.Outpoint)
 			}
 		}
 		apiResp.ApiRespOK(resp)
