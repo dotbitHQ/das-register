@@ -76,6 +76,14 @@ type CfgServer struct {
 		UniPayRefundSwitch      bool              `json:"uni_pay_refund_switch" yaml:"uni_pay_refund_switch"`
 		HedgeUrl                string            `json:"hedge_url" yaml:"hedge_url"`
 		PrometheusPushGateway   string            `json:"prometheus_push_gateway" yaml:"prometheus_push_gateway"`
+		// ConfigCellDPoint.transfer_whitelist
+		TransferWhitelist        string `json:"transfer_whitelist" yaml:"transfer_whitelist"`
+		TransferWhitelistPrivate string `json:"transfer_whitelist_private" yaml:"transfer_whitelist_private"`
+		//ConfigCellDPoint.capacity_recycle_whitelist
+		CapacityWhitelist        string `json:"capacity_whitelist" yaml:"capacity_whitelist"`
+		CapacityWhitelistPrivate string `json:"capacity_whitelist_private" yaml:"capacity_whitelist_private"`
+		SplitCount               int    `json:"split_count" yaml:"split_count"`
+		SplitAmount              uint64 `json:"split_amount" yaml:"split_amount"`
 	} `json:"server" yaml:"server"`
 	Origins          []string          `json:"origins" yaml:"origins"`
 	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`
