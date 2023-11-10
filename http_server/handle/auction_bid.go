@@ -106,13 +106,12 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
 	}
 	basicPrice := baseAmount.Add(accountPrice)
-	fmt.Println("----------expiredat: ", int64(acc.ExpiredAt))
-	fmt.Println("----------nowTime: ", int64(nowTime))
+
+	log.Info("expiredat: ", int64(acc.ExpiredAt), "nowTime: ", int64(nowTime))
 	premiumPrice := decimal.NewFromInt(common.Premium(int64(acc.ExpiredAt), int64(nowTime)))
-	fmt.Println("----------premiumPrice:", premiumPrice)
-	//totalPrice := basicPrice.Add(premiumPrice)
-	//check user`s DP
-	amountDP := basicPrice.Add(premiumPrice).BigInt().Uint64() * common.UsdRateBase
+	amountDP := basicPrice.Add(premiumPrice).Mul(decimal.NewFromInt(common.UsdRateBase)).BigInt().Uint64()
+	log.Info("baseAmount: ", baseAmount, " accountPrice: ", accountPrice, " basicPrice: ", basicPrice, " premiumPrice: ", premiumPrice, " amountDP: ", amountDP)
+
 	log.Info("GetDpCells:", common.Bytes2Hex(fromLock.Args), amountDP)
 	_, _, _, err = h.dasCore.GetDpCells(&core.ParamGetDpCells{
 		DasCache:           h.dasCache,
