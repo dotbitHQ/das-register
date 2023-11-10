@@ -18,7 +18,6 @@ import (
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 	"net/http"
-	"time"
 )
 
 type ReqAuctionBid struct {
@@ -80,7 +79,12 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "search account err")
 		return fmt.Errorf("SearchAccount err: %s", err.Error())
 	}
-	nowTime := uint64(time.Now().Unix())
+
+	timeCell, err := h.dasCore.GetTimeCell()
+	if err != nil {
+		return fmt.Errorf("GetTimeCell err: %s", err.Error())
+	}
+	nowTime := timeCell.Timestamp()
 	//exp + 90 + 27 +3
 	//now > exp+117 exp< now - 117
 	//now< exp+90 exp>now -90
@@ -107,8 +111,8 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	}
 	basicPrice := baseAmount.Add(accountPrice)
 
-	log.Info("expiredat: ", int64(acc.ExpiredAt), "nowTime: ", int64(nowTime))
-	premiumPrice := decimal.NewFromInt(common.Premium(int64(acc.ExpiredAt), int64(nowTime)))
+	log.Info("expiredat: ", int64(acc.ExpiredAt), "nowTime: ", nowTime)
+	premiumPrice := decimal.NewFromInt(common.Premium(int64(acc.ExpiredAt), nowTime))
 	amountDP := basicPrice.Add(premiumPrice).Mul(decimal.NewFromInt(common.UsdRateBase)).BigInt().Uint64()
 	log.Info("baseAmount: ", baseAmount, " accountPrice: ", accountPrice, " basicPrice: ", basicPrice, " premiumPrice: ", premiumPrice, " amountDP: ", amountDP)
 
@@ -158,6 +162,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	p.FromLock = fromLock
 	p.ToLock = toLock.Script
 	p.NormalCellLock = normalCellLock.Script
+	p.TimeCell = timeCell
 	txParams, err := h.buildAuctionBidTx(&reqBuild, &p)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "build tx err: "+err.Error())
@@ -180,6 +185,7 @@ type auctionBidParams struct {
 	FromLock       *types.Script
 	ToLock         *types.Script
 	NormalCellLock *types.Script
+	TimeCell       *core.TimeCell
 }
 
 func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*txbuilder.BuildTransactionParams, error) {
@@ -196,10 +202,10 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	if err != nil {
 		return nil, fmt.Errorf("GetQuoteCell err: %s", err.Error())
 	}
-	timeCell, err := h.dasCore.GetTimeCell()
-	if err != nil {
-		return nil, fmt.Errorf("GetTimeCell err: %s", err.Error())
-	}
+	//timeCell, err := h.dasCore.GetTimeCell()
+	//if err != nil {
+	//	return nil, fmt.Errorf("GetTimeCell err: %s", err.Error())
+	//}
 
 	accOutPoint := common.String2OutPointStruct(p.Account.Outpoint)
 	// witness account cell
@@ -229,10 +235,10 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		OldIndex:              0,
 		NewIndex:              0,
 		Action:                common.DasBidExpiredAccountAuction,
-		LastEditRecordsAt:     timeCell.Timestamp(),
-		LastTransferAccountAt: timeCell.Timestamp(),
-		LastEditManagerAt:     timeCell.Timestamp(),
-		RegisterAt:            uint64(timeCell.Timestamp()),
+		LastEditRecordsAt:     p.TimeCell.Timestamp(),
+		LastTransferAccountAt: p.TimeCell.Timestamp(),
+		LastEditManagerAt:     p.TimeCell.Timestamp(),
+		RegisterAt:            uint64(p.TimeCell.Timestamp()),
 	})
 	txParams.Witnesses = append(txParams.Witnesses, accWitness)
 
@@ -255,7 +261,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		Lock:     contractDas.ToScript(lockArgs),
 		Type:     accTx.Transaction.Outputs[builder.Index].Type,
 	})
-	newExpiredAt := timeCell.Timestamp() + common.OneYearSec
+	newExpiredAt := p.TimeCell.Timestamp() + common.OneYearSec
 	byteExpiredAt := molecule.Go64ToBytes(newExpiredAt)
 	accData = append(accData, accTx.Transaction.OutputsData[builder.Index][32:]...)
 	accData1 := accData[:common.ExpireTimeEndIndex-common.ExpireTimeLen]
@@ -374,7 +380,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		configCellMain.ToCellDep(),
 		configCellDP.ToCellDep(),
 		contractDP.ToCellDep(),
-		timeCell.ToCellDep(),
+		p.TimeCell.ToCellDep(),
 		accContract.ToCellDep(),
 		contractDas.ToCellDep(),
 		heightCell.ToCellDep(),
