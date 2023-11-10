@@ -106,7 +106,10 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
 	}
 	basicPrice := baseAmount.Add(accountPrice)
+	fmt.Println("----------expiredat: ", int64(acc.ExpiredAt))
+	fmt.Println("----------nowTime: ", int64(nowTime))
 	premiumPrice := decimal.NewFromInt(common.Premium(int64(acc.ExpiredAt), int64(nowTime)))
+	fmt.Println("----------premiumPrice:", premiumPrice)
 	//totalPrice := basicPrice.Add(premiumPrice)
 	//check user`s DP
 	amountDP := basicPrice.Add(premiumPrice).BigInt().Uint64() * common.UsdRateBase
@@ -227,7 +230,9 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		OldIndex:              0,
 		NewIndex:              0,
 		Action:                common.DasBidExpiredAccountAuction,
+		LastEditRecordsAt:     timeCell.Timestamp(),
 		LastTransferAccountAt: timeCell.Timestamp(),
+		LastEditManagerAt:     timeCell.Timestamp(),
 		RegisterAt:            uint64(timeCell.Timestamp()),
 	})
 	txParams.Witnesses = append(txParams.Witnesses, accWitness)
