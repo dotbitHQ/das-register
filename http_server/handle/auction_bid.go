@@ -333,6 +333,10 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	}
 
 	// cell deps
+	configCellAcc, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsAccount)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
 	accContract, err := core.GetDasContractInfo(common.DasContractNameAccountCellType)
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
@@ -350,6 +354,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
 	txParams.CellDeps = append(txParams.CellDeps,
+		configCellAcc.ToCellDep(),
 		configCellMain.ToCellDep(),
 		configCellDP.ToCellDep(),
 		contractDP.ToCellDep(),
