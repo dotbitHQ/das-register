@@ -353,8 +353,13 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
+	priceConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsPrice)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
+	}
 	txParams.CellDeps = append(txParams.CellDeps,
 		configCellAcc.ToCellDep(),
+		priceConfig.ToCellDep(),
 		configCellMain.ToCellDep(),
 		configCellDP.ToCellDep(),
 		contractDP.ToCellDep(),
