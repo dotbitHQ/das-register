@@ -190,7 +190,10 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
-
+	quoteCell, err := h.dasCore.GetQuoteCell()
+	if err != nil {
+		return nil, fmt.Errorf("GetQuoteCell err: %s", err.Error())
+	}
 	timeCell, err := h.dasCore.GetTimeCell()
 	if err != nil {
 		return nil, fmt.Errorf("GetTimeCell err: %s", err.Error())
@@ -353,6 +356,10 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	if err != nil {
 		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
+	heightCell, err := h.dasCore.GetHeightCell()
+	if err != nil {
+		return nil, fmt.Errorf("GetHeightCell err: %s", err.Error())
+	}
 	priceConfig, err := core.GetDasConfigCellInfo(common.ConfigCellTypeArgsPrice)
 	if err != nil {
 		return nil, fmt.Errorf("GetDasConfigCellInfo err: %s", err.Error())
@@ -366,6 +373,8 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		timeCell.ToCellDep(),
 		accContract.ToCellDep(),
 		contractDas.ToCellDep(),
+		heightCell.ToCellDep(),
+		quoteCell.ToCellDep(),
 	)
 	return &txParams, nil
 }
