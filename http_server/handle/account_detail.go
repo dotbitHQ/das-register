@@ -136,7 +136,7 @@ func (h *HttpHandle) getAccountPrice(accLen uint8, args, account string, isRenew
 	baseAmount, _ = decimal.NewFromString(fmt.Sprintf("%d", basicCapacity))
 	decQuote, _ := decimal.NewFromString(fmt.Sprintf("%d", quote))
 	decUsdRateBase := decimal.NewFromInt(common.UsdRateBase)
-	baseAmount = baseAmount.Mul(decQuote).DivRound(decUsdRateBase, 2)
+	baseAmount = baseAmount.Mul(decQuote).DivRound(decUsdRateBase, 6)
 
 	if isRenew {
 		accountPrice, _ = decimal.NewFromString(fmt.Sprintf("%d", renewPrice))
