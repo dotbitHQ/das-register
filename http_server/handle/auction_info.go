@@ -214,7 +214,7 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 	resp.AccountId = acc.AccountId
 	resp.Account = req.Account
 	resp.StartsaleTime = acc.ExpiredAt + 90*86400
-	resp.EndSaleTime = acc.ExpiredAt + 27*86400
+	resp.EndSaleTime = acc.ExpiredAt + 117*86400
 	resp.AccountPrice = accountPrice
 	resp.BaseAmount = baseAmount
 	resp.ExipiredTime = acc.ExpiredAt
