@@ -79,7 +79,10 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "search account err")
 		return fmt.Errorf("SearchAccount err: %s", err.Error())
 	}
-
+	if acc.Status != tables.AccountStatusNormal {
+		apiResp.ApiRespErr(http_api.ApiCodeAccountStatusNotNormal, "account is not on dutch auction")
+		return
+	}
 	timeCell, err := h.dasCore.GetTimeCell()
 	if err != nil {
 		return fmt.Errorf("GetTimeCell err: %s", err.Error())
