@@ -236,9 +236,27 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity + common.OneCkb - sizeInBlock - 1000
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
-	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount, common.DasBidExpiredAccountAuction:
+	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount:
+		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
+		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - sizeInBlock - 1000
+		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
+		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
+	case common.DasBidExpiredAccountAuction:
+
+		//判断是否是自己拍自己（accountcell和dpcell的lock一样）
+		accTx, err := h.dasCore.Client().GetTransaction(h.ctx, txParams.Inputs[0].PreviousOutput.TxHash)
+		if err != nil {
+			return nil, fmt.Errorf("GetTransaction err: %s", err.Error())
+		}
+		accLock := accTx.Transaction.Outputs[txParams.Inputs[0].PreviousOutput.Index].Lock
+
+		dpTx, err := h.dasCore.Client().GetTransaction(h.ctx, txParams.Inputs[1].PreviousOutput.TxHash)
+		if err != nil {
+			return nil, fmt.Errorf("GetTransaction err: %s", err.Error())
+		}
+		dpLock := dpTx.Transaction.Outputs[txParams.Inputs[1].PreviousOutput.Index].Lock
 		//其他人拍
-		if req.Action == common.DasBidExpiredAccountAuction && !req.AuctionInfo.IsSelf {
+		if !accLock.Equals(dpLock) {
 			skipGroups = []int{0}
 		}
 		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
