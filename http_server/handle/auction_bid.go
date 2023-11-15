@@ -18,6 +18,7 @@ import (
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 	"net/http"
+	"strings"
 )
 
 type ReqAuctionBid struct {
@@ -140,9 +141,11 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	reqBuild.AuctionInfo = AuctionInfo{
 		BasicPrice:   basicPrice,
 		PremiumPrice: premiumPrice,
-		BidTime:      int64(nowTime),
+		BidTime:      nowTime,
 	}
-
+	if strings.ToLower(req.address) == strings.ToLower(acc.Owner) {
+		reqBuild.AuctionInfo.IsSelf = true
+	}
 	// to lock & normal cell lock
 	//转账地址 用于接收荷兰拍竞拍dp的地址
 	if config.Cfg.Server.TransferWhitelist == "" || config.Cfg.Server.CapacityWhitelist == "" {
