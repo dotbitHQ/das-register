@@ -2,7 +2,6 @@ package dao
 
 import (
 	"das_register_server/config"
-	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/http_api"
 	"gorm.io/gorm"
@@ -28,13 +27,13 @@ func NewGormDB(dbMysql, parserMysql config.DbMysql) (*DbDao, error) {
 	// It will change existing column’s type if its size, precision, nullable changed.
 	// It WON’T delete unused columns to protect your data.
 	if err = db.AutoMigrate(
-		&tables.TableBlockParserInfo{},
-		&tables.TableDasOrderInfo{},
-		&tables.TableDasOrderPayInfo{},
-		&tables.TableDasOrderTxInfo{},
-		&tables.TableRegisterPendingInfo{},
-		&tables.TableCoupon{},
-		&tables.TableAuctionOrder{},
+	//&tables.TableBlockParserInfo{},
+	//&tables.TableDasOrderInfo{},
+	//&tables.TableDasOrderPayInfo{},
+	//&tables.TableDasOrderTxInfo{},
+	//&tables.TableRegisterPendingInfo{},
+	//&tables.TableCoupon{},
+	//&tables.TableAuctionOrder{},
 	); err != nil {
 		return nil, err
 	}
