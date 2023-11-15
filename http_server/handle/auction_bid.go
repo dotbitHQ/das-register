@@ -129,8 +129,12 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		SearchOrder:        indexer.SearchOrderAsc,
 	})
 	if err != nil {
-		apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
-		return fmt.Errorf("dasCore.GetDpCells err: ", err.Error())
+		if err == core.ErrInsufficientFunds {
+			apiResp.ApiRespErr(http_api.ApiCodeInsufficientBalance, err.Error())
+		} else {
+			apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
+			return fmt.Errorf("dasCore.GetDpCells err: ", err.Error())
+		}
 	}
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasBidExpiredAccountAuction
