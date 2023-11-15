@@ -146,11 +146,6 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 	}
 	fmt.Println(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex)
 	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
-	if req.chainType != 1 {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-		return nil
-	}
-
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil && err != gorm.ErrRecordNotFound {
