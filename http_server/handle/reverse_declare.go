@@ -236,7 +236,13 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity + common.OneCkb - sizeInBlock - 1000
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
-	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount, common.DasBidExpiredAccountAuction:
+	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount:
+		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
+		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - sizeInBlock - 1000
+		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
+		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
+	case common.DasBidExpiredAccountAuction:
+		skipGroups = []int{0}
 		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - sizeInBlock - 1000
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
