@@ -235,13 +235,10 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	txParams.Witnesses = append(txParams.Witnesses, actionWitness)
 	//-----acc witness
 	accWitness, accData, err := builder.GenWitness(&witness.AccountCellParam{
-		OldIndex:              0,
-		NewIndex:              0,
-		Action:                common.DasBidExpiredAccountAuction,
-		LastEditRecordsAt:     p.TimeCell.Timestamp(),
-		LastTransferAccountAt: p.TimeCell.Timestamp(),
-		LastEditManagerAt:     p.TimeCell.Timestamp(),
-		RegisterAt:            uint64(p.TimeCell.Timestamp()),
+		OldIndex:   0,
+		NewIndex:   0,
+		Action:     common.DasBidExpiredAccountAuction,
+		RegisterAt: uint64(p.TimeCell.Timestamp()),
 	})
 	txParams.Witnesses = append(txParams.Witnesses, accWitness)
 
