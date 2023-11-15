@@ -45,7 +45,7 @@ type RespAccountDetail struct {
 	CustomScript         string                  `json:"custom_script"`
 	PremiumPercentage    decimal.Decimal         `json:"premium_percentage"`
 	PremiumBase          decimal.Decimal         `json:"premium_base"`
-	ReRegisterTime       uint64                  `json:"re_registered_time"`
+	ReRegisterTime       uint64                  `json:"re_register_time"`
 }
 
 func (h *HttpHandle) RpcAccountDetail(p json.RawMessage, apiResp *api_code.ApiResp) {
