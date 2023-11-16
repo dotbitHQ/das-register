@@ -138,14 +138,17 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid: account is empty")
 		return
 	}
-
-	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
-	if err != nil {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-		return nil
+	var addrHex *core.DasAddressHex
+	if req.KeyInfo.Key != "" {
+		addrHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+		if err != nil {
+			apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+			return nil
+		}
+		fmt.Println(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex)
+		req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 	}
-	fmt.Println(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex)
-	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
+
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -177,19 +180,21 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 	}
 
 	//无人竞拍（有发送中和上链成功的订单）
-	if len(list) == 0 {
-		resp.BidStatus = tables.BidStatusNoOne
-	} else {
-		resp.BidStatus = tables.BidStatusByOthers //被其他人竞拍
-		for _, v := range list {
-			//被自己竞拍
-			if v.AlgorithmId == addrHex.DasAlgorithmId && v.SubAlgorithmId == addrHex.DasSubAlgorithmId && v.Address == addrHex.AddressHex {
-				resp.BidStatus = tables.BidStatusByMe
-				resp.Hash, _ = common.String2OutPoint(v.Outpoint)
+	if addrHex != nil {
+		if len(list) == 0 {
+			resp.BidStatus = tables.BidStatusNoOne
+		} else {
+			resp.BidStatus = tables.BidStatusByOthers //被其他人竞拍
+			for _, v := range list {
+				//被自己竞拍
+				if v.AlgorithmId == addrHex.DasAlgorithmId && v.SubAlgorithmId == addrHex.DasSubAlgorithmId && v.Address == addrHex.AddressHex {
+					resp.BidStatus = tables.BidStatusByMe
+					resp.Hash, _ = common.String2OutPoint(v.Outpoint)
+				}
 			}
+			apiResp.ApiRespOK(resp)
+			return
 		}
-		apiResp.ApiRespOK(resp)
-		return
 	}
 
 	//计算长度
