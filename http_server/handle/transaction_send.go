@@ -200,6 +200,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 					ChainType:    sic.ChainType,
 					Outpoint:     pending.Outpoint,
 				}
+				auctionOrder.CreateOrderId()
 				if err = h.dbDao.CreateAuctionOrder(auctionOrder); err != nil {
 					log.Error("CreateAuctionOrder err: ", err.Error(), toolib.JsonString(auctionOrder))
 				}

@@ -35,9 +35,9 @@ func (t *TableAuctionOrder) TableName() string {
 type BidStatus int
 
 const (
-	BidStatusNoOne    BidStatus = 0 //账号没有人竞
-	BidStatusByOthers BidStatus = 1 //账号被其他人竞拍
-	BidStatusByMe     BidStatus = 2 //账号被我竞拍
+	BidStatusNoOne    BidStatus = 0 //No one is bidding
+	BidStatusByOthers BidStatus = 1 //Being auctioned by others
+	BidStatusByMe     BidStatus = 2 //Being auctioned by me
 )
 
 func (t *TableAuctionOrder) CreateOrderId() {
