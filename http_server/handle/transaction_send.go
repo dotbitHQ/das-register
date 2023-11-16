@@ -10,7 +10,6 @@ import (
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
 	"strings"
@@ -72,17 +71,17 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 
 	var sic SignInfoCache
 	// get tx by cache
-	if txStr, err := h.rc.GetSignTxCache(req.SignKey); err != nil {
-		if err == redis.Nil {
-			apiResp.ApiRespErr(api_code.ApiCodeTxExpired, "tx expired err")
-		} else {
-			apiResp.ApiRespErr(api_code.ApiCodeCacheError, "cache err")
-		}
-		return fmt.Errorf("GetSignTxCache err: %s", err.Error())
-	} else if err = json.Unmarshal([]byte(txStr), &sic); err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "json.Unmarshal err")
-		return fmt.Errorf("json.Unmarshal err: %s", err.Error())
-	}
+	//if txStr, err := h.rc.GetSignTxCache(req.SignKey); err != nil {
+	//	if err == redis.Nil {
+	//		apiResp.ApiRespErr(api_code.ApiCodeTxExpired, "tx expired err")
+	//	} else {
+	//		apiResp.ApiRespErr(api_code.ApiCodeCacheError, "cache err")
+	//	}
+	//	return fmt.Errorf("GetSignTxCache err: %s", err.Error())
+	//} else if err = json.Unmarshal([]byte(txStr), &sic); err != nil {
+	//	apiResp.ApiRespErr(api_code.ApiCodeError500, "json.Unmarshal err")
+	//	return fmt.Errorf("json.Unmarshal err: %s", err.Error())
+	//}
 
 	hasWebAuthn := false
 	for _, v := range req.SignList {
@@ -105,7 +104,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "SignAddress err")
 			return nil
 		}
-
+		log.Info("req.signaddress: ", req.SignAddress)
 		signAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
 			ChainType:     common.ChainTypeWebauthn,
 			AddressNormal: req.SignAddress,
