@@ -6,8 +6,8 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 )
 
-func (d *DbDao) GetPendingAuctionOrder(algorithmId common.DasAlgorithmId, subAlgithmId common.DasSubAlgorithmId, addr string) (list []tables.TableAuctionOrder, err error) {
-	sql := fmt.Sprintf(`SELECT o.id,o.account,o.outpoint,o.basic_price,o.premium_price,o.order_id,p.status FROM %s o LEFT JOIN %s p ON o.outpoint=p.outpoint WHERE   o.algorithm_id = %d and o.sub_algorithm_id = %d and o.address = "%s" and p.status = 0 order by bid_time desc`, tables.TableNameAuctionOrder, tables.TableNameRegisterPendingInfo, algorithmId, subAlgithmId, addr)
+func (d *DbDao) GetPendingAuctionOrder(chainType common.ChainType, addr string) (list []tables.TableAuctionOrder, err error) {
+	sql := fmt.Sprintf(`SELECT o.id,o.account,o.outpoint,o.basic_price,o.premium_price,o.order_id,p.status FROM %s o LEFT JOIN %s p ON o.outpoint=p.outpoint WHERE   o.chain_type = %d  and o.address = "%s" and p.status = 0 order by bid_time desc`, tables.TableNameAuctionOrder, tables.TableNameRegisterPendingInfo, chainType, addr)
 	err = d.db.Raw(sql).Find(&list).Error
 	return list, nil
 }
@@ -20,8 +20,8 @@ WHERE o.account= "%s" and p.status != %d`, tables.TableNameAuctionOrder, tables.
 	return list, nil
 }
 
-func (d *DbDao) GetAuctionOrderStatus(algorithmId common.DasAlgorithmId, subAlgithmId common.DasSubAlgorithmId, addr, hash string) (list tables.TableAuctionOrder, err error) {
-	sql := fmt.Sprintf(`SELECT o.id,o.account,o.outpoint,o.basic_price,o.premium_price,o.order_id,p.status FROM %s o LEFT JOIN %s p ON o.outpoint=p.outpoint WHERE p.outpoint="%s" and o.algorithm_id = %d and o.sub_algorithm_id = %d and o.address = "%s" order by bid_time desc`, tables.TableNameAuctionOrder, tables.TableNameRegisterPendingInfo, fmt.Sprintf("%s-0", hash), algorithmId, subAlgithmId, addr)
+func (d *DbDao) GetAuctionOrderStatus(chainType common.ChainType, addr, hash string) (list tables.TableAuctionOrder, err error) {
+	sql := fmt.Sprintf(`SELECT o.id,o.account,o.outpoint,o.basic_price,o.premium_price,o.order_id,p.status FROM %s o LEFT JOIN %s p ON o.outpoint=p.outpoint WHERE p.outpoint="%s" and o.chain_type = %d and o.address = "%s" order by bid_time desc`, tables.TableNameAuctionOrder, tables.TableNameRegisterPendingInfo, fmt.Sprintf("%s-0", hash), chainType, addr)
 	fmt.Println(sql)
 	err = d.db.Raw(sql).First(&list).Error
 	return list, nil
