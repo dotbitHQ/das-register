@@ -90,12 +90,16 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
 	resp.PremiumBase = config.Cfg.Stripe.PremiumBase
 
-	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-		return err
+	if req.ChainType == common.ChainTypeCkb || (req.Address == "" && req.KeyInfo.Key == "") {
+
+	} else {
+		addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+			return err
+		}
+		req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	resp.Account = req.Account
 
