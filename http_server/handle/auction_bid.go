@@ -128,9 +128,11 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		CurrentBlockNumber: 0,
 		SearchOrder:        indexer.SearchOrderAsc,
 	})
+
 	if err != nil {
 		if err == core.ErrInsufficientFunds {
 			apiResp.ApiRespErr(http_api.ApiCodeInsufficientBalance, err.Error())
+			return
 		} else {
 			apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
 			return fmt.Errorf("dasCore.GetDpCells err: ", err.Error())
