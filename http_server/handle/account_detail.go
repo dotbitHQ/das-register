@@ -150,38 +150,31 @@ func (h *HttpHandle) getAccountPrice(accLen uint8, args, account string, isRenew
 
 func (h *HttpHandle) checkDutchAuction(expiredAt uint64) (status tables.SearchStatus, reRegisterTime uint64, err error) {
 	nowTime := uint64(time.Now().Unix())
-	//27 days : watting for bid
-	//h.dasCore.ConfigCellDataBuilderByTypeArgsList()
 	builderConfigCell, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsAccount)
 	if err != nil {
 		err = fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
 		return
 	}
-
 	gracePeriodTime, err := builderConfigCell.ExpirationGracePeriod()
 	if err != nil {
 		err = fmt.Errorf("ExpirationGracePeriod err: %s", err.Error())
 		return
 	}
-
 	auctionPeriodTime, err := builderConfigCell.ExpirationAuctionPeriod()
 	if err != nil {
 		err = fmt.Errorf("ExpirationAuctionPeriod err: %s", err.Error())
 		return
 	}
-
 	deliverPeriodTime, err := builderConfigCell.ExpirationDeliverPeriod()
 	if err != nil {
 		err = fmt.Errorf("ExpirationDeliverPeriod err: %s", err.Error())
 		return
 	}
-	// nowTime-117*24*3600 < expiredAt && expiredAt < nowTime-90*24*3600
+
 	if nowTime-uint64(gracePeriodTime)-uint64(auctionPeriodTime) < expiredAt && expiredAt < nowTime-uint64(gracePeriodTime) {
 		status = tables.SearchStatusOnDutchAuction
-		return
 	}
-	//3 days : can`t bid or register or renew, watting for recycle by keeper
-	//nowTime-120*24*3600 < expiredAt && expiredAt < nowTime-117*24*3600
+
 	if nowTime-uint64(gracePeriodTime)-uint64(auctionPeriodTime)-uint64(deliverPeriodTime) < expiredAt && expiredAt < nowTime-uint64(gracePeriodTime)-uint64(auctionPeriodTime) {
 		status = tables.SearchStatusAuctionRecycling
 		reRegisterTime = expiredAt + uint64(gracePeriodTime+auctionPeriodTime+deliverPeriodTime)

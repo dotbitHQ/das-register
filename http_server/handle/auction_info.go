@@ -145,7 +145,6 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 			apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 			return nil
 		}
-		fmt.Println(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex)
 		req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 	}
 
@@ -167,27 +166,22 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 		apiResp.ApiRespErr(http_api.ApiCodeAuctionAccountNotFound, "This account has not been in dutch auction")
 		return nil
 	}
-	//if acc.ExpiredAt > nowTime-90*24*3600 || acc.ExpiredAt < nowTime-117*24*3600 {
-	//	apiResp.ApiRespErr(http_api.ApiCodeAuctionAccountNotFound, "This account has not been in dutch auction")
-	//	return
-	//}
 
-	//查询账号的竞拍状态
+	//search bid status of a account
 	list, err := h.dbDao.GetAuctionOrderByAccount(req.Account)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")
 		return
 	}
 
-	//无人竞拍（有发送中和上链成功的订单）
 	if addrHex != nil {
 		if len(list) == 0 {
 			resp.BidStatus = tables.BidStatusNoOne
 		} else {
-			resp.BidStatus = tables.BidStatusByOthers //被其他人竞拍
+			resp.BidStatus = tables.BidStatusByOthers
 			for _, v := range list {
-				//被自己竞拍
-				if v.AlgorithmId == addrHex.DasAlgorithmId && v.SubAlgorithmId == addrHex.DasSubAlgorithmId && v.Address == addrHex.AddressHex {
+
+				if v.ChainType == addrHex.ChainType && v.Address == addrHex.AddressHex {
 					resp.BidStatus = tables.BidStatusByMe
 					resp.Hash, _ = common.String2OutPoint(v.Outpoint)
 				}
@@ -197,7 +191,6 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 		}
 	}
 
-	//计算长度
 	_, accLen, err := common.GetDotBitAccountLength(req.Account)
 	if err != nil {
 		return
