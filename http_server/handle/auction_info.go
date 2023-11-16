@@ -269,7 +269,7 @@ func (h *HttpHandle) doGetAuctionOrderStatus(req *ReqGetAuctionOrder, apiResp *h
 		return nil
 	}
 	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
-	order, err := h.dbDao.GetAuctionOrderStatus(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex, req.Hash)
+	order, err := h.dbDao.GetAuctionOrderStatus(addrHex.ChainType, addrHex.AddressHex, req.Hash)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")
 		return
@@ -330,7 +330,7 @@ func (h *HttpHandle) doGetPendingAuctionOrder(req *ReqGetGetPendingAuctionOrder,
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	list, err := h.dbDao.GetPendingAuctionOrder(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex)
+	list, err := h.dbDao.GetPendingAuctionOrder(addrHex.ChainType, addrHex.AddressHex)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")
 		return
