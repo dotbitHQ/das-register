@@ -90,7 +90,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
 	resp.PremiumBase = config.Cfg.Stripe.PremiumBase
 
-	if req.ChainType == common.ChainTypeCkb || (req.Address == "" && req.KeyInfo.Key == "") {
+	if req.Address == "" && req.KeyInfo.Key == "" {
 
 	} else {
 		addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
