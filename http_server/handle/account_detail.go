@@ -3,8 +3,6 @@ package handle
 import (
 	"bytes"
 	"das_register_server/config"
-	"time"
-
 	//"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"encoding/binary"
@@ -149,28 +147,20 @@ func (h *HttpHandle) getAccountPrice(accLen uint8, args, account string, isRenew
 }
 
 func (h *HttpHandle) checkDutchAuction(expiredAt uint64) (status tables.SearchStatus, reRegisterTime uint64, err error) {
-	nowTime := uint64(time.Now().Unix())
-	builderConfigCell, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsAccount)
+	timeCell, err := h.dasCore.GetTimeCell()
 	if err != nil {
-		err = fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+		err = fmt.Errorf("GetTimeCell err: %s", err.Error())
 		return
 	}
-	gracePeriodTime, err := builderConfigCell.ExpirationGracePeriod()
+	nowTime := uint64(timeCell.Timestamp())
+	auctionConfig, err := h.GetAuctionConfig(h.dasCore)
 	if err != nil {
-		err = fmt.Errorf("ExpirationGracePeriod err: %s", err.Error())
+		err = fmt.Errorf("GetAuctionConfig err: %s", err.Error())
 		return
 	}
-	auctionPeriodTime, err := builderConfigCell.ExpirationAuctionPeriod()
-	if err != nil {
-		err = fmt.Errorf("ExpirationAuctionPeriod err: %s", err.Error())
-		return
-	}
-	deliverPeriodTime, err := builderConfigCell.ExpirationDeliverPeriod()
-	if err != nil {
-		err = fmt.Errorf("ExpirationDeliverPeriod err: %s", err.Error())
-		return
-	}
-
+	gracePeriodTime := auctionConfig.GracePeriodTime
+	auctionPeriodTime := auctionConfig.AuctionPeriodTime
+	deliverPeriodTime := auctionConfig.DeliverPeriodTime
 	if nowTime-uint64(gracePeriodTime)-uint64(auctionPeriodTime) < expiredAt && expiredAt < nowTime-uint64(gracePeriodTime) {
 		status = tables.SearchStatusOnDutchAuction
 	}

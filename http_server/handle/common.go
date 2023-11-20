@@ -48,7 +48,6 @@ type AuctionInfo struct {
 	BasicPrice   decimal.Decimal `json:"basic_price"`
 	PremiumPrice decimal.Decimal `json:"premium_price"`
 	BidTime      int64           `json:"bid_time"`
-	IsSelf       bool            `json:"is_self"`
 }
 
 type SignInfoCache struct {
