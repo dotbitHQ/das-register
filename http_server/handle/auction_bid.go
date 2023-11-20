@@ -140,7 +140,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		}
 	}
 	var reqBuild reqBuildTx
-	reqBuild.Action = common.DasBidExpiredAccountAuction
+	reqBuild.Action = common.DasActionBidExpiredAccountAuction
 	reqBuild.Account = req.Account
 	reqBuild.ChainType = req.chainType
 	reqBuild.Address = req.address
@@ -258,7 +258,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	accCellCapacity := accTx.Transaction.Outputs[builder.Index].Capacity
 	oldAccOwnerArgs := accTx.Transaction.Outputs[builder.Index].Lock.Args
 
-	actionWitness, err := witness.GenActionDataWitness(common.DasBidExpiredAccountAuction, nil)
+	actionWitness, err := witness.GenActionDataWitness(common.DasActionBidExpiredAccountAuction, nil)
 	if err != nil {
 		return nil, fmt.Errorf("GenActionDataWitness err: %s", err.Error())
 	}
@@ -267,7 +267,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	accWitness, accData, err := builder.GenWitness(&witness.AccountCellParam{
 		OldIndex:   0,
 		NewIndex:   0,
-		Action:     common.DasBidExpiredAccountAuction,
+		Action:     common.DasActionBidExpiredAccountAuction,
 		RegisterAt: uint64(p.TimeCell.Timestamp()),
 		Records:    p.DefaultRecord,
 	})
