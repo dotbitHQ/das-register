@@ -169,18 +169,11 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 
 	//default record
 	var initialRecords []witness.Record
-	coinType := req.CoinType
-	if coinType == "" {
-		switch req.chainType {
-		case common.ChainTypeEth:
-			coinType = string(common.CoinTypeEth)
-		case common.ChainTypeTron:
-			coinType = string(common.CoinTypeTrx)
-		}
-	}
-	if addr, err := common.FormatAddressByCoinType(coinType, req.address); err == nil {
+	coinType := req.KeyInfo.CoinType
+
+	if addr, err := common.FormatAddressByCoinType(string(coinType), req.address); err == nil {
 		initialRecords = append(initialRecords, witness.Record{
-			Key:   coinType,
+			Key:   string(coinType),
 			Type:  "address",
 			Label: "",
 			Value: addr,
