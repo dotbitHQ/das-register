@@ -130,7 +130,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	}
 	// account price
 	argsStr := ""
-	if req.Address == "" {
+	if req.Address == "" && req.KeyInfo.Key == "" {
 
 	} else {
 		hexAddress := core.DasAddressHex{
