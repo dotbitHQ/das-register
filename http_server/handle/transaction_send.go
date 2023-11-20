@@ -188,7 +188,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 				log.Error("CreatePending err: ", err.Error(), toolib.JsonString(pending))
 			}
 
-			if sic.Action == common.DasBidExpiredAccountAuction {
+			if sic.Action == common.DasActionBidExpiredAccountAuction {
 
 				auctionOrder := tables.TableAuctionOrder{
 					Account:      sic.Account,
