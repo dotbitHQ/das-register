@@ -18,13 +18,13 @@ import (
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 	"net/http"
-	"strings"
 )
 
 type ReqAuctionBid struct {
-	Account   string `json:"account"`
+	Account   string `json:"account"  binding:"required"`
 	address   string
 	chainType common.ChainType
+	CoinType  string `json:"coin_type"` //default record
 	core.ChainTypeAddress
 }
 
@@ -32,7 +32,6 @@ type RespAuctionBid struct {
 	SignInfo
 }
 
-//查询价格
 func (h *HttpHandle) AccountAuctionBid(ctx *gin.Context) {
 	var (
 		funcName = "AccountAuctionBid"
@@ -51,7 +50,7 @@ func (h *HttpHandle) AccountAuctionBid(ctx *gin.Context) {
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
 	if err = h.doAccountAuctionBid(&req, &apiResp); err != nil {
-		log.Error("GetAccountAuctionInfo err:", err.Error(), funcName, clientIp)
+		log.Error("doAccountAuctionBid err:", err.Error(), funcName, clientIp)
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
@@ -70,10 +69,6 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	}
 	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 
-	if req.Account == "" {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid: account is empty")
-		return
-	}
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -116,7 +111,13 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	basicPrice := baseAmount.Add(accountPrice)
 
 	log.Info("expiredat: ", int64(acc.ExpiredAt), "nowTime: ", nowTime)
-	premiumPrice := decimal.NewFromInt(common.Premium(int64(acc.ExpiredAt), nowTime))
+
+	auctionConfig, err := h.GetAuctionConfig(h.dasCore)
+	if err != nil {
+		err = fmt.Errorf("GetAuctionConfig err: %s", err.Error())
+		return
+	}
+	premiumPrice := decimal.NewFromFloat(common.Premium(int64(acc.ExpiredAt+uint64(auctionConfig.GracePeriodTime)), nowTime))
 	amountDP := basicPrice.Add(premiumPrice).Mul(decimal.NewFromInt(common.UsdRateBase)).BigInt().Uint64()
 	log.Info("baseAmount: ", baseAmount, " accountPrice: ", accountPrice, " basicPrice: ", basicPrice, " premiumPrice: ", premiumPrice, " amountDP: ", amountDP)
 
@@ -149,11 +150,8 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		PremiumPrice: premiumPrice,
 		BidTime:      nowTime,
 	}
-	if strings.ToLower(req.address) == strings.ToLower(acc.Owner) {
-		reqBuild.AuctionInfo.IsSelf = true
-	}
+
 	// to lock & normal cell lock
-	//转账地址 用于接收荷兰拍竞拍dp的地址
 	if config.Cfg.Server.TransferWhitelist == "" || config.Cfg.Server.CapacityWhitelist == "" {
 		return fmt.Errorf("TransferWhitelist or CapacityWhitelist is empty")
 	}
@@ -162,12 +160,36 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
 		return fmt.Errorf("address.Parse err: %s", err.Error())
 	}
-	//回收地址（接收dpcell 释放的capacity）
+
 	normalCellLock, err := address.Parse(config.Cfg.Server.CapacityWhitelist)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
 		return fmt.Errorf("address.Parse err: %s", err.Error())
 	}
+
+	//default record
+	var initialRecords []witness.Record
+	coinType := req.CoinType
+	if coinType == "" {
+		switch req.chainType {
+		case common.ChainTypeEth:
+			coinType = string(common.CoinTypeEth)
+		case common.ChainTypeTron:
+			coinType = string(common.CoinTypeTrx)
+		}
+	}
+	if addr, err := common.FormatAddressByCoinType(coinType, req.address); err == nil {
+		initialRecords = append(initialRecords, witness.Record{
+			Key:   coinType,
+			Type:  "address",
+			Label: "",
+			Value: addr,
+			TTL:   300,
+		})
+	} else {
+		log.Error("buildOrderPreRegisterTx FormatAddressByCoinType err: ", err.Error())
+	}
+
 	var p auctionBidParams
 	p.Account = &acc
 	p.AmountDP = amountDP
@@ -175,6 +197,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	p.ToLock = toLock.Script
 	p.NormalCellLock = normalCellLock.Script
 	p.TimeCell = timeCell
+	p.DefaultRecord = initialRecords
 	txParams, err := h.buildAuctionBidTx(&reqBuild, &p)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "build tx err: "+err.Error())
@@ -193,6 +216,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 
 type auctionBidParams struct {
 	Account        *tables.TableAccountInfo
+	DefaultRecord  []witness.Record
 	AmountDP       uint64
 	FromLock       *types.Script
 	ToLock         *types.Script
@@ -214,12 +238,9 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	if err != nil {
 		return nil, fmt.Errorf("GetQuoteCell err: %s", err.Error())
 	}
-	//timeCell, err := h.dasCore.GetTimeCell()
-	//if err != nil {
-	//	return nil, fmt.Errorf("GetTimeCell err: %s", err.Error())
-	//}
 
 	accOutPoint := common.String2OutPointStruct(p.Account.Outpoint)
+
 	// witness account cell
 	accTx, err := h.dasCore.Client().GetTransaction(h.ctx, accOutPoint.TxHash)
 	if err != nil {
@@ -248,6 +269,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		NewIndex:   0,
 		Action:     common.DasBidExpiredAccountAuction,
 		RegisterAt: uint64(p.TimeCell.Timestamp()),
+		Records:    p.DefaultRecord,
 	})
 	txParams.Witnesses = append(txParams.Witnesses, accWitness)
 
@@ -270,6 +292,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		Lock:     contractDas.ToScript(lockArgs),
 		Type:     accTx.Transaction.Outputs[builder.Index].Type,
 	})
+
 	newExpiredAt := p.TimeCell.Timestamp() + common.OneYearSec
 	byteExpiredAt := molecule.Go64ToBytes(newExpiredAt)
 	accData = append(accData, accTx.Transaction.OutputsData[builder.Index][32:]...)
@@ -277,8 +300,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	accData2 := accData[common.ExpireTimeEndIndex:]
 	newAccData := append(accData1, byteExpiredAt...)
 	newAccData = append(newAccData, accData2...)
-	fmt.Println("newAccData: ", newAccData)
-	txParams.OutputsData = append(txParams.OutputsData, newAccData) // change expired_at
+	txParams.OutputsData = append(txParams.OutputsData, newAccData)
 
 	//dp
 	liveCell, totalDP, totalCapacity, err := h.dasCore.GetDpCells(&core.ParamGetDpCells{
@@ -335,6 +357,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 			PreviousOutput: v.OutPoint,
 		})
 	}
+
 	//返还给旧账户的 capacity
 	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 		Capacity: accCellCapacity,
@@ -344,7 +367,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	txParams.OutputsData = append(txParams.OutputsData, []byte{})
 
 	log.Info("normalCellCapacity:", normalCellCapacity, common.Bytes2Hex(p.NormalCellLock.Args))
-	//找零
+	//change
 	if change := totalNormal - normalCellCapacity - accCellCapacity; change > 0 {
 		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 			Capacity: change,
@@ -396,4 +419,37 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		quoteCell.ToCellDep(),
 	)
 	return &txParams, nil
+}
+
+type AuctionConfig struct {
+	GracePeriodTime, AuctionPeriodTime, DeliverPeriodTime uint32
+}
+
+func (h *HttpHandle) GetAuctionConfig(dasCore *core.DasCore) (res *AuctionConfig, err error) {
+	builderConfigCell, err := dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsAccount)
+	if err != nil {
+		err = fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+		return
+	}
+	gracePeriodTime, err := builderConfigCell.ExpirationGracePeriod()
+	if err != nil {
+		err = fmt.Errorf("ExpirationGracePeriod err: %s", err.Error())
+		return
+	}
+	auctionPeriodTime, err := builderConfigCell.ExpirationAuctionPeriod()
+	if err != nil {
+		err = fmt.Errorf("ExpirationAuctionPeriod err: %s", err.Error())
+		return
+	}
+	deliverPeriodTime, err := builderConfigCell.ExpirationDeliverPeriod()
+	if err != nil {
+		err = fmt.Errorf("ExpirationDeliverPeriod err: %s", err.Error())
+		return
+	}
+	res = &AuctionConfig{
+		GracePeriodTime:   gracePeriodTime,
+		AuctionPeriodTime: auctionPeriodTime,
+		DeliverPeriodTime: deliverPeriodTime,
+	}
+	return
 }

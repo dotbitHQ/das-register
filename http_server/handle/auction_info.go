@@ -16,14 +16,14 @@ import (
 )
 
 type ReqAuctionPrice struct {
-	Account string `json:"account"`
+	Account string `json:"account"  binding:"required"`
 }
 
 type RespAuctionPrice struct {
 	//BasicPrice   decimal.Decimal `json:"basic_price"`
 	AccountPrice decimal.Decimal `json:"account_price"`
 	BaseAmount   decimal.Decimal `json:"base_amount"`
-	PremiumPrice int64           `json:"premium_price"`
+	PremiumPrice decimal.Decimal `json:"premium_price"`
 }
 
 //查询价格
@@ -45,16 +45,12 @@ func (h *HttpHandle) GetAccountAuctionPrice(ctx *gin.Context) {
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
 	if err = h.doGetAccountAuctionPrice(&req, &apiResp); err != nil {
-		log.Error("GetAccountAuctionInfo err:", err.Error(), funcName, clientIp)
+		log.Error("doGetAccountAuctionPrice err:", err.Error(), funcName, clientIp)
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
 func (h *HttpHandle) doGetAccountAuctionPrice(req *ReqAuctionPrice, apiResp *http_api.ApiResp) (err error) {
 	var resp RespAuctionPrice
-	if req.Account == "" {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid: account is empty")
-		return
-	}
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -62,13 +58,18 @@ func (h *HttpHandle) doGetAccountAuctionPrice(req *ReqAuctionPrice, apiResp *htt
 		return fmt.Errorf("SearchAccount err: %s", err.Error())
 	}
 	nowTime := uint64(time.Now().Unix())
+
 	//exp + 90 + 27 +3
 	//now > exp+117 exp< now - 117
 	//now< exp+90 exp>now -90
-	if acc.ExpiredAt > nowTime-90*24*3600 || acc.ExpiredAt < nowTime-117*24*3600 {
+	if status, _, err := h.checkDutchAuction(acc.ExpiredAt); err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "checkDutchAuction err")
+		return fmt.Errorf("checkDutchAuction err: %s", err.Error())
+	} else if status != tables.SearchStatusOnDutchAuction {
 		apiResp.ApiRespErr(http_api.ApiCodeAuctionAccountNotFound, "This account has not been in dutch auction")
-		return
+		return nil
 	}
+
 	//计算长度
 	_, accLen, err := common.GetDotBitAccountLength(req.Account)
 	if err != nil {
@@ -83,15 +84,20 @@ func (h *HttpHandle) doGetAccountAuctionPrice(req *ReqAuctionPrice, apiResp *htt
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
 	}
+	auctionConfig, err := h.GetAuctionConfig(h.dasCore)
+	if err != nil {
+		err = fmt.Errorf("GetAuctionConfig err: %s", err.Error())
+		return
+	}
 	resp.BaseAmount = baseAmount
 	resp.AccountPrice = accountPrice
-	resp.PremiumPrice = common.Premium(int64(acc.ExpiredAt), int64(nowTime))
+	resp.PremiumPrice = decimal.NewFromFloat(common.Premium(int64(acc.ExpiredAt+uint64(auctionConfig.GracePeriodTime)), int64(nowTime)))
 	apiResp.ApiRespOK(resp)
 	return
 }
 
 type ReqAccountAuctionInfo struct {
-	Account string `json:"account"`
+	Account string `json:"account"  binding:"required"`
 	core.ChainTypeAddress
 	address   string
 	chainType common.ChainType
@@ -134,10 +140,6 @@ func (h *HttpHandle) GetAccountAuctionInfo(ctx *gin.Context) {
 
 func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp *http_api.ApiResp) (err error) {
 	var resp RespAccountAuctionInfo
-	if req.Account == "" {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid: account is empty")
-		return
-	}
 	var addrHex *core.DasAddressHex
 	if req.KeyInfo.Key != "" {
 		addrHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
@@ -168,7 +170,8 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 	}
 
 	//search bid status of a account
-	list, err := h.dbDao.GetAuctionOrderByAccount(req.Account)
+	createTime := time.Now().Unix() - 365*86400
+	list, err := h.dbDao.GetAuctionOrderByAccount(req.Account, createTime)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")
 		return
@@ -180,7 +183,6 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 		} else {
 			resp.BidStatus = tables.BidStatusByOthers
 			for _, v := range list {
-
 				if v.ChainType == addrHex.ChainType && v.Address == addrHex.AddressHex {
 					resp.BidStatus = tables.BidStatusByMe
 					resp.Hash, _ = common.String2OutPoint(v.Outpoint)
@@ -204,10 +206,18 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
 	}
+	auctionConfig, err := h.GetAuctionConfig(h.dasCore)
+	if err != nil {
+		err = fmt.Errorf("GetAuctionConfig err: %s", err.Error())
+		return
+	}
+	gracePeriodTime := auctionConfig.GracePeriodTime
+	auctionPeriodTime := auctionConfig.AuctionPeriodTime
+
 	resp.AccountId = acc.AccountId
 	resp.Account = req.Account
-	resp.StartsaleTime = acc.ExpiredAt + 90*86400
-	resp.EndSaleTime = acc.ExpiredAt + 117*86400
+	resp.StartsaleTime = acc.ExpiredAt + uint64(gracePeriodTime)*86400
+	resp.EndSaleTime = acc.ExpiredAt + uint64(gracePeriodTime+auctionPeriodTime)*86400
 	resp.AccountPrice = accountPrice
 	resp.BaseAmount = baseAmount
 	resp.ExipiredTime = acc.ExpiredAt
@@ -231,7 +241,7 @@ type RepReqGetAuctionOrder struct {
 
 func (h *HttpHandle) GetAuctionOrderStatus(ctx *gin.Context) {
 	var (
-		funcName = "GetAuctionOrder"
+		funcName = "GetAuctionOrderStatus"
 		clientIp = GetClientIp(ctx)
 		req      ReqGetAuctionOrder
 		apiResp  http_api.ApiResp
@@ -248,7 +258,7 @@ func (h *HttpHandle) GetAuctionOrderStatus(ctx *gin.Context) {
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
 	if err = h.doGetAuctionOrderStatus(&req, &apiResp); err != nil {
-		log.Error("GetBidStatus err:", err.Error(), funcName, clientIp)
+		log.Error("doGetAuctionOrderStatus err:", err.Error(), funcName, clientIp)
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
@@ -319,10 +329,6 @@ func (h *HttpHandle) doGetPendingAuctionOrder(req *ReqGetGetPendingAuctionOrder,
 		return nil
 	}
 	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
-	if req.chainType != 1 {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-		return nil
-	}
 	list, err := h.dbDao.GetPendingAuctionOrder(addrHex.ChainType, addrHex.AddressHex)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")
