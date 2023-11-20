@@ -182,6 +182,9 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 			resp.BidStatus = tables.BidStatusNoOne
 		} else {
 			resp.BidStatus = tables.BidStatusByOthers
+			log.Info("list: ", list)
+			log.Info("chaintype:", addrHex.ChainType, " address:", addrHex.AddressHex)
+
 			for _, v := range list {
 				if v.ChainType == addrHex.ChainType && v.Address == addrHex.AddressHex {
 					resp.BidStatus = tables.BidStatusByMe
