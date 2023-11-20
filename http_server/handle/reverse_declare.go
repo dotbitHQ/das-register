@@ -241,9 +241,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - sizeInBlock - 1000
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
 		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
-	case common.DasBidExpiredAccountAuction:
-
-		//判断是否是自己拍自己（accountcell和dpcell的lock一样）
+	case common.DasActionBidExpiredAccountAuction:
 		accTx, err := h.dasCore.Client().GetTransaction(h.ctx, txParams.Inputs[0].PreviousOutput.TxHash)
 		if err != nil {
 			return nil, fmt.Errorf("GetTransaction err: %s", err.Error())
@@ -255,7 +253,6 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 			return nil, fmt.Errorf("GetTransaction err: %s", err.Error())
 		}
 		dpLock := dpTx.Transaction.Outputs[txParams.Inputs[1].PreviousOutput.Index].Lock
-		//其他人拍
 		if !accLock.Equals(dpLock) {
 			skipGroups = []int{0}
 		}
@@ -292,7 +289,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	sic.BuilderTx = txBuilder.DasTxBuilderTransaction
 
 	//dutch auction
-	if req.Action == common.DasBidExpiredAccountAuction {
+	if req.Action == common.DasActionBidExpiredAccountAuction {
 		sic.AuctionInfo = req.AuctionInfo
 	}
 
