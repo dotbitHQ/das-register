@@ -13,7 +13,7 @@ func (d *DbDao) GetPendingAuctionOrder(chainType common.ChainType, addr string) 
 }
 
 func (d *DbDao) GetAuctionOrderByAccount(account string, createTime int64) (list []tables.TableAuctionOrder, err error) {
-	sql := fmt.Sprintf(`SELECT o.account,o.outpoint,o.address,o.algorithm_id,o.sub_algorithm_id,p.status FROM %s o 
+	sql := fmt.Sprintf(`SELECT o.account,o.outpoint,o.address,o.chain_type,p.status FROM %s o 
 LEFT JOIN %s p ON o.outpoint=p.outpoint
 WHERE o.account= "%s" and p.status != %d and o.created_at > %d `, tables.TableNameAuctionOrder, tables.TableNameRegisterPendingInfo, account, tables.StatusRejected, createTime)
 	err = d.db.Raw(sql).Find(&list).Error

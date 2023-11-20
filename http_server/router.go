@@ -59,9 +59,9 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/order/detail", api_code.DoMonitorLog(api_code.MethodOrderDetail), h.h.OrderDetail)
 		v1.POST("/address/deposit", api_code.DoMonitorLog(api_code.MethodAddressDeposit), cacheHandleLong, h.h.AddressDeposit)
 		v1.POST("/character/set/list", api_code.DoMonitorLog(api_code.MethodCharacterSetList), cacheHandleLong, h.h.CharacterSetList)
-		v1.POST("/account/auction/info", api_code.DoMonitorLog(api_code.MethodAuctionInfo), cacheHandleLong, h.h.GetAccountAuctionInfo)
-		v1.POST("/account/auction/price", api_code.DoMonitorLog(api_code.MethodAuctionPrice), cacheHandleLong, h.h.GetAccountAuctionPrice)
-		v1.POST("/account/auction/order-status", api_code.DoMonitorLog(api_code.MethodAuctionOrderStatus), cacheHandleLong, h.h.GetAuctionOrderStatus)
+		v1.POST("/account/auction/info", api_code.DoMonitorLog(api_code.MethodAuctionInfo), h.h.GetAccountAuctionInfo)
+		v1.POST("/account/auction/price", api_code.DoMonitorLog(api_code.MethodAuctionPrice), h.h.GetAccountAuctionPrice)
+		v1.POST("/account/auction/order-status", api_code.DoMonitorLog(api_code.MethodAuctionOrderStatus), h.h.GetAuctionOrderStatus)
 		v1.POST("/account/auction/pending-order", api_code.DoMonitorLog(api_code.MethodAuctionPendingOrder), cacheHandleLong, h.h.GetPendingAuctionOrder)
 
 		// operate
