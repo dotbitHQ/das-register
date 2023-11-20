@@ -41,5 +41,5 @@ const (
 )
 
 func (t *TableAuctionOrder) CreateOrderId() {
-	t.OrderId = CreateOrderId(1, t.AccountId, common.DasBidExpiredAccountAuction, t.ChainType, t.Address, t.BidTime)
+	t.OrderId = CreateOrderId(1, t.AccountId, common.DasActionBidExpiredAccountAuction, t.ChainType, t.Address, t.BidTime)
 }
