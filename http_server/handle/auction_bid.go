@@ -85,9 +85,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		return fmt.Errorf("GetTimeCell err: %s", err.Error())
 	}
 	nowTime := timeCell.Timestamp()
-	//exp + 90 + 27 +3
-	//now > exp+117 exp< now - 117
-	//now< exp+90 exp>now -90
+
 	if status, _, err := h.checkDutchAuction(acc.ExpiredAt, uint64(nowTime)); err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "checkDutchAuction err")
 		return fmt.Errorf("checkDutchAuction err: %s", err.Error())
@@ -95,7 +93,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		apiResp.ApiRespErr(http_api.ApiCodeAuctionAccountNotFound, "This account has not been in dutch auction")
 		return nil
 	}
-	//计算长度
+
 	_, accLen, err := common.GetDotBitAccountLength(req.Account)
 	if err != nil {
 		return
@@ -316,15 +314,15 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 
 	// outputs
 	outputs, outputsData, normalCellCapacity, err := h.dasCore.SplitDPCell(&core.ParamSplitDPCell{
-		FromLock:           p.FromLock,    //发送dp方的lock
-		ToLock:             p.ToLock,      //接收dp方的lock
-		DPLiveCell:         liveCell,      //发送方的dp cell
-		DPLiveCellCapacity: totalCapacity, //发送方dp的capacity
-		DPTotalAmount:      totalDP,       //总的dp金额
-		DPTransferAmount:   p.AmountDP,    //要转账的dp金额
+		FromLock:           p.FromLock,
+		ToLock:             p.ToLock,
+		DPLiveCell:         liveCell,
+		DPLiveCellCapacity: totalCapacity,
+		DPTotalAmount:      totalDP,
+		DPTransferAmount:   p.AmountDP,
 		DPSplitCount:       config.Cfg.Server.SplitCount,
 		DPSplitAmount:      config.Cfg.Server.SplitAmount,
-		NormalCellLock:     p.NormalCellLock, //回收dp cell的ckb的接收地址
+		NormalCellLock:     p.NormalCellLock,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("SplitDPCell err: %s", err.Error())
@@ -334,8 +332,6 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		txParams.OutputsData = append(txParams.OutputsData, outputsData[i])
 	}
 
-	//input dp cell capacity < output dp cell capacity 需要用注册商的nomal cell 来垫付
-	//input dp cell capacity > output dp cell capacity : has been return in "h.dasCore.SplitDPCell"
 	normalCells, totalNormal, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
 		DasCache:          h.dasCache,
 		LockScript:        h.serverScript,
@@ -352,7 +348,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		})
 	}
 
-	//返还给旧账户的 capacity
+	//old owner capacity
 	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 		Capacity: accCellCapacity,
 		Lock:     contractDas.ToScript(oldAccOwnerArgs),
