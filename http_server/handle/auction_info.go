@@ -57,12 +57,18 @@ func (h *HttpHandle) doGetAccountAuctionPrice(req *ReqAuctionPrice, apiResp *htt
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "search account err")
 		return fmt.Errorf("SearchAccount err: %s", err.Error())
 	}
-	nowTime := uint64(time.Now().Unix())
+	//nowTime := uint64(time.Now().Unix())
+	timeCell, err := h.dasCore.GetTimeCell()
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "GetTimeCell err")
 
+		return fmt.Errorf("GetTimeCell err: %s", err.Error())
+	}
+	nowTime := timeCell.Timestamp()
 	//exp + 90 + 27 +3
 	//now > exp+117 exp< now - 117
 	//now< exp+90 exp>now -90
-	if status, _, err := h.checkDutchAuction(acc.ExpiredAt); err != nil {
+	if status, _, err := h.checkDutchAuction(acc.ExpiredAt, uint64(nowTime)); err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "checkDutchAuction err")
 		return fmt.Errorf("checkDutchAuction err: %s", err.Error())
 	} else if status != tables.SearchStatusOnDutchAuction {
@@ -161,7 +167,13 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 		return
 	}
 
-	if status, _, err := h.checkDutchAuction(acc.ExpiredAt); err != nil {
+	timeCell, err := h.dasCore.GetTimeCell()
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "GetTimeCell err")
+		return fmt.Errorf("GetTimeCell err: %s", err.Error())
+	}
+	nowTime := timeCell.Timestamp()
+	if status, _, err := h.checkDutchAuction(acc.ExpiredAt, uint64(nowTime)); err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "checkDutchAuction err")
 		return fmt.Errorf("checkDutchAuction err: %s", err.Error())
 	} else if status != tables.SearchStatusOnDutchAuction {

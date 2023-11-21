@@ -81,13 +81,14 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	}
 	timeCell, err := h.dasCore.GetTimeCell()
 	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "GetTimeCell err")
 		return fmt.Errorf("GetTimeCell err: %s", err.Error())
 	}
 	nowTime := timeCell.Timestamp()
 	//exp + 90 + 27 +3
 	//now > exp+117 exp< now - 117
 	//now< exp+90 exp>now -90
-	if status, _, err := h.checkDutchAuction(acc.ExpiredAt); err != nil {
+	if status, _, err := h.checkDutchAuction(acc.ExpiredAt, uint64(nowTime)); err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "checkDutchAuction err")
 		return fmt.Errorf("checkDutchAuction err: %s", err.Error())
 	} else if status != tables.SearchStatusOnDutchAuction {

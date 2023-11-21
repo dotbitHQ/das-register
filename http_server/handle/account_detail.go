@@ -146,13 +146,7 @@ func (h *HttpHandle) getAccountPrice(accLen uint8, args, account string, isRenew
 	return
 }
 
-func (h *HttpHandle) checkDutchAuction(expiredAt uint64) (status tables.SearchStatus, reRegisterTime uint64, err error) {
-	timeCell, err := h.dasCore.GetTimeCell()
-	if err != nil {
-		err = fmt.Errorf("GetTimeCell err: %s", err.Error())
-		return
-	}
-	nowTime := uint64(timeCell.Timestamp())
+func (h *HttpHandle) checkDutchAuction(expiredAt, nowTime uint64) (status tables.SearchStatus, reRegisterTime uint64, err error) {
 	auctionConfig, err := h.GetAuctionConfig(h.dasCore)
 	if err != nil {
 		err = fmt.Errorf("GetAuctionConfig err: %s", err.Error())
@@ -175,6 +169,7 @@ func (h *HttpHandle) checkDutchAuction(expiredAt uint64) (status tables.SearchSt
 
 func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.ApiResp) error {
 	var resp RespAccountDetail
+	var err error
 	resp.Account = req.Account
 	resp.Status = tables.SearchStatusRegisterAble
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
@@ -195,7 +190,14 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		//expired_at+90 < now => expired_at < now - 90
 		//now > expired_at+90+27
 		//now < expired_at+90+30
-		if status, reRegisterTime, err := h.checkDutchAuction(acc.ExpiredAt); err != nil {
+		timeCell, err := h.dasCore.GetTimeCell()
+		if err != nil {
+			err = fmt.Errorf("GetTimeCell err: %s", err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "GetTimeCell err")
+			return err
+		}
+		nowTime := uint64(timeCell.Timestamp())
+		if status, reRegisterTime, err := h.checkDutchAuction(acc.ExpiredAt, nowTime); err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "checkDutchAuction err")
 			return fmt.Errorf("checkDutchAuction err: %s", err.Error())
 		} else if status != 0 {
@@ -223,7 +225,6 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		}
 
 		// price
-		var err error
 		resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(uint8(accBuilder.AccountChars.Len()), "", req.Account, true)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
