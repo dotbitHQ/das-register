@@ -121,7 +121,7 @@ func (d *DbDao) UpdateRefundStatusToRefundIng(ids []uint64) error {
 		Where("id IN(?) AND `status`=? AND uni_pay_refund_status=?",
 			ids, tables.OrderTxStatusConfirm, tables.UniPayRefundStatusUnRefund).
 		Updates(map[string]interface{}{
-			"uni_pay_refund_status": tables.UniPayRefundStatusRefunded,
+			"uni_pay_refund_status": tables.UniPayRefundStatusRefunding,
 		}).Error
 }
 
