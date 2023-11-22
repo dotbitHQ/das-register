@@ -75,6 +75,9 @@ func (t *ToolUniPay) doRefund() error {
 			PayHash: v.Hash,
 		})
 	}
+	if len(req.RefundList) == 0 {
+		return nil
+	}
 
 	_, err = RefundOrder(req)
 	if err != nil {
