@@ -5,6 +5,7 @@ import (
 	"das_register_server/http_server/api_code"
 	"encoding/json"
 	"github.com/dotbitHQ/das-lib/common"
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
@@ -25,9 +26,9 @@ func (h *HttpServer) initRouter() {
 		toolib.AllowOriginList = append(toolib.AllowOriginList, originList...)
 	}
 	h.engine.Use(toolib.MiddlewareCors())
-	//h.engine.Use(sentrygin.New(sentrygin.Options{
-	//	Repanic: true,
-	//}))
+	h.engine.Use(sentrygin.New(sentrygin.Options{
+		Repanic: true,
+	}))
 	v1 := h.engine.Group("v1")
 	{
 		// cache
