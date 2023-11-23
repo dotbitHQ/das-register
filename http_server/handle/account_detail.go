@@ -30,8 +30,10 @@ type RespAccountDetail struct {
 	Account              string                  `json:"account"`
 	Owner                string                  `json:"owner"`
 	OwnerChainType       common.ChainType        `json:"owner_chain_type"`
+	OwnerCoinType        common.CoinType         `json:"owner_coin_type"`
 	Manager              string                  `json:"manager"`
 	ManagerChainType     common.ChainType        `json:"manager_chain_type"`
+	ManagerCoinType      common.CoinType         `json:"manager_coin_type"`
 	RegisteredAt         int64                   `json:"registered_at"`
 	ExpiredAt            int64                   `json:"expired_at"`
 	Status               tables.SearchStatus     `json:"status"`
@@ -196,7 +198,7 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		resp.ExpiredAt = int64(acc.ExpiredAt) * 1e3
 		resp.RegisteredAt = int64(acc.RegisteredAt) * 1e3
 		resp.OwnerChainType = acc.OwnerChainType
-
+		resp.OwnerCoinType = common.FormatDasChainTypeToCoinType(acc.OwnerChainType)
 		ownerNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
 			DasAlgorithmId: acc.OwnerAlgorithmId,
 			AddressHex:     acc.Owner,
@@ -210,6 +212,7 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 
 		resp.Owner = ownerNormal.AddressNormal
 		resp.ManagerChainType = acc.ManagerChainType
+		resp.ManagerCoinType = common.FormatDasChainTypeToCoinType(acc.ManagerChainType)
 
 		managerNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
 			DasAlgorithmId: acc.ManagerAlgorithmId,

@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"das_register_server/http_server/compatible"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
@@ -18,6 +19,7 @@ import (
 )
 
 type ReqBalanceTransfer struct {
+	core.ChainTypeAddress
 	TransferAddress string           `json:"transfer_address"`
 	ChainType       common.ChainType `json:"chain_type"`
 	Address         string           `json:"address"`
@@ -72,22 +74,16 @@ func (h *HttpHandle) BalanceTransfer(ctx *gin.Context) {
 
 func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_code.ApiResp) error {
 	var resp RespBalanceTransfer
-
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return err
+	}
+	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	if req.ChainType != common.ChainTypeEth {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support this chain type")
 		return nil
 	}
-	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.ChainType,
-		AddressNormal: req.Address,
-		Is712:         true,
-	})
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-		return fmt.Errorf("NormalToHex err: %s", err.Error())
-	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
-
 	// das-lock
 	toLock, toType, err := h.dasCore.Daf().HexToScript(addressHex)
 	if err != nil {

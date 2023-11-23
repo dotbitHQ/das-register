@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/config"
+	"das_register_server/http_server/compatible"
 	"das_register_server/internal"
 	"das_register_server/tables"
 	"encoding/json"
@@ -21,6 +22,7 @@ import (
 )
 
 type ReqEditRecords struct {
+	core.ChainTypeAddress
 	ChainType  common.ChainType `json:"chain_type"`
 	Address    string           `json:"address"`
 	Account    string           `json:"account" binding:"required"`
@@ -86,14 +88,10 @@ func (h *HttpHandle) EditRecords(ctx *gin.Context) {
 
 func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiResp) error {
 	var resp RespEditRecords
-	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.ChainType,
-		AddressNormal: req.Address,
-		Is712:         true,
-	})
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-		return fmt.Errorf("NormalToHex err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 

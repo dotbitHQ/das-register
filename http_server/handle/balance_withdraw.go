@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/config"
+	"das_register_server/http_server/compatible"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -19,6 +20,7 @@ import (
 )
 
 type ReqBalanceWithdraw struct {
+	core.ChainTypeAddress
 	ChainType common.ChainType `json:"chain_type"`
 	Address   string           `json:"address"`
 	//ReceiverChainType common.ChainType `json:"receiver_chain_type"`
@@ -75,15 +77,12 @@ func (h *HttpHandle) BalanceWithdraw(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_code.ApiResp) error {
-	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.ChainType,
-		AddressNormal: req.Address,
-		Is712:         true,
-	})
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-		return fmt.Errorf("NormalToHex err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return err
 	}
+
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	var resp RespBalanceWithdraw

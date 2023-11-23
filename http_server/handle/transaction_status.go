@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"das_register_server/http_server/compatible"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 )
 
 type ReqTransactionStatus struct {
+	core.ChainTypeAddress
 	ChainType common.ChainType  `json:"chain_type"`
 	Address   string            `json:"address"`
 	Actions   []tables.TxAction `json:"actions"`
@@ -69,14 +71,10 @@ func (h *HttpHandle) TransactionStatus(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doTransactionStatus(req *ReqTransactionStatus, apiResp *api_code.ApiResp) error {
-	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.ChainType,
-		AddressNormal: req.Address,
-		Is712:         true,
-	})
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-		return fmt.Errorf("NormalToHex err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 

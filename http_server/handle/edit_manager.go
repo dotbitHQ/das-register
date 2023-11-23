@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/config"
+	"das_register_server/http_server/compatible"
 	"das_register_server/internal"
 	"das_register_server/tables"
 	"encoding/json"
@@ -19,12 +20,14 @@ import (
 )
 
 type ReqEditManager struct {
-	ChainType  common.ChainType `json:"chain_type"`
-	Address    string           `json:"address"`
-	Account    string           `json:"account"`
-	EvmChainId int64            `json:"evm_chain_id"`
+	ChainType common.ChainType `json:"chain_type"`
+	core.ChainTypeAddress
+	Address    string `json:"address"`
+	Account    string `json:"account"`
+	EvmChainId int64  `json:"evm_chain_id"`
 	RawParam   struct {
 		ManagerChainType common.ChainType `json:"manager_chain_type"`
+		ManagerCoinType  common.CoinType  `json:"manager_coin_type"`
 		ManagerAddress   string           `json:"manager_address"`
 	} `json:"raw_param"`
 }
@@ -77,27 +80,39 @@ func (h *HttpHandle) EditManager(ctx *gin.Context) {
 
 func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiResp) error {
 	var resp RespEditManager
-	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.ChainType,
-		AddressNormal: req.Address,
-		Is712:         true,
-	})
+	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-		return fmt.Errorf("NormalToHex err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
-
-	managerHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.RawParam.ManagerChainType,
-		AddressNormal: req.RawParam.ManagerAddress,
-		Is712:         true,
-	})
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "manager address NormalToHex err")
-		return fmt.Errorf("manager NormalToHex err: %s", err.Error())
+	if req.RawParam.ManagerCoinType != "" {
+		chainTypeAddress := core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: req.RawParam.ManagerCoinType,
+				Key:      req.RawParam.ManagerAddress,
+			},
+		}
+		managerHex, err := chainTypeAddress.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "manager address NormalToHex err")
+			return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
+		}
+		req.RawParam.ManagerChainType, req.RawParam.ManagerAddress = managerHex.ChainType, managerHex.AddressHex
+	} else {
+		managerHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+			ChainType:     req.RawParam.ManagerChainType,
+			AddressNormal: req.RawParam.ManagerAddress,
+			Is712:         true,
+		})
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "manager address NormalToHex err")
+			return fmt.Errorf("manager NormalToHex err: %s", err.Error())
+		}
+		req.RawParam.ManagerChainType, req.RawParam.ManagerAddress = managerHex.ChainType, managerHex.AddressHex
 	}
-	req.RawParam.ManagerChainType, req.RawParam.ManagerAddress = managerHex.ChainType, managerHex.AddressHex
+
 	if !checkChainType(req.RawParam.ManagerChainType) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] inavlid", req.RawParam.ManagerChainType))
 		return nil
