@@ -3,7 +3,6 @@ package handle
 import (
 	"bytes"
 	"das_register_server/config"
-
 	//"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"encoding/binary"
@@ -46,6 +45,7 @@ type RespAccountDetail struct {
 	CustomScript         string                  `json:"custom_script"`
 	PremiumPercentage    decimal.Decimal         `json:"premium_percentage"`
 	PremiumBase          decimal.Decimal         `json:"premium_base"`
+	ReRegisterTime       uint64                  `json:"re_register_time"`
 }
 
 func (h *HttpHandle) RpcAccountDetail(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -136,7 +136,7 @@ func (h *HttpHandle) getAccountPrice(accLen uint8, args, account string, isRenew
 	baseAmount, _ = decimal.NewFromString(fmt.Sprintf("%d", basicCapacity))
 	decQuote, _ := decimal.NewFromString(fmt.Sprintf("%d", quote))
 	decUsdRateBase := decimal.NewFromInt(common.UsdRateBase)
-	baseAmount = baseAmount.Mul(decQuote).DivRound(decUsdRateBase, 2)
+	baseAmount = baseAmount.Mul(decQuote).DivRound(decUsdRateBase, 6)
 
 	if isRenew {
 		accountPrice, _ = decimal.NewFromString(fmt.Sprintf("%d", renewPrice))
@@ -148,8 +148,30 @@ func (h *HttpHandle) getAccountPrice(accLen uint8, args, account string, isRenew
 	return
 }
 
+func (h *HttpHandle) checkDutchAuction(expiredAt, nowTime uint64) (status tables.SearchStatus, reRegisterTime uint64, err error) {
+	auctionConfig, err := h.GetAuctionConfig(h.dasCore)
+	if err != nil {
+		err = fmt.Errorf("GetAuctionConfig err: %s", err.Error())
+		return
+	}
+	gracePeriodTime := auctionConfig.GracePeriodTime
+	auctionPeriodTime := auctionConfig.AuctionPeriodTime
+	deliverPeriodTime := auctionConfig.DeliverPeriodTime
+	if nowTime-uint64(gracePeriodTime)-uint64(auctionPeriodTime) < expiredAt && expiredAt < nowTime-uint64(gracePeriodTime) {
+		status = tables.SearchStatusOnDutchAuction
+	}
+
+	if nowTime-uint64(gracePeriodTime)-uint64(auctionPeriodTime)-uint64(deliverPeriodTime) < expiredAt && expiredAt < nowTime-uint64(gracePeriodTime)-uint64(auctionPeriodTime) {
+		status = tables.SearchStatusAuctionRecycling
+		reRegisterTime = expiredAt + uint64(gracePeriodTime+auctionPeriodTime+deliverPeriodTime)
+		return
+	}
+	return
+}
+
 func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.ApiResp) error {
 	var resp RespAccountDetail
+	var err error
 	resp.Account = req.Account
 	resp.Status = tables.SearchStatusRegisterAble
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
@@ -165,8 +187,28 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 
 	// check sub account
 	count := strings.Count(req.Account, ".")
-
 	if count == 1 && acc.Id > 0 {
+		//now < expired_at + 90 + 27 => expired_at > now-90-27
+		//expired_at+90 < now => expired_at < now - 90
+		//now > expired_at+90+27
+		//now < expired_at+90+30
+		timeCell, err := h.dasCore.GetTimeCell()
+		if err != nil {
+			err = fmt.Errorf("GetTimeCell err: %s", err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "GetTimeCell err")
+			return err
+		}
+		nowTime := uint64(timeCell.Timestamp())
+		if status, reRegisterTime, err := h.checkDutchAuction(acc.ExpiredAt, nowTime); err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "checkDutchAuction err")
+			return fmt.Errorf("checkDutchAuction err: %s", err.Error())
+		} else if status != 0 {
+			resp.Status = status
+			resp.ReRegisterTime = reRegisterTime
+			apiResp.ApiRespOK(resp)
+			return nil
+		}
+
 		accOutpoint := common.String2OutPointStruct(acc.Outpoint)
 		accTx, er := h.dasCore.Client().GetTransaction(h.ctx, accOutpoint.TxHash)
 		if er != nil {
@@ -185,14 +227,12 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		}
 
 		// price
-		var err error
 		resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(uint8(accBuilder.AccountChars.Len()), "", req.Account, true)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 			return fmt.Errorf("getAccountPrice err: %s", err.Error())
 		}
 	}
-
 	if acc.Id > 0 {
 		resp.Status = acc.FormatAccountStatus()
 		resp.ExpiredAt = int64(acc.ExpiredAt) * 1e3

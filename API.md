@@ -17,6 +17,10 @@
     * [Account Order Detail](#account-order-detail)
     * [Address Deposit](#address-deposit)
     * [Character Set List](#character-set-list)
+    * [Account Auction Info](#account-auction-info)
+    * [Account Auction Price](#account-auction-price)
+    * [Account Auction OrderStatus](#account-auction-order_status)
+    * [Account Auction PendingOrders](#account-auction-pending_orders)
 * [OPERATE API LIST](#operate-api-list)
     * [Reverse Declare (Deprecated)](#reverse-declare)
     * [Reverse Redeclare (Deprecated)](#reverse-redeclare)
@@ -35,6 +39,7 @@
     * [Account Order Pay Hash](#account-order-pay-hash)
     * [Account Register](#account-register)
     * [Account Renew](#account-renew)
+    * [Account Auction Bid](#account-auction-bid)
 * [NODE RPC](#node-rpc)
     * [Node Ckb Rpc](#node-ckb-rpc)
 
@@ -313,7 +318,9 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
   * 13: unregisterable
   * 14: sub-account
   * 15: cross-chain
-  
+  * 17: on dutch auction period
+  * 18: on dutch auction deliver period
+* re_registered_time: Time for re registration
 ```json
 {
   "err_no": 0,
@@ -333,7 +340,8 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
     "base_amount": "3.89",
     "confirm_proposal_hash": "0xec7bec47a4d3ad467253925a7e097f311e0738d625d55f8b3420cabaaa9b5201",
     "premium_percentage": "",// for stripe usd premium
-    "premium_base": "" // for stripe usd premium
+    "premium_base": "", // for stripe usd premium
+    "re_registered_time": 1672211096
   }
 }
 ```
@@ -1935,3 +1943,250 @@ curl -X POST http://127.0.0.1:8119/v1/account/renew -d'{"chain_type":1,"address"
 curl -X POST http://127.0.0.1:8120/v1/node/ckb/rpc -d'{"jsonrpc":"2.0","id":2976777,"method":"get_blockchain_info","params":[]}'
 ```
 
+
+#### Account Auction Info
+
+**Request**
+
+* path: /account/auction/info
+  * get dutch auction info of a account
+* param:
+
+```json
+{
+  "account":"michaeltest1.bit",
+  "type":"blockchain",
+  "key_info":{
+    "coin_type":"60",
+    "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+  }
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "account_id": "",
+    "account": "",
+    "bid_status": 2,
+    "hash": "",
+    "start_auction_time": 0,
+    "end_auction_time": 0,
+    "expired_at": 0,
+    "account_price": "5",
+    "base_amount": "0.82"
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://127.0.0.1:8120/v1/account/auction/info' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account":"michaeltest1.bit",
+    "type":"blockchain",
+    "key_info":{
+        "coin_type":"60",
+        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+    }
+}'
+```
+
+
+#### Account Auction Price
+
+**Request**
+
+* path: /account/auction/price
+  * get dutch auction price of a account
+* param:
+
+```json
+{
+  "account":"michaeltest1.bit"
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "account_price": "5",
+    "base_amount": "0.82",
+    "premium_price": 20
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://127.0.0.1:8120/v1/account/auction/price' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account":"michaeltest1.bit"
+}'
+```
+
+#### Account Auction OrderStatus
+
+**Request**
+
+* path: /account/auction/order-status
+  * get  status of a dutch auction order
+* param:
+
+```json
+{
+  "account":"michaeltest1.bit",
+  "hash": "0xb9e094dd6fcaa6c68d44233cb5331e63bd966fa86659fc45d30089336021f26e",
+  "type":"blockchain",
+  "key_info":{
+    "coin_type":"60",
+    "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+  }
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "account": "michaeltest1.bit",
+    "hash": "0xeb4871b7af2ca7129a43c5991c408148abd195eb5699223fad11a712b1e1d584",
+    "status": 0,
+    "basic_price": "6",
+    "premium_price": "100"
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://127.0.0.1:8120/v1/account/auction/order-status' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account":"michaeltest1.bit",
+    "type":"blockchain",
+    "key_info":{
+        "coin_type":"60",
+        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+    }
+}'
+```
+
+#### Account Auction PendingOrders
+
+**Request**
+
+* path: /account/auction/pending-order
+  * get dutch auction order with pending status
+* param:
+
+```json
+{
+  "type":"blockchain",
+  "key_info":{
+    "coin_type":"60",
+    "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+  }
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": [
+    {
+      "account": "michaeltest1.bit",
+      "outpoint": "0xeb4871b7af2ca7129a43c5991c408148abd195eb5699223fad11a712b1e1d584-0",
+      "status": 0,
+      "basic_price": "6",
+      "premium_price": "100"
+    }
+  ]
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://127.0.0.1:8120/v1/account/auction/pending-order' \
+--header 'Content-Type: application/json' \
+--data '{
+    "type":"blockchain",
+    "key_info":{
+        "coin_type":"60",
+        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+    }
+}'
+```
+
+#### Account Auction Bid
+
+**Request**
+
+* path: /account/auction/bid
+  * bid a account during dutch auction period
+* param:
+
+```json
+{
+  "account":"michaeltest1.bit",
+  "type":"blockchain",
+  "key_info":{
+    "coin_type":"60",
+    "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+  }
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "sign_key": "",
+    "sign_list": [
+      {
+        "sign_type": 5,
+        "sign_msg": ""
+      }
+    ],
+    "mm_json": {}
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://127.0.0.1:8120/v1/account/auction/bid' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account":"michaeltest1.bit",
+    "type":"blockchain",
+    "key_info":{
+        "coin_type":"60",
+        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+    }
+}'
+```

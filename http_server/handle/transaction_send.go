@@ -105,7 +105,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "SignAddress err")
 			return nil
 		}
-
+		log.Info("req.signaddress: ", req.SignAddress)
 		signAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
 			ChainType:     common.ChainTypeWebauthn,
 			AddressNormal: req.SignAddress,
@@ -186,6 +186,24 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			}
 			if err = h.dbDao.CreatePending(&pending); err != nil {
 				log.Error("CreatePending err: ", err.Error(), toolib.JsonString(pending))
+			}
+
+			if sic.Action == common.DasActionBidExpiredAccountAuction {
+
+				auctionOrder := tables.TableAuctionOrder{
+					Account:      sic.Account,
+					AccountId:    common.Bytes2Hex(common.GetAccountIdByAccount(sic.Account)),
+					Address:      sic.Address,
+					BasicPrice:   sic.AuctionInfo.BasicPrice,
+					PremiumPrice: sic.AuctionInfo.PremiumPrice,
+					BidTime:      sic.AuctionInfo.BidTime,
+					ChainType:    sic.ChainType,
+					Outpoint:     pending.Outpoint,
+				}
+				auctionOrder.CreateOrderId()
+				if err = h.dbDao.CreateAuctionOrder(auctionOrder); err != nil {
+					log.Error("CreateAuctionOrder err: ", err.Error(), toolib.JsonString(auctionOrder))
+				}
 			}
 		}
 	}

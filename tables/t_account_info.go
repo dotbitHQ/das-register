@@ -63,6 +63,8 @@ const (
 	SearchStatusUnAvailableAccount   SearchStatus = 13
 	SearchStatusSubAccountUnRegister SearchStatus = 14
 	SearchStatusOnCross              SearchStatus = 15
+	SearchStatusOnDutchAuction       SearchStatus = 17
+	SearchStatusAuctionRecycling     SearchStatus = 18
 )
 
 func (t *TableAccountInfo) IsExpired() bool {

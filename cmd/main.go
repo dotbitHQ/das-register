@@ -202,6 +202,7 @@ func runServer(ctx *cli.Context) error {
 		DasCore:                dasCore,
 		DasCache:               dasCache,
 		TxBuilderBase:          txBuilderBase,
+		ServerScript:           serverScript,
 		MapReservedAccounts:    builderConfigCell.ConfigCellPreservedAccountMap,
 		MapUnAvailableAccounts: builderConfigCell.ConfigCellUnavailableAccountMap,
 	})
@@ -250,7 +251,7 @@ func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
 		common.DasContractNameBalanceCellType, common.DasContractNameDispatchCellType, common.DasContractNameApplyRegisterCellType,
 		common.DasContractNamePreAccountCellType, common.DasContractNameProposalCellType, common.DasContractNameReverseRecordCellType,
 		common.DasContractNameIncomeCellType, common.DasContractNameAlwaysSuccess, common.DASContractNameEip712LibCellType,
-		common.DASContractNameSubAccountCellType, common.DasKeyListCellType)
+		common.DASContractNameSubAccountCellType, common.DasKeyListCellType, common.DasContractNameDpCellType)
 	ops := []core.DasCoreOption{
 		core.WithClient(ckbClient),
 		core.WithDasContractArgs(env.ContractArgs),

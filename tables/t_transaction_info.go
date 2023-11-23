@@ -69,6 +69,7 @@ const (
 	ActionCrossRefund               TxAction = 28
 	ActionCollectSubAccountProfit   TxAction = 29
 	ActionRenewSubAccount           TxAction = 30
+	ActionAuctionRefundCapacity     TxAction = 31
 
 	DasActionTransferBalance = "transfer_balance"
 	DasActionBalanceDeposit  = "balance_deposit"
@@ -145,6 +146,8 @@ func FormatTxAction(action string) TxAction {
 		return ActionCollectSubAccountProfit
 	case common.DasActionRenewSubAccount:
 		return ActionRenewSubAccount
+	case common.DasActionBidExpiredAccountAuction:
+		return ActionAuctionRefundCapacity
 	}
 	return ActionUndefined
 }
