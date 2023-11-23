@@ -12,7 +12,7 @@ func ChainTypeAndCoinType(req interface{}, dc *core.DasCore) (dasAddressHex core
 	var address string
 	var chainType common.ChainType
 	var coinType string
-	var coin_key_info core.KeyInfo
+	var coinKeyInfo core.KeyInfo
 	if v, res := GetFieldFromInterface(req, "Address"); res {
 		if vv, ok := v.(string); ok {
 			address = vv
@@ -30,7 +30,7 @@ func ChainTypeAndCoinType(req interface{}, dc *core.DasCore) (dasAddressHex core
 	}
 	if v, res := GetFieldFromInterface(req, "KeyInfo"); res {
 		if vv, ok := v.(core.KeyInfo); ok {
-			coin_key_info = vv
+			coinKeyInfo = vv
 		}
 	}
 	if address != "" {
@@ -46,7 +46,7 @@ func ChainTypeAndCoinType(req interface{}, dc *core.DasCore) (dasAddressHex core
 	} else {
 		chainTypeAddress := core.ChainTypeAddress{
 			Type:    coinType,
-			KeyInfo: coin_key_info,
+			KeyInfo: coinKeyInfo,
 		}
 		res, err := chainTypeAddress.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 		if err != nil {
