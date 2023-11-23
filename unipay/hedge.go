@@ -45,7 +45,7 @@ func (t *ToolUniPay) doOrderHedge() error {
 	for _, v := range list {
 		switch v.PayTokenId {
 		case tables.TokenCoupon, tables.TokenIdCkb,
-			tables.TokenIdCkbInternal, tables.TokenIdDas, tables.TokenIdStripeUSD:
+			tables.TokenIdCkbInternal, tables.TokenIdDas, tables.TokenIdStripeUSD, tables.ToKenIdDidPoint:
 			if err = t.DbDao.UpdateHedgeStatus(v.OrderId, tables.TxStatusSending, tables.TxStatusOk); err != nil {
 				return fmt.Errorf("UpdateHedgeStatus err: %s", err.Error())
 			}
