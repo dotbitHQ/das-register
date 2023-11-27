@@ -113,7 +113,7 @@ func (h *HttpHandle) doCheckCoupon(req *ReqCheckCoupon, apiResp *api_code.ApiRes
 	}
 	err, respResult := h.getCouponInfo(req.Coupon)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "getCouponInfo err")
 		return err
 	}
 	apiResp.ApiRespOK(respResult)
@@ -176,7 +176,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
@@ -428,7 +428,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			ChainType:      req.ChainType,
 		})
 		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("HexToNormal err: %s", err.Error()))
+			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("HexToNormal err"))
 			return
 		}
 		premiumPercentage := decimal.Zero

@@ -75,12 +75,12 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 
 	fromAddress, err := address.Parse(req.FromCkbAddress)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "address.Parse err")
 		return fmt.Errorf("from address.Parse err: %s", err.Error())
 	}
 	toAddress, err := address.Parse(req.ToCkbAddress)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "address.Parse")
 		return fmt.Errorf("to address.Parse err: %s", err.Error())
 	}
 	if config.Cfg.Server.Net == common.DasNetTypeMainNet {
@@ -102,7 +102,7 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 	}
 	balanceContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "GetDasContractInfo err")
 		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
 
@@ -136,16 +136,16 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 	})
 	if err != nil {
 		if err == core.ErrRejectedOutPoint {
-			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, "ErrRejectedOutPoint")
 			return nil
 		} else if err == core.ErrNotEnoughChange {
-			apiResp.ApiRespErr(api_code.ApiCodeNotEnoughChange, err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeNotEnoughChange, "ErrNotEnoughChange")
 			return nil
 		} else if err == core.ErrInsufficientFunds {
-			apiResp.ApiRespErr(api_code.ApiCodeInsufficientBalance, err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeInsufficientBalance, "ErrInsufficientFunds")
 			return nil
 		} else {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "GetBalanceCells err")
 			return fmt.Errorf("GetBalanceCells err: %s", err.Error())
 		}
 	}
@@ -163,20 +163,20 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 		fromTypeScript: fromTypeScript,
 	})
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err")
 		return fmt.Errorf("buildBalanceDepositTx err: %s", err.Error())
 	}
 
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, nil)
 	if err := txBuilder.BuildTransaction(txParams); err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "BuildTransaction err: "+err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "BuildTransaction err")
 		return fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
 	}
 	txBuilder.ServerSignGroup = []int{}
 
 	signList, err := txBuilder.GenerateDigestListFromTx([]int{})
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "GenerateDigestListFromTx err: "+err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "GenerateDigestListFromTx err")
 		return fmt.Errorf("txBuilder.GenerateDigestListFromTx err: %s", err.Error())
 	}
 
@@ -190,7 +190,7 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 	signKey := sic.SignKey()
 	cacheStr := toolib.JsonString(&sic)
 	if err = h.rc.SetSignTxCache(signKey, cacheStr); err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "SetSignTxCache err: "+err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "SetSignTxCache err")
 		return fmt.Errorf("SetSignTxCache err: %s", err.Error())
 	}
 
