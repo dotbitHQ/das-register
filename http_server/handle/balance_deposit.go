@@ -97,7 +97,7 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 
 	dasContract, err := core.GetDasContractInfo(common.DasContractNameDispatchCellType)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "GetDasContractInfo err")
 		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
 	balanceContract, err := core.GetDasContractInfo(common.DasContractNameBalanceCellType)
