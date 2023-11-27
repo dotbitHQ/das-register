@@ -73,7 +73,7 @@ func (h *HttpHandle) TransactionStatus(ctx *gin.Context) {
 func (h *HttpHandle) doTransactionStatus(req *ReqTransactionStatus, apiResp *api_code.ApiResp) error {
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
