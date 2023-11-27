@@ -76,7 +76,7 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 	var resp RespBalanceTransfer
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return err
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
@@ -109,7 +109,7 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "check balance err: "+err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "check balance err")
 		return fmt.Errorf("GetBalanceCells err: %s", err.Error())
 	} else if totalAmount <= common.DasLockWithBalanceTypeOccupiedCkb { // 余额不足
 		if req.TransferAddress != "" {

@@ -78,14 +78,14 @@ func (h *HttpHandle) doSignTx(req *ReqSignTx, apiResp *api_code.ApiResp) error {
 			signData, err = sign.TronSignature(true, common.Hex2Bytes(v.SignMsg), req.Private)
 			if err != nil {
 				err = fmt.Errorf("sign.TronSignature err: %s", err.Error())
-				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "TronSignature err")
 				return err
 			}
 		case common.DasAlgorithmIdEth:
 			signData, err = sign.PersonalSignature(common.Hex2Bytes(v.SignMsg), req.Private)
 			if err != nil {
 				err = fmt.Errorf("sign.PersonalSignature err: %s", err.Error())
-				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "PersonalSignature err")
 				return err
 			}
 		case common.DasAlgorithmIdEd25519:
@@ -108,7 +108,7 @@ func (h *HttpHandle) doSignTx(req *ReqSignTx, apiResp *api_code.ApiResp) error {
 			mmHash, signature, err = sign.EIP712Signature(obj3, req.Private)
 			if err != nil {
 				err = fmt.Errorf("sign.EIP712Signature err: %s", err.Error())
-				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "EIP712Signature err")
 				return err
 			}
 			log.Info("EIP712Signature mmHash:", common.Bytes2Hex(mmHash))
@@ -122,7 +122,7 @@ func (h *HttpHandle) doSignTx(req *ReqSignTx, apiResp *api_code.ApiResp) error {
 			signData, err = sign.DogeSignature(common.Hex2Bytes(v.SignMsg), req.Private, req.Compress)
 			if err != nil {
 				err = fmt.Errorf("sign.DogeSignature err: %s", err.Error())
-				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "DogeSignature err")
 				return err
 			}
 		default:
