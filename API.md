@@ -320,6 +320,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
   * 15: cross-chain
   * 17: on dutch auction period
   * 18: on dutch auction deliver period
+  * 19: account in approval transfer
 * re_registered_time: Time for re registration
 ```json
 {
@@ -802,6 +803,7 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
     * 13: unregisterable
     * 14: unminted subaccount
     * 15: waiting for cross-chain eth nft
+    * 19: account in approval transfer
 
 ```json
 {
