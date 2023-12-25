@@ -11,7 +11,7 @@ import (
 func (d *DbDao) SearchAccountList(chainType common.ChainType, address string) (list []tables.TableAccountInfo, err error) {
 	err = d.parserDb.Where(" owner_chain_type=? AND owner=? ", chainType, address).
 		Or(" manager_chain_type=? AND manager=? ", chainType, address).
-		Where(" status=? ", tables.AccountStatusNormal).
+		Where(" status=? and expired_at >= ?", tables.AccountStatusNormal, time.Now().Unix()-30*86400).
 		Find(&list).Error
 	if err == gorm.ErrRecordNotFound {
 		err = nil
@@ -21,7 +21,7 @@ func (d *DbDao) SearchAccountList(chainType common.ChainType, address string) (l
 
 func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, keyword string, limit, offset int, category tables.Category) (list []tables.TableAccountInfo, err error) {
 	db := d.parserDb.Where("((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?))", chainType, address, chainType, address)
-	db = db.Where("status!=?", tables.AccountStatusOnCross)
+	db = db.Where("status!=? and expired_at >= ?", tables.AccountStatusOnCross, time.Now().Unix()-30*86400)
 
 	switch category {
 	//case tables.CategoryDefault:
@@ -58,7 +58,7 @@ func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, k
 
 func (d *DbDao) GetAccountsCount(chainType common.ChainType, address, keyword string, category tables.Category) (count int64, err error) {
 	db := d.parserDb.Model(tables.TableAccountInfo{}).Where("((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?))", chainType, address, chainType, address)
-	db = db.Where("status!=?", tables.AccountStatusOnCross)
+	db = db.Where("status!=? and expired_at >= ? ", tables.AccountStatusOnCross, time.Now().Unix()-30*86400)
 
 	switch category {
 	//case tables.CategoryDefault:
