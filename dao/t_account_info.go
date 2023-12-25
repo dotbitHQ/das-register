@@ -21,8 +21,7 @@ func (d *DbDao) SearchAccountList(chainType common.ChainType, address string) (l
 
 func (d *DbDao) SearchAccountListWithPage(chainType common.ChainType, address, keyword string, limit, offset int, category tables.Category) (list []tables.TableAccountInfo, err error) {
 	db := d.parserDb.Where("((owner_chain_type=? AND owner=?)OR(manager_chain_type=? AND manager=?))", chainType, address, chainType, address)
-	//db = db.Where("status!=? and expired_at >= ?", tables.AccountStatusOnCross, time.Now().Unix()-30*86400)
-	db = db.Where("status!=? ", tables.AccountStatusOnCross)
+	db = db.Where("status!=? and expired_at >= ?", tables.AccountStatusOnCross, time.Now().Unix()-30*86400)
 
 	switch category {
 	//case tables.CategoryDefault:
