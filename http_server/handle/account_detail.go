@@ -199,6 +199,7 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 			return err
 		}
 		nowTime := uint64(timeCell.Timestamp())
+		log.Info("time cell : ", nowTime)
 		if status, reRegisterTime, err := h.checkDutchAuction(acc.ExpiredAt, nowTime); err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "checkDutchAuction err")
 			return fmt.Errorf("checkDutchAuction err: %s", err.Error())
