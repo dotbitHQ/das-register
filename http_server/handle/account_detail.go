@@ -157,6 +157,7 @@ func (h *HttpHandle) checkDutchAuction(expiredAt, nowTime uint64) (status tables
 	gracePeriodTime := auctionConfig.GracePeriodTime
 	auctionPeriodTime := auctionConfig.AuctionPeriodTime
 	deliverPeriodTime := auctionConfig.DeliverPeriodTime
+	log.Info("time cell: ", nowTime, " gracePeriodTime: ", gracePeriodTime, " auctionPeriodTime: ", auctionPeriodTime, " deliverPeriodTime: ", deliverPeriodTime)
 	if nowTime-uint64(gracePeriodTime)-uint64(auctionPeriodTime) < expiredAt && expiredAt < nowTime-uint64(gracePeriodTime) {
 		status = tables.SearchStatusOnDutchAuction
 	}
@@ -199,7 +200,6 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 			return err
 		}
 		nowTime := uint64(timeCell.Timestamp())
-		log.Info("time cell : ", nowTime)
 		if status, reRegisterTime, err := h.checkDutchAuction(acc.ExpiredAt, nowTime); err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "checkDutchAuction err")
 			return fmt.Errorf("checkDutchAuction err: %s", err.Error())
