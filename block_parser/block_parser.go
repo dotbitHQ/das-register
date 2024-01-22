@@ -30,8 +30,6 @@ type BlockParser struct {
 	Ctx                  context.Context
 	Cancel               context.CancelFunc
 	Wg                   *sync.WaitGroup
-
-	errCountHandle int
 }
 
 func (b *BlockParser) Run() error {
@@ -187,17 +185,13 @@ func (b *BlockParser) parsingBlockData(block *types.Block) error {
 					Action:         builder.Action,
 				})
 				if resp.Err != nil {
-					b.errCountHandle++
 					log.Error("action handle resp:", builder.Action, blockNumber, txHash, resp.Err.Error())
-					if b.errCountHandle < 100 {
-						notify.SendLarkErrNotify("Block Parse", notify.GetLarkTextNotifyStr("TransactionHandle", txHash, resp.Err.Error()))
-					}
+					notify.SendLarkErrNotify("Block Parse", notify.GetLarkTextNotifyStr("TransactionHandle", txHash, resp.Err.Error()))
 					return resp.Err
 				}
 			}
 		}
 	}
-	b.errCountHandle = 0
 	return nil
 }
 

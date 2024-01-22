@@ -157,6 +157,7 @@ func (h *HttpHandle) checkDutchAuction(expiredAt, nowTime uint64) (status tables
 	gracePeriodTime := auctionConfig.GracePeriodTime
 	auctionPeriodTime := auctionConfig.AuctionPeriodTime
 	deliverPeriodTime := auctionConfig.DeliverPeriodTime
+	log.Info("time cell: ", nowTime, " gracePeriodTime: ", gracePeriodTime, " auctionPeriodTime: ", auctionPeriodTime, " deliverPeriodTime: ", deliverPeriodTime)
 	if nowTime-uint64(gracePeriodTime)-uint64(auctionPeriodTime) < expiredAt && expiredAt < nowTime-uint64(gracePeriodTime) {
 		status = tables.SearchStatusOnDutchAuction
 	}
