@@ -36,7 +36,6 @@ func (t *TxTool) Run() {
 	tickerPreRegister := time.NewTicker(time.Second * 6)
 	tickerRenew := time.NewTicker(time.Second * 7)
 	t.Wg.Add(1)
-	errCountApply, errCountPre, errCountRenew := 0, 0, 0
 	go func() {
 		defer http_api.RecoverPanic()
 		for {
@@ -46,12 +45,7 @@ func (t *TxTool) Run() {
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderApplyTx(); err != nil {
 						log.Error("doOrderApplyTx err: ", err.Error())
-						errCountApply++
-						if errCountApply < 50 {
-							notify.SendLarkErrNotify(common.DasActionApplyRegister, notify.GetLarkTextNotifyStr("doOrderApplyTx", "", err.Error()))
-						}
-					} else {
-						errCountApply = 0
+						notify.SendLarkErrNotify(common.DasActionApplyRegister, notify.GetLarkTextNotifyStr("doOrderApplyTx", "", err.Error()))
 					}
 				}
 				log.Debug("doOrderApplyTx end ...")
@@ -60,12 +54,7 @@ func (t *TxTool) Run() {
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderPreRegisterTx(); err != nil {
 						log.Error("doOrderPreRegisterTx err: ", err.Error())
-						errCountPre++
-						if errCountPre < 50 {
-							notify.SendLarkErrNotify(common.DasActionPreRegister, notify.GetLarkTextNotifyStr("doOrderPreRegisterTx", "", err.Error()))
-						}
-					} else {
-						errCountPre = 0
+						notify.SendLarkErrNotify(common.DasActionPreRegister, notify.GetLarkTextNotifyStr("doOrderPreRegisterTx", "", err.Error()))
 					}
 				}
 				log.Debug("doOrderPreRegisterTx end ...")
@@ -74,12 +63,7 @@ func (t *TxTool) Run() {
 				if config.Cfg.Server.TxToolSwitch {
 					if err := t.doOrderRenewTx(); err != nil {
 						log.Error("doOrderRenewTx err: ", err.Error())
-						errCountRenew++
-						if errCountRenew < 50 {
-							notify.SendLarkErrNotify(common.DasActionRenewAccount, notify.GetLarkTextNotifyStr("doOrderRenewTx", "", err.Error()))
-						}
-					} else {
-						errCountRenew = 0
+						notify.SendLarkErrNotify(common.DasActionRenewAccount, notify.GetLarkTextNotifyStr("doOrderRenewTx", "", err.Error()))
 					}
 				}
 				log.Debug("doOrderRenewTx end ...")
