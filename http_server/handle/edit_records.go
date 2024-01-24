@@ -197,7 +197,7 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 
 	txParams, err := h.buildEditRecordsTx(&reqBuild, &p)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
+		checkBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
 	}
 	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
@@ -209,6 +209,17 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 
 	apiResp.ApiRespOK(resp)
 	return nil
+}
+
+func checkBuildTxErr(err error, apiResp *api_code.ApiResp) {
+	if err == nil {
+		return
+	}
+	if strings.Contains(err.Error(), "not live") {
+		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
+	} else {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to build tx")
+	}
 }
 
 type editRecordsParams struct {

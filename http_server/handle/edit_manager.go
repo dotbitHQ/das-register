@@ -187,7 +187,8 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 	p.managerAddress = req.RawParam.ManagerAddress
 	txParams, err := h.buildEditManagerTx(&reqBuild, &p)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
+		checkBuildTxErr(err, apiResp)
+		//apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
 	}
 	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
