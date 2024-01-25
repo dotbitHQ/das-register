@@ -6,6 +6,7 @@ import (
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/dao"
+	"das_register_server/elastic"
 	"das_register_server/http_server"
 	"das_register_server/prometheus"
 	"das_register_server/timer"
@@ -92,6 +93,12 @@ func runServer(ctx *cli.Context) error {
 	}
 	rc := cache.Initialize(red)
 
+	es, err := elastic.InitEs()
+	if err != nil {
+		log.Warnf("es2.InitEs err: %s", err.Error())
+	} else {
+		log.Info("es ok")
+	}
 	// das core
 	dasCore, dasCache, err := initDasCore()
 	if err != nil {
@@ -198,6 +205,7 @@ func runServer(ctx *cli.Context) error {
 		InternalAddress:        config.Cfg.Server.HttpServerInternalAddr,
 		DbDao:                  dbDao,
 		Rc:                     rc,
+		Es:                     es,
 		Ctx:                    ctxServer,
 		DasCore:                dasCore,
 		DasCache:               dasCache,

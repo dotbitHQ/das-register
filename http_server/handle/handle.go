@@ -5,6 +5,7 @@ import (
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/dao"
+	"das_register_server/elastic"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -24,6 +25,7 @@ type HttpHandle struct {
 	ctx                    context.Context
 	dbDao                  *dao.DbDao
 	rc                     *cache.RedisCache
+	es                     *elastic.Es
 	dasCore                *core.DasCore
 	dasCache               *dascache.DasCache
 	txBuilderBase          *txbuilder.DasTxBuilderBase
@@ -35,6 +37,7 @@ type HttpHandle struct {
 type HttpHandleParams struct {
 	DbDao                  *dao.DbDao
 	Rc                     *cache.RedisCache
+	Es                     *elastic.Es
 	Ctx                    context.Context
 	DasCore                *core.DasCore
 	DasCache               *dascache.DasCache
@@ -48,6 +51,7 @@ func Initialize(p HttpHandleParams) *HttpHandle {
 	hh := HttpHandle{
 		dbDao:                  p.DbDao,
 		rc:                     p.Rc,
+		es:                     p.Es,
 		ctx:                    p.Ctx,
 		dasCore:                p.DasCore,
 		dasCache:               p.DasCache,
