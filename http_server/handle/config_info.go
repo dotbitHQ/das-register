@@ -83,7 +83,7 @@ func (h *HttpHandle) doConfigInfo(apiResp *api_code.ApiResp) error {
 	baseCapacity, _ := builder.RecordBasicCapacity()
 
 	resp.ReverseRecordCapacity = preparedFee + baseCapacity
-	resp.MinChangeCapacity = common.DasLockWithBalanceTypeOccupiedCkb
+	resp.MinChangeCapacity = common.DasLockWithBalanceTypeMinCkbCapacity
 	//
 	saleCellBasicCapacity, _ := builder.SaleCellBasicCapacity()
 	saleCellPreparedFeeCapacity, _ := builder.SaleCellPreparedFeeCapacity()

@@ -116,7 +116,7 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 			return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 		}
 		if parseAddress.Script.CodeHash.Hex() == dasContract.ContractTypeId.Hex() { // das lock 712
-			if !req.WithdrawAll && req.Amount.BigInt().Uint64() < common.DasLockWithBalanceTypeOccupiedCkb {
+			if !req.WithdrawAll && req.Amount.BigInt().Uint64() < common.DasLockWithBalanceTypeMinCkbCapacity {
 				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("amount [%s] is invalid", req.Amount))
 				return fmt.Errorf("amount not enough: %s", req.Amount)
 			}
@@ -156,7 +156,7 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 		DasCache:          h.dasCache,
 		LockScript:        dasLockScript,
 		CapacityNeed:      allAmount,
-		CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
+		CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity,
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
 	if err != nil {
