@@ -407,7 +407,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			DasCache:          h.dasCache,
 			LockScript:        dasLock,
 			CapacityNeed:      needCapacity + fee,
-			CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
+			CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity,
 			SearchOrder:       indexer.SearchOrderDesc,
 		})
 		if err != nil {

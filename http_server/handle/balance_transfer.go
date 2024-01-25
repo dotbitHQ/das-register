@@ -111,7 +111,7 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "check balance err")
 		return fmt.Errorf("GetBalanceCells err: %s", err.Error())
-	} else if totalAmount <= common.DasLockWithBalanceTypeOccupiedCkb { // 余额不足
+	} else if totalAmount <= common.DasLockWithBalanceTypeMinCkbCapacity { // 余额不足
 		if req.TransferAddress != "" {
 			parseAddress, err := address.Parse(req.TransferAddress)
 			if err != nil {
@@ -134,7 +134,7 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 				apiResp.ApiRespErr(api_code.ApiCodeError500, "check balance err: "+err.Error())
 				return fmt.Errorf("GetBalanceCells err: %s", err.Error())
 			}
-			if totalAmount <= common.DasLockWithBalanceTypeOccupiedCkb { // 余额不足
+			if totalAmount <= common.DasLockWithBalanceTypeMinCkbCapacity { // 余额不足
 				apiResp.ApiRespErr(api_code.ApiCodeInsufficientBalance, "insufficient balance")
 				return nil
 			}

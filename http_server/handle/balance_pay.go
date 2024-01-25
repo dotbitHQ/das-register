@@ -126,7 +126,7 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 		DasCache:          h.dasCache,
 		LockScript:        dasLock,
 		CapacityNeed:      needCapacity + fee,
-		CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
+		CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity,
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
 	if err != nil {
