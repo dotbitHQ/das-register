@@ -104,6 +104,7 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 			fmt.Println(222222222, newWord, charSet)
 			var tempRep http_api.ApiResp
 			_, status, _, _ := h.checkAccountBase(tempReq, &tempRep)
+			fmt.Println("recommend acc status ", tempReq.Account, status)
 			if tempRep.ErrNo != http_api.ApiCodeSuccess {
 				continue
 			}
