@@ -35,13 +35,20 @@ func (es *Es) InsertRecommendAcc(datas []RecommendAcc) {
 	fmt.Printf("error: %v, %v\n", response.Errors, iter)
 }
 
-func (es *Es) FuzzyQueryAcc(word string) (data []string, err error) {
-	fuzzyEnWordsQuery := elastic.NewFuzzyQuery("acc", word)
-	fuzzyEnWordsQuery.Fuzziness(2)
+func (es *Es) FuzzyQueryAcc(acc string, acc_length int, acc_type int) (data []string, err error) {
 	query := elastic.NewBoolQuery()
-	accLengthTermQuery := elastic.NewTermQuery("acc_length", len(word))
+	fuzzyEnWordsQuery := elastic.NewFuzzyQuery("acc", acc)
+	fuzzyEnWordsQuery.Fuzziness(2)
+	query.Must(fuzzyEnWordsQuery)
+	if acc_length > 0 {
+		accLengthTermQuery := elastic.NewTermQuery("acc_length", acc_length)
+		query.Must(accLengthTermQuery)
+	}
+	if acc_type > 0 {
+		accTypeTermQuery := elastic.NewTermQuery("acc_type", acc_type)
+		query.Must(accTypeTermQuery)
+	}
 
-	query.Must(fuzzyEnWordsQuery, accLengthTermQuery)
 	res, err := es.EsCli.Search().
 		Index("recommend-acc").
 		Query(query).
@@ -67,4 +74,25 @@ func (es *Es) FuzzyQueryAcc(word string) (data []string, err error) {
 	}
 	return
 
+}
+
+func (es *Es) TermQueryAcc(word string) (acc RecommendAcc, err error) {
+	query := elastic.NewTermQuery("acc", word)
+	res, err := es.EsCli.Search().
+		Index("recommend-acc").
+		Query(query).
+		From(0).
+		Size(10).
+		Do(context.Background())
+	if err != nil {
+		err = fmt.Errorf("Error performing the search request: %s ", err.Error())
+		return
+	}
+
+	if len(res.Hits.Hits) > 0 {
+		if err := json.Unmarshal(res.Hits.Hits[0].Source, &acc); err != nil {
+			return acc, err
+		}
+	}
+	return
 }

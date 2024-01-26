@@ -2151,7 +2151,9 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/pending-order' \
 
 ```json
 {
-  "account":"goad.bit"
+  "account":"goadgame.bit",
+  "page":1,
+  "size":6
 }
 ```
 
@@ -2161,13 +2163,18 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/pending-order' \
 {
   "err_no": 0,
   "err_msg": "",
-  "data": [
-    "goad.bit",
-    "goaf.bit",
-    "goal.bit",
-    "goan.bit",
-    "goas.bit"
-  ]
+  "data": {
+    "total_page": 2,
+    "page": 1,
+    "acc_list": [
+      "goadgame.bit",
+      "loadgame.bit",
+      "roadgame.bit",
+      "toadgame.bit",
+      "goalgame.bit",
+      "goasgame.bit"
+    ]
+  }
 }
 ```
 
