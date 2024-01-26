@@ -177,11 +177,11 @@ func (h *HttpHandle) tokenRecommend(tokens []string) (recommendTokens [][]string
 }
 func (h *HttpHandle) separateToken(acc string) (tokens []string, separateTag string, err error) {
 
-	res, err := h.es.FuzzyQueryAcc(acc, len(acc), 0)
+	res, err := h.es.TermQueryAcc(acc)
 	if err != nil {
 		fmt.Println("TermQuery err:", err.Error())
 	}
-	if len(res) > 0 {
+	if res.Acc != "" {
 		tokens = append(tokens, acc)
 	} else {
 		if strings.Contains(acc, "-") {
@@ -207,10 +207,6 @@ func (h *HttpHandle) separateToken(acc string) (tokens []string, separateTag str
 						break
 					}
 				}
-			}
-			//无意义单词
-			if len(tokens) == 0 {
-
 			}
 		}
 	}
