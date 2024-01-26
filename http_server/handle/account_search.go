@@ -123,6 +123,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 
 	confirmProposalHash := ""
 	confirmProposalHash, resp.Status, resp.IsSelf, resp.OpenTimestamp = h.checkAccountBase(req, apiResp)
+	log.Info("acc status ", req.Account, resp.Status)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if resp.Status != tables.SearchStatusRegisterAble && !resp.IsSelf {
