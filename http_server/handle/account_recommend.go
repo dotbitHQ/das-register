@@ -96,9 +96,13 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 				fmt.Println("GetAccountCharSetList err: ", err.Error())
 				continue
 			}
+
 			//check available
+			if strings.Contains(newWord, ".") {
+				continue
+			}
 			tempReq := &ReqAccountSearch{
-				Account:        newWord,
+				Account:        newWord + common.DasAccountSuffix,
 				AccountCharStr: charSet,
 			}
 			fmt.Println(222222222, newWord, charSet)
