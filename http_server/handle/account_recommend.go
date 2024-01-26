@@ -101,6 +101,9 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 			if strings.Contains(newWord, ".") {
 				continue
 			}
+			if newWord == acc {
+				continue
+			}
 			tempReq := &ReqAccountSearch{
 				Account:        newWord + common.DasAccountSuffix,
 				AccountCharStr: charSet,
