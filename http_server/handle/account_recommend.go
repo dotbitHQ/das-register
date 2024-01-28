@@ -214,6 +214,10 @@ func (h *HttpHandle) separateToken(acc string) (tokens []string, separateTag str
 
 }
 func (h *HttpHandle) pagingAcc(page, size int, acc []string) (data []string, totalPage int) {
+	data = make([]string, 0)
+	if len(acc) == 0 {
+		return
+	}
 	totalPage = len(acc) / size
 	if len(acc)%size != 0 {
 		totalPage += 1
