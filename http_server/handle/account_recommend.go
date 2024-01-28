@@ -14,7 +14,7 @@ import (
 type ReqAccountRecommend struct {
 	Account string `json:"account" binding:"required"`
 	Page    int    `json:"page" binding:"required,gte=1"`
-	Size    int    `json:"size" binding:"required,gte=6"`
+	Size    int    `json:"size" binding:"required,gte=5"`
 }
 type RepAccountRecommend struct {
 	TotalPage int      `json:"total_page"`
