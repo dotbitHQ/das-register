@@ -39,7 +39,10 @@ func (es *Es) FuzzyQueryAcc(acc string, acc_length int, acc_type int) (data []st
 	query := elastic.NewBoolQuery()
 	fuzzyEnWordsQuery := elastic.NewFuzzyQuery("acc", acc)
 	fuzzyEnWordsQuery.Fuzziness(2)
+
 	query.Must(fuzzyEnWordsQuery)
+	notEqAcc := elastic.NewTermsQuery("acc", "acc")
+	query.MustNot(notEqAcc)
 	if acc_length > 0 {
 		accLengthTermQuery := elastic.NewTermQuery("acc_length", acc_length)
 		query.Must(accLengthTermQuery)
