@@ -54,16 +54,8 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
-
-	count = strings.Count(acc, ".")
-	if count != 1 {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
-		return nil
-
-	}
 	acc = strings.ToLower(strings.ReplaceAll(acc, common.DasAccountSuffix, ""))
 
-	//tokens := strings.Split(strings.ToLower(acc), "-")
 	//separate token
 	tokens, separateType, err := h.separateToken(acc)
 	if err != nil {
@@ -74,47 +66,31 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 	log.Info("tokens: ", tokens)
 	//token recommend
 	recommendTokens, err := h.tokenRecommend(tokens)
+	if err != nil {
+		err = fmt.Errorf("tokenRecommend err: %s", err.Error())
+		apiResp.ApiRespErr(http_api.ApiCodeError500, fmt.Sprintf("tokenRecommend err"))
+		return err
+	}
 	log.Info("recommendTokens: ", recommendTokens)
 	//Combine recommend
 	length := len(tokens)
 	recommendAcc := make([]string, 0)
 	for i := 0; i < length; i++ {
-		//0,1,2
 		if i > 2 {
 			break
 		}
-		//变i，其他不变
 		for _, v := range recommendTokens[i] {
 			tempToken := make([]string, length)
 			copy(tempToken, tokens)
 			tempToken[i] = v
 			newWord := strings.ToLower(strings.Join(tempToken, separateType))
 			fmt.Println("newword: ", newWord)
-
-			charSet, err := h.dasCore.GetAccountCharSetList(newWord + common.DasAccountSuffix)
+			available, err := h.checkRecommendAvailable(acc, newWord)
 			if err != nil {
-				fmt.Println("GetAccountCharSetList err: ", err.Error())
+				log.Errorf("checkRecommendAvailable err: %s", err.Error())
 				continue
 			}
-
-			//check available
-			if strings.Contains(newWord, ".") {
-				continue
-			}
-			if newWord == acc {
-				continue
-			}
-			tempReq := &ReqAccountSearch{
-				Account:        newWord + common.DasAccountSuffix,
-				AccountCharStr: charSet,
-			}
-			fmt.Println(222222222, newWord, charSet)
-			var tempRep http_api.ApiResp
-			_, status, _, _ := h.checkAccountBase(tempReq, &tempRep)
-			if tempRep.ErrNo != http_api.ApiCodeSuccess {
-				continue
-			}
-			if status != tables.SearchStatusRegisterAble {
+			if !available {
 				continue
 			}
 			recommendAcc = append(recommendAcc, newWord+common.DasAccountSuffix)
@@ -130,26 +106,33 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 	return nil
 }
 
-//	func (h *HttpHandle) checkRecommendAvailable(acc) bool{
-//		charSet, err := h.dasCore.GetAccountCharSetList(acc + common.DasAccountSuffix)
-//		if err != nil {
-//			fmt.Println("GetAccountCharSetList err: ", err.Error())
-//			continue
-//		}
-//		//check available
-//		tempReq := &ReqAccountSearch{
-//			Account:        newWord,
-//			AccountCharStr: charSet,
-//		}
-//		var tempRep http_api.ApiResp
-//		_, status, _, _ := h.checkAccountBase(tempReq, &tempRep)
-//		if tempRep.ErrNo != http_api.ApiCodeSuccess {
-//			continue
-//		}
-//		if status != tables.SearchStatusRegisterAble {
-//			continue
-//		}
-//	}
+func (h *HttpHandle) checkRecommendAvailable(acc, recommendAcc string) (available bool, err error) {
+	charSet, err := h.dasCore.GetAccountCharSetList(recommendAcc + common.DasAccountSuffix)
+	if err != nil {
+		err = fmt.Errorf("GetAccountCharSetList err: %s", err.Error())
+		return false, err
+	}
+	//check available
+	if strings.Contains(recommendAcc, ".") {
+		return false, nil
+	}
+	if recommendAcc == acc {
+		return false, nil
+	}
+	tempReq := &ReqAccountSearch{
+		Account:        recommendAcc + common.DasAccountSuffix,
+		AccountCharStr: charSet,
+	}
+	var tempRep http_api.ApiResp
+	_, status, _, _ := h.checkAccountBase(tempReq, &tempRep)
+	if tempRep.ErrNo != http_api.ApiCodeSuccess {
+		return false, nil
+	}
+	if status != tables.SearchStatusRegisterAble {
+		return false, nil
+	}
+	return true, nil
+}
 func (h *HttpHandle) tokenRecommend(tokens []string) (recommendTokens [][]string, err error) {
 	//recommendTokens := make([][]string, 0)
 	for _, v := range tokens {
@@ -161,7 +144,6 @@ func (h *HttpHandle) tokenRecommend(tokens []string) (recommendTokens [][]string
 		recommendTokens = append(recommendTokens, recommendToken)
 	}
 	if len(recommendTokens) == 0 {
-		fmt.Println("add length 000000000")
 		for _, v := range tokens {
 			recommendToken, err := h.es.FuzzyQueryAcc(v, 0, 0)
 			if err != nil {
@@ -178,7 +160,8 @@ func (h *HttpHandle) separateToken(acc string) (tokens []string, separateTag str
 
 	res, err := h.es.TermQueryAcc(acc)
 	if err != nil {
-		fmt.Println("TermQuery err:", err.Error())
+		err = fmt.Errorf("TermQuery err: %s", err.Error())
+		return tokens, separateTag, err
 	}
 	if res.Acc != "" {
 		tokens = append(tokens, acc)
@@ -194,12 +177,14 @@ func (h *HttpHandle) separateToken(acc string) (tokens []string, separateTag str
 				fmt.Println(prefix, suffix)
 				prefixAcc, err := h.es.TermQueryAcc(prefix)
 				if err != nil {
-					fmt.Println("TermQuery err:", err.Error())
+					err = fmt.Errorf("TermQuery err:", err.Error())
+					return tokens, separateTag, err
 				}
 				if prefixAcc.Acc != "" {
 					suffixAcc, err := h.es.TermQueryAcc(suffix)
 					if err != nil {
-						fmt.Println("TermQuery err:", err.Error())
+						err = fmt.Errorf("TermQuery err:", err.Error())
+						return tokens, separateTag, err
 					}
 					if suffixAcc.Acc != "" {
 						tokens = append(tokens, prefix, suffix)
