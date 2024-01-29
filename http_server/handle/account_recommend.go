@@ -13,13 +13,13 @@ import (
 
 type ReqAccountRecommend struct {
 	Account string `json:"account" binding:"required"`
-	Page    int    `json:"page" binding:"required,gte=1"`
-	Size    int    `json:"size" binding:"required,gte=5"`
+	//Page    int    `json:"page" binding:"required,gte=1"`
+	//Size    int    `json:"size" binding:"required,gte=5"`
 }
 type RepAccountRecommend struct {
-	TotalPage int      `json:"total_page"`
-	Page      int      `json:"page"`
-	AccList   []string `json:"acc_list"`
+	//TotalPage int      `json:"total_page"`
+	//Page      int      `json:"page"`
+	AccList []string `json:"acc_list"`
 }
 
 func (h *HttpHandle) AccountRecommend(ctx *gin.Context) {
@@ -98,10 +98,10 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 	}
 
 	//paging
-	data, totalPage := h.pagingAcc(req.Page, req.Size, recommendAcc)
-	resp.Page = req.Page
-	resp.TotalPage = totalPage
-	resp.AccList = data
+	//data, totalPage := h.pagingAcc(req.Page, req.Size, recommendAcc)
+	//resp.Page = req.Page
+	//resp.TotalPage = totalPage
+	resp.AccList = recommendAcc
 	apiResp.ApiRespOK(resp)
 	return nil
 }
