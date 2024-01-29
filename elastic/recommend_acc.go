@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/olivere/elastic/v7"
 	"strconv"
-	"strings"
 )
 
 type RecommendAcc struct {
@@ -41,7 +40,7 @@ func (es *Es) FuzzyQueryAcc(acc string, acc_length int, acc_type int) (data []st
 	fuzzyEnWordsQuery.Fuzziness(2)
 
 	query.Must(fuzzyEnWordsQuery)
-	notEqAcc := elastic.NewTermsQuery("acc", "acc")
+	notEqAcc := elastic.NewTermsQuery("acc", acc)
 	query.MustNot(notEqAcc)
 	if acc_length > 0 {
 		accLengthTermQuery := elastic.NewTermQuery("acc_length", acc_length)
@@ -62,8 +61,6 @@ func (es *Es) FuzzyQueryAcc(acc string, acc_length int, acc_type int) (data []st
 		err = fmt.Errorf("Error performing the search request: %s ", err.Error())
 		return
 	}
-	fmt.Println("Search Results:")
-	fmt.Println(strings.Repeat("-", 30))
 
 	// 读取查询结果
 	for _, v := range res.Hits.Hits {
@@ -72,7 +69,6 @@ func (es *Es) FuzzyQueryAcc(acc string, acc_length int, acc_type int) (data []st
 		if err := json.Unmarshal(v.Source, &temp); err != nil {
 			continue
 		}
-		fmt.Println(123123, temp)
 		data = append(data, temp.Acc)
 	}
 	return
