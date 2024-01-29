@@ -114,6 +114,11 @@ type CfgServer struct {
 			DbNum    int    `json:"db_num" yaml:"db_num"`
 		} `json:"redis" yaml:"redis"`
 	} `json:"cache" yaml:"cache"`
+	ES struct {
+		Addr     string `json:"addr" yaml:"addr"`
+		User     string `json:"user" yaml:"user"`
+		Password string `json:"password" yaml:"password"`
+	} `json:"es" yaml:"es"`
 	Das struct {
 		AccountMinLength     uint8           `json:"account_min_length" yaml:"account_min_length"`
 		AccountMaxLength     uint8           `json:"account_max_length" yaml:"account_max_length"`

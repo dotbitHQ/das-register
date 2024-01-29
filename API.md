@@ -21,6 +21,7 @@
     * [Account Auction Price](#account-auction-price)
     * [Account Auction OrderStatus](#account-auction-order_status)
     * [Account Auction PendingOrders](#account-auction-pending_orders)
+    * [Account Recommend](#account-recommend)
 * [OPERATE API LIST](#operate-api-list)
     * [Reverse Declare (Deprecated)](#reverse-declare)
     * [Reverse Redeclare (Deprecated)](#reverse-redeclare)
@@ -2139,6 +2140,55 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/pending-order' \
     }
 }'
 ```
+
+#### Account Recommend
+
+**Request**
+
+* path: /account/recommend
+  * get recommend account list
+* param:
+
+```json
+{
+  "account":"goadgame.bit",
+  "page":1,
+  "size":6
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "total_page": 2,
+    "page": 1,
+    "acc_list": [
+      "goadgame.bit",
+      "loadgame.bit",
+      "roadgame.bit",
+      "toadgame.bit",
+      "goalgame.bit",
+      "goasgame.bit"
+    ]
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://localhost:8120/v1/account/recommend' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account":"goad.bit"
+}'
+```
+
+
 
 #### Account Auction Bid
 

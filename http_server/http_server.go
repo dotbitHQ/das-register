@@ -4,6 +4,7 @@ import (
 	"context"
 	"das_register_server/cache"
 	"das_register_server/dao"
+	"das_register_server/elastic"
 	"das_register_server/http_server/handle"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
@@ -36,6 +37,7 @@ type HttpServerParams struct {
 	InternalAddress        string
 	DbDao                  *dao.DbDao
 	Rc                     *cache.RedisCache
+	Es                     *elastic.Es
 	DasCore                *core.DasCore
 	DasCache               *dascache.DasCache
 	TxBuilderBase          *txbuilder.DasTxBuilderBase
@@ -54,6 +56,7 @@ func Initialize(p HttpServerParams) (*HttpServer, error) {
 		h: handle.Initialize(handle.HttpHandleParams{
 			DbDao:                  p.DbDao,
 			Rc:                     p.Rc,
+			Es:                     p.Es,
 			DasCore:                p.DasCore,
 			Ctx:                    p.Ctx,
 			DasCache:               p.DasCache,
