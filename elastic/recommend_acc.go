@@ -62,7 +62,6 @@ func (es *Es) FuzzyQueryAcc(acc string, acc_length int, acc_type int) (data []st
 		return
 	}
 
-	// 读取查询结果
 	for _, v := range res.Hits.Hits {
 		var temp RecommendAcc
 		fmt.Println(v.Id, string(v.Source))
