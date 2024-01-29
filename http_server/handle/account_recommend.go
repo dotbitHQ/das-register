@@ -141,7 +141,10 @@ func (h *HttpHandle) tokenRecommend(tokens []string) (recommendTokens [][]string
 			err = fmt.Errorf("FuzzyQueryAcc err: ", err.Error())
 			return recommendTokens, err
 		}
-		recommendTokens = append(recommendTokens, recommendToken)
+		if len(recommendToken) != 0 {
+			recommendTokens = append(recommendTokens, recommendToken)
+		}
+
 	}
 	if len(recommendTokens) == 0 {
 		for _, v := range tokens {
@@ -151,7 +154,9 @@ func (h *HttpHandle) tokenRecommend(tokens []string) (recommendTokens [][]string
 				err = fmt.Errorf("FuzzyQueryAcc err: ", err.Error())
 				return recommendTokens, err
 			}
-			recommendTokens = append(recommendTokens, recommendToken)
+			if len(recommendToken) != 0 {
+				recommendTokens = append(recommendTokens, recommendToken)
+			}
 		}
 	}
 	return
