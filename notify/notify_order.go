@@ -41,6 +41,8 @@ func SendLarkOrderNotify(p *SendLarkOrderNotifyParam) {
 		amount = amount.DivRound(decimal.New(1, 8), 8)
 	case tables.TokenIdStripeUSD:
 		amount = amount.DivRound(decimal.New(1, 2), 2)
+	case tables.ToKenIdDidPoint:
+		amount = amount.DivRound(decimal.New(1, 6), 6)
 	}
 	msg = fmt.Sprintf(msg, p.Account, p.OrderId, address, p.PayTokenId, amount.String(), time.Now().Format("2006-01-02 15:04:05"))
 	SendLarkTextNotify(p.Key, p.Action, msg)
