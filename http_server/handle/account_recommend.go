@@ -101,6 +101,10 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 	//data, totalPage := h.pagingAcc(req.Page, req.Size, recommendAcc)
 	//resp.Page = req.Page
 	//resp.TotalPage = totalPage
+	if len(recommendAcc) == 0 {
+		apiResp.ApiRespErr(http_api.ApiCodeRecommendAccEmpty, fmt.Sprintf("recommend acc is empty"))
+		return nil
+	}
 	resp.AccList = recommendAcc
 	apiResp.ApiRespOK(resp)
 	return nil

@@ -3,7 +3,7 @@ module das_register_server
 go 1.18
 
 require (
-	github.com/dotbitHQ/das-lib v1.1.1-0.20240125034851-c30b02ee40e2
+	github.com/dotbitHQ/das-lib v1.1.1-0.20240131143151-043ce7c98d76
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/getsentry/sentry-go v0.25.0
@@ -20,6 +20,8 @@ require (
 	github.com/urfave/cli/v2 v2.10.2
 	gorm.io/gorm v1.23.6
 )
+
+require github.com/olivere/elastic/v7 v7.0.32
 
 require (
 	github.com/Andrew-M-C/go.emoji v1.0.1 // indirect
@@ -62,7 +64,6 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/olivere/elastic/v7 v7.0.32 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.4.1-0.20230718164431-9a2bf3000d16 // indirect
