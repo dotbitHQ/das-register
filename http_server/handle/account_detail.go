@@ -173,6 +173,9 @@ func (h *HttpHandle) checkDutchAuction(expiredAt, nowTime uint64) (status tables
 func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.ApiResp) error {
 	var resp RespAccountDetail
 	var err error
+	if !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
+		req.Account += common.DasAccountSuffix
+	}
 	resp.Account = req.Account
 	resp.Status = tables.SearchStatusRegisterAble
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
@@ -188,7 +191,7 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 
 	// check sub account
 	count := strings.Count(req.Account, ".")
-	if count == 1 && acc.Id > 0 {
+	if acc.Id > 0 && acc.ParentAccountId == "" {
 		//now < expired_at + 90 + 27 => expired_at > now-90-27
 		//expired_at+90 < now => expired_at < now - 90
 		//now > expired_at+90+27
