@@ -49,7 +49,7 @@ func (b *BlockParser) ActionBidExpiredAccountAuction(req FuncTransactionHandleRe
 		price = order.BasicPrice.Add(order.PremiumPrice).String()
 	}
 
-	larkText := fmt.Sprintf("Dutch auction: %s 1 %s %s", account, owner, " price: ", price)
+	larkText := fmt.Sprintf("Dutch auction: %s 1 %s price: %s", account, owner, price)
 	notify.SendLarkTextNotify(config.Cfg.Notify.LarkRegisterOkKey, "", larkText)
 	return
 }
