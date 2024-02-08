@@ -39,7 +39,7 @@ func (b *BlockParser) ActionBidExpiredAccountAuction(req FuncTransactionHandleRe
 		owner = owner[len(owner)-4:]
 	}
 
-	order, err := b.DbDao.GetAuctionOrderStatus(oHex.ChainType, oHex.AddressHex, outpoint)
+	order, err := b.DbDao.GetAuctionOrderStatus(oHex.ChainType, oHex.AddressHex, req.TxHash)
 	if err != nil {
 		resp.Err = fmt.Errorf("GetAuctionOrderStatus err: %s", err.Error())
 		return
@@ -49,7 +49,7 @@ func (b *BlockParser) ActionBidExpiredAccountAuction(req FuncTransactionHandleRe
 		price = order.BasicPrice.Add(order.PremiumPrice).String()
 	}
 
-	larkText := fmt.Sprintf("Dutch auction: %s 1 %s price: %s", account, owner, price)
+	larkText := fmt.Sprintf("Dutch auction: %s 1 %s %s", account, owner, price)
 	notify.SendLarkTextNotify(config.Cfg.Notify.LarkRegisterOkKey, "", larkText)
 	return
 }
