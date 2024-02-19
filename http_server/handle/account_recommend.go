@@ -145,7 +145,7 @@ func (h *HttpHandle) tokenRecommend(tokens []string) (recommendTokens [][]string
 			err = fmt.Errorf("FuzzyQueryAcc err: ", err.Error())
 			return recommendTokens, err
 		}
-
+		recommendToken = lowerAndUnique(recommendToken)
 		recommendTokens = append(recommendTokens, recommendToken)
 
 	}
@@ -157,7 +157,7 @@ func (h *HttpHandle) tokenRecommend(tokens []string) (recommendTokens [][]string
 				err = fmt.Errorf("FuzzyQueryAcc err: ", err.Error())
 				return recommendTokens, err
 			}
-
+			recommendToken = lowerAndUnique(recommendToken)
 			recommendTokens = append(recommendTokens, recommendToken)
 
 		}
@@ -223,4 +223,16 @@ func (h *HttpHandle) pagingAcc(page, size int, acc []string) (data []string, tot
 		data = acc[start:]
 	}
 	return
+}
+func lowerAndUnique(data []string) []string {
+	uniqueMap := make(map[string]bool)
+	var newData []string
+	for _, str := range data {
+		lowerStr := strings.ToLower(str)
+		if !uniqueMap[lowerStr] {
+			uniqueMap[lowerStr] = true
+			newData = append(newData, lowerStr)
+		}
+	}
+	return newData
 }
