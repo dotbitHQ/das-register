@@ -19,8 +19,8 @@ type TableAuctionOrder struct {
 	ChainType      common.ChainType         `json:"chain_type" gorm:"column:chain_type;index:k_chain_type_address;type:smallint(6) NOT NULL DEFAULT '0' COMMENT 'order chain type'"`
 	AlgorithmId    common.DasAlgorithmId    `json:"algorithm_id" gorm:"column:algorithm_id"`
 	SubAlgorithmId common.DasSubAlgorithmId `json:"sub_algorithm_id" gorm:"column:sub_algorithm_id"`
-	BasicPrice     decimal.Decimal          `json:"basic_price" gorm:"column:basic_price;type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT ''"`
-	PremiumPrice   decimal.Decimal          `json:"premium_price" gorm:"column:premium_price;type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT ''"`
+	BasicPrice     decimal.Decimal          `json:"basic_price" gorm:"column:basic_price;type:decimal(50,10) NOT NULL DEFAULT '0' COMMENT ''"`
+	PremiumPrice   decimal.Decimal          `json:"premium_price" gorm:"column:premium_price;type:decimal(50,10) NOT NULL DEFAULT '0' COMMENT ''"`
 	Status         int                      `json:"status" `
 	BidTime        int64                    `json:"bid_time" gorm:"column:bid_time;type:bigint NOT NULL DEFAULT '0'"`
 	Outpoint       string                   `json:"outpoint" gorm:"column:outpoint;type:varchar(255) DEFAULT NULL"`
