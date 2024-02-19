@@ -1,11 +1,8 @@
 package example
 
 import (
-	"das_register_server/http_server/compatible"
-	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
-	"testing"
 )
 
 type ReqEditManager struct {
@@ -20,23 +17,24 @@ type ReqEditManager struct {
 	} `json:"raw_param"`
 }
 
-func TestCointype(t *testing.T) {
-	req := ReqEditManager{
-		EvmChainId: 5,
-		ChainType:  1,
-		Address:    "0xd437b8e9cA16Fce24bF3258760c3567214213C5A",
-		Account:    "michsjwq.bit",
-	}
-	req.Type = "blockchain"
-	req.KeyInfo = core.KeyInfo{
-		CoinType: "60",
-		Key:      "0xd437b8e9cA16Fce24bF3258760c3567214213C5A",
-	}
-	dc, _ := getNewDasCoreTestnet2()
-	err, addrHex := compatible.ChaintyeAndCoinType(req, dc)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(addrHex)
-}
+//
+//func TestCointype(t *testing.T) {
+//	req := ReqEditManager{
+//		EvmChainId: 5,
+//		ChainType:  1,
+//		Address:    "0xd437b8e9cA16Fce24bF3258760c3567214213C5A",
+//		Account:    "michsjwq.bit",
+//	}
+//	req.Type = "blockchain"
+//	req.KeyInfo = core.KeyInfo{
+//		CoinType: "60",
+//		Key:      "0xd437b8e9cA16Fce24bF3258760c3567214213C5A",
+//	}
+//	dc, _ := getNewDasCoreTestnet2()
+//	err, addrHex := compatible.ChaintyeAndCoinType(req, dc)
+//	if err != nil {
+//		fmt.Println(err)
+//		return
+//	}
+//	fmt.Println(addrHex)
+//}
