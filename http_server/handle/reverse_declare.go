@@ -257,6 +257,7 @@ func (h *HttpHandle) GetBalanceCell(p *ParamBalance) (uint64, []*indexer.LiveCel
 
 func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txbuilder.BuildTransactionParams, txFee uint64) error {
 	if txFee >= common.UserCellTxFeeLimit {
+		log.Info("Das pay tx fee :", txFee)
 		change, liveBalanceCell, err := h.GetBalanceCell(&ParamBalance{
 			DasLock:      h.serverScript,
 			NeedCapacity: txFee,
