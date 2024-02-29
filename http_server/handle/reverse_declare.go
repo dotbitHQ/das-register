@@ -18,6 +18,7 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 type ReqReverseDeclare struct {
@@ -219,27 +220,100 @@ type DeclareParams struct {
 	FeeCapacity     uint64
 }
 
+var balanceLock sync.Mutex
+
+type ParamBalance struct {
+	DasLock      *types.Script
+	DasType      *types.Script
+	NeedCapacity uint64
+}
+
+func (h *HttpHandle) GetBalanceCell(p *ParamBalance) (uint64, []*indexer.LiveCell, error) {
+	if p.NeedCapacity == 0 {
+		return 0, nil, nil
+	}
+	balanceLock.Lock()
+	defer balanceLock.Unlock()
+
+	liveCells, total, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+		DasCache:          h.dasCache,
+		LockScript:        p.DasLock,
+		CapacityNeed:      p.NeedCapacity,
+		CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity,
+		SearchOrder:       indexer.SearchOrderAsc,
+	})
+	if err != nil {
+		return 0, nil, fmt.Errorf("GetBalanceCells err: %s", err.Error())
+	}
+
+	var outpoints []string
+	for _, v := range liveCells {
+		outpoints = append(outpoints, common.OutPointStruct2String(v.OutPoint))
+	}
+	h.dasCache.AddOutPoint(outpoints)
+
+	return total - p.NeedCapacity, liveCells, nil
+}
+
+func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txbuilder.BuildTransactionParams, txFee uint64) error {
+	if txFee >= common.UserCellTxFeeLimit {
+		change, liveBalanceCell, err := h.GetBalanceCell(&ParamBalance{
+			DasLock:      h.serverScript,
+			NeedCapacity: txFee,
+		})
+		if err != nil {
+			return fmt.Errorf("GetBalanceCell err %s", err.Error())
+		}
+		for _, v := range liveBalanceCell {
+			txParams.Inputs = append(txParams.Inputs, &types.CellInput{
+				PreviousOutput: v.OutPoint,
+			})
+		}
+		// change balance_cell
+		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
+			Capacity: change,
+			Lock:     h.serverScript,
+		})
+
+		txParams.OutputsData = append(txParams.OutputsData, []byte{})
+		txBuilder = txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, nil)
+		if err := txBuilder.BuildTransaction(txParams); err != nil {
+			return fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
+		}
+	}
+	return nil
+}
+
 func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (*SignInfo, error) {
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, nil)
 	if err := txBuilder.BuildTransaction(txParams); err != nil {
 		return nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
 	}
-
+	sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
+	txFeeRate := config.Cfg.Server.TxTeeRate
+	if txFeeRate == 0 {
+		txFeeRate = 1
+	}
+	txFee := txFeeRate*sizeInBlock + 1000
 	var skipGroups []int
+
 	switch req.Action {
 	case common.DasActionConfigSubAccountCustomScript:
 		skipGroups = []int{1}
-		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
-		changeCapacity := txBuilder.Transaction.Outputs[1].Capacity - sizeInBlock - 1000
+		changeCapacity := txBuilder.Transaction.Outputs[1].Capacity - txFee
 		txBuilder.Transaction.Outputs[1].Capacity = changeCapacity
 	case common.DasActionTransfer:
-		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
-		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity + common.OneCkb - sizeInBlock - 1000
+		//sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
+		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity + common.OneCkb - txFee
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
+		if txFee >= common.UserCellTxFeeLimit {
+			txParams.Outputs[len(txParams.Outputs)-1].Capacity += common.OneCkb
+		}
+
 	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount:
-		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
-		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - sizeInBlock - 1000
+		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
+
 		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
 	case common.DasActionBidExpiredAccountAuction:
 		accTx, err := h.dasCore.Client().GetTransaction(h.ctx, txParams.Inputs[0].PreviousOutput.TxHash)
@@ -256,11 +330,16 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		if !accLock.Equals(dpLock) {
 			skipGroups = []int{0}
 		}
-		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
-		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - sizeInBlock - 1000
+		//sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
+		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
 		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
 	}
+
+	if err := h.checkTxFee(txBuilder, txParams, txFee); err != nil {
+		return nil, fmt.Errorf("checkTxFee err %s ", err.Error())
+	}
+
 	signList, err := txBuilder.GenerateDigestListFromTx(skipGroups)
 	if err != nil {
 		return nil, fmt.Errorf("txBuilder.GenerateDigestListFromTx err: %s", err.Error())

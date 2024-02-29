@@ -84,6 +84,7 @@ type CfgServer struct {
 		CapacityWhitelistPrivate string `json:"capacity_whitelist_private" yaml:"capacity_whitelist_private"`
 		SplitCount               int    `json:"split_count" yaml:"split_count"`
 		SplitAmount              uint64 `json:"split_amount" yaml:"split_amount"`
+		TxTeeRate                uint64 `json:"tx_fee_rate" yaml:"tx_fee_rate"`
 	} `json:"server" yaml:"server"`
 	Origins          []string          `json:"origins" yaml:"origins"`
 	InviterWhitelist map[string]string `json:"inviter_whitelist" yaml:"inviter_whitelist"`
