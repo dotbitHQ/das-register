@@ -255,7 +255,7 @@ func (h *HttpHandle) GetBalanceCell(p *ParamBalance) (uint64, []*indexer.LiveCel
 	return total - p.NeedCapacity, liveCells, nil
 }
 
-func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txbuilder.BuildTransactionParams, txFee uint64) error {
+func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txbuilder.BuildTransactionParams, txFee uint64) (*txbuilder.DasTxBuilder, error) {
 	if txFee >= common.UserCellTxFeeLimit {
 		log.Info("Das pay tx fee :", txFee)
 		change, liveBalanceCell, err := h.GetBalanceCell(&ParamBalance{
@@ -263,7 +263,7 @@ func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txb
 			NeedCapacity: txFee,
 		})
 		if err != nil {
-			return fmt.Errorf("GetBalanceCell err %s", err.Error())
+			return nil, fmt.Errorf("GetBalanceCell err %s", err.Error())
 		}
 		for _, v := range liveBalanceCell {
 			txParams.Inputs = append(txParams.Inputs, &types.CellInput{
@@ -280,11 +280,11 @@ func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txb
 		txBuilder = txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, nil)
 		err = txBuilder.BuildTransaction(txParams)
 		if err != nil {
-			return fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
+			return nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
 		}
 		log.Info("buildTx: das pay tx fee: ", txBuilder.TxString())
 	}
-	return nil
+	return txBuilder, nil
 }
 
 func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (*SignInfo, error) {
@@ -339,7 +339,8 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
 	}
 
-	if err := h.checkTxFee(txBuilder, txParams, txFee); err != nil {
+	txBuilder, err := h.checkTxFee(txBuilder, txParams, txFee)
+	if err != nil {
 		return nil, fmt.Errorf("checkTxFee err %s ", err.Error())
 	}
 
