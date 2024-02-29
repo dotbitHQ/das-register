@@ -343,7 +343,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	if err := h.checkTxFee(txBuilder, txParams, txFee); err != nil {
 		return nil, fmt.Errorf("checkTxFee err %s ", err.Error())
 	}
-
+	log.Info("buildTx: 111 ", txBuilder.TxString())
 	signList, err := txBuilder.GenerateDigestListFromTx(skipGroups)
 	if err != nil {
 		return nil, fmt.Errorf("txBuilder.GenerateDigestListFromTx err: %s", err.Error())
