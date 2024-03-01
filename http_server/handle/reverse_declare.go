@@ -315,12 +315,13 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	}
 	txFee := txFeeRate*sizeInBlock + 1000
 	var skipGroups []int
-	checkTxFeeParam := &core.CheckTxFeeParam{
+	checkTxFeeParam := &txbuilder.CheckTxFeeParam{
 		TxParams:      rebuildTxParams,
 		DasCache:      h.dasCache,
 		TxFee:         txFee,
 		FeeLock:       h.serverScript,
 		TxBuilderBase: h.txBuilderBase,
+		DasCore:       h.dasCore,
 	}
 	switch req.Action {
 	case common.DasActionConfigSubAccountCustomScript:
@@ -364,7 +365,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	//if err != nil {
 	//	return nil, fmt.Errorf("checkTxFee err %s ", err.Error())
 	//}
-	newTxBuilder, err := h.dasCore.CheckTxFee(checkTxFeeParam)
+	newTxBuilder, err := txbuilder.CheckTxFee(checkTxFeeParam)
 	if err != nil {
 		return nil, fmt.Errorf("CheckTxFee err %s ", err.Error())
 	}
