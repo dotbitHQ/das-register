@@ -288,6 +288,7 @@ func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txb
 }
 
 func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (*SignInfo, error) {
+	rebuildTxParams := txParams
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, nil)
 	if err := txBuilder.BuildTransaction(txParams); err != nil {
 		return nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
@@ -310,7 +311,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity + common.OneCkb - txFee
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
 		if txFee >= common.UserCellTxFeeLimit {
-			txParams.Outputs[len(txParams.Outputs)-1].Capacity += common.OneCkb
+			rebuildTxParams.Outputs[len(rebuildTxParams.Outputs)-1].Capacity += common.OneCkb
 		}
 
 	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount:
@@ -339,7 +340,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
 	}
 
-	txBuilder, err := h.checkTxFee(txBuilder, txParams, txFee)
+	txBuilder, err := h.checkTxFee(txBuilder, rebuildTxParams, txFee)
 	if err != nil {
 		return nil, fmt.Errorf("checkTxFee err %s ", err.Error())
 	}
