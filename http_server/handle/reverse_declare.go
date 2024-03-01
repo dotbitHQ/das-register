@@ -284,13 +284,11 @@ func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txb
 			return nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
 		}
 		log.Info("buildTx: das pay tx fee: ", txBuilder.TxString())
-
 	}
 	return txBuilder, nil
 }
 
 func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (*SignInfo, error) {
-	rebuildTxParams := *txParams
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, nil)
 	if err := txBuilder.BuildTransaction(txParams); err != nil {
 		return nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
@@ -312,15 +310,23 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		//sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity + common.OneCkb - txFee
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
-		if txFee >= common.UserCellTxFeeLimit {
-			rebuildTxParams.Outputs[len(rebuildTxParams.Outputs)-1].Capacity += common.OneCkb
-		}
+		//if txFee >= common.UserCellTxFeeLimit {
+		//	rebuildTxParams.Outputs[len(rebuildTxParams.Outputs)-1].Capacity += common.OneCkb
+		//}
 
 	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount:
-		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
-		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
+		if txFee >= common.UserCellTxFeeLimit {
+			var err1 error
+			txBuilder, err1 = h.checkTxFee(txBuilder, txParams, txFee)
+			if err1 != nil {
+				return nil, fmt.Errorf("checkTxFee err %s ", err1.Error())
+			}
+		} else {
+			changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
+			txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
+			log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
+		}
 
-		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
 	case common.DasActionBidExpiredAccountAuction:
 		accTx, err := h.dasCore.Client().GetTransaction(h.ctx, txParams.Inputs[0].PreviousOutput.TxHash)
 		if err != nil {
@@ -342,11 +348,6 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
 	}
 
-	txBuilder, err := h.checkTxFee(txBuilder, &rebuildTxParams, txFee)
-	if err != nil {
-		return nil, fmt.Errorf("checkTxFee err %s ", err.Error())
-	}
-	log.Info("buildTx: 111 ", txBuilder.TxString())
 	signList, err := txBuilder.GenerateDigestListFromTx(skipGroups)
 	if err != nil {
 		return nil, fmt.Errorf("txBuilder.GenerateDigestListFromTx err: %s", err.Error())
