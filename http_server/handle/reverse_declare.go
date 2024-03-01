@@ -315,7 +315,13 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	}
 	txFee := txFeeRate*sizeInBlock + 1000
 	var skipGroups []int
-
+	checkTxFeeParam := &core.CheckTxFeeParam{
+		TxParams:      rebuildTxParams,
+		DasCache:      h.dasCache,
+		TxFee:         txFee,
+		FeeLock:       h.serverScript,
+		TxBuilderBase: h.txBuilderBase,
+	}
 	switch req.Action {
 	case common.DasActionConfigSubAccountCustomScript:
 		skipGroups = []int{1}
@@ -330,17 +336,9 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		//}
 
 	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount:
-		//if txFee >= common.UserCellTxFeeLimit {
-		//	var err1 error
-		//	txBuilder, err1 = h.checkTxFee(txBuilder, txParams, txFee)
-		//	if err1 != nil {
-		//		return nil, fmt.Errorf("checkTxFee err %s ", err1.Error())
-		//	}
-		//} else {
 		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
 		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
-		//}
 
 	case common.DasActionBidExpiredAccountAuction:
 		accTx, err := h.dasCore.Client().GetTransaction(h.ctx, txParams.Inputs[0].PreviousOutput.TxHash)
@@ -362,11 +360,17 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
 	}
 
-	txBuilder, err = h.checkTxFee(txBuilder, rebuildTxParams, txFee)
+	//txBuilder, err = h.checkTxFee(txBuilder, rebuildTxParams, txFee)
+	//if err != nil {
+	//	return nil, fmt.Errorf("checkTxFee err %s ", err.Error())
+	//}
+	newTxBuilder, err := h.dasCore.CheckTxFee(checkTxFeeParam)
 	if err != nil {
-		return nil, fmt.Errorf("checkTxFee err %s ", err.Error())
+		return nil, fmt.Errorf("CheckTxFee err %s ", err.Error())
 	}
-
+	if newTxBuilder != nil {
+		txBuilder = newTxBuilder
+	}
 	signList, err := txBuilder.GenerateDigestListFromTx(skipGroups)
 	if err != nil {
 		return nil, fmt.Errorf("txBuilder.GenerateDigestListFromTx err: %s", err.Error())
