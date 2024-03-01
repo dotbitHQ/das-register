@@ -288,7 +288,7 @@ func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txb
 }
 
 func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (*SignInfo, error) {
-	rebuildTxParams := txParams
+	rebuildTxParams := *txParams
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, nil)
 	if err := txBuilder.BuildTransaction(txParams); err != nil {
 		return nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
@@ -340,7 +340,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		log.Info("buildTx:", req.Action, sizeInBlock, changeCapacity)
 	}
 
-	txBuilder, err := h.checkTxFee(txBuilder, rebuildTxParams, txFee)
+	txBuilder, err := h.checkTxFee(txBuilder, &rebuildTxParams, txFee)
 	if err != nil {
 		return nil, fmt.Errorf("checkTxFee err %s ", err.Error())
 	}
