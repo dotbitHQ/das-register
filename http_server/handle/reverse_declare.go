@@ -278,6 +278,7 @@ func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txb
 
 		txParams.OutputsData = append(txParams.OutputsData, []byte{})
 		txBuilder = txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, nil)
+		log.Info("txparams daspay tx fee: ", txParams.Outputs[0].Capacity)
 		err = txBuilder.BuildTransaction(txParams)
 		if err != nil {
 			return nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
