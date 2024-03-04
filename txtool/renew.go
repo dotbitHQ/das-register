@@ -71,12 +71,18 @@ func (t *TxTool) DoOrderRenewTx(order *tables.TableDasOrderInfo) error {
 	}
 
 	sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
+
+	txFeeRate := config.Cfg.Server.TxTeeRate
+	if txFeeRate == 0 {
+		txFeeRate = 1
+	}
+	txFee := txFeeRate * sizeInBlock
 	changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity
 	if sizeInBlock > 1e4 {
-		changeCapacity = changeCapacity - sizeInBlock
+		changeCapacity = changeCapacity - txFee
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
 	}
-	log.Info("changeCapacity:", sizeInBlock, changeCapacity)
+	log.Info("changeCapacity:", txFee, changeCapacity)
 
 	// update order
 	if err := t.DbDao.UpdatePayStatus(order.OrderId, tables.TxStatusSending, tables.TxStatusOk); err != nil {
