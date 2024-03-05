@@ -144,8 +144,8 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 		}
 	}
 
-	feeAmount := uint64(1e6)
-	transferAmount := totalAmount - feeAmount
+	//feeAmount := uint64(1e6)
+	transferAmount := totalAmount // - feeAmount
 	var reqBuild reqBuildTx
 	reqBuild.Action = tables.DasActionTransferBalance
 	reqBuild.Account = ""
@@ -158,7 +158,7 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 		LiveCellList:   liveCells,
 		InputsAmount:   totalAmount,
 		TransferAmount: transferAmount,
-		Fee:            feeAmount,
+		Fee:            0,
 		FromScript:     fromLock,
 		ToScript:       toLock,
 		ToType:         toType,
