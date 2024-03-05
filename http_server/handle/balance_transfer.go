@@ -220,7 +220,7 @@ func (h *HttpHandle) buildBalanceTransferTx(req *reqBuildTx, p *balanceTransferP
 		Type:     p.ToType,
 	})
 	txParams.OutputsData = append(txParams.OutputsData, []byte{})
-	change := p.InputsAmount - p.TransferAmount - p.Fee
+	change := p.InputsAmount - p.TransferAmount //- p.Fee
 	if change > 0 {
 		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 			Capacity: change,

@@ -318,7 +318,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		changeCapacity := txBuilder.Transaction.Outputs[1].Capacity - txFee
 		txBuilder.Transaction.Outputs[1].Capacity = changeCapacity
 		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
-	case common.DasActionTransfer, common.DasActionWithdrawFromWallet:
+	case common.DasActionTransfer, common.DasActionWithdrawFromWallet, tables.DasActionTransferBalance:
 		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity - txFee
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
 		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
