@@ -241,7 +241,7 @@ func (h *HttpHandle) buildBalanceWithdrawTx(req *reqBuildTx, p *balanceWithdrawP
 	})
 	txParams.OutputsData = append(txParams.OutputsData, []byte{})
 
-	change := p.InputsAmount - p.WithdrawAmount - p.Fee
+	change := p.InputsAmount - p.WithdrawAmount // - p.Fee
 	if change > 0 {
 		txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 			Capacity: change,

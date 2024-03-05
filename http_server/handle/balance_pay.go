@@ -215,7 +215,7 @@ func (h *HttpHandle) buildBalancePayTx(p *balancePayParams) (*txbuilder.BuildTra
 	txParams.OutputsData = append(txParams.OutputsData, []byte(p.orderId))
 
 	// change
-	if change := p.totalCapacity - p.payCapacity - p.feeCapacity; change > 0 {
+	if change := p.totalCapacity - p.payCapacity; change > 0 {
 		changeList, err := core.SplitOutputCell(change, 2000*common.OneCkb, 5, p.fromLockScript, p.fromTypeScript)
 		if err != nil {
 			return nil, fmt.Errorf("SplitOutputCell err: %s", err.Error())
