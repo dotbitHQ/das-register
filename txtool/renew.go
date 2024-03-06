@@ -203,17 +203,18 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 	// search balance
 	feeCapacity := uint64(1e4)
 	needCapacity := feeCapacity + incomeCell.incomeCell.Capacity
-	liveCell, totalCapacity, err := t.DasCore.GetBalanceCells(&core.ParamGetBalanceCells{
-		DasCache:          t.DasCache,
+
+	change, liveCell, err := t.DasCore.GetBalanceCellWithLock(&core.ParamGetBalanceCells{
 		LockScript:        t.ServerScript,
 		CapacityNeed:      needCapacity,
+		DasCache:          t.DasCache,
 		CapacityForChange: common.MinCellOccupiedCkb,
-		SearchOrder:       indexer.SearchOrderAsc,
+		SearchOrder:       indexer.SearchOrderDesc,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("GetBalanceCells err: %s", err.Error())
+		return nil, fmt.Errorf("GetBalanceCellWithLock err %s", err.Error())
 	}
-
+	
 	// inputs
 	for _, v := range liveCell {
 		txParams.Inputs = append(txParams.Inputs, &types.CellInput{
@@ -222,7 +223,7 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 	}
 
 	// change
-	if change := totalCapacity - needCapacity; change > 0 {
+	if change > 0 {
 		splitCkb := 2000 * common.OneCkb
 		if config.Cfg.Server.SplitCkb > 0 {
 			splitCkb = config.Cfg.Server.SplitCkb * common.OneCkb

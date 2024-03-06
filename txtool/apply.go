@@ -144,17 +144,18 @@ func (t *TxTool) buildOrderApplyTx(p *applyTxParams) (*txbuilder.BuildTransactio
 	// search balance
 	feeCapacity := uint64(1e4)
 	needCapacity := feeCapacity + applyOutputs.Capacity
-	liveCell, totalCapacity, err := t.DasCore.GetBalanceCells(&core.ParamGetBalanceCells{
-		DasCache:          t.DasCache,
-		LockScript:        t.ServerScript,
-		CapacityNeed:      needCapacity,
-		CapacityForChange: common.MinCellOccupiedCkb,
-		SearchOrder:       indexer.SearchOrderAsc,
+
+	change, liveCell, err := t.DasCore.GetBalanceCellWithLock(&core.ParamGetBalanceCells{
+		LockScript:   t.ServerScript,
+		CapacityNeed: needCapacity,
+		DasCache:     t.DasCache,
+		SearchOrder:  indexer.SearchOrderDesc,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("GetBalanceCells err: %s", err.Error())
+		return nil, fmt.Errorf("GetBalanceCellWithLock err %s", err.Error())
 	}
-	if change := totalCapacity - needCapacity; change > 0 {
+
+	if change > 0 {
 		splitCkb := 2000 * common.OneCkb
 		if config.Cfg.Server.SplitCkb > 0 {
 			splitCkb = config.Cfg.Server.SplitCkb * common.OneCkb
