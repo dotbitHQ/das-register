@@ -146,9 +146,9 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 	}
 
 	// check balance
-	fee := uint64(1e6)
+	//fee := uint64(1e6)
 	withdrawAmount := req.Amount.BigInt().Uint64()
-	allAmount := withdrawAmount + fee
+	allAmount := withdrawAmount //+ fee
 	if req.WithdrawAll {
 		allAmount = uint64(0)
 	}
@@ -156,7 +156,7 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 		DasCache:          h.dasCache,
 		LockScript:        dasLockScript,
 		CapacityNeed:      allAmount,
-		CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity,
+		CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity + common.OneCkb,
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
 	if err != nil {
@@ -172,7 +172,7 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 		return fmt.Errorf("GetBalanceCells err: %s [%s]", err.Error(), req.ReceiverAddress)
 	}
 	if req.WithdrawAll {
-		withdrawAmount = totalAmount - fee
+		withdrawAmount = totalAmount // - fee
 	}
 
 	// build tx
@@ -188,7 +188,7 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 		LiveCellList:   liveCell,
 		InputsAmount:   totalAmount,
 		WithdrawAmount: withdrawAmount,
-		Fee:            fee,
+		Fee:            0,
 		ToLockScript:   parseAddress.Script,
 		ToTypeScript:   toTypeScript,
 		FromLockScript: dasLockScript,
