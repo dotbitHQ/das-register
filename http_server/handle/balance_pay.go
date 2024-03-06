@@ -120,13 +120,13 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 		return fmt.Errorf("HexToScript err: %s", err.Error())
 	}
-	fee := common.OneCkb
+	//fee := common.OneCkb
 	needCapacity := order.PayAmount.BigInt().Uint64() //+ fee
 	liveCells, totalCapacity, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
 		DasCache:          h.dasCache,
 		LockScript:        dasLock,
-		CapacityNeed:      needCapacity + fee,
-		CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity,
+		CapacityNeed:      needCapacity,
+		CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity + common.OneCkb,
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
 	if err != nil {
@@ -163,7 +163,7 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 		liveCells:      liveCells,
 		totalCapacity:  totalCapacity,
 		payCapacity:    needCapacity,
-		feeCapacity:    fee,
+		feeCapacity:    0,
 		fromLockScript: dasLock,
 		fromTypeScript: dasType,
 		toLockScript:   parseAddress.Script,
