@@ -12,6 +12,7 @@ import (
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
+	"github.com/sjatsh/uint128"
 	"time"
 )
 
@@ -159,7 +160,7 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 	accountLength := uint8(accBuilder.AccountChars.Len())
 
 	_, renewPrice, _ := priceBuilder.AccountPrice(accountLength)
-	priceCapacity := (renewPrice / quote) * common.OneCkb
+	priceCapacity := uint128.From64(renewPrice).Mul(uint128.From64(common.OneCkb)).Div(uint128.From64(quote)).Big().Uint64()
 	priceCapacity = priceCapacity * uint64(p.renewYears)
 	log.Info("buildOrderRenewTx:", priceCapacity, renewPrice, p.renewYears, quote)
 
@@ -214,7 +215,7 @@ func (t *TxTool) buildOrderRenewTx(p *renewTxParams) (*txbuilder.BuildTransactio
 	if err != nil {
 		return nil, fmt.Errorf("GetBalanceCellWithLock err %s", err.Error())
 	}
-	
+
 	// inputs
 	for _, v := range liveCell {
 		txParams.Inputs = append(txParams.Inputs, &types.CellInput{
