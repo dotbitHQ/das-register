@@ -114,6 +114,21 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 		return nil
 	}
 
+	// check pay address
+	beneficiaryAddress := ""
+	addr := config.GetUnipayAddress(order.PayTokenId)
+	if addr == "" {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
+		return nil
+	} else {
+		beneficiaryAddress = addr
+	}
+	parseAddress, err := address.Parse(beneficiaryAddress)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		return fmt.Errorf("address.Parse err: %s", err.Error())
+	}
+
 	// check balance
 	dasLock, dasType, err := h.dasCore.Daf().HexToScript(addressHex)
 	if err != nil {
@@ -129,7 +144,7 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 		minCellCapacity = 10 * common.MinCellOccupiedCkb
 		serverLiveCells, serverTotalCapacity, err = h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
 			DasCache:          h.dasCache,
-			LockScript:        dasLock,
+			LockScript:        parseAddress.Script,
 			CapacityNeed:      minCellCapacity,
 			CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity + common.OneCkb,
 			SearchOrder:       indexer.SearchOrderDesc,
@@ -149,21 +164,6 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 	if err != nil {
 		checkBalanceErr(err, apiResp)
 		return nil
-	}
-
-	// check pay address
-	beneficiaryAddress := ""
-	addr := config.GetUnipayAddress(order.PayTokenId)
-	if addr == "" {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", order.PayTokenId))
-		return nil
-	} else {
-		beneficiaryAddress = addr
-	}
-	parseAddress, err := address.Parse(beneficiaryAddress)
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
-		return fmt.Errorf("address.Parse err: %s", err.Error())
 	}
 
 	// build tx
