@@ -96,7 +96,7 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 		}
 		managerHex, err := chainTypeAddress.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "manager address NormalToHex err")
+			apiResp.ApiRespErr(api_code.ApiCodeInvalidTargetAddress, "manager address NormalToHex err")
 			return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 		}
 		req.RawParam.ManagerChainType, req.RawParam.ManagerAddress = managerHex.ChainType, managerHex.AddressHex

@@ -99,7 +99,7 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 		}
 		ownerHex, err := chainTypeAddress.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "owner address NormalToHex err")
+			apiResp.ApiRespErr(api_code.ApiCodeInvalidTargetAddress, "owner address NormalToHex err")
 			return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 		}
 		req.RawParam.ReceiverChainType, req.RawParam.ReceiverAddress = ownerHex.ChainType, ownerHex.AddressHex
