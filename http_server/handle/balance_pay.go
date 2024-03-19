@@ -140,15 +140,16 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 	var minCellCapacity uint64
 	var serverLiveCells []*indexer.LiveCell
 	var serverTotalCapacity uint64
-	if needCapacity < 10*common.MinCellOccupiedCkb {
+	if needCapacity <= 10*common.MinCellOccupiedCkb {
 		minCellCapacity = 10 * common.MinCellOccupiedCkb
-		serverLiveCells, serverTotalCapacity, err = h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
-			DasCache:          h.dasCache,
-			LockScript:        parseAddress.Script,
-			CapacityNeed:      minCellCapacity,
-			CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity + common.OneCkb,
-			SearchOrder:       indexer.SearchOrderDesc,
+		var change uint64
+		change, serverLiveCells, err = h.dasCore.GetBalanceCellWithLock(&core.ParamGetBalanceCells{
+			DasCache:     h.dasCache,
+			LockScript:   parseAddress.Script,
+			CapacityNeed: minCellCapacity,
+			SearchOrder:  indexer.SearchOrderDesc,
 		})
+		serverTotalCapacity = minCellCapacity + change
 		if err != nil {
 			checkBalanceErr(err, apiResp)
 			return nil
@@ -157,7 +158,7 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 	liveCells, totalCapacity, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
 		DasCache:          h.dasCache,
 		LockScript:        dasLock,
-		CapacityNeed:      needCapacity + minCellCapacity,
+		CapacityNeed:      needCapacity,
 		CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity + common.OneCkb,
 		SearchOrder:       indexer.SearchOrderDesc,
 	})
