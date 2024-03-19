@@ -215,7 +215,6 @@ type balancePayParams struct {
 	minCellCapacity     uint64
 	serverLiveCells     []*indexer.LiveCell
 	serverTotalCapacity uint64
-	minCellServerCells  []*indexer.LiveCell
 	feeCapacity         uint64
 	fromLockScript      *types.Script
 	fromTypeScript      *types.Script
