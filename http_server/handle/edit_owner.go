@@ -117,7 +117,7 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 	}
 
 	if !checkChainType(req.RawParam.ReceiverChainType) {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] inavlid", req.RawParam.ReceiverChainType))
+		apiResp.ApiRespErr(api_code.ApiCodeInvalidTargetAddress, fmt.Sprintf("chain type [%d] inavlid", req.RawParam.ReceiverChainType))
 		return nil
 	}
 	//
