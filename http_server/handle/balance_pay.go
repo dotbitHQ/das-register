@@ -114,26 +114,6 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 		return nil
 	}
 
-	// check balance
-	dasLock, dasType, err := h.dasCore.Daf().HexToScript(addressHex)
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
-		return fmt.Errorf("HexToScript err: %s", err.Error())
-	}
-	//fee := common.OneCkb
-	needCapacity := order.PayAmount.BigInt().Uint64() //+ fee
-	liveCells, totalCapacity, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
-		DasCache:          h.dasCache,
-		LockScript:        dasLock,
-		CapacityNeed:      needCapacity,
-		CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity + common.OneCkb,
-		SearchOrder:       indexer.SearchOrderDesc,
-	})
-	if err != nil {
-		checkBalanceErr(err, apiResp)
-		return nil
-	}
-
 	// check pay address
 	beneficiaryAddress := ""
 	addr := config.GetUnipayAddress(order.PayTokenId)
@@ -149,6 +129,45 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 		return fmt.Errorf("address.Parse err: %s", err.Error())
 	}
 
+	// check balance
+	dasLock, dasType, err := h.dasCore.Daf().HexToScript(addressHex)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		return fmt.Errorf("HexToScript err: %s", err.Error())
+	}
+	//fee := common.OneCkb
+	needCapacity := order.PayAmount.BigInt().Uint64() //+ fee
+	var minCellCapacity uint64
+	var serverLiveCells []*indexer.LiveCell
+	var serverTotalCapacity uint64
+	if needCapacity <= common.MinCellOccupiedCkb {
+		minCellCapacity = common.MinCellOccupiedCkb
+		var change uint64
+		change, serverLiveCells, err = h.dasCore.GetBalanceCellWithLock(&core.ParamGetBalanceCells{
+			DasCache:          h.dasCache,
+			LockScript:        parseAddress.Script,
+			CapacityNeed:      minCellCapacity,
+			CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity,
+			SearchOrder:       indexer.SearchOrderDesc,
+		})
+		serverTotalCapacity = minCellCapacity + change
+		if err != nil {
+			checkBalanceErr(err, apiResp)
+			return nil
+		}
+	}
+	liveCells, totalCapacity, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+		DasCache:          h.dasCache,
+		LockScript:        dasLock,
+		CapacityNeed:      needCapacity,
+		CapacityForChange: common.DasLockWithBalanceTypeMinCkbCapacity,
+		SearchOrder:       indexer.SearchOrderDesc,
+	})
+	if err != nil {
+		checkBalanceErr(err, apiResp)
+		return nil
+	}
+
 	// build tx
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasActionTransfer
@@ -159,14 +178,17 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 	reqBuild.EvmChainId = req.EvmChainId
 
 	p := balancePayParams{
-		orderId:        req.OrderId,
-		liveCells:      liveCells,
-		totalCapacity:  totalCapacity,
-		payCapacity:    needCapacity,
-		feeCapacity:    0,
-		fromLockScript: dasLock,
-		fromTypeScript: dasType,
-		toLockScript:   parseAddress.Script,
+		orderId:             req.OrderId,
+		liveCells:           liveCells,
+		totalCapacity:       totalCapacity,
+		payCapacity:         needCapacity,
+		minCellCapacity:     minCellCapacity,
+		serverLiveCells:     serverLiveCells,
+		serverTotalCapacity: serverTotalCapacity,
+		feeCapacity:         0,
+		fromLockScript:      dasLock,
+		fromTypeScript:      dasType,
+		toLockScript:        parseAddress.Script,
 	}
 
 	txParams, err := h.buildBalancePayTx(&p)
@@ -186,14 +208,17 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 }
 
 type balancePayParams struct {
-	orderId        string
-	liveCells      []*indexer.LiveCell
-	totalCapacity  uint64
-	payCapacity    uint64
-	feeCapacity    uint64
-	fromLockScript *types.Script
-	fromTypeScript *types.Script
-	toLockScript   *types.Script
+	orderId             string
+	liveCells           []*indexer.LiveCell
+	totalCapacity       uint64
+	payCapacity         uint64
+	minCellCapacity     uint64
+	serverLiveCells     []*indexer.LiveCell
+	serverTotalCapacity uint64
+	feeCapacity         uint64
+	fromLockScript      *types.Script
+	fromTypeScript      *types.Script
+	toLockScript        *types.Script
 }
 
 func (h *HttpHandle) buildBalancePayTx(p *balancePayParams) (*txbuilder.BuildTransactionParams, error) {
@@ -206,9 +231,17 @@ func (h *HttpHandle) buildBalancePayTx(p *balancePayParams) (*txbuilder.BuildTra
 		})
 	}
 
+	if p.minCellCapacity != 0 {
+		for _, v := range p.serverLiveCells {
+			txParams.Inputs = append(txParams.Inputs, &types.CellInput{
+				PreviousOutput: v.OutPoint,
+			})
+		}
+	}
+
 	// outputs
 	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
-		Capacity: p.payCapacity,
+		Capacity: p.payCapacity + p.serverTotalCapacity,
 		Lock:     p.toLockScript,
 		Type:     nil,
 	})
@@ -216,6 +249,7 @@ func (h *HttpHandle) buildBalancePayTx(p *balancePayParams) (*txbuilder.BuildTra
 
 	// change
 	if change := p.totalCapacity - p.payCapacity; change > 0 {
+
 		changeList, err := core.SplitOutputCell(change, 2000*common.OneCkb, 5, p.fromLockScript, p.fromTypeScript)
 		if err != nil {
 			return nil, fmt.Errorf("SplitOutputCell err: %s", err.Error())
@@ -232,6 +266,7 @@ func (h *HttpHandle) buildBalancePayTx(p *balancePayParams) (*txbuilder.BuildTra
 		//})
 		//txParams.OutputsData = append(txParams.OutputsData, []byte{})
 	}
+	//
 
 	// witness
 	actionWitness, err := witness.GenActionDataWitness(common.DasActionTransfer, nil)
