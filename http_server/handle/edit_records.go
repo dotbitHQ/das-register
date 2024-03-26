@@ -195,6 +195,14 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 	reqBuild.Capacity = 0
 	reqBuild.EvmChainId = req.EvmChainId
 
+	records := witness.ConvertToCellRecords(p.records)
+	recordsBys := records.AsSlice()
+	log.Info("doEditRecords recordsBys:", len(recordsBys))
+	if len(recordsBys) >= 5000 {
+		apiResp.ApiRespErr(api_code.ApiCodeTooManyRecords, "too many records")
+		return nil
+	}
+
 	txParams, err := h.buildEditRecordsTx(&reqBuild, &p)
 	if err != nil {
 		checkBuildTxErr(err, apiResp)

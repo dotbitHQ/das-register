@@ -162,6 +162,10 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "account frequency limit")
 			return fmt.Errorf("SendTransaction err: %s", err.Error())
 		}
+		if strings.Contains(err.Error(), "error code 65 in") {
+			apiResp.ApiRespErr(api_code.ApiCodeTooManyRecords, "too many records")
+			return fmt.Errorf("SendTransaction err: %s", err.Error())
+		}
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "send tx err:"+err.Error())
 		return fmt.Errorf("SendTransaction err: %s", err.Error())
 	} else {
