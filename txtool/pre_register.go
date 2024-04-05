@@ -336,17 +336,21 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 			coinType = string(common.CoinTypeTrx)
 		}
 	}
-	if addr, err := common.FormatAddressByCoinType(coinType, p.order.Address); err == nil {
-		initialRecords = append(initialRecords, witness.Record{
-			Key:   coinType,
-			Type:  "address",
-			Label: "",
-			Value: addr,
-			TTL:   300,
-		})
-	} else {
-		log.Error("buildOrderPreRegisterTx FormatAddressByCoinType err: ", err.Error())
+	switch coinType {
+	case string(common.CoinTypeEth), string(common.CoinTypeTrx):
+		if addr, err := common.FormatAddressByCoinType(coinType, p.order.Address); err == nil {
+			initialRecords = append(initialRecords, witness.Record{
+				Key:   coinType,
+				Type:  "address",
+				Label: "",
+				Value: addr,
+				TTL:   300,
+			})
+		} else {
+			log.Error("buildOrderPreRegisterTx FormatAddressByCoinType err: ", err.Error())
+		}
 	}
+
 	var initialCrossChain witness.ChainInfo
 	if p.order.CrossCoinType != "" {
 		initialCrossChain.Checked = true
