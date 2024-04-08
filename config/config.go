@@ -162,6 +162,8 @@ func GetUnipayAddress(tokenId tables.PayTokenId) string {
 		return "stripe"
 	case tables.ToKenIdDidPoint:
 		return Cfg.PayAddressMap["did_point"]
+	case tables.ToKenIdBTC:
+		return Cfg.PayAddressMap["btc"]
 	}
 	log.Error("GetUnipayAddress not supported:", tokenId)
 	return ""
