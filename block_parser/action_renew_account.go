@@ -115,7 +115,7 @@ func (b *BlockParser) ActionRenewAccount(req FuncTransactionHandleReq) (resp Fun
 	if renewYears == 0 {
 		renewYears = 1
 	}
-	larkText := fmt.Sprintf("Renew: %s, %s, %d", builder.Account, owner, renewYears)
+	larkText := fmt.Sprintf("Renew: %s, %d, %s", builder.Account, renewYears, owner)
 	notify.SendLarkTextNotify(config.Cfg.Notify.LarkRegisterOkKey, "", larkText)
 
 	return
