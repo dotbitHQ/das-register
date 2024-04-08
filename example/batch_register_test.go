@@ -24,10 +24,7 @@ func doRegister(dc *core.DasCore, account, address string) error {
 			InviterAccount: "tzh20221009-01.bit",
 			ChannelAccount: "tzh20221009-01.bit",
 		},
-		PayChainType: 0,
-		PayAddress:   "",
-		PayTokenId:   tables.TokenIdDas,
-		PayType:      "",
+		PayTokenId: tables.TokenIdDas,
 	}
 
 	accountChars, err := dc.GetAccountCharSetList(account)

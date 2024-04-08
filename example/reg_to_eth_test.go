@@ -41,13 +41,8 @@ func TestRegToEth(t *testing.T) {
 			InviterAccount: "0001.bit",
 			ChannelAccount: "0001.bit",
 		},
-
-		PayChainType:  0,
-		PayAddress:    "",
-		PayTokenId:    tables.TokenIdDas,
-		PayType:       "",
-		CoinType:      "60",
-		CrossCoinType: "60",
+		PayTokenId: tables.TokenIdDas,
+		CoinType:   "60",
 	}
 
 	url := TestUrl + "/account/order/register"
