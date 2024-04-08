@@ -23,6 +23,18 @@ func (b *BlockParser) ActionRenewAccount(req FuncTransactionHandleReq) (resp Fun
 		resp.Err = fmt.Errorf("AccountCellDataBuilderFromTx err: %s", err.Error())
 		return
 	}
+	oldTx, err := b.DasCore.Client().GetTransaction(b.Ctx, req.Tx.Inputs[builderOld.Index].PreviousOutput.TxHash)
+	if err != nil {
+		resp.Err = fmt.Errorf("GetTransaction err: %s", err.Error())
+		return
+	}
+	builderPreMap, err := witness.AccountIdCellDataBuilderFromTx(oldTx.Transaction, common.DataTypeNew)
+	if err != nil {
+		resp.Err = fmt.Errorf("AccountIdCellDataBuilderFromTx err: %s", err.Error())
+		return
+	}
+	builderPre := builderPreMap[builderOld.AccountId]
+
 	builder, err := witness.AccountCellDataBuilderFromTx(req.Tx, common.DataTypeNew)
 	if err != nil {
 		resp.Err = fmt.Errorf("AccountCellDataBuilderFromTx err: %s", err.Error())
@@ -110,8 +122,8 @@ func (b *BlockParser) ActionRenewAccount(req FuncTransactionHandleReq) (resp Fun
 		owner = owner[len(owner)-4:]
 	}
 
-	renewYears := (builder.ExpiredAt - builderOld.ExpiredAt) / uint64(common.OneYearSec)
-	log.Info("ActionRenewAccount:", builder.Account, renewYears)
+	renewYears := (builder.ExpiredAt - builderPre.ExpiredAt) / uint64(common.OneYearSec)
+	log.Info("ActionRenewAccount:", builder.Account, renewYears, builder.ExpiredAt, builderPre.ExpiredAt)
 	if renewYears == 0 {
 		renewYears = 1
 	}
