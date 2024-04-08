@@ -121,18 +121,15 @@ func TestOrderRenew(t *testing.T) {
 
 func TestOrderOrderChange(t *testing.T) {
 	req := handle.ReqOrderChange{
-		ChainType: common.ChainTypeEth,
-		Address:   "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
-		Account:   "1234567885.bit",
+		ChainType: common.ChainTypeBitcoin,
+		Address:   "tb1qumrp5k2es0d0hy5z6044zr2305pyzc978qz0ju",
+		Account:   "2024040801.bit",
 		ReqOrderRegisterBase: handle.ReqOrderRegisterBase{
 			RegisterYears:  2,
 			InviterAccount: "",
 			ChannelAccount: "",
 		},
-		PayChainType: 0,
-		PayAddress:   "",
-		PayTokenId:   tables.TokenIdMatic,
-		PayType:      "",
+		PayTokenId: tables.ToKenIdBTC,
 	}
 
 	url := TestUrl + "/account/order/change"
