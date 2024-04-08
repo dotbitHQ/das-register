@@ -83,8 +83,6 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 		return err
 	}
 
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
-
 	var resp RespBalanceWithdraw
 
 	// amount
@@ -179,8 +177,8 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasActionWithdrawFromWallet
 	reqBuild.Account = ""
-	reqBuild.ChainType = req.ChainType
-	reqBuild.Address = req.Address
+	reqBuild.ChainType = addressHex.ChainType
+	reqBuild.Address = addressHex.AddressHex
 	reqBuild.Capacity = withdrawAmount
 	reqBuild.EvmChainId = req.EvmChainId
 

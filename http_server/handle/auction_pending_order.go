@@ -12,8 +12,6 @@ import (
 
 type ReqGetPendingAuctionOrder struct {
 	core.ChainTypeAddress
-	address   string
-	chainType common.ChainType
 }
 
 func (h *HttpHandle) GetPendingAuctionOrder(ctx *gin.Context) {
@@ -47,7 +45,6 @@ func (h *HttpHandle) doGetPendingAuctionOrder(req *ReqGetPendingAuctionOrder, ap
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 	list, err := h.dbDao.GetPendingAuctionOrder(addrHex.ChainType, addrHex.AddressHex)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")

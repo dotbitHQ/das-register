@@ -81,10 +81,9 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if req.Keyword != "" {
-		if err := h.rc.LockWithRedis(req.ChainType, req.Address, action, time.Millisecond*600); err != nil {
+		if err := h.rc.LockWithRedis(addressHex.ChainType, addressHex.AddressHex, action, time.Millisecond*600); err != nil {
 			if err == cache.ErrDistributedLockPreemption {
 				apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
 				return nil
@@ -92,7 +91,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 		}
 	}
 
-	list, err := h.dbDao.SearchAccountListWithPage(req.ChainType, req.Address, req.Keyword, req.GetLimit(), req.GetOffset(), req.Category)
+	list, err := h.dbDao.SearchAccountListWithPage(addressHex.ChainType, addressHex.AddressHex, req.Keyword, req.GetLimit(), req.GetOffset(), req.Category)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account list err")
 		return fmt.Errorf("SearchAccountList err: %s", err.Error())
@@ -109,7 +108,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 		})
 	}
 
-	count, err := h.dbDao.GetAccountsCount(req.ChainType, req.Address, req.Keyword, req.Category)
+	count, err := h.dbDao.GetAccountsCount(addressHex.ChainType, addressHex.AddressHex, req.Keyword, req.Category)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "get account count err")
 		return fmt.Errorf("GetAccountsCount err: %s", err.Error())

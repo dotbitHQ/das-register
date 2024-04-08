@@ -81,11 +81,10 @@ func (h *HttpHandle) doTransactionList(req *ReqTransactionList, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	var resp RespTransactionList
 	resp.List = make([]DataTransaction, 0)
 
-	list, err := h.dbDao.GetTransactionList(req.ChainType, req.Address, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.GetTransactionList(addressHex.ChainType, addressHex.AddressHex, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search tx list err")
 		return fmt.Errorf("GetTransactionList err: %s", err.Error())
@@ -102,7 +101,7 @@ func (h *HttpHandle) doTransactionList(req *ReqTransactionList, apiResp *api_cod
 		})
 	}
 	//
-	count, err := h.dbDao.GetTransactionListTotal(req.ChainType, req.Address)
+	count, err := h.dbDao.GetTransactionListTotal(addressHex.ChainType, addressHex.AddressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search tx count err")
 		return fmt.Errorf("GetTransactionListTotal err: %s", err.Error())

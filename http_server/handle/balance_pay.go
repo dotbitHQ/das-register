@@ -74,24 +74,14 @@ func (h *HttpHandle) BalancePay(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp) error {
-	//addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-	//	ChainType:     req.ChainType,
-	//	AddressNormal: req.Address,
-	//	Is712:         true,
-	//})
-	//if err != nil {
-	//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-	//	return fmt.Errorf("NormalToHex err: %s", err.Error())
-	//}
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	var resp RespBalancePay
 
-	if req.OrderId == "" || req.Address == "" {
+	if req.OrderId == "" || addressHex.AddressHex == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
@@ -172,8 +162,8 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasActionTransfer
 	reqBuild.Account = order.Account
-	reqBuild.ChainType = req.ChainType
-	reqBuild.Address = req.Address
+	reqBuild.ChainType = addressHex.ChainType
+	reqBuild.Address = addressHex.AddressHex
 	reqBuild.Capacity = needCapacity
 	reqBuild.EvmChainId = req.EvmChainId
 

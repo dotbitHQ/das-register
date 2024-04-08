@@ -79,8 +79,7 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
-	if req.ChainType != common.ChainTypeEth {
+	if addressHex.ChainType != common.ChainTypeEth {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support this chain type")
 		return nil
 	}
@@ -92,10 +91,10 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 	}
 
 	fromLock, _, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(false),
-		AddressHex:     req.Address,
+		DasAlgorithmId: addressHex.ChainType.ToDasAlgorithmId(false),
+		AddressHex:     addressHex.AddressHex,
 		IsMulti:        false,
-		ChainType:      req.ChainType,
+		ChainType:      addressHex.ChainType,
 	})
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToScript err")
@@ -149,8 +148,8 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 	var reqBuild reqBuildTx
 	reqBuild.Action = tables.DasActionTransferBalance
 	reqBuild.Account = ""
-	reqBuild.ChainType = req.ChainType
-	reqBuild.Address = req.Address
+	reqBuild.ChainType = addressHex.ChainType
+	reqBuild.Address = addressHex.AddressHex
 	reqBuild.Capacity = transferAmount
 	//reqBuild.EvmChainId = req.EvmChainId
 

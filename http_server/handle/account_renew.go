@@ -90,7 +90,6 @@ func (h *HttpHandle) doAccountRenew(req *ReqAccountRenew, apiResp *api_code.ApiR
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
@@ -123,7 +122,7 @@ func (h *HttpHandle) doAccountRenew(req *ReqAccountRenew, apiResp *api_code.ApiR
 	}
 
 	// renew account
-	h.doInternalRenewOrder(acc, req, apiResp, &resp)
+	h.doInternalRenewOrder(addressHex, acc, req, apiResp, &resp)
 
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
@@ -133,7 +132,7 @@ func (h *HttpHandle) doAccountRenew(req *ReqAccountRenew, apiResp *api_code.ApiR
 	return nil
 }
 
-func (h *HttpHandle) doInternalRenewOrder(acc tables.TableAccountInfo, req *ReqAccountRenew, apiResp *api_code.ApiResp, resp *RespAccountRenew) {
+func (h *HttpHandle) doInternalRenewOrder(addressHex core.DasAddressHex, acc tables.TableAccountInfo, req *ReqAccountRenew, apiResp *api_code.ApiResp, resp *RespAccountRenew) {
 	accOutpoint := common.String2OutPointStruct(acc.Outpoint)
 	accTx, err := h.dasCore.Client().GetTransaction(h.ctx, accOutpoint.TxHash)
 	if err != nil {
@@ -188,8 +187,8 @@ func (h *HttpHandle) doInternalRenewOrder(acc tables.TableAccountInfo, req *ReqA
 		AccountId:         accountId,
 		Account:           req.Account,
 		Action:            common.DasActionRenewAccount,
-		ChainType:         req.ChainType,
-		Address:           req.Address,
+		ChainType:         addressHex.ChainType,
+		Address:           addressHex.AddressHex,
 		Timestamp:         time.Now().UnixNano() / 1e6,
 		PayTokenId:        payTokenId,
 		PayType:           "",

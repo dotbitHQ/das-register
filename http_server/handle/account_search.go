@@ -90,23 +90,24 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
 	resp.PremiumBase = config.Cfg.Stripe.PremiumBase
 
+	var addressHex core.DasAddressHex
+	var err error
+
 	if req.Address == "" && req.KeyInfo.Key == "" {
 
 	} else {
-		addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
+		addressHex, err = compatible.ChainTypeAndCoinType(*req, h.dasCore)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 			return err
 		}
-		req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	}
 
 	resp.Account = req.Account
 
 	// check sub account
 	isSubAccount := false
-	fmt.Println("--------", req.ChainType, req.Address)
-	resp.Status, resp.IsSelf, isSubAccount = h.checkSubAccount(req, apiResp)
+	resp.Status, resp.IsSelf, isSubAccount = h.checkSubAccount(addressHex, req, apiResp)
 	if isSubAccount {
 		if apiResp.ErrNo != api_code.ApiCodeSuccess {
 			return nil
@@ -122,8 +123,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	}
 
 	confirmProposalHash := ""
-	confirmProposalHash, resp.Status, resp.IsSelf, resp.OpenTimestamp = h.checkAccountBase(req, apiResp)
-	log.Info("acc status ", req.Account, resp.Status)
+	confirmProposalHash, resp.Status, resp.IsSelf, resp.OpenTimestamp = h.checkAccountBase(addressHex, req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if resp.Status != tables.SearchStatusRegisterAble && !resp.IsSelf {
@@ -135,13 +135,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	if req.Address == "" && req.KeyInfo.Key == "" {
 
 	} else {
-		hexAddress := core.DasAddressHex{
-			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-			AddressHex:     req.Address,
-			IsMulti:        false,
-			ChainType:      req.ChainType,
-		}
-		args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
+		args, err := h.dasCore.Daf().HexToArgs(addressHex, addressHex)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 			return fmt.Errorf("HexToArgs err: %s", err.Error())
@@ -160,7 +154,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	}
 	resp.BaseAmount, resp.AccountPrice = baseAmount, accountPrice
 	// address order
-	status, registerTxMap := h.checkAddressOrder(req, apiResp, true)
+	status, registerTxMap := h.checkAddressOrder(addressHex, req, apiResp, true)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if status != tables.SearchStatusRegisterAble {
@@ -291,7 +285,7 @@ var OpenCharTypeMap = map[common.AccountCharType]struct{}{
 	//common.AccountCharTypeVi:    {},
 }
 
-func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.ApiResp) (confirmProposalHash string, status tables.SearchStatus, isSelf bool, openTs int64) {
+func (h *HttpHandle) checkAccountBase(addrHex core.DasAddressHex, req *ReqAccountSearch, apiResp *api_code.ApiResp) (confirmProposalHash string, status tables.SearchStatus, isSelf bool, openTs int64) {
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
@@ -301,7 +295,7 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 	} else if acc.Id > 0 {
 		status = acc.FormatAccountStatus()
 		confirmProposalHash = acc.ConfirmProposalHash
-		if req.ChainType == acc.OwnerChainType && strings.EqualFold(req.Address, acc.Owner) {
+		if addrHex.ChainType == acc.OwnerChainType && strings.EqualFold(addrHex.AddressHex, acc.Owner) {
 			isSelf = true
 		}
 		return
@@ -383,13 +377,13 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 	return
 }
 
-func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.ApiResp, isGetOrderTx bool) (status tables.SearchStatus, mapTx map[tables.RegisterStatus]RegisterTx) {
+func (h *HttpHandle) checkAddressOrder(addrHex core.DasAddressHex, req *ReqAccountSearch, apiResp *api_code.ApiResp, isGetOrderTx bool) (status tables.SearchStatus, mapTx map[tables.RegisterStatus]RegisterTx) {
 	mapTx = make(map[tables.RegisterStatus]RegisterTx)
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 
 	var txList []tables.TableDasOrderTxInfo
 	var order tables.TableDasOrderInfo
-	order, err := h.dbDao.GetLatestRegisterOrderByAddress(req.ChainType, req.Address, accountId)
+	order, err := h.dbDao.GetLatestRegisterOrderByAddress(addrHex.ChainType, addrHex.AddressHex, accountId)
 	if err != nil {
 		log.Error("GetLatestRegisterOrderByAddress err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
@@ -489,7 +483,7 @@ func (h *HttpHandle) checkOtherAddressOrder(req *ReqAccountSearch, apiResp *api_
 	return
 }
 
-func (h *HttpHandle) checkSubAccount(req *ReqAccountSearch, apiResp *api_code.ApiResp) (status tables.SearchStatus, isSelf, isSubAccount bool) {
+func (h *HttpHandle) checkSubAccount(addrHex core.DasAddressHex, req *ReqAccountSearch, apiResp *api_code.ApiResp) (status tables.SearchStatus, isSelf, isSubAccount bool) {
 	count := strings.Count(req.Account, ".")
 	if count > 1 {
 		isSubAccount = true
@@ -501,7 +495,7 @@ func (h *HttpHandle) checkSubAccount(req *ReqAccountSearch, apiResp *api_code.Ap
 			return
 		} else if acc.Id > 0 {
 			status = acc.FormatAccountStatus()
-			if req.ChainType == acc.OwnerChainType && strings.EqualFold(req.Address, acc.Owner) {
+			if addrHex.ChainType == acc.OwnerChainType && strings.EqualFold(addrHex.AddressHex, acc.Owner) {
 				isSelf = true
 			}
 			return

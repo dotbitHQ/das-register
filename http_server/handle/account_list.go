@@ -81,12 +81,11 @@ func (h *HttpHandle) doAccountList(req *ReqAccountList, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	var resp RespAccountList
 	resp.List = make([]AccountData, 0)
 
-	list, err := h.dbDao.SearchAccountList(req.ChainType, req.Address)
+	list, err := h.dbDao.SearchAccountList(addressHex.ChainType, addressHex.AddressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account list err")
 		return fmt.Errorf("SearchAccountList err: %s", err.Error())

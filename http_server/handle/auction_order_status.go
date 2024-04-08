@@ -14,8 +14,6 @@ import (
 type ReqAuctionOrderStatus struct {
 	Hash string `json:"hash" binding:"required"`
 	core.ChainTypeAddress
-	address   string
-	chainType common.ChainType
 }
 type RepReqGetAuctionOrder struct {
 	Account      string          `json:"account"`
@@ -57,7 +55,6 @@ func (h *HttpHandle) doGetAuctionOrderStatus(req *ReqAuctionOrderStatus, apiResp
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 	order, err := h.dbDao.GetAuctionOrderStatus(addrHex.ChainType, addrHex.AddressHex, req.Hash)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")

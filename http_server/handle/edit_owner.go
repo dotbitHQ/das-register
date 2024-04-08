@@ -87,8 +87,6 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 		return err
 	}
 
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
-
 	if req.RawParam.ReceiverCoinType != "" {
 		chainTypeAddress := core.ChainTypeAddress{
 			Type: "blockchain",
@@ -125,7 +123,7 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "account is invalid")
 		return nil
 	}
-	if req.Address == "" || req.RawParam.ReceiverAddress == "" {
+	if addressHex.AddressHex == "" || req.RawParam.ReceiverAddress == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")
 		return nil
 	}
@@ -141,7 +139,7 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 
 	if exi := h.rc.AccountLimitExist(req.Account); exi {
 		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
-		return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
+		return fmt.Errorf("AccountActionLimitExist: %d %s %s", addressHex.ChainType, addressHex.AddressHex, req.Account)
 	}
 
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
@@ -159,7 +157,7 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 	} else if acc.IsExpired() {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")
 		return nil
-	} else if req.ChainType != acc.OwnerChainType || !strings.EqualFold(req.Address, acc.Owner) {
+	} else if addressHex.ChainType != acc.OwnerChainType || !strings.EqualFold(addressHex.AddressHex, acc.Owner) {
 		apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "transfer owner permission denied")
 		return nil
 	} else if req.RawParam.ReceiverChainType == acc.OwnerChainType && strings.EqualFold(req.RawParam.ReceiverAddress, acc.Owner) {
@@ -170,8 +168,8 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 		return nil
 	}
 
-	if (req.ChainType == common.ChainTypeMixin && req.RawParam.ReceiverChainType != common.ChainTypeMixin) ||
-		(req.ChainType != common.ChainTypeMixin && req.RawParam.ReceiverChainType == common.ChainTypeMixin) {
+	if (addressHex.ChainType == common.ChainTypeMixin && req.RawParam.ReceiverChainType != common.ChainTypeMixin) ||
+		(addressHex.ChainType != common.ChainTypeMixin && req.RawParam.ReceiverChainType == common.ChainTypeMixin) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "ChainType is invalid")
 		return nil
 	}
@@ -179,8 +177,8 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasActionTransferAccount
 	reqBuild.Account = req.Account
-	reqBuild.ChainType = req.ChainType
-	reqBuild.Address = req.Address
+	reqBuild.ChainType = addressHex.ChainType
+	reqBuild.Address = addressHex.AddressHex
 	reqBuild.Capacity = 0
 	reqBuild.EvmChainId = req.EvmChainId
 

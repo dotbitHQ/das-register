@@ -103,7 +103,6 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
@@ -115,7 +114,7 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 
 	if exi := h.rc.AccountLimitExist(req.Account); exi {
 		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
-		return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
+		return fmt.Errorf("AccountActionLimitExist: %d %s %s", addressHex.ChainType, addressHex.AddressHex, req.Account)
 	}
 
 	acc := h.checkRenewOrder(req, apiResp)
@@ -123,7 +122,7 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 		return nil
 	}
 
-	h.doRenewOrder(acc, req, apiResp, &resp)
+	h.doRenewOrder(addressHex, acc, req, apiResp, &resp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -134,18 +133,12 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 	return nil
 }
 
-func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRenew, apiResp *api_code.ApiResp, resp *RespOrderRenew) {
+func (h *HttpHandle) doRenewOrder(addrHex core.DasAddressHex, acc *tables.TableAccountInfo, req *ReqOrderRenew, apiResp *api_code.ApiResp, resp *RespOrderRenew) {
 	if acc == nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "acc is nil")
 		return
 	}
 	// pay amount
-	addrHex := core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
-		IsMulti:        false,
-		ChainType:      req.ChainType,
-	}
 	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
 
 	//
@@ -219,13 +212,7 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 	var order tables.TableDasOrderInfo
 	var paymentInfo tables.TableDasOrderPayInfo
 	if config.Cfg.Server.UniPayUrl != "" {
-		addrNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
-			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-			AddressHex:     req.Address,
-			AddressPayload: nil,
-			IsMulti:        false,
-			ChainType:      req.ChainType,
-		})
+		addrNormal, err := h.dasCore.Daf().HexToNormal(addrHex)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("HexToNormal err: %s", err.Error()))
 			return
@@ -258,7 +245,7 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 			PremiumAmount:     premiumAmount,
 			MetaData: map[string]string{
 				"account":      req.Account,
-				"algorithm_id": req.ChainType.ToString(),
+				"algorithm_id": addrHex.ChainType.ToString(),
 				"address":      addrNormal.AddressNormal,
 				"action":       "renew",
 			},
@@ -273,8 +260,8 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 			AccountId:         accountId,
 			Account:           req.Account,
 			Action:            common.DasActionRenewAccount,
-			ChainType:         req.ChainType,
-			Address:           req.Address,
+			ChainType:         addrHex.ChainType,
+			Address:           addrHex.AddressHex,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
 			PayType:           req.PayType,
@@ -310,8 +297,8 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 			AccountId:         accountId,
 			Account:           req.Account,
 			Action:            common.DasActionRenewAccount,
-			ChainType:         req.ChainType,
-			Address:           req.Address,
+			ChainType:         addrHex.ChainType,
+			Address:           addrHex.AddressHex,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
 			PayType:           req.PayType,

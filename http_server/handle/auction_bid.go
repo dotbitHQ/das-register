@@ -67,7 +67,6 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "key info is invalid: "+err.Error())
 		return nil
 	}
-	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
@@ -141,8 +140,8 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasActionBidExpiredAccountAuction
 	reqBuild.Account = req.Account
-	reqBuild.ChainType = req.chainType
-	reqBuild.Address = req.address
+	reqBuild.ChainType = addrHex.ChainType
+	reqBuild.Address = addrHex.AddressHex
 	reqBuild.Capacity = 0
 	reqBuild.AuctionInfo = AuctionInfo{
 		BasicPrice:   basicPrice,
@@ -170,7 +169,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	var initialRecords []witness.Record
 	coinType := req.KeyInfo.CoinType
 
-	if addr, err := common.FormatAddressByCoinType(string(coinType), req.address); err == nil {
+	if addr, err := common.FormatAddressByCoinType(string(coinType), addrHex.AddressHex); coinType != common.CoinTypeCKB && err == nil {
 		initialRecords = append(initialRecords, witness.Record{
 			Key:   string(coinType),
 			Type:  "address",
@@ -190,7 +189,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	p.NormalCellLock = normalCellLock.Script
 	p.TimeCell = timeCell
 	p.DefaultRecord = initialRecords
-	txParams, err := h.buildAuctionBidTx(&reqBuild, &p)
+	txParams, err := h.buildAuctionBidTx(*addrHex, &reqBuild, &p)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
@@ -216,7 +215,7 @@ type auctionBidParams struct {
 	TimeCell       *core.TimeCell
 }
 
-func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*txbuilder.BuildTransactionParams, error) {
+func (h *HttpHandle) buildAuctionBidTx(addrHex core.DasAddressHex, req *reqBuildTx, p *auctionBidParams) (*txbuilder.BuildTransactionParams, error) {
 	var txParams txbuilder.BuildTransactionParams
 	contractDas, err := core.GetDasContractInfo(common.DasContractNameDispatchCellType)
 	if err != nil {
@@ -271,13 +270,7 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	})
 
 	//output account cell
-	newOwnerAddrHex := core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
-		IsMulti:        false,
-		ChainType:      req.ChainType,
-	}
-	lockArgs, err := h.dasCore.Daf().HexToArgs(newOwnerAddrHex, newOwnerAddrHex)
+	lockArgs, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
 
 	txParams.Outputs = append(txParams.Outputs, &types.CellOutput{
 		Capacity: accTx.Transaction.Outputs[builder.Index].Capacity,

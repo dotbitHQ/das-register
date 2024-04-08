@@ -18,8 +18,8 @@ import (
 type ReqAccountAuctionInfo struct {
 	Account string `json:"account"  binding:"required"`
 	core.ChainTypeAddress
-	address   string
-	chainType common.ChainType
+	//address   string
+	//chainType common.ChainType
 }
 
 type RespAccountAuctionInfo struct {
@@ -66,7 +66,6 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 			apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 			return nil
 		}
-		req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 	}
 
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))

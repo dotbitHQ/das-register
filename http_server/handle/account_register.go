@@ -100,10 +100,8 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 		return err
 	}
 
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
-
-	if !checkChainType(req.ChainType) {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", req.ChainType))
+	if !checkChainType(addressHex.ChainType) {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", addressHex.ChainType))
 		return nil
 	}
 
@@ -131,7 +129,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	}
 
 	// base check
-	_, status, _, _ := h.checkAccountBase(&req.ReqAccountSearch, apiResp)
+	_, status, _, _ := h.checkAccountBase(addressHex, &req.ReqAccountSearch, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -149,7 +147,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 		return nil
 	}
 	// self order
-	status, _ = h.checkAddressOrder(&req.ReqAccountSearch, apiResp, false)
+	status, _ = h.checkAddressOrder(addressHex, &req.ReqAccountSearch, apiResp, false)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if status != tables.SearchStatusRegisterAble {
@@ -166,7 +164,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	}
 
 	// create order
-	h.doInternalRegisterOrder(req, apiResp, &resp)
+	h.doInternalRegisterOrder(addressHex, req, apiResp, &resp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -175,15 +173,9 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	return nil
 }
 
-func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *api_code.ApiResp, resp *RespAccountRegister) {
+func (h *HttpHandle) doInternalRegisterOrder(hexAddress core.DasAddressHex, req *ReqAccountRegister, apiResp *api_code.ApiResp, resp *RespAccountRegister) {
 	payTokenId := tables.TokenIdCkbInternal
 	// pay amount
-	hexAddress := core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
-		IsMulti:        false,
-		ChainType:      req.ChainType,
-	}
 	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
 	if err != nil {
 		log.Error("HexToArgs err:", err.Error())
@@ -228,8 +220,8 @@ func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *a
 		AccountId:         accountId,
 		Account:           req.Account,
 		Action:            common.DasActionApplyRegister,
-		ChainType:         req.ChainType,
-		Address:           req.Address,
+		ChainType:         hexAddress.ChainType,
+		Address:           hexAddress.AddressHex,
 		Timestamp:         time.Now().UnixNano() / 1e6,
 		PayTokenId:        payTokenId,
 		PayType:           "",
