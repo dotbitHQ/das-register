@@ -1,6 +1,7 @@
 package block_parser
 
 import (
+	"das_register_server/config"
 	"das_register_server/notify"
 	"das_register_server/tables"
 	"fmt"
@@ -14,6 +15,26 @@ func (b *BlockParser) ActionRenewAccount(req FuncTransactionHandleReq) (resp Fun
 		resp.Err = fmt.Errorf("isCurrentVersion err: %s", err.Error())
 		return
 	} else if !isCV {
+		return
+	}
+
+	builderOld, err := witness.AccountCellDataBuilderFromTx(req.Tx, common.DataTypeOld)
+	if err != nil {
+		resp.Err = fmt.Errorf("AccountCellDataBuilderFromTx err: %s", err.Error())
+		return
+	}
+	builder, err := witness.AccountCellDataBuilderFromTx(req.Tx, common.DataTypeNew)
+	if err != nil {
+		resp.Err = fmt.Errorf("AccountCellDataBuilderFromTx err: %s", err.Error())
+		return
+	}
+	account := builder.Account
+	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(account))
+	args := req.Tx.Outputs[builder.Index].Lock.Args
+
+	ownerHex, _, err := b.DasCore.Daf().ArgsToHex(args)
+	if err != nil {
+		resp.Err = fmt.Errorf("ArgsToHex err: %s", err.Error())
 		return
 	}
 
@@ -39,20 +60,6 @@ func (b *BlockParser) ActionRenewAccount(req FuncTransactionHandleReq) (resp Fun
 			Hash:    req.TxHash,
 		})
 	} else {
-		builder, err := witness.AccountCellDataBuilderFromTx(req.Tx, common.DataTypeNew)
-		if err != nil {
-			resp.Err = fmt.Errorf("PreAccountCellDataBuilderFromTx err: %s", err.Error())
-			return
-		}
-		account := builder.Account
-		accountId := common.Bytes2Hex(common.GetAccountIdByAccount(account))
-		args := req.Tx.Outputs[builder.Index].Lock.Args
-
-		ownerHex, _, err := b.DasCore.Daf().ArgsToHex(args)
-		if err != nil {
-			resp.Err = fmt.Errorf("ArgsToHex err: %s", err.Error())
-			return
-		}
 		// order info
 		order := tables.TableDasOrderInfo{
 			Id:                0,
@@ -96,6 +103,20 @@ func (b *BlockParser) ActionRenewAccount(req FuncTransactionHandleReq) (resp Fun
 			Hash:    req.TxHash,
 		})
 	}
+
+	// notify
+	owner := ownerHex.AddressHex
+	if len(owner) > 4 {
+		owner = owner[len(owner)-4:]
+	}
+
+	renewYears := (builder.ExpiredAt - builderOld.ExpiredAt) / uint64(common.OneYearSec)
+	log.Info("ActionRenewAccount:", builder.Account, renewYears)
+	if renewYears == 0 {
+		renewYears = 1
+	}
+	larkText := fmt.Sprintf("Renew: %s, %s, %d", builder.Account, owner, renewYears)
+	notify.SendLarkTextNotify(config.Cfg.Notify.LarkRegisterOkKey, "", larkText)
 
 	return
 }
