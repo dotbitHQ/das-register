@@ -4,6 +4,7 @@ import (
 	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
@@ -128,7 +129,7 @@ func (h *HttpHandle) checkRecommendAvailable(acc, recommendAcc string) (availabl
 		AccountCharStr: charSet,
 	}
 	var tempRep http_api.ApiResp
-	_, status, _, _ := h.checkAccountBase(tempReq, &tempRep)
+	_, status, _, _ := h.checkAccountBase(core.DasAddressHex{}, tempReq, &tempRep)
 	if tempRep.ErrNo != http_api.ApiCodeSuccess {
 		return false, nil
 	}

@@ -179,7 +179,6 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return err
 	}
-	//req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if !checkChainType(addressHex.ChainType) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", addressHex.ChainType))
@@ -216,9 +215,9 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 
-	//if exi := h.rc.RegisterLimitExist(req.ChainType, req.Address, req.Account, "1"); exi {
+	//if exi := h.rc.RegisterLimitExist(addressHex.ChainType, addressHex.AddressHex, req.Account, "1"); exi {
 	//	apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
-	//	return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
+	//	return fmt.Errorf("AccountActionLimitExist: %d %s %s", addressHex.ChainType, addressHex.AddressHex, req.Account)
 	//}
 
 	// order check
@@ -235,7 +234,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 	// base check
-	_, status, _, _ := h.checkAccountBase(&req.ReqAccountSearch, apiResp)
+	_, status, _, _ := h.checkAccountBase(addressHex, &req.ReqAccountSearch, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -253,7 +252,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 	// self order
-	status, _ = h.checkAddressOrder(&req.ReqAccountSearch, apiResp, false)
+	status, _ = h.checkAddressOrder(addressHex, &req.ReqAccountSearch, apiResp, false)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if status != tables.SearchStatusRegisterAble {
@@ -280,7 +279,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 	// cache
-	// _ = h.rc.SetRegisterLimit(req.ChainType, req.Address, req.Account, "1", time.Second*30)
+	// _ = h.rc.SetRegisterLimit(addressHex.ChainType, addressHex.AddressHex, req.Account, "1", time.Second*30)
 	apiResp.ApiRespOK(resp)
 	return nil
 }
@@ -463,7 +462,7 @@ func (h *HttpHandle) doRegisterOrder(addrHex core.DasAddressHex, req *ReqOrderRe
 			Account:           req.Account,
 			Action:            common.DasActionApplyRegister,
 			ChainType:         addrHex.ChainType,
-			Address:           req.Address,
+			Address:           addrHex.AddressHex,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
 			PayType:           "",
@@ -502,7 +501,7 @@ func (h *HttpHandle) doRegisterOrder(addrHex core.DasAddressHex, req *ReqOrderRe
 			Account:           req.Account,
 			Action:            common.DasActionApplyRegister,
 			ChainType:         addrHex.ChainType,
-			Address:           req.Address,
+			Address:           addrHex.AddressHex,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
 			PayType:           "",
@@ -632,7 +631,7 @@ func (h *HttpHandle) doRegisterCouponOrder(addrHex core.DasAddressHex, req *ReqO
 		Account:           req.Account,
 		Action:            common.DasActionApplyRegister,
 		ChainType:         addrHex.ChainType,
-		Address:           req.Address,
+		Address:           addrHex.AddressHex,
 		Timestamp:         time.Now().UnixNano() / 1e6,
 		PayTokenId:        req.PayTokenId,
 		PayType:           "",

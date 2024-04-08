@@ -80,7 +80,6 @@ func (h *HttpHandle) doOrderPayHash(req *ReqOrderPayHash, apiResp *api_code.ApiR
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	order, err := h.dbDao.GetOrderByOrderId(req.OrderId)
 	if err != nil {
@@ -92,7 +91,7 @@ func (h *HttpHandle) doOrderPayHash(req *ReqOrderPayHash, apiResp *api_code.ApiR
 	} else if !strings.EqualFold(order.Account, req.Account) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("account[%s] does not match the order", req.Account))
 		return nil
-	} else if req.ChainType != order.ChainType || !strings.EqualFold(req.Address, order.Address) {
+	} else if addressHex.ChainType != order.ChainType || !strings.EqualFold(addressHex.AddressHex, order.Address) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "order's owner does not match")
 		return nil
 	}
@@ -100,8 +99,8 @@ func (h *HttpHandle) doOrderPayHash(req *ReqOrderPayHash, apiResp *api_code.ApiR
 		Id:           0,
 		Hash:         req.PayHash,
 		OrderId:      req.OrderId,
-		ChainType:    req.ChainType,
-		Address:      req.Address,
+		ChainType:    addressHex.ChainType,
+		Address:      addressHex.AddressHex,
 		Status:       tables.OrderTxStatusDefault,
 		RefundStatus: tables.TxStatusDefault,
 		RefundHash:   "",

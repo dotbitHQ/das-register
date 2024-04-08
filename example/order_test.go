@@ -1,6 +1,7 @@
 package example
 
 import (
+	"das_register_server/http_server/compatible"
 	"das_register_server/http_server/handle"
 	"das_register_server/tables"
 	"fmt"
@@ -117,6 +118,23 @@ func TestOrderRenew(t *testing.T) {
 	}
 
 	fmt.Println(data)
+}
+
+func TestChainTypeAndCoinType(t *testing.T) {
+	dc, err := getNewDasCoreTestnet2()
+	if err != nil {
+		t.Fatal(err)
+	}
+	req := handle.ReqAccountSearch{
+		ChainType: common.ChainTypeBitcoin,
+		Address:   "tb1qumrp5k2es0d0hy5z6044zr2305pyzc978qz0ju",
+		Account:   "2024040801.bit",
+	}
+	addressHex, err := compatible.ChainTypeAndCoinType(req, dc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(addressHex.ChainType, addressHex.AddressHex)
 }
 
 func TestOrderOrderChange(t *testing.T) {

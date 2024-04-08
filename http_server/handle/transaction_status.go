@@ -76,7 +76,6 @@ func (h *HttpHandle) doTransactionStatus(req *ReqTransactionStatus, apiResp *api
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	var resp RespTransactionStatus
 	actionList := make([]common.DasAction, 0)
@@ -84,7 +83,7 @@ func (h *HttpHandle) doTransactionStatus(req *ReqTransactionStatus, apiResp *api
 		actionList = append(actionList, tables.FormatActionType(v))
 	}
 
-	tx, err := h.dbDao.GetPendingStatus(req.ChainType, req.Address, actionList)
+	tx, err := h.dbDao.GetPendingStatus(addressHex.ChainType, addressHex.AddressHex, actionList)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search tx status err")
 		return fmt.Errorf("GetTransactionStatus err: %s", err.Error())

@@ -78,15 +78,14 @@ func (h *HttpHandle) doRegisteringList(req *ReqRegisteringList, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	resp.RegisteringAccounts = make([]RespRegisteringData, 0)
 
-	if req.Address == "" {
+	if addressHex.AddressHex == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
 
-	list, err := h.dbDao.GetRegisteringOrders(req.ChainType, req.Address)
+	list, err := h.dbDao.GetRegisteringOrders(addressHex.ChainType, addressHex.AddressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "get registering account fail")
 		return fmt.Errorf("GetRegisteringOrders err: %s", err.Error())

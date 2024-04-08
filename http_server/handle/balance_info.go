@@ -74,7 +74,6 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	var resp RespBalanceInfo
 
 	if req.TransferAddress != "" {
@@ -98,12 +97,12 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 		resp.TransferAddressAmount = res.Capacity
 	}
 	// not 712
-	if req.ChainType == common.ChainTypeEth {
+	if addressHex.ChainType == common.ChainTypeEth {
 		dasLockScript, _, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
-			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(false),
-			AddressHex:     req.Address,
+			DasAlgorithmId: addressHex.ChainType.ToDasAlgorithmId(false),
+			AddressHex:     addressHex.AddressHex,
 			IsMulti:        false,
-			ChainType:      req.ChainType,
+			ChainType:      addressHex.ChainType,
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")
@@ -124,12 +123,7 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 	}
 
 	// 712
-	dasLockScript, _, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
-		IsMulti:        false,
-		ChainType:      req.ChainType,
-	})
+	dasLockScript, _, err := h.dasCore.Daf().HexToScript(addressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")
 		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())

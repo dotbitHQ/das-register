@@ -83,9 +83,8 @@ func (h *HttpHandle) doWithdrawList(req *ReqWithdrawList, apiResp *api_code.ApiR
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
-	list, err := h.dbDao.GetTransactionListByAction(req.ChainType, req.Address, common.DasActionWithdrawFromWallet, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.GetTransactionListByAction(addressHex.ChainType, addressHex.AddressHex, common.DasActionWithdrawFromWallet, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search withdraw list err")
 		return fmt.Errorf("GetTransactionListByAction err: %s", err.Error())
@@ -101,7 +100,7 @@ func (h *HttpHandle) doWithdrawList(req *ReqWithdrawList, apiResp *api_code.ApiR
 		})
 	}
 
-	tt, err := h.dbDao.GetTransactionTotalCapacityByAction(req.ChainType, req.Address, common.DasActionWithdrawFromWallet)
+	tt, err := h.dbDao.GetTransactionTotalCapacityByAction(addressHex.ChainType, addressHex.AddressHex, common.DasActionWithdrawFromWallet)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search withdraw list err")
 		return fmt.Errorf("GetTransactionTotalCapacityByAction err: %s", err.Error())

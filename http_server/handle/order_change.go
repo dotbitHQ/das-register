@@ -101,7 +101,6 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
-	//req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
 	}
@@ -117,9 +116,9 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 	//		return nil
 	//	}
 	//}
-	//if exi := h.rc.RegisterLimitExist(req.ChainType, req.Address, req.Account, "2"); exi {
+	//if exi := h.rc.RegisterLimitExist(addressHex.ChainType, addressHex.AddressHex, req.Account, "2"); exi {
 	//	apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
-	//	return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
+	//	return fmt.Errorf("AccountActionLimitExist: %d %s %s", addressHex.ChainType, addressHex.AddressHex, req.Account)
 	//}
 
 	// order check
@@ -143,7 +142,7 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 	}
 
 	// cache
-	//_ = h.rc.SetRegisterLimit(req.ChainType, req.Address, req.Account, "2", time.Second*30)
+	//_ = h.rc.SetRegisterLimit(addressHex.ChainType, addressHex.AddressHex, req.Account, "2", time.Second*30)
 	apiResp.ApiRespOK(resp)
 	return nil
 }
@@ -245,7 +244,7 @@ func (h *HttpHandle) doNewOrder(hexAddress core.DasAddressHex, req *ReqOrderChan
 			Account:           req.Account,
 			Action:            common.DasActionApplyRegister,
 			ChainType:         hexAddress.ChainType,
-			Address:           req.Address,
+			Address:           hexAddress.AddressHex,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
 			PayType:           "",
@@ -285,7 +284,7 @@ func (h *HttpHandle) doNewOrder(hexAddress core.DasAddressHex, req *ReqOrderChan
 			Account:           req.Account,
 			Action:            common.DasActionApplyRegister,
 			ChainType:         hexAddress.ChainType,
-			Address:           req.Address,
+			Address:           hexAddress.AddressHex,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
 			PayType:           "",

@@ -84,9 +84,8 @@ func (h *HttpHandle) doRewardsMine(req *ReqRewardsMine, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
-	list, err := h.dbDao.GetMyRewards(req.ChainType, req.Address, tables.ServiceTypeRegister, tables.RewardTypeInviter, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.GetMyRewards(addressHex.ChainType, addressHex.AddressHex, tables.ServiceTypeRegister, tables.RewardTypeInviter, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search rewards err")
 		return fmt.Errorf("GetMyRewards err: %s", err.Error())
@@ -101,7 +100,7 @@ func (h *HttpHandle) doRewardsMine(req *ReqRewardsMine, apiResp *api_code.ApiRes
 		})
 	}
 
-	rc, err := h.dbDao.GetMyRewardsCount(req.ChainType, req.Address, tables.ServiceTypeRegister, tables.RewardTypeInviter)
+	rc, err := h.dbDao.GetMyRewardsCount(addressHex.ChainType, addressHex.AddressHex, tables.ServiceTypeRegister, tables.RewardTypeInviter)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search rewards count err")
 		return fmt.Errorf("GetMyRewardsCount err: %s", err.Error())
