@@ -99,6 +99,7 @@ const (
 	TokenIdTrc20USDT   PayTokenId = "tron_trc20_usdt"
 	TokenIdBep20USDT   PayTokenId = "bsc_bep20_usdt"
 	ToKenIdDidPoint    PayTokenId = "did_point"
+	ToKenIdBTC         PayTokenId = "btc_btc"
 )
 
 func (p PayTokenId) IsTokenIdCkbInternal() bool {
