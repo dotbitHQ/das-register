@@ -96,7 +96,9 @@ func (h *HttpHandle) checkSystemUpgrade(apiResp *api_code.ApiResp) error {
 
 func checkChainType(chainType common.ChainType) bool {
 	switch chainType {
-	case common.ChainTypeTron, common.ChainTypeMixin, common.ChainTypeEth, common.ChainTypeDogeCoin, common.ChainTypeWebauthn:
+	case common.ChainTypeTron, common.ChainTypeMixin,
+		common.ChainTypeEth, common.ChainTypeDogeCoin,
+		common.ChainTypeWebauthn, common.ChainTypeBitcoin:
 		return true
 	}
 	return false

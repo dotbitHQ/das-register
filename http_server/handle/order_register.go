@@ -29,13 +29,13 @@ type ReqOrderRegister struct {
 	ReqAccountSearch
 	ReqOrderRegisterBase
 	core.ChainTypeAddress
-	PayChainType  common.ChainType  `json:"pay_chain_type"`
-	PayAddress    string            `json:"pay_address"`
-	PayTokenId    tables.PayTokenId `json:"pay_token_id"`
-	PayType       tables.PayType    `json:"pay_type"`
-	CoinType      string            `json:"coin_type"`
-	CrossCoinType string            `json:"cross_coin_type"`
-	GiftCard      string            `json:"gift_card"`
+	//PayChainType  common.ChainType  `json:"pay_chain_type"`
+	//PayAddress    string            `json:"pay_address"`
+	PayTokenId tables.PayTokenId `json:"pay_token_id"`
+	//PayType       tables.PayType    `json:"pay_type"`
+	CoinType string `json:"coin_type"`
+	//CrossCoinType string            `json:"cross_coin_type"`
+	GiftCard string `json:"gift_card"`
 }
 
 type ReqCheckCoupon struct {
@@ -165,7 +165,7 @@ func (h *HttpHandle) OrderRegister(ctx *gin.Context) {
 func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.ApiResp) error {
 	var resp RespOrderRegister
 
-	req.CrossCoinType = "" // closed cross nft
+	//req.CrossCoinType = "" // closed cross nft
 	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
@@ -223,7 +223,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 	//}
 
 	// order check
-	if err := h.checkOrderInfo(req.CoinType, req.CrossCoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
+	if err := h.checkOrderInfo(req.CoinType, "", &req.ReqOrderRegisterBase, apiResp); err != nil {
 		return fmt.Errorf("checkOrderInfo err: %s", err.Error())
 	}
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -479,7 +479,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			Address:           req.Address,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
-			PayType:           req.PayType,
+			PayType:           "",
 			PayAmount:         amountTotalPayToken,
 			Content:           string(contentDataStr),
 			PayStatus:         tables.TxStatusDefault,
@@ -488,7 +488,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			OrderStatus:       tables.OrderStatusDefault,
 			RegisterStatus:    tables.RegisterStatusConfirmPayment,
 			CoinType:          req.CoinType,
-			CrossCoinType:     req.CrossCoinType,
+			CrossCoinType:     "",
 			IsUniPay:          tables.IsUniPayTrue,
 			PremiumPercentage: premiumPercentage,
 			PremiumBase:       premiumBase,
@@ -518,7 +518,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			Address:           req.Address,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
-			PayType:           req.PayType,
+			PayType:           "",
 			PayAmount:         amountTotalPayToken,
 			Content:           string(contentDataStr),
 			PayStatus:         tables.TxStatusDefault,
@@ -527,7 +527,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			OrderStatus:       tables.OrderStatusDefault,
 			RegisterStatus:    tables.RegisterStatusConfirmPayment,
 			CoinType:          req.CoinType,
-			CrossCoinType:     req.CrossCoinType,
+			CrossCoinType:     "",
 		}
 		order.CreateOrderId()
 	}
@@ -654,7 +654,7 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 		Address:           req.Address,
 		Timestamp:         time.Now().UnixNano() / 1e6,
 		PayTokenId:        req.PayTokenId,
-		PayType:           req.PayType,
+		PayType:           "",
 		PayAmount:         amountTotalPayToken,
 		Content:           string(contentDataStr),
 		PayStatus:         tables.TxStatusSending,
@@ -663,7 +663,7 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 		OrderStatus:       tables.OrderStatusDefault,
 		RegisterStatus:    tables.RegisterStatusApplyRegister,
 		CoinType:          req.CoinType,
-		CrossCoinType:     req.CrossCoinType,
+		CrossCoinType:     "",
 	}
 	order.CreateOrderId()
 

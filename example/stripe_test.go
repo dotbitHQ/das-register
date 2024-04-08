@@ -34,10 +34,7 @@ func TestRegByStripe(t *testing.T) {
 			InviterAccount: "",
 			ChannelAccount: "",
 		},
-		PayChainType: 0,
-		PayAddress:   "",
-		PayTokenId:   tables.TokenIdStripeUSD,
-		PayType:      "",
+		PayTokenId: tables.TokenIdStripeUSD,
 	}
 
 	url := TestUrl + "/account/order/register"
