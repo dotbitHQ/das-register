@@ -1,7 +1,6 @@
 package handle
 
 import (
-	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/http_server/compatible"
 	"das_register_server/internal"
@@ -180,10 +179,10 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return err
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
+	//req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
-	if !checkChainType(req.ChainType) {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", req.ChainType))
+	if !checkChainType(addressHex.ChainType) {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", addressHex.ChainType))
 		return nil
 	}
 
@@ -196,23 +195,23 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return fmt.Errorf("sync block number")
 	}
 
-	if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "register", req.Account, time.Second*10); err != nil {
-		if err == cache.ErrDistributedLockPreemption {
-			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
-			return nil
-		}
-	}
+	//if err := h.rc.RegisterLimitLockWithRedis(addressHex.ChainType, addressHex.AddressHex, "register", req.Account, time.Second*10); err != nil {
+	//	if err == cache.ErrDistributedLockPreemption {
+	//		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
+	//		return nil
+	//	}
+	//}
 
 	// check un pay
 	maxUnPayCount := int64(200)
 	if config.Cfg.Server.Net != common.DasNetTypeMainNet {
 		maxUnPayCount = 200
 	}
-	if unPayCount, err := h.dbDao.GetUnPayOrderCount(req.ChainType, req.Address); err != nil {
+	if unPayCount, err := h.dbDao.GetUnPayOrderCount(addressHex.ChainType, addressHex.AddressHex); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "failed to check order count")
 		return nil
 	} else if unPayCount > maxUnPayCount {
-		log.Info("GetUnPayOrderCount:", req.ChainType, req.Address, unPayCount)
+		log.Info("GetUnPayOrderCount:", addressHex.ChainType, addressHex.AddressHex, unPayCount)
 		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
 		return nil
 	}
@@ -272,9 +271,9 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 
 	// create order
 	if req.GiftCard != "" {
-		h.doRegisterCouponOrder(req, apiResp, &resp)
+		h.doRegisterCouponOrder(addressHex, req, apiResp, &resp)
 	} else {
-		h.doRegisterOrder(req, apiResp, &resp)
+		h.doRegisterOrder(addressHex, req, apiResp, &resp)
 	}
 
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -340,14 +339,8 @@ func (h *HttpHandle) checkOrderInfo(coinType, crossCoinType string, req *ReqOrde
 	return nil
 }
 
-func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
+func (h *HttpHandle) doRegisterOrder(addrHex core.DasAddressHex, req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
 	// pay amount
-	addrHex := core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
-		IsMulti:        false,
-		ChainType:      req.ChainType,
-	}
 	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
 	if err != nil {
 		log.Error("HexToArgs err: ", err.Error())
@@ -421,13 +414,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	var paymentInfo tables.TableDasOrderPayInfo
 	// unipay
 	if config.Cfg.Server.UniPayUrl != "" {
-		addrNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
-			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-			AddressHex:     req.Address,
-			AddressPayload: nil,
-			IsMulti:        false,
-			ChainType:      req.ChainType,
-		})
+		addrNormal, err := h.dasCore.Daf().HexToNormal(addrHex)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("HexToNormal err"))
 			return
@@ -460,7 +447,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			PremiumAmount:     premiumAmount,
 			MetaData: map[string]string{
 				"account":      req.Account,
-				"algorithm_id": req.ChainType.ToString(),
+				"algorithm_id": addrHex.DasAlgorithmId.ToChainType().ToString(),
 				"address":      addrNormal.AddressNormal,
 				"action":       "register",
 			},
@@ -475,7 +462,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			AccountId:         accountId,
 			Account:           req.Account,
 			Action:            common.DasActionApplyRegister,
-			ChainType:         req.ChainType,
+			ChainType:         addrHex.ChainType,
 			Address:           req.Address,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
@@ -514,7 +501,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 			AccountId:         accountId,
 			Account:           req.Account,
 			Action:            common.DasActionApplyRegister,
-			ChainType:         req.ChainType,
+			ChainType:         addrHex.ChainType,
 			Address:           req.Address,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
@@ -566,15 +553,9 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	return
 }
 
-func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
+func (h *HttpHandle) doRegisterCouponOrder(addrHex core.DasAddressHex, req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
 	req.PayTokenId = tables.TokenCoupon
 	// pay amount
-	addrHex := core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
-		IsMulti:        false,
-		ChainType:      req.ChainType,
-	}
 	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
 	if err != nil {
 		log.Error("HexToArgs err: ", err.Error())
@@ -650,7 +631,7 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 		AccountId:         accountId,
 		Account:           req.Account,
 		Action:            common.DasActionApplyRegister,
-		ChainType:         req.ChainType,
+		ChainType:         addrHex.ChainType,
 		Address:           req.Address,
 		Timestamp:         time.Now().UnixNano() / 1e6,
 		PayTokenId:        req.PayTokenId,
