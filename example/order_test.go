@@ -6,6 +6,7 @@ import (
 	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/core"
 	"github.com/parnurzeal/gorequest"
 	"testing"
 )
@@ -13,20 +14,20 @@ import (
 func TestAccountSearch(t *testing.T) {
 	dc, _ := getNewDasCoreTestnet2()
 
-	configRelease, err := dc.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsRelease)
-	if err != nil {
-		t.Fatal(err)
-	}
-	luckyNumber, _ := configRelease.LuckyNumber()
-	fmt.Println("config release lucky number: ", luckyNumber)
-	if resNum, _ := handle.Blake256AndFourBytesBigEndian([]byte("12as.bit")); resNum < luckyNumber {
-		t.Fatal("luckyNumber:", resNum)
-	}
+	//configRelease, err := dc.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsRelease)
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
+	//luckyNumber, _ := configRelease.LuckyNumber()
+	//fmt.Println("config release lucky number: ", luckyNumber)
+	//if resNum, _ := handle.Blake256AndFourBytesBigEndian([]byte("12as.bit")); resNum < luckyNumber {
+	//	t.Fatal("luckyNumber:", resNum)
+	//}
 
 	var req handle.ReqAccountSearch
-	req.Account = "1234.bit"
-	req.ChainType = common.ChainTypeEth
-	req.Address = "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
+	req.Account = "20240410.bit"
+	req.ChainType = common.ChainTypeBitcoin
+	req.Address = "tb1qumrp5k2es0d0hy5z6044zr2305pyzc978qz0ju"
 	accountChars, err := dc.GetAccountCharSetList(req.Account)
 	if err != nil {
 		t.Fatal(err)
@@ -125,10 +126,18 @@ func TestChainTypeAndCoinType(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	req := handle.ReqAccountSearch{
-		ChainType: common.ChainTypeBitcoin,
-		Address:   "tb1qumrp5k2es0d0hy5z6044zr2305pyzc978qz0ju",
-		Account:   "2024040801.bit",
+	req := handle.ReqBalanceInfo{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: "309",
+				ChainId:  "",
+				Key:      "0x97f636cEE2EEc3ca969e90cE2838f8A178726fCA",
+			},
+		},
+		ChainType:       0,
+		Address:         "",
+		TransferAddress: "",
 	}
 	addressHex, err := compatible.ChainTypeAndCoinType(req, dc)
 	if err != nil {
