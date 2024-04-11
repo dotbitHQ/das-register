@@ -302,15 +302,19 @@ func (h *HttpHandle) buildEditRecordsTx(req *reqBuildTx, p *editRecordsParams) (
 	}
 
 	lockArgs, err := h.dasCore.Daf().HexToArgs(core.DasAddressHex{
-		DasAlgorithmId: p.account.OwnerChainType.ToDasAlgorithmId(true),
-		AddressHex:     p.account.Owner,
-		IsMulti:        false,
-		ChainType:      p.account.OwnerChainType,
+		DasAlgorithmId:    p.account.OwnerChainType.ToDasAlgorithmId(true),
+		DasSubAlgorithmId: p.account.OwnerSubAid,
+		AddressHex:        p.account.Owner,
+		AddressPayload:    nil,
+		IsMulti:           false,
+		ChainType:         p.account.OwnerChainType,
 	}, core.DasAddressHex{
-		DasAlgorithmId: p.account.ManagerChainType.ToDasAlgorithmId(true),
-		AddressHex:     p.account.Manager,
-		IsMulti:        false,
-		ChainType:      p.account.ManagerChainType,
+		DasAlgorithmId:    p.account.ManagerChainType.ToDasAlgorithmId(true),
+		DasSubAlgorithmId: p.account.ManagerSubAid,
+		AddressHex:        p.account.Manager,
+		AddressPayload:    nil,
+		IsMulti:           false,
+		ChainType:         p.account.ManagerChainType,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("HexToArgs err: %s", err.Error())

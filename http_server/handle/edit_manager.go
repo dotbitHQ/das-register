@@ -85,6 +85,7 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return err
 	}
+	var managerHex core.DasAddressHex
 	if req.RawParam.ManagerCoinType != "" {
 		chainTypeAddress := core.ChainTypeAddress{
 			Type: "blockchain",
@@ -93,14 +94,14 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 				Key:      req.RawParam.ManagerAddress,
 			},
 		}
-		managerHex, err := chainTypeAddress.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+		managerHexP, err := chainTypeAddress.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeInvalidTargetAddress, "manager address NormalToHex err")
 			return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 		}
-		req.RawParam.ManagerChainType, req.RawParam.ManagerAddress = managerHex.ChainType, managerHex.AddressHex
+		managerHex = *managerHexP
 	} else {
-		managerHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		managerHex, err = h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
 			ChainType:     req.RawParam.ManagerChainType,
 			AddressNormal: req.RawParam.ManagerAddress,
 			Is712:         true,
@@ -109,10 +110,9 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "manager address NormalToHex err")
 			return fmt.Errorf("manager NormalToHex err: %s", err.Error())
 		}
-		req.RawParam.ManagerChainType, req.RawParam.ManagerAddress = managerHex.ChainType, managerHex.AddressHex
 	}
 
-	if !checkChainType(req.RawParam.ManagerChainType) {
+	if !checkChainType(managerHex.ChainType) {
 		apiResp.ApiRespErr(api_code.ApiCodeInvalidTargetAddress, fmt.Sprintf("chain type [%d] inavlid", req.RawParam.ManagerChainType))
 		return nil
 	}
@@ -121,7 +121,7 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "account is invalid")
 		return nil
 	}
-	if addressHex.AddressHex == "" || req.RawParam.ManagerAddress == "" {
+	if addressHex.AddressHex == "" || managerHex.AddressHex == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")
 		return nil
 	}
@@ -158,7 +158,7 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 	} else if addressHex.ChainType != acc.OwnerChainType || !strings.EqualFold(addressHex.AddressHex, acc.Owner) {
 		apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "edit manager permission denied")
 		return nil
-	} else if req.RawParam.ManagerChainType == acc.ManagerChainType && strings.EqualFold(req.RawParam.ManagerAddress, acc.Manager) {
+	} else if managerHex.ChainType == acc.ManagerChainType && strings.EqualFold(managerHex.AddressHex, acc.Manager) {
 		apiResp.ApiRespErr(api_code.ApiCodeSameLock, "same address")
 		return nil
 	} else if acc.ParentAccountId != "" {
@@ -166,8 +166,8 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 		return nil
 	}
 
-	if (addressHex.ChainType == common.ChainTypeMixin && req.RawParam.ManagerChainType != common.ChainTypeMixin) ||
-		(addressHex.ChainType != common.ChainTypeMixin && req.RawParam.ManagerChainType == common.ChainTypeMixin) {
+	if (addressHex.ChainType == common.ChainTypeMixin && managerHex.ChainType != common.ChainTypeMixin) ||
+		(addressHex.ChainType != common.ChainTypeMixin && managerHex.ChainType == common.ChainTypeMixin) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "ChainType is invalid")
 		return nil
 	}
@@ -184,8 +184,9 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 
 	var p editManagerParams
 	p.account = &acc
-	p.managerChainType = req.RawParam.ManagerChainType
-	p.managerAddress = req.RawParam.ManagerAddress
+	p.managerChainType = managerHex.ChainType
+	p.managerAddress = managerHex.AddressHex
+	p.managerSubAlgId = managerHex.DasSubAlgorithmId
 	txParams, err := h.buildEditManagerTx(&reqBuild, &p)
 	if err != nil {
 		checkBuildTxErr(err, apiResp)
@@ -208,6 +209,7 @@ type editManagerParams struct {
 	account          *tables.TableAccountInfo
 	managerChainType common.ChainType
 	managerAddress   string
+	managerSubAlgId  common.DasSubAlgorithmId
 }
 
 func (h *HttpHandle) buildEditManagerTx(req *reqBuildTx, p *editManagerParams) (*txbuilder.BuildTransactionParams, error) {
@@ -275,15 +277,19 @@ func (h *HttpHandle) buildEditManagerTx(req *reqBuildTx, p *editManagerParams) (
 	}
 
 	lockArgs, err := h.dasCore.Daf().HexToArgs(core.DasAddressHex{
-		DasAlgorithmId: p.account.OwnerChainType.ToDasAlgorithmId(true),
-		AddressHex:     p.account.Owner,
-		IsMulti:        false,
-		ChainType:      p.account.OwnerChainType,
+		DasAlgorithmId:    p.account.OwnerChainType.ToDasAlgorithmId(true),
+		DasSubAlgorithmId: p.account.OwnerSubAid,
+		AddressHex:        p.account.Owner,
+		AddressPayload:    nil,
+		IsMulti:           false,
+		ChainType:         p.account.OwnerChainType,
 	}, core.DasAddressHex{
-		DasAlgorithmId: p.managerChainType.ToDasAlgorithmId(true),
-		AddressHex:     p.managerAddress,
-		IsMulti:        false,
-		ChainType:      p.managerChainType,
+		DasAlgorithmId:    p.managerChainType.ToDasAlgorithmId(true),
+		DasSubAlgorithmId: p.managerSubAlgId,
+		AddressHex:        p.managerAddress,
+		AddressPayload:    nil,
+		IsMulti:           false,
+		ChainType:         p.managerChainType,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("HexToArgs err: %s", err.Error())

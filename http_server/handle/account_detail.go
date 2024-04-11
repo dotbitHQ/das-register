@@ -244,10 +244,12 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		resp.OwnerChainType = acc.OwnerChainType
 		resp.OwnerCoinType = common.FormatDasChainTypeToCoinType(acc.OwnerChainType)
 		ownerNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
-			DasAlgorithmId: acc.OwnerAlgorithmId,
-			AddressHex:     acc.Owner,
-			IsMulti:        false,
-			ChainType:      acc.OwnerChainType,
+			DasAlgorithmId:    acc.OwnerAlgorithmId,
+			DasSubAlgorithmId: acc.OwnerSubAid,
+			AddressHex:        acc.Owner,
+			AddressPayload:    nil,
+			IsMulti:           false,
+			ChainType:         acc.OwnerChainType,
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "owner address HexToNormal err")
@@ -259,10 +261,12 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		resp.ManagerCoinType = common.FormatDasChainTypeToCoinType(acc.ManagerChainType)
 
 		managerNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
-			DasAlgorithmId: acc.ManagerAlgorithmId,
-			AddressHex:     acc.Manager,
-			IsMulti:        false,
-			ChainType:      acc.ManagerChainType,
+			DasAlgorithmId:    acc.ManagerAlgorithmId,
+			DasSubAlgorithmId: acc.ManagerSubAid,
+			AddressHex:        acc.Manager,
+			AddressPayload:    nil,
+			IsMulti:           false,
+			ChainType:         acc.ManagerChainType,
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "manager address HexToNormal err")

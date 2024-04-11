@@ -86,7 +86,7 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return err
 	}
-
+	var ownerHex core.DasAddressHex
 	if req.RawParam.ReceiverCoinType != "" {
 		chainTypeAddress := core.ChainTypeAddress{
 			Type: "blockchain",
@@ -95,14 +95,14 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 				Key:      req.RawParam.ReceiverAddress,
 			},
 		}
-		ownerHex, err := chainTypeAddress.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+		ownerHexP, err := chainTypeAddress.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeInvalidTargetAddress, "owner address NormalToHex err")
 			return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 		}
-		req.RawParam.ReceiverChainType, req.RawParam.ReceiverAddress = ownerHex.ChainType, ownerHex.AddressHex
+		ownerHex = *ownerHexP
 	} else {
-		ownerHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+		ownerHex, err = h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
 			ChainType:     req.RawParam.ReceiverChainType,
 			AddressNormal: req.RawParam.ReceiverAddress,
 			Is712:         true,
@@ -111,10 +111,9 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "owner address NormalToHex err")
 			return fmt.Errorf("owner NormalToHex err: %s", err.Error())
 		}
-		req.RawParam.ReceiverChainType, req.RawParam.ReceiverAddress = ownerHex.ChainType, ownerHex.AddressHex
 	}
 
-	if !checkChainType(req.RawParam.ReceiverChainType) {
+	if !checkChainType(ownerHex.ChainType) {
 		apiResp.ApiRespErr(api_code.ApiCodeInvalidTargetAddress, fmt.Sprintf("chain type [%d] inavlid", req.RawParam.ReceiverChainType))
 		return nil
 	}
@@ -123,7 +122,7 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "account is invalid")
 		return nil
 	}
-	if addressHex.AddressHex == "" || req.RawParam.ReceiverAddress == "" {
+	if addressHex.AddressHex == "" || ownerHex.AddressHex == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")
 		return nil
 	}
@@ -160,7 +159,7 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 	} else if addressHex.ChainType != acc.OwnerChainType || !strings.EqualFold(addressHex.AddressHex, acc.Owner) {
 		apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "transfer owner permission denied")
 		return nil
-	} else if req.RawParam.ReceiverChainType == acc.OwnerChainType && strings.EqualFold(req.RawParam.ReceiverAddress, acc.Owner) {
+	} else if ownerHex.ChainType == acc.OwnerChainType && strings.EqualFold(ownerHex.AddressHex, acc.Owner) {
 		apiResp.ApiRespErr(api_code.ApiCodeSameLock, "same address")
 		return nil
 	} else if acc.ParentAccountId != "" {
@@ -168,8 +167,8 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 		return nil
 	}
 
-	if (addressHex.ChainType == common.ChainTypeMixin && req.RawParam.ReceiverChainType != common.ChainTypeMixin) ||
-		(addressHex.ChainType != common.ChainTypeMixin && req.RawParam.ReceiverChainType == common.ChainTypeMixin) {
+	if (addressHex.ChainType == common.ChainTypeMixin && ownerHex.ChainType != common.ChainTypeMixin) ||
+		(addressHex.ChainType != common.ChainTypeMixin && ownerHex.ChainType == common.ChainTypeMixin) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "ChainType is invalid")
 		return nil
 	}
@@ -186,8 +185,9 @@ func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) e
 
 	var p editOwnerParams
 	p.account = &acc
-	p.ownerChainType = req.RawParam.ReceiverChainType
-	p.ownerAddress = req.RawParam.ReceiverAddress
+	p.ownerChainType = ownerHex.ChainType
+	p.ownerAddress = ownerHex.AddressHex
+	p.ownerSubAlgId = ownerHex.DasSubAlgorithmId
 	txParams, err := h.buildEditOwnerTx(&reqBuild, &p)
 	if err != nil {
 		checkBuildTxErr(err, apiResp)
@@ -210,6 +210,7 @@ type editOwnerParams struct {
 	account        *tables.TableAccountInfo
 	ownerChainType common.ChainType
 	ownerAddress   string
+	ownerSubAlgId  common.DasSubAlgorithmId
 }
 
 func (h *HttpHandle) buildEditOwnerTx(req *reqBuildTx, p *editOwnerParams) (*txbuilder.BuildTransactionParams, error) {
@@ -277,10 +278,12 @@ func (h *HttpHandle) buildEditOwnerTx(req *reqBuildTx, p *editOwnerParams) (*txb
 	}
 
 	ownerHex := core.DasAddressHex{
-		DasAlgorithmId: p.ownerChainType.ToDasAlgorithmId(true),
-		AddressHex:     p.ownerAddress,
-		IsMulti:        false,
-		ChainType:      p.ownerChainType,
+		DasAlgorithmId:    p.ownerChainType.ToDasAlgorithmId(true),
+		DasSubAlgorithmId: 0,
+		AddressHex:        p.ownerAddress,
+		AddressPayload:    nil,
+		IsMulti:           false,
+		ChainType:         p.ownerChainType,
 	}
 	lockArgs, err := h.dasCore.Daf().HexToArgs(ownerHex, ownerHex)
 	if err != nil {
