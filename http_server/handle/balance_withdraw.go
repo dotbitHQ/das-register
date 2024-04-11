@@ -179,6 +179,8 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 	reqBuild.Account = ""
 	reqBuild.ChainType = addressHex.ChainType
 	reqBuild.Address = addressHex.AddressHex
+	reqBuild.AlgId = addressHex.DasAlgorithmId
+	reqBuild.SubAlgId = addressHex.DasSubAlgorithmId
 	reqBuild.Capacity = withdrawAmount
 	reqBuild.EvmChainId = req.EvmChainId
 

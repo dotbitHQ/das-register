@@ -142,6 +142,8 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	reqBuild.Account = req.Account
 	reqBuild.ChainType = addrHex.ChainType
 	reqBuild.Address = addrHex.AddressHex
+	reqBuild.AlgId = addrHex.DasAlgorithmId
+	reqBuild.SubAlgId = addrHex.DasSubAlgorithmId
 	reqBuild.Capacity = 0
 	reqBuild.AuctionInfo = AuctionInfo{
 		BasicPrice:   basicPrice,

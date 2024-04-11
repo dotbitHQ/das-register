@@ -30,8 +30,9 @@ func (d *DbDao) UpdatePendingToRejected(timestamp int64) error {
 		}).Error
 }
 
-func (d *DbDao) GetPendingStatus(chainType common.ChainType, address string, actions []common.DasAction) (tx tables.TableRegisterPendingInfo, err error) {
-	err = d.db.Where(" chain_type=? AND address=? AND block_number=0 AND action IN(?) AND status=0 ", chainType, address, actions).Order(" id DESC ").First(&tx).Error
+func (d *DbDao) GetPendingStatus(chainType common.ChainType, subAlgId common.DasSubAlgorithmId, address string, actions []common.DasAction) (tx tables.TableRegisterPendingInfo, err error) {
+	err = d.db.Where(" chain_type=? AND address=? AND sub_alg_id=? AND block_number=0 AND action IN(?) AND status=0 ",
+		chainType, address, subAlgId, actions).Order(" id DESC ").First(&tx).Error
 	return
 }
 

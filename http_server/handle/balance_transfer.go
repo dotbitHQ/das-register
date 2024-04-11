@@ -150,6 +150,8 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 	reqBuild.Account = ""
 	reqBuild.ChainType = addressHex.ChainType
 	reqBuild.Address = addressHex.AddressHex
+	reqBuild.AlgId = addressHex.DasAlgorithmId
+	reqBuild.SubAlgId = addressHex.DasSubAlgorithmId
 	reqBuild.Capacity = transferAmount
 	//reqBuild.EvmChainId = req.EvmChainId
 

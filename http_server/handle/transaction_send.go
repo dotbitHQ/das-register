@@ -173,7 +173,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		if sic.Address != "" {
 
 			// operate limit
-			_ = h.rc.SetApiLimit(sic.ChainType, sic.Address, sic.Action)
+			//_ = h.rc.SetApiLimit(sic.ChainType, sic.Address, sic.Action)
 			_ = h.rc.SetAccountLimit(sic.Account, time.Minute*2)
 
 			// cache tx inputs
@@ -183,6 +183,8 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 				Account:        sic.Account,
 				Action:         sic.Action,
 				ChainType:      sic.ChainType,
+				AlgId:          sic.AlgId,
+				SubAlgId:       sic.SubAlgId,
 				Address:        sic.Address,
 				Capacity:       sic.Capacity,
 				Outpoint:       common.OutPoint2String(hash.Hex(), 0),
@@ -195,14 +197,16 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			if sic.Action == common.DasActionBidExpiredAccountAuction {
 
 				auctionOrder := tables.TableAuctionOrder{
-					Account:      sic.Account,
-					AccountId:    common.Bytes2Hex(common.GetAccountIdByAccount(sic.Account)),
-					Address:      sic.Address,
-					BasicPrice:   sic.AuctionInfo.BasicPrice,
-					PremiumPrice: sic.AuctionInfo.PremiumPrice,
-					BidTime:      sic.AuctionInfo.BidTime,
-					ChainType:    sic.ChainType,
-					Outpoint:     pending.Outpoint,
+					Account:        sic.Account,
+					AccountId:      common.Bytes2Hex(common.GetAccountIdByAccount(sic.Account)),
+					Address:        sic.Address,
+					BasicPrice:     sic.AuctionInfo.BasicPrice,
+					PremiumPrice:   sic.AuctionInfo.PremiumPrice,
+					BidTime:        sic.AuctionInfo.BidTime,
+					ChainType:      sic.ChainType,
+					AlgorithmId:    sic.AlgId,
+					SubAlgorithmId: sic.SubAlgId,
+					Outpoint:       pending.Outpoint,
 				}
 				auctionOrder.CreateOrderId()
 				if err = h.dbDao.CreateAuctionOrder(auctionOrder); err != nil {

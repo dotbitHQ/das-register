@@ -177,6 +177,8 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 	reqBuild.Account = req.Account
 	reqBuild.ChainType = addressHex.ChainType
 	reqBuild.Address = addressHex.AddressHex
+	reqBuild.AlgId = addressHex.DasAlgorithmId
+	reqBuild.SubAlgId = addressHex.DasSubAlgorithmId
 	reqBuild.Capacity = 0
 	reqBuild.EvmChainId = req.EvmChainId
 

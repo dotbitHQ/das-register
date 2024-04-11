@@ -53,6 +53,8 @@ type AuctionInfo struct {
 type SignInfoCache struct {
 	ChainType   common.ChainType                   `json:"chain_type"`
 	Address     string                             `json:"address"`
+	AlgId       common.DasAlgorithmId              `json:"alg_id"`
+	SubAlgId    common.DasSubAlgorithmId           `json:"sub_alg_id"`
 	Action      string                             `json:"action"`
 	Account     string                             `json:"account"`
 	Capacity    uint64                             `json:"capacity"`
@@ -61,6 +63,6 @@ type SignInfoCache struct {
 }
 
 func (s *SignInfoCache) SignKey() string {
-	key := fmt.Sprintf("%d%s%s%d", s.ChainType, s.Address, s.Action, time.Now().UnixNano())
+	key := fmt.Sprintf("%d%d%s%s%d", s.ChainType, s.SubAlgId, s.Address, s.Action, time.Now().UnixNano())
 	return fmt.Sprintf("%x", md5.Sum([]byte(key)))
 }

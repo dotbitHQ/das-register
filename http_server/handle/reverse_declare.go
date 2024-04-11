@@ -2,21 +2,16 @@ package handle
 
 import (
 	"das_register_server/config"
-	"das_register_server/internal"
 	"das_register_server/tables"
-	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
-	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
-	"gorm.io/gorm"
-	"net/http"
 	"strings"
 	"sync"
 )
@@ -32,183 +27,186 @@ type RespReverseDeclare struct {
 	SignInfo
 }
 
-func (h *HttpHandle) RpcReverseDeclare(p json.RawMessage, apiResp *api_code.ApiResp) {
-	var req []ReqReverseDeclare
-	err := json.Unmarshal(p, &req)
-	if err != nil {
-		log.Error("json.Unmarshal err:", err.Error())
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
-		return
-	} else if len(req) == 0 {
-		log.Error("len(req) is 0")
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
-		return
-	}
-
-	if err = h.doReverseDeclare(&req[0], apiResp); err != nil {
-		log.Error("doReverseDeclare err:", err.Error())
-	}
-}
-
-func (h *HttpHandle) ReverseDeclare(ctx *gin.Context) {
-	var (
-		funcName = "ReverseDeclare"
-		clientIp = GetClientIp(ctx)
-		req      ReqReverseDeclare
-		apiResp  api_code.ApiResp
-		err      error
-	)
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
-		ctx.JSON(http.StatusOK, apiResp)
-		return
-	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
-
-	if err = h.doReverseDeclare(&req, &apiResp); err != nil {
-		log.Error("doReverseDeclare err:", err.Error(), funcName, clientIp, ctx)
-	}
-
-	ctx.JSON(http.StatusOK, apiResp)
-}
-
-func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.ApiResp) error {
-	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
-		ChainType:     req.ChainType,
-		AddressNormal: req.Address,
-		Is712:         true,
-	})
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
-		return fmt.Errorf("NormalToHex err: %s", err.Error())
-	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
-
-	if err := h.checkSystemUpgrade(apiResp); err != nil {
-		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
-	}
-
-	if ok := internal.IsLatestBlockNumber(config.Cfg.Server.ParserUrl); !ok {
-		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
-		return fmt.Errorf("sync block number")
-	}
-
-	if exi := h.rc.ApiLimitExist(req.ChainType, req.Address, common.DasActionDeclareReverseRecord); exi {
-		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
-		return fmt.Errorf("api limit: %d %s", req.ChainType, req.Address)
-	}
-
-	var resp RespReverseDeclare
-
-	// reverse check
-
-	reverse, err := h.dbDao.SearchLatestReverse(req.ChainType, req.Address)
-	if err != nil {
-		if err != gorm.ErrRecordNotFound {
-			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search reverse err")
-			return fmt.Errorf("SearchLatestReverse err: %s", err.Error())
-		}
-	}
-	if reverse.Id > 0 {
-		apiResp.ApiRespErr(api_code.ApiCodeReverseAlreadyExist, "already exist")
-		return fmt.Errorf("reverse already exist: %s", reverse.Account)
-	}
-
-	// account check
-
-	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
-	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
-	if err != nil {
-		if err != gorm.ErrRecordNotFound {
-			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
-			return fmt.Errorf("SearchAccount err: %s", err.Error())
-		}
-	}
-	if acc.Id == 0 {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
-		return fmt.Errorf("account not exist: %s", req.Account)
-	}
-
-	// balance check
-	dasLock, dasType, err := h.dasCore.Daf().HexToScript(addressHex)
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "format das lock err")
-		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
-	}
-	configCellBuilder, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsReverseRecord)
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "get ConfigCellReverseResolution err")
-		return fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
-	}
-	baseCapacity, _ := configCellBuilder.RecordBasicCapacity()
-	preparedFeeCapacity, _ := configCellBuilder.RecordPreparedFeeCapacity()
-	needCapacity := baseCapacity + preparedFeeCapacity
-	feeCapacity, _ := configCellBuilder.RecordCommonFee()
-	liveCells, totalCapacity, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
-		DasCache:          h.dasCache,
-		LockScript:        dasLock,
-		CapacityNeed:      needCapacity + feeCapacity,
-		CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
-		SearchOrder:       indexer.SearchOrderDesc,
-	})
-	if err != nil {
-		if err == core.ErrRejectedOutPoint {
-			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, core.ErrRejectedOutPoint.Error())
-		} else if err == core.ErrInsufficientFunds {
-			apiResp.ApiRespErr(api_code.ApiCodeInsufficientBalance, core.ErrInsufficientFunds.Error())
-		} else if err == core.ErrNotEnoughChange {
-			apiResp.ApiRespErr(api_code.ApiCodeNotEnoughChange, core.ErrNotEnoughChange.Error())
-		} else {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "get capacity err")
-		}
-		return fmt.Errorf("GetBalanceCells err: %s", err.Error())
-	}
-
-	// build tx
-	var reqBuild reqBuildTx
-	reqBuild.Action = common.DasActionDeclareReverseRecord
-	reqBuild.Account = req.Account
-	reqBuild.ChainType = req.ChainType
-	reqBuild.Address = req.Address
-	reqBuild.Capacity = needCapacity
-	reqBuild.EvmChainId = req.EvmChainId
-
-	var declareParams DeclareParams
-	declareParams.DasLock = dasLock
-	declareParams.DasType = dasType
-	declareParams.LiveCells = liveCells
-	declareParams.TotalCapacity = totalCapacity
-	declareParams.DeclareCapacity = needCapacity
-	declareParams.FeeCapacity = feeCapacity
-	//declareParams.AccountInfo = &acc
-
-	txParams, err := h.buildDeclareReverseRecordTx(&reqBuild, &declareParams)
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
-		return fmt.Errorf("buildDeclareReverseRecordTx err: %s", err.Error())
-	}
-
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
-		return fmt.Errorf("buildTx: %s", err.Error())
-	} else {
-		resp.SignInfo = *si
-	}
-
-	apiResp.ApiRespOK(resp)
-	return nil
-}
+//
+//func (h *HttpHandle) RpcReverseDeclare(p json.RawMessage, apiResp *api_code.ApiResp) {
+//	var req []ReqReverseDeclare
+//	err := json.Unmarshal(p, &req)
+//	if err != nil {
+//		log.Error("json.Unmarshal err:", err.Error())
+//		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+//		return
+//	} else if len(req) == 0 {
+//		log.Error("len(req) is 0")
+//		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+//		return
+//	}
+//
+//	if err = h.doReverseDeclare(&req[0], apiResp); err != nil {
+//		log.Error("doReverseDeclare err:", err.Error())
+//	}
+//}
+//
+//func (h *HttpHandle) ReverseDeclare(ctx *gin.Context) {
+//	var (
+//		funcName = "ReverseDeclare"
+//		clientIp = GetClientIp(ctx)
+//		req      ReqReverseDeclare
+//		apiResp  api_code.ApiResp
+//		err      error
+//	)
+//
+//	if err := ctx.ShouldBindJSON(&req); err != nil {
+//		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+//		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+//		ctx.JSON(http.StatusOK, apiResp)
+//		return
+//	}
+//	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+//
+//	if err = h.doReverseDeclare(&req, &apiResp); err != nil {
+//		log.Error("doReverseDeclare err:", err.Error(), funcName, clientIp, ctx)
+//	}
+//
+//	ctx.JSON(http.StatusOK, apiResp)
+//}
+//
+//func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.ApiResp) error {
+//	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
+//		ChainType:     req.ChainType,
+//		AddressNormal: req.Address,
+//		Is712:         true,
+//	})
+//	if err != nil {
+//		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
+//		return fmt.Errorf("NormalToHex err: %s", err.Error())
+//	}
+//	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
+//
+//	if err := h.checkSystemUpgrade(apiResp); err != nil {
+//		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
+//	}
+//
+//	if ok := internal.IsLatestBlockNumber(config.Cfg.Server.ParserUrl); !ok {
+//		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
+//		return fmt.Errorf("sync block number")
+//	}
+//
+//	if exi := h.rc.ApiLimitExist(req.ChainType, req.Address, common.DasActionDeclareReverseRecord); exi {
+//		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
+//		return fmt.Errorf("api limit: %d %s", req.ChainType, req.Address)
+//	}
+//
+//	var resp RespReverseDeclare
+//
+//	// reverse check
+//
+//	reverse, err := h.dbDao.SearchLatestReverse(req.ChainType, req.Address)
+//	if err != nil {
+//		if err != gorm.ErrRecordNotFound {
+//			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search reverse err")
+//			return fmt.Errorf("SearchLatestReverse err: %s", err.Error())
+//		}
+//	}
+//	if reverse.Id > 0 {
+//		apiResp.ApiRespErr(api_code.ApiCodeReverseAlreadyExist, "already exist")
+//		return fmt.Errorf("reverse already exist: %s", reverse.Account)
+//	}
+//
+//	// account check
+//
+//	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+//	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
+//	if err != nil {
+//		if err != gorm.ErrRecordNotFound {
+//			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
+//			return fmt.Errorf("SearchAccount err: %s", err.Error())
+//		}
+//	}
+//	if acc.Id == 0 {
+//		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
+//		return fmt.Errorf("account not exist: %s", req.Account)
+//	}
+//
+//	// balance check
+//	dasLock, dasType, err := h.dasCore.Daf().HexToScript(addressHex)
+//	if err != nil {
+//		apiResp.ApiRespErr(api_code.ApiCodeError500, "format das lock err")
+//		return fmt.Errorf("FormatAddressToDasLockScript err: %s", err.Error())
+//	}
+//	configCellBuilder, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsReverseRecord)
+//	if err != nil {
+//		apiResp.ApiRespErr(api_code.ApiCodeError500, "get ConfigCellReverseResolution err")
+//		return fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+//	}
+//	baseCapacity, _ := configCellBuilder.RecordBasicCapacity()
+//	preparedFeeCapacity, _ := configCellBuilder.RecordPreparedFeeCapacity()
+//	needCapacity := baseCapacity + preparedFeeCapacity
+//	feeCapacity, _ := configCellBuilder.RecordCommonFee()
+//	liveCells, totalCapacity, err := h.dasCore.GetBalanceCells(&core.ParamGetBalanceCells{
+//		DasCache:          h.dasCache,
+//		LockScript:        dasLock,
+//		CapacityNeed:      needCapacity + feeCapacity,
+//		CapacityForChange: common.DasLockWithBalanceTypeOccupiedCkb,
+//		SearchOrder:       indexer.SearchOrderDesc,
+//	})
+//	if err != nil {
+//		if err == core.ErrRejectedOutPoint {
+//			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, core.ErrRejectedOutPoint.Error())
+//		} else if err == core.ErrInsufficientFunds {
+//			apiResp.ApiRespErr(api_code.ApiCodeInsufficientBalance, core.ErrInsufficientFunds.Error())
+//		} else if err == core.ErrNotEnoughChange {
+//			apiResp.ApiRespErr(api_code.ApiCodeNotEnoughChange, core.ErrNotEnoughChange.Error())
+//		} else {
+//			apiResp.ApiRespErr(api_code.ApiCodeError500, "get capacity err")
+//		}
+//		return fmt.Errorf("GetBalanceCells err: %s", err.Error())
+//	}
+//
+//	// build tx
+//	var reqBuild reqBuildTx
+//	reqBuild.Action = common.DasActionDeclareReverseRecord
+//	reqBuild.Account = req.Account
+//	reqBuild.ChainType = req.ChainType
+//	reqBuild.Address = req.Address
+//	reqBuild.Capacity = needCapacity
+//	reqBuild.EvmChainId = req.EvmChainId
+//
+//	var declareParams DeclareParams
+//	declareParams.DasLock = dasLock
+//	declareParams.DasType = dasType
+//	declareParams.LiveCells = liveCells
+//	declareParams.TotalCapacity = totalCapacity
+//	declareParams.DeclareCapacity = needCapacity
+//	declareParams.FeeCapacity = feeCapacity
+//	//declareParams.AccountInfo = &acc
+//
+//	txParams, err := h.buildDeclareReverseRecordTx(&reqBuild, &declareParams)
+//	if err != nil {
+//		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
+//		return fmt.Errorf("buildDeclareReverseRecordTx err: %s", err.Error())
+//	}
+//
+//	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+//		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
+//		return fmt.Errorf("buildTx: %s", err.Error())
+//	} else {
+//		resp.SignInfo = *si
+//	}
+//
+//	apiResp.ApiRespOK(resp)
+//	return nil
+//}
 
 type reqBuildTx struct {
 	Action      common.DasAction
-	ChainType   common.ChainType `json:"chain_type"`
-	Address     string           `json:"address"`
-	Account     string           `json:"account"`
-	Capacity    uint64           `json:"capacity"`
-	EvmChainId  int64            `json:"evm_chain_id"`
-	AuctionInfo AuctionInfo      `json:"auction_info"`
+	ChainType   common.ChainType         `json:"chain_type"`
+	Address     string                   `json:"address"`
+	AlgId       common.DasAlgorithmId    `json:"alg_id"`
+	SubAlgId    common.DasSubAlgorithmId `json:"sub_alg_id"`
+	Account     string                   `json:"account"`
+	Capacity    uint64                   `json:"capacity"`
+	EvmChainId  int64                    `json:"evm_chain_id"`
+	AuctionInfo AuctionInfo              `json:"auction_info"`
 }
 
 type DeclareParams struct {
@@ -380,6 +378,8 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	sic.Action = req.Action
 	sic.ChainType = req.ChainType
 	sic.Address = req.Address
+	sic.AlgId = req.AlgId
+	sic.SubAlgId = req.SubAlgId
 	sic.Account = req.Account
 	sic.Capacity = req.Capacity
 	sic.BuilderTx = txBuilder.DasTxBuilderTransaction

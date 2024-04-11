@@ -164,6 +164,8 @@ func (h *HttpHandle) doBalancePay(req *ReqBalancePay, apiResp *api_code.ApiResp)
 	reqBuild.Account = order.Account
 	reqBuild.ChainType = addressHex.ChainType
 	reqBuild.Address = addressHex.AddressHex
+	reqBuild.AlgId = addressHex.DasAlgorithmId
+	reqBuild.SubAlgId = addressHex.DasSubAlgorithmId
 	reqBuild.Capacity = needCapacity
 	reqBuild.EvmChainId = req.EvmChainId
 

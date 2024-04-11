@@ -32,12 +32,12 @@ func (h *HttpHandle) Operate(ctx *gin.Context) {
 	log.Info("Operate:", req.Method, clientIp, toolib.JsonString(req))
 
 	switch req.Method {
-	case api_code_local.MethodReverseDeclare:
-		h.RpcReverseDeclare(req.Params, &apiResp)
-	case api_code_local.MethodReverseRedeclare:
-		h.RpcReverseRedeclare(req.Params, &apiResp)
-	case api_code_local.MethodReverseRetract:
-		h.RpcReverseRetract(req.Params, &apiResp)
+	//case api_code_local.MethodReverseDeclare:
+	//	h.RpcReverseDeclare(req.Params, &apiResp)
+	//case api_code_local.MethodReverseRedeclare:
+	//	h.RpcReverseRedeclare(req.Params, &apiResp)
+	//case api_code_local.MethodReverseRetract:
+	//	h.RpcReverseRetract(req.Params, &apiResp)
 	case api_code_local.MethodTransactionSend:
 		h.RpcTransactionSend(req.Params, &apiResp)
 	case api_code_local.MethodBalancePay:
