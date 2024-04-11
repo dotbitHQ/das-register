@@ -6,26 +6,28 @@ import (
 )
 
 type TableAccountInfo struct {
-	Id                   uint64                `json:"id" gorm:"column:id;primary_key;AUTO_INCREMENT"`
-	BlockNumber          uint64                `json:"block_number" gorm:"column:block_number"`
-	Outpoint             string                `json:"outpoint" gorm:"column:outpoint"`
-	AccountId            string                `json:"account_id" gorm:"account_id"`
-	Account              string                `json:"account" gorm:"column:account"`
-	OwnerChainType       common.ChainType      `json:"owner_chain_type" gorm:"column:owner_chain_type"`
-	Owner                string                `json:"owner" gorm:"column:owner"`
-	OwnerAlgorithmId     common.DasAlgorithmId `json:"owner_algorithm_id" gorm:"column:owner_algorithm_id"`
-	ManagerChainType     common.ChainType      `json:"manager_chain_type" gorm:"column:manager_chain_type"`
-	Manager              string                `json:"manager" gorm:"column:manager"`
-	ManagerAlgorithmId   common.DasAlgorithmId `json:"manager_algorithm_id" gorm:"column:manager_algorithm_id"`
-	Status               AccountStatus         `json:"status" gorm:"column:status"`
-	RegisteredAt         uint64                `json:"registered_at" gorm:"column:registered_at"`
-	ExpiredAt            uint64                `json:"expired_at" gorm:"column:expired_at"`
-	ConfirmProposalHash  string                `json:"confirm_proposal_hash" gorm:"column:confirm_proposal_hash"`
-	ParentAccountId      string                `json:"parent_account_id" gorm:"column:parent_account_id"`
-	EnableSubAccount     EnableSubAccount      `json:"enable_sub_account" gorm:"column:enable_sub_account"`
-	RenewSubAccountPrice uint64                `json:"renew_sub_account_price" gorm:"column:renew_sub_account_price"`
-	Nonce                uint64                `json:"nonce" gorm:"column:nonce"`
-	CharsetNum           uint64                `json:"charset_num" gorm:"column:charset_num; index:k_charset_num; type: bigint(20) unsigned NOT NULL DEFAULT '0'; "`
+	Id                   uint64                   `json:"id" gorm:"column:id;primary_key;AUTO_INCREMENT"`
+	BlockNumber          uint64                   `json:"block_number" gorm:"column:block_number"`
+	Outpoint             string                   `json:"outpoint" gorm:"column:outpoint"`
+	AccountId            string                   `json:"account_id" gorm:"account_id"`
+	Account              string                   `json:"account" gorm:"column:account"`
+	OwnerChainType       common.ChainType         `json:"owner_chain_type" gorm:"column:owner_chain_type"`
+	Owner                string                   `json:"owner" gorm:"column:owner"`
+	OwnerAlgorithmId     common.DasAlgorithmId    `json:"owner_algorithm_id" gorm:"column:owner_algorithm_id"`
+	OwnerSubAid          common.DasSubAlgorithmId `json:"owner_sub_aid" gorm:"column:owner_sub_aid; type:smallint(6) NOT NULL DEFAULT '0' COMMENT ''"`
+	ManagerChainType     common.ChainType         `json:"manager_chain_type" gorm:"column:manager_chain_type"`
+	Manager              string                   `json:"manager" gorm:"column:manager"`
+	ManagerAlgorithmId   common.DasAlgorithmId    `json:"manager_algorithm_id" gorm:"column:manager_algorithm_id"`
+	ManagerSubAid        common.DasSubAlgorithmId `json:"manager_sub_aid" gorm:"column:manager_sub_aid; type:smallint(6) NOT NULL DEFAULT '0' COMMENT ''"`
+	Status               AccountStatus            `json:"status" gorm:"column:status"`
+	RegisteredAt         uint64                   `json:"registered_at" gorm:"column:registered_at"`
+	ExpiredAt            uint64                   `json:"expired_at" gorm:"column:expired_at"`
+	ConfirmProposalHash  string                   `json:"confirm_proposal_hash" gorm:"column:confirm_proposal_hash"`
+	ParentAccountId      string                   `json:"parent_account_id" gorm:"column:parent_account_id"`
+	EnableSubAccount     EnableSubAccount         `json:"enable_sub_account" gorm:"column:enable_sub_account"`
+	RenewSubAccountPrice uint64                   `json:"renew_sub_account_price" gorm:"column:renew_sub_account_price"`
+	Nonce                uint64                   `json:"nonce" gorm:"column:nonce"`
+	CharsetNum           uint64                   `json:"charset_num" gorm:"column:charset_num; index:k_charset_num; type: bigint(20) unsigned NOT NULL DEFAULT '0'; "`
 }
 
 type AccountStatus int

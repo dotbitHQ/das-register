@@ -99,7 +99,7 @@ func (h *HttpHandle) doOrderDetail(req *ReqOrderDetail, apiResp *api_code.ApiRes
 	}
 
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
-	order, err := h.dbDao.GetLatestRegisterOrderBySelf(addressHex.ChainType, addressHex.AddressHex, accountId)
+	order, err := h.dbDao.GetLatestRegisterOrderBySelf(addressHex.ChainType, addressHex.DasSubAlgorithmId, addressHex.AddressHex, accountId)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
 		return fmt.Errorf("GetLatestOrderBySelf err: %s", err.Error())

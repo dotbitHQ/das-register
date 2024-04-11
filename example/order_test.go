@@ -52,7 +52,7 @@ func TestOrderRegister(t *testing.T) {
 		ReqAccountSearch: handle.ReqAccountSearch{
 			ChainType: common.ChainTypeBitcoin,
 			Address:   "tb1qumrp5k2es0d0hy5z6044zr2305pyzc978qz0ju",
-			Account:   "2024040801.bit",
+			Account:   "2024041101.bit",
 			AccountCharStr: []common.AccountCharSet{
 				{CharSetName: common.AccountCharTypeDigit, Char: "2"},
 				{CharSetName: common.AccountCharTypeDigit, Char: "0"},
@@ -60,8 +60,8 @@ func TestOrderRegister(t *testing.T) {
 				{CharSetName: common.AccountCharTypeDigit, Char: "4"},
 				{CharSetName: common.AccountCharTypeDigit, Char: "0"},
 				{CharSetName: common.AccountCharTypeDigit, Char: "4"},
-				{CharSetName: common.AccountCharTypeDigit, Char: "0"},
-				{CharSetName: common.AccountCharTypeDigit, Char: "8"},
+				{CharSetName: common.AccountCharTypeDigit, Char: "1"},
+				{CharSetName: common.AccountCharTypeDigit, Char: "1"},
 				{CharSetName: common.AccountCharTypeDigit, Char: "0"},
 				{CharSetName: common.AccountCharTypeDigit, Char: "1"},
 				{CharSetName: common.AccountCharTypeEn, Char: "."},

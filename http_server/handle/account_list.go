@@ -85,7 +85,7 @@ func (h *HttpHandle) doAccountList(req *ReqAccountList, apiResp *api_code.ApiRes
 	var resp RespAccountList
 	resp.List = make([]AccountData, 0)
 
-	list, err := h.dbDao.SearchAccountList(addressHex.ChainType, addressHex.AddressHex)
+	list, err := h.dbDao.SearchAccountList(addressHex.ChainType, addressHex.AddressHex, addressHex.DasSubAlgorithmId)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account list err")
 		return fmt.Errorf("SearchAccountList err: %s", err.Error())

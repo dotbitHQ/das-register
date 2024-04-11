@@ -85,7 +85,7 @@ func (h *HttpHandle) doRegisteringList(req *ReqRegisteringList, apiResp *api_cod
 		return nil
 	}
 
-	list, err := h.dbDao.GetRegisteringOrders(addressHex.ChainType, addressHex.AddressHex)
+	list, err := h.dbDao.GetRegisteringOrders(addressHex.ChainType, addressHex.AddressHex, addressHex.DasSubAlgorithmId)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "get registering account fail")
 		return fmt.Errorf("GetRegisteringOrders err: %s", err.Error())

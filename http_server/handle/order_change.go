@@ -261,6 +261,8 @@ func (h *HttpHandle) doNewOrder(hexAddress core.DasAddressHex, req *ReqOrderChan
 			PremiumPercentage: premiumPercentage,
 			PremiumBase:       premiumBase,
 			PremiumAmount:     premiumAmount,
+			AlgId:             hexAddress.DasAlgorithmId,
+			SubAlgId:          hexAddress.DasSubAlgorithmId,
 		}
 		if req.PayTokenId == tables.TokenIdStripeUSD && res.StripePaymentIntentId != "" {
 			paymentInfo = tables.TableDasOrderPayInfo{
@@ -271,6 +273,8 @@ func (h *HttpHandle) doNewOrder(hexAddress core.DasAddressHex, req *ReqOrderChan
 				Status:    tables.OrderTxStatusDefault,
 				Timestamp: time.Now().UnixMilli(),
 				AccountId: order.AccountId,
+				AlgId:     order.AlgId,
+				SubAlgId:  order.SubAlgId,
 			}
 		}
 		resp.ContractAddress = res.ContractAddress
@@ -334,7 +338,7 @@ func (h *HttpHandle) doNewOrder(hexAddress core.DasAddressHex, req *ReqOrderChan
 
 func (h *HttpHandle) oldOrderCheck(addrHex core.DasAddressHex, req *ReqOrderChange, apiResp *api_code.ApiResp) (oldOrderContent *tables.TableOrderContent) {
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
-	order, err := h.dbDao.GetLatestRegisterOrderBySelf(addrHex.ChainType, addrHex.AddressHex, accountId)
+	order, err := h.dbDao.GetLatestRegisterOrderBySelf(addrHex.ChainType, addrHex.DasSubAlgorithmId, addrHex.AddressHex, accountId)
 	if err != nil {
 		log.Error("GetLatestRegisterOrderBySelf err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")

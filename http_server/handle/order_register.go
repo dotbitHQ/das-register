@@ -479,6 +479,8 @@ func (h *HttpHandle) doRegisterOrder(addrHex core.DasAddressHex, req *ReqOrderRe
 			PremiumPercentage: premiumPercentage,
 			PremiumBase:       premiumBase,
 			PremiumAmount:     premiumAmount,
+			AlgId:             addrHex.DasAlgorithmId,
+			SubAlgId:          addrHex.DasSubAlgorithmId,
 		}
 		if req.PayTokenId == tables.TokenIdStripeUSD && res.StripePaymentIntentId != "" {
 			paymentInfo = tables.TableDasOrderPayInfo{
@@ -489,6 +491,8 @@ func (h *HttpHandle) doRegisterOrder(addrHex core.DasAddressHex, req *ReqOrderRe
 				Status:    tables.OrderTxStatusDefault,
 				Timestamp: time.Now().UnixMilli(),
 				AccountId: order.AccountId,
+				AlgId:     order.AlgId,
+				SubAlgId:  order.SubAlgId,
 			}
 		}
 		resp.ContractAddress = res.ContractAddress

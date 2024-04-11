@@ -91,7 +91,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 		}
 	}
 
-	list, err := h.dbDao.SearchAccountListWithPage(addressHex.ChainType, addressHex.AddressHex, req.Keyword, req.GetLimit(), req.GetOffset(), req.Category)
+	list, err := h.dbDao.SearchAccountListWithPage(addressHex.ChainType, addressHex.DasSubAlgorithmId, addressHex.AddressHex, req.Keyword, req.GetLimit(), req.GetOffset(), req.Category)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account list err")
 		return fmt.Errorf("SearchAccountList err: %s", err.Error())
@@ -108,7 +108,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 		})
 	}
 
-	count, err := h.dbDao.GetAccountsCount(addressHex.ChainType, addressHex.AddressHex, req.Keyword, req.Category)
+	count, err := h.dbDao.GetAccountsCount(addressHex.ChainType, addressHex.DasSubAlgorithmId, addressHex.AddressHex, req.Keyword, req.Category)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "get account count err")
 		return fmt.Errorf("GetAccountsCount err: %s", err.Error())

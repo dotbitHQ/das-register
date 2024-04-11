@@ -11,32 +11,34 @@ import (
 )
 
 type TableDasOrderInfo struct {
-	Id                uint64           `json:"id" gorm:"column:id;primaryKey;type:bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT ''"`
-	OrderType         OrderType        `json:"order_type" gorm:"column:order_type;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-self 2-other'"`
-	OrderId           string           `json:"order_id" gorm:"column:order_id;uniqueIndex:uk_order_id;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
-	AccountId         string           `json:"account_id" gorm:"account_id;index:k_account_id;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
-	Account           string           `json:"account" gorm:"column:account;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
-	Action            common.DasAction `json:"action" gorm:"column:action;index:k_action;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
-	ChainType         common.ChainType `json:"chain_type" gorm:"column:chain_type;index:k_chain_type_address;type:smallint(6) NOT NULL DEFAULT '0' COMMENT 'order chain type'"`
-	Address           string           `json:"address" gorm:"column:address;index:k_chain_type_address;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'order address'"`
-	Timestamp         int64            `json:"timestamp" gorm:"column:timestamp;type:bigint(20) NOT NULL DEFAULT '0' COMMENT 'order time'"`
-	PayTokenId        PayTokenId       `json:"pay_token_id" gorm:"column:pay_token_id;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
-	PayType           PayType          `json:"pay_type" gorm:"column:pay_type;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
-	PayAmount         decimal.Decimal  `json:"pay_amount" gorm:"column:pay_amount;type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT ''"`
-	Content           string           `json:"content" gorm:"column:content;type:text NOT NULL COMMENT 'order detail'"`
-	PayStatus         TxStatus         `json:"pay_status" gorm:"column:pay_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-ing 2-ok'"`
-	HedgeStatus       TxStatus         `json:"hedge_status" gorm:"column:hedge_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-ing 2-ok'"`
-	PreRegisterStatus TxStatus         `json:"pre_register_status" gorm:"column:pre_register_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-ing 2-ok'"`
-	RegisterStatus    RegisterStatus   `json:"register_status" gorm:"column:register_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-6'"`
-	OrderStatus       OrderStatus      `json:"order_status" gorm:"column:order_status;index:k_order_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-closed'"`
-	CoinType          string           `json:"coin_type" gorm:"column:coin_type; type:varchar(255) NOT NULL DEFAULT '';"`
-	CrossCoinType     string           `json:"cross_coin_type" gorm:"column:cross_coin_type; type:varchar(255) NOT NULL DEFAULT '';"`
-	IsUniPay          IsUniPay         `json:"is_uni_pay" gorm:"column:is_uni_pay; type:smallint(6) NOT NULL DEFAULT '0' COMMENT '0-no 1-yes';"`
-	PremiumPercentage decimal.Decimal  `json:"premium_percentage" gorm:"column:premium_percentage; type:decimal(20,10) NOT NULL DEFAULT '0' COMMENT '';"`
-	PremiumBase       decimal.Decimal  `json:"premium_base" gorm:"column:premium_base; type:decimal(20,10) NOT NULL DEFAULT '0' COMMENT '';"`
-	PremiumAmount     decimal.Decimal  `json:"premium_amount" gorm:"column:premium_amount; type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT '';"`
-	CreatedAt         time.Time        `json:"created_at" gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
-	UpdatedAt         time.Time        `json:"updated_at" gorm:"column:updated_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''"`
+	Id                uint64                   `json:"id" gorm:"column:id;primaryKey;type:bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT ''"`
+	OrderType         OrderType                `json:"order_type" gorm:"column:order_type;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-self 2-other'"`
+	OrderId           string                   `json:"order_id" gorm:"column:order_id;uniqueIndex:uk_order_id;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
+	AccountId         string                   `json:"account_id" gorm:"account_id;index:k_account_id;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
+	Account           string                   `json:"account" gorm:"column:account;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
+	Action            common.DasAction         `json:"action" gorm:"column:action;index:k_action;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
+	ChainType         common.ChainType         `json:"chain_type" gorm:"column:chain_type;index:k_chain_type_address;type:smallint(6) NOT NULL DEFAULT '0' COMMENT 'order chain type'"`
+	Address           string                   `json:"address" gorm:"column:address;index:k_chain_type_address;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'order address'"`
+	Timestamp         int64                    `json:"timestamp" gorm:"column:timestamp;type:bigint(20) NOT NULL DEFAULT '0' COMMENT 'order time'"`
+	PayTokenId        PayTokenId               `json:"pay_token_id" gorm:"column:pay_token_id;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
+	PayType           PayType                  `json:"pay_type" gorm:"column:pay_type;type:varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT ''"`
+	PayAmount         decimal.Decimal          `json:"pay_amount" gorm:"column:pay_amount;type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT ''"`
+	Content           string                   `json:"content" gorm:"column:content;type:text NOT NULL COMMENT 'order detail'"`
+	PayStatus         TxStatus                 `json:"pay_status" gorm:"column:pay_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-ing 2-ok'"`
+	HedgeStatus       TxStatus                 `json:"hedge_status" gorm:"column:hedge_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-ing 2-ok'"`
+	PreRegisterStatus TxStatus                 `json:"pre_register_status" gorm:"column:pre_register_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-ing 2-ok'"`
+	RegisterStatus    RegisterStatus           `json:"register_status" gorm:"column:register_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-6'"`
+	OrderStatus       OrderStatus              `json:"order_status" gorm:"column:order_status;index:k_order_status;type:smallint(6) NOT NULL DEFAULT '0' COMMENT '1-closed'"`
+	CoinType          string                   `json:"coin_type" gorm:"column:coin_type; type:varchar(255) NOT NULL DEFAULT '';"`
+	CrossCoinType     string                   `json:"cross_coin_type" gorm:"column:cross_coin_type; type:varchar(255) NOT NULL DEFAULT '';"`
+	IsUniPay          IsUniPay                 `json:"is_uni_pay" gorm:"column:is_uni_pay; type:smallint(6) NOT NULL DEFAULT '0' COMMENT '0-no 1-yes';"`
+	PremiumPercentage decimal.Decimal          `json:"premium_percentage" gorm:"column:premium_percentage; type:decimal(20,10) NOT NULL DEFAULT '0' COMMENT '';"`
+	PremiumBase       decimal.Decimal          `json:"premium_base" gorm:"column:premium_base; type:decimal(20,10) NOT NULL DEFAULT '0' COMMENT '';"`
+	PremiumAmount     decimal.Decimal          `json:"premium_amount" gorm:"column:premium_amount; type:decimal(60,0) NOT NULL DEFAULT '0' COMMENT '';"`
+	AlgId             common.DasAlgorithmId    `json:"alg_id" gorm:"column:alg_id; type:smallint(6) NOT NULL DEFAULT '0' COMMENT '';"`
+	SubAlgId          common.DasSubAlgorithmId `json:"sub_alg_id" gorm:"column:sub_alg_id; type:smallint(6) NOT NULL DEFAULT '0' COMMENT '';"`
+	CreatedAt         time.Time                `json:"created_at" gorm:"column:created_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT ''"`
+	UpdatedAt         time.Time                `json:"updated_at" gorm:"column:updated_at;type:timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''"`
 }
 
 const (

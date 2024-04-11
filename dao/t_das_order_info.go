@@ -23,14 +23,15 @@ func (d *DbDao) GetLatestRegisterOrderByLatest(accountId string) (order tables.T
 	return
 }
 
-func (d *DbDao) GetRegisteringOrders(chainType common.ChainType, address string) (list []tables.TableDasOrderInfo, err error) {
+func (d *DbDao) GetRegisteringOrders(chainType common.ChainType, address string, subAlgId common.DasSubAlgorithmId) (list []tables.TableDasOrderInfo, err error) {
 	// SELECT account,MAX(register_status)AS register_status FROM t_das_order_status_info WHERE chain_type=? AND address=? AND order_status=? GROUP BY account
 	//err = d.db.Select("account,MAX(register_status) AS register_status").
 	//	Where("chain_type=? AND address=? AND action=? AND order_status=?", chainType, address, common.DasActionApplyRegister, tables.OrderStatusDefault).
 	//	Group("account").Order("id DESC").Find(&list).Error
 	//return
-	err = d.db.Select("account,account_id,register_status,cross_coin_type").Where("chain_type=? AND address=? AND action=? AND order_status=?",
-		chainType, address, common.DasActionApplyRegister, tables.OrderStatusDefault).Order("id DESC").Find(&list).Error
+	err = d.db.Select("account,account_id,register_status,cross_coin_type").
+		Where("chain_type=? AND address=? AND sub_alg_id=? AND action=? AND order_status=?",
+			chainType, address, subAlgId, common.DasActionApplyRegister, tables.OrderStatusDefault).Order("id DESC").Find(&list).Error
 	return
 }
 
@@ -162,7 +163,7 @@ func (d *DbDao) CreateCouponOrder(order *tables.TableDasOrderInfo, coupon string
 	})
 }
 
-func (d *DbDao) GetLatestRegisterOrderBySelf(chainType common.ChainType, address, accountId string) (order tables.TableDasOrderInfo, err error) {
+func (d *DbDao) GetLatestRegisterOrderBySelf(chainType common.ChainType, subAlgId common.DasSubAlgorithmId, address, accountId string) (order tables.TableDasOrderInfo, err error) {
 	err = d.db.Where("chain_type=? AND address=? AND account_id=? AND action=? AND order_type=? AND order_status=?",
 		chainType, address, accountId, common.DasActionApplyRegister, tables.OrderTypeSelf, tables.OrderStatusDefault).
 		Order("order_status,register_status DESC,id DESC").Limit(1).
