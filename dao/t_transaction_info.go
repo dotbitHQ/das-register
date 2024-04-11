@@ -25,8 +25,9 @@ var (
 	}
 )
 
-func (d *DbDao) GetTransactionList(chainType common.ChainType, address string, limit, offset int) (list []tables.TableTransactionInfo, err error) {
-	err = d.parserDb.Where(" chain_type=? AND address=? AND action NOT IN(?) AND capacity>0 ", chainType, address, actionList).
+func (d *DbDao) GetTransactionList(chainType common.ChainType, subAlgId common.DasSubAlgorithmId, address string, limit, offset int) (list []tables.TableTransactionInfo, err error) {
+	err = d.parserDb.Where(" chain_type=? AND address=? AND sub_alg_id=? AND action NOT IN(?) AND capacity>0 ",
+		chainType, address, subAlgId, actionList).
 		Order(" id DESC ").
 		Limit(limit).Offset(offset).
 		Find(&list).Error

@@ -84,7 +84,7 @@ func (h *HttpHandle) doTransactionList(req *ReqTransactionList, apiResp *api_cod
 	var resp RespTransactionList
 	resp.List = make([]DataTransaction, 0)
 
-	list, err := h.dbDao.GetTransactionList(addressHex.ChainType, addressHex.AddressHex, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.GetTransactionList(addressHex.ChainType, addressHex.DasSubAlgorithmId, addressHex.AddressHex, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search tx list err")
 		return fmt.Errorf("GetTransactionList err: %s", err.Error())

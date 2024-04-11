@@ -58,7 +58,7 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/search", api_code.DoMonitorLog(api_code.MethodAccountSearch), cacheHandleShort, h.h.AccountSearch)
 		v1.POST("/account/registering/list", api_code.DoMonitorLog(api_code.MethodRegisteringList), cacheHandleLong, h.h.RegisteringList)
 		v1.POST("/account/order/detail", api_code.DoMonitorLog(api_code.MethodOrderDetail), h.h.OrderDetail)
-		v1.POST("/address/deposit", api_code.DoMonitorLog(api_code.MethodAddressDeposit), cacheHandleLong, h.h.AddressDeposit)
+		//v1.POST("/address/deposit", api_code.DoMonitorLog(api_code.MethodAddressDeposit), cacheHandleLong, h.h.AddressDeposit)
 		v1.POST("/character/set/list", api_code.DoMonitorLog(api_code.MethodCharacterSetList), cacheHandleLong, h.h.CharacterSetList)
 		v1.POST("/account/auction/info", api_code.DoMonitorLog(api_code.MethodAuctionInfo), h.h.GetAccountAuctionInfo)
 		v1.POST("/account/auction/price", api_code.DoMonitorLog(api_code.MethodAuctionPrice), h.h.GetAccountAuctionPrice)

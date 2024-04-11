@@ -91,10 +91,12 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 	}
 
 	fromLock, _, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
-		DasAlgorithmId: addressHex.ChainType.ToDasAlgorithmId(false),
-		AddressHex:     addressHex.AddressHex,
-		IsMulti:        false,
-		ChainType:      addressHex.ChainType,
+		DasAlgorithmId:    addressHex.ChainType.ToDasAlgorithmId(false),
+		DasSubAlgorithmId: addressHex.DasSubAlgorithmId,
+		AddressHex:        addressHex.AddressHex,
+		AddressPayload:    addressHex.AddressPayload,
+		IsMulti:           false,
+		ChainType:         addressHex.ChainType,
 	})
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToScript err")

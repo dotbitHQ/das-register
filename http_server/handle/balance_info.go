@@ -99,10 +99,12 @@ func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiRes
 	// not 712
 	if addressHex.ChainType == common.ChainTypeEth {
 		dasLockScript, _, err := h.dasCore.Daf().HexToScript(core.DasAddressHex{
-			DasAlgorithmId: addressHex.ChainType.ToDasAlgorithmId(false),
-			AddressHex:     addressHex.AddressHex,
-			IsMulti:        false,
-			ChainType:      addressHex.ChainType,
+			DasAlgorithmId:    addressHex.ChainType.ToDasAlgorithmId(false),
+			DasSubAlgorithmId: addressHex.DasSubAlgorithmId,
+			AddressHex:        addressHex.AddressHex,
+			AddressPayload:    addressHex.AddressPayload,
+			IsMulti:           false,
+			ChainType:         addressHex.ChainType,
 		})
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")

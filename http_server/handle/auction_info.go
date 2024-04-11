@@ -107,7 +107,7 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 		} else {
 			resp.BidStatus = tables.BidStatusByOthers
 			for _, v := range list {
-				if v.ChainType == addrHex.ChainType && v.Address == addrHex.AddressHex {
+				if v.ChainType == addrHex.ChainType && v.SubAlgorithmId == addrHex.DasSubAlgorithmId && v.Address == addrHex.AddressHex {
 					resp.BidStatus = tables.BidStatusByMe
 					resp.Hash, _ = common.String2OutPoint(v.Outpoint)
 				}
