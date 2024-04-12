@@ -39,7 +39,7 @@ func (b *BlockParser) ActionBidExpiredAccountAuction(req FuncTransactionHandleRe
 		owner = owner[len(owner)-4:]
 	}
 
-	order, err := b.DbDao.GetAuctionOrderStatus(oHex.ChainType, oHex.AddressHex, req.TxHash)
+	order, err := b.DbDao.GetAuctionOrderStatus(oHex.ChainType, oHex.DasSubAlgorithmId, oHex.AddressHex, req.TxHash)
 	if err != nil {
 		resp.Err = fmt.Errorf("GetAuctionOrderStatus err: %s", err.Error())
 		return

@@ -45,7 +45,7 @@ func (h *HttpHandle) doGetPendingAuctionOrder(req *ReqGetPendingAuctionOrder, ap
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	list, err := h.dbDao.GetPendingAuctionOrder(addrHex.ChainType, addrHex.AddressHex)
+	list, err := h.dbDao.GetPendingAuctionOrder(addrHex.ChainType, addrHex.DasSubAlgorithmId, addrHex.AddressHex)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")
 		return
