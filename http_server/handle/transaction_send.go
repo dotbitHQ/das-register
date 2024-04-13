@@ -86,7 +86,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 
 	hasWebAuthn := false
 	for _, v := range req.SignList {
-		if v.SignType == common.DasAlgorithmIdWebauthn {
+		if v.SignType == common.DasAlgorithmIdWebauthn && v.SignMsg != "" {
 			hasWebAuthn = true
 			break
 		}
