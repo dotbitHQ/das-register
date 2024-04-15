@@ -15,6 +15,7 @@ import (
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/nervosnetwork/ckb-sdk-go/utils"
+	"github.com/sjatsh/uint128"
 	"strings"
 	"time"
 )
@@ -307,7 +308,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		return nil, fmt.Errorf("PriceConfig is nil")
 	}
 	newPrice, _, _ := priceBuilder.AccountPrice(accountLength)
-	priceCapacity := (newPrice / quote) * common.OneCkb
+	priceCapacity := uint128.From64(newPrice).Mul(uint128.From64(common.OneCkb)).Div(uint128.From64(quote)).Big().Uint64()
 	if invitedDiscount > 0 {
 		priceCapacity = (priceCapacity / common.PercentRateBase) * (common.PercentRateBase - uint64(invitedDiscount))
 	}
