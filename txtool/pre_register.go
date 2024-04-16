@@ -309,9 +309,8 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	}
 	newPrice, _, _ := priceBuilder.AccountPrice(accountLength)
 	priceCapacity := uint128.From64(newPrice).Mul(uint128.From64(common.OneCkb)).Div(uint128.From64(quote))
-	if invitedDiscount > 0 {
-		priceCapacity = priceCapacity.Div(uint128.From64(common.PercentRateBase).Mul(uint128.From64(common.PercentRateBase - uint64(invitedDiscount))))
-	}
+	totalDiscount := priceCapacity.Mul(uint128.From64(uint64(invitedDiscount))).Div(uint128.From64(common.PercentRateBase))
+	priceCapacity = priceCapacity.Sub(totalDiscount)
 	priceCapacity = priceCapacity.Mul(uint128.From64(uint64(p.registerYears)))
 	log.Info("buildOrderPreRegisterTx:", priceCapacity, newPrice, p.registerYears, quote, invitedDiscount)
 	// basicCapacity
