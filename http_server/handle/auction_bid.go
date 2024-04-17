@@ -179,7 +179,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 			Value: addr,
 			TTL:   300,
 		})
-	} else {
+	} else if err != nil {
 		log.Error("buildOrderPreRegisterTx FormatAddressByCoinType err: ", err.Error())
 	}
 
