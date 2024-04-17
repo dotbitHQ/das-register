@@ -149,6 +149,8 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		PremiumPrice: premiumPrice,
 		BidTime:      nowTime,
 	}
+	reqBuild.EvmChainId = req.GetChainId(config.Cfg.Server.Net)
+	log.Info("doAccountAuctionBid EvmChainId:", reqBuild.EvmChainId)
 
 	// to lock & normal cell lock
 	if config.Cfg.Server.TransferWhitelist == "" || config.Cfg.Server.CapacityWhitelist == "" {
