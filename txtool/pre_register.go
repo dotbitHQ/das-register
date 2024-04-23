@@ -15,6 +15,7 @@ import (
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/nervosnetwork/ckb-sdk-go/utils"
+	"github.com/sjatsh/uint128"
 	"strings"
 	"time"
 )
@@ -307,11 +308,10 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		return nil, fmt.Errorf("PriceConfig is nil")
 	}
 	newPrice, _, _ := priceBuilder.AccountPrice(accountLength)
-	priceCapacity := (newPrice / quote) * common.OneCkb
-	if invitedDiscount > 0 {
-		priceCapacity = (priceCapacity / common.PercentRateBase) * (common.PercentRateBase - uint64(invitedDiscount))
-	}
-	priceCapacity = priceCapacity * uint64(p.registerYears)
+	priceCapacity := uint128.From64(newPrice).Mul(uint128.From64(common.OneCkb)).Div(uint128.From64(quote))
+	totalDiscount := priceCapacity.Mul(uint128.From64(uint64(invitedDiscount))).Div(uint128.From64(common.PercentRateBase))
+	priceCapacity = priceCapacity.Sub(totalDiscount)
+	priceCapacity = priceCapacity.Mul(uint128.From64(uint64(p.registerYears)))
 	log.Info("buildOrderPreRegisterTx:", priceCapacity, newPrice, p.registerYears, quote, invitedDiscount)
 	// basicCapacity
 	basicCapacity, _ := priceBuilder.BasicCapacityFromOwnerDasAlgorithmId(common.Bytes2Hex(p.ownerLockArgs))
@@ -399,7 +399,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	preData = append(preData, accountId...)
 	txParams.OutputsData = append(txParams.OutputsData, preData)
 
-	preOutputs.Capacity = basicCapacity + priceCapacity
+	preOutputs.Capacity = basicCapacity + priceCapacity.Big().Uint64()
 	txParams.Outputs = append(txParams.Outputs, preOutputs)
 
 	// search balance

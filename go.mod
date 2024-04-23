@@ -21,7 +21,10 @@ require (
 	gorm.io/gorm v1.23.6
 )
 
-require github.com/olivere/elastic/v7 v7.0.32
+require (
+	github.com/olivere/elastic/v7 v7.0.32
+	github.com/sjatsh/uint128 v0.0.0-20240313033229-578752bd051c
+)
 
 require (
 	github.com/Andrew-M-C/go.emoji v1.0.1 // indirect
