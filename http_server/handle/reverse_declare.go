@@ -313,6 +313,10 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		DasCore:       h.dasCore,
 	}
 	switch req.Action {
+	case common.DidCellActionRecycle:
+		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
+		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
+		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
 	case common.DasActionConfigSubAccountCustomScript:
 		skipGroups = []int{1}
 		changeCapacity := txBuilder.Transaction.Outputs[1].Capacity - txFee
