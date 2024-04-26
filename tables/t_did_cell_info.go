@@ -21,3 +21,7 @@ type TableDidCellInfo struct {
 func (t *TableDidCellInfo) TableName() string {
 	return TableNameDidCellInfo
 }
+
+func GetDidCellRecycleExpiredAt() uint64 {
+	return uint64(time.Now().Add(-time.Hour * 24 * 30 * 3).Unix())
+}
