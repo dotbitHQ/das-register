@@ -13,6 +13,7 @@ import (
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
+	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
@@ -88,6 +89,23 @@ func (h *HttpHandle) EditRecords(ctx *gin.Context) {
 
 func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiResp) error {
 	var resp RespEditRecords
+
+	// check any lock
+	if req.KeyInfo.CoinType == common.CoinTypeCKB {
+		addrParse, err := address.Parse(req.KeyInfo.Key)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")
+			return fmt.Errorf("address.Parse err: %s", err.Error())
+		}
+		contractDispatch, err := core.GetDasContractInfo(common.DasContractNameDispatchCellType)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get dispatch contract")
+			return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+		} else if contractDispatch.IsSameTypeId(addrParse.Script.CodeHash) {
+			return h.doEditRecordsForDidCell(req, apiResp, addrParse)
+		}
+	}
+
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
@@ -208,6 +226,102 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 		checkBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
 	}
+	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+		doBuildTxErr(err, apiResp)
+		return fmt.Errorf("buildTx: %s", err.Error())
+	} else {
+		resp.SignInfo = *si
+	}
+
+	apiResp.ApiRespOK(resp)
+	return nil
+}
+
+func (h *HttpHandle) doEditRecordsForDidCell(req *ReqEditRecords, apiResp *api_code.ApiResp, addrParse *address.ParsedAddress) error {
+	var resp RespEditRecords
+
+	if req.Account == "" {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "account is invalid")
+		return nil
+	}
+	args := common.Bytes2Hex(addrParse.Script.Args)
+	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+	didAccount, err := h.dbDao.GetDidAccountByAccountId(accountId, args)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
+		return fmt.Errorf("SearchAccount err: %s", err.Error())
+	} else if didAccount.Id == 0 {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
+		return nil
+	} else if didAccount.IsExpired() {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")
+		return nil
+	}
+
+	// check records
+	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(common.ConfigCellTypeArgsRecordNamespace)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+		return fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
+	}
+	log.Info("ConfigCellRecordKeys:", builder.ConfigCellRecordKeys)
+	var mapRecordKey = make(map[string]struct{})
+	for _, v := range builder.ConfigCellRecordKeys {
+		mapRecordKey[v] = struct{}{}
+	}
+
+	var editRecords []witness.Record
+	for _, v := range req.RawParam.Records {
+		record := fmt.Sprintf("%s.%s", v.Type, v.Key)
+		if v.Type == "custom_key" { // (^[0-9a-z_]+$)
+			if ok, _ := regexp.MatchString("^[0-9a-z_]+$", v.Key); !ok {
+				apiResp.ApiRespErr(api_code.ApiCodeRecordInvalid, fmt.Sprintf("record [%s] is invalid", record))
+				return nil
+			}
+		} else if v.Type == "address" {
+			if ok, _ := regexp.MatchString("^(0|[1-9][0-9]*)$", v.Key); !ok {
+				if _, ok2 := mapRecordKey[record]; !ok2 {
+					apiResp.ApiRespErr(api_code.ApiCodeRecordInvalid, fmt.Sprintf("record [%s] is invalid", record))
+					return nil
+				}
+			}
+		} else if _, ok := mapRecordKey[record]; !ok {
+			apiResp.ApiRespErr(api_code.ApiCodeRecordInvalid, fmt.Sprintf("record [%s] is invalid", record))
+			return nil
+		}
+		ttl, err := strconv.ParseInt(v.TTL, 10, 64)
+		if err != nil {
+			ttl = 300
+		}
+		editRecords = append(editRecords, witness.Record{
+			Key:   v.Key,
+			Type:  v.Type,
+			Label: v.Label,
+			Value: v.Value,
+			TTL:   uint32(ttl),
+		})
+	}
+
+	didCellOutpoint := common.String2OutPointStruct(didAccount.Outpoint)
+	txParams, err := txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
+		DasCore:             h.dasCore,
+		Action:              common.DidCellActionEditRecords,
+		DidCellOutPoint:     didCellOutpoint,
+		AccountCellOutPoint: nil,
+		EditRecords:         editRecords,
+		EditOwnerLock:       nil,
+		NormalCkbLiveCell:   nil,
+		RenewYears:          0,
+	})
+
+	var reqBuild reqBuildTx
+	reqBuild.Action = common.DasActionEditRecords
+	reqBuild.Account = req.Account
+	reqBuild.ChainType = 0
+	reqBuild.Address = req.KeyInfo.Key
+	reqBuild.Capacity = 0
+	reqBuild.EvmChainId = req.EvmChainId
+
 	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		doBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())

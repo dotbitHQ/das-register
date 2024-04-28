@@ -25,3 +25,10 @@ func (t *TableDidCellInfo) TableName() string {
 func GetDidCellRecycleExpiredAt() uint64 {
 	return uint64(time.Now().Add(-time.Hour * 24 * 30 * 3).Unix())
 }
+
+func (t *TableDidCellInfo) IsExpired() bool {
+	if int64(t.ExpiredAt) <= time.Now().Unix() {
+		return true
+	}
+	return false
+}

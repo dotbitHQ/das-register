@@ -10,7 +10,6 @@ import (
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
-	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
 )
@@ -96,8 +95,8 @@ func (h *HttpHandle) doDidCellRecycle(req *ReqDidCellRecycle, apiResp *http_api.
 	txParams, err := txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
 		DasCore:             h.dasCore,
 		Action:              common.DidCellActionRecycle,
-		DidCellOutPoint:     *didCellOutpoint,
-		AccountCellOutPoint: types.OutPoint{},
+		DidCellOutPoint:     didCellOutpoint,
+		AccountCellOutPoint: nil,
 		EditRecords:         nil,
 		EditOwnerLock:       nil,
 		NormalCkbLiveCell:   nil,
