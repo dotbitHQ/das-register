@@ -37,6 +37,7 @@ const (
 	AccountStatusOnAuction       AccountStatus = 2
 	AccountStatusOnCross         AccountStatus = 3
 	AccountStatusOnApproval      AccountStatus = 4
+	AccountStatusOnUpgrade       AccountStatus = 153
 	TableNameAccountInfo                       = "t_account_info"
 )
 
