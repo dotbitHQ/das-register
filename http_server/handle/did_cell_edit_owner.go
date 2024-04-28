@@ -184,7 +184,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		ChainType:  0,
 		Address:    req.KeyInfo.Key,
 		Account:    req.Account,
-		EvmChainId: 0, //todo
+		EvmChainId: req.GetChainId(config.Cfg.Server.Net),
 	}
 	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		checkBuildTxErr(err, apiResp)
