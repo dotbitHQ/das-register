@@ -86,7 +86,8 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/coupon/check", api_code.DoMonitorLog(api_code.MethodOrderCheckCoupon), cacheHandleShort, h.h.CheckCoupon)
 		//v1.POST("/account/edit/script", api_code.DoMonitorLog(api_code.MethodEditScript), h.h.EditScript)
 		v1.POST("/account/auction/bid", api_code.DoMonitorLog(api_code.MethodAuctionBid), h.h.AccountAuctionBid)
-		v1.POST("/did/cell/recycle", api_code.DoMonitorLog("did-cell-recycle"), cacheHandleShort, h.h.DidCellRecycle)
+		v1.POST("/did/cell/recycle", api_code.DoMonitorLog("did-cell-recycle"), h.h.DidCellRecycle)
+		v1.POST("/did/cell/edit/owner", api_code.DoMonitorLog("did-cell-edit-owner"), h.h.DidCellEditOwner)
 
 		// node rpc
 		v1.POST("/node/ckb/rpc", api_code.DoMonitorLog(api_code.MethodCkbRpc), h.h.CkbRpc)

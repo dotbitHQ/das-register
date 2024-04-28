@@ -101,7 +101,7 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get dispatch contract")
 			return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
-		} else if contractDispatch.IsSameTypeId(addrParse.Script.CodeHash) {
+		} else if !contractDispatch.IsSameTypeId(addrParse.Script.CodeHash) {
 			return h.doEditRecordsForDidCell(req, apiResp, addrParse)
 		}
 	}

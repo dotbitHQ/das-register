@@ -20,6 +20,6 @@ func (d *DbDao) GetDidAccountListTotal(args string) (count int64, err error) {
 
 func (d *DbDao) GetDidAccountByAccountId(accountId, args string) (info tables.TableDidCellInfo, err error) {
 	err = d.parserDb.Where("account_id=? AND args=?",
-		accountId, args).Order("expired_at").Find(&info).Error
+		accountId, args).Order("expired_at DESC").Limit(1).Find(&info).Error
 	return
 }
