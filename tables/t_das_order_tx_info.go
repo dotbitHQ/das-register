@@ -30,4 +30,5 @@ const (
 	TxActionPropose         OrderTxAction = "propose"
 	TxActionConfirmProposal OrderTxAction = "confirm_proposal"
 	TxActionRenewAccount    OrderTxAction = "renew_account"
+	TxActionTransferAccount OrderTxAction = "transfer_account"
 )

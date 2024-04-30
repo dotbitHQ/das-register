@@ -65,7 +65,3 @@ func (s *SignInfoCache) SignKey() string {
 	key := fmt.Sprintf("%d%s%s%d", s.ChainType, s.Address, s.Action, time.Now().UnixNano())
 	return fmt.Sprintf("%x", md5.Sum([]byte(key)))
 }
-
-type DidCellTxCache struct {
-	BuilderTx *txbuilder.DasTxBuilderTransaction `json:"builder_tx"`
-}

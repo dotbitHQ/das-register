@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/tables"
+	"das_register_server/txtool"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -151,7 +152,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 
 	// account cell -> did cell
 	if sic.Action == common.DasActionTransferAccount && sic.OrderId != "" {
-		didCellTxCache := DidCellTxCache{
+		didCellTxCache := txtool.DidCellTxCache{
 			BuilderTx: txBuilder.DasTxBuilderTransaction,
 		}
 		didCellTxCacheStr := toolib.JsonString(&didCellTxCache)
