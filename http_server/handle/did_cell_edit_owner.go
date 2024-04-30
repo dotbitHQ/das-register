@@ -3,6 +3,9 @@ package handle
 import (
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
+	"das_register_server/tables"
+	"das_register_server/timer"
+	"das_register_server/unipay"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -14,7 +17,9 @@ import (
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
+	"github.com/shopspring/decimal"
 	"net/http"
+	"time"
 )
 
 type ReqDidCellEditOwner struct {
@@ -24,9 +29,15 @@ type ReqDidCellEditOwner struct {
 		ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 		ReceiverAddress  string          `json:"receiver_address"`
 	} `json:"raw_param"`
+	PayTokenId tables.PayTokenId `json:"pay_token_id"`
 }
 
 type RespDidCellEditOwner struct {
+	OrderId         string          `json:"order_id"`
+	ReceiptAddress  string          `json:"receipt_address"`
+	Amount          decimal.Decimal `json:"amount"`
+	ContractAddress string          `json:"contract_address"`
+	ClientSecret    string          `json:"client_secret"`
 	SignInfo
 }
 
@@ -92,6 +103,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 
 	var txParams *txbuilder.BuildTransactionParams
+	var editOwnerCapacity uint64
 	if isFromAnyLock && isToAnyLock {
 		// did cell -> did cell
 		fromArgs := common.Bytes2Hex(fromParseAddr.Script.Args)
@@ -158,7 +170,29 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		} else {
 			// account cell -> did cell
 			editOwnerLock = toParseAddr.Script
-			// todo normalCkbLiveCell
+			editOwnerCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(editOwnerLock)
+			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get did cell capacity")
+				return fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
+			}
+			log.Info("GetDidCellOccupiedCapacity:", editOwnerCapacity)
+			// get normalCkbLiveCell
+			parseSvrAddr, err := address.Parse(config.Cfg.Server.PayServerAddress)
+			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+				return fmt.Errorf("address.Parse err: %s", err.Error())
+			}
+			_, normalCkbLiveCell, err = h.dasCore.GetBalanceCellWithLock(&core.ParamGetBalanceCells{
+				DasCache:          h.dasCache,
+				LockScript:        parseSvrAddr.Script,
+				CapacityNeed:      editOwnerCapacity,
+				CapacityForChange: common.MinCellOccupiedCkb,
+				SearchOrder:       indexer.SearchOrderDesc,
+			})
+			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+				return fmt.Errorf("GetBalanceCellWithLock err: %s", err.Error())
+			}
 		}
 
 		txParams, err = txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
@@ -193,6 +227,124 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 	} else {
 		resp.SignInfo = *si
 	}
+
+	if editOwnerCapacity > 0 {
+		var order tables.TableDasOrderInfo
+		var paymentInfo tables.TableDasOrderPayInfo
+
+		addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
+			return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
+		}
+
+		unipayAddr := config.GetUnipayAddress(req.PayTokenId)
+		if unipayAddr == "" {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", req.PayTokenId))
+			return nil
+		}
+
+		payToken := timer.GetTokenInfo(req.PayTokenId)
+		if payToken.TokenId == "" {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
+			return fmt.Errorf("timer.GetTokenInfo is nil [%s]", req.PayTokenId)
+		}
+		quoteCell, err := h.dasCore.GetQuoteCell()
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get quote cell")
+			return fmt.Errorf("GetQuoteCell err: %s", err.Error())
+		}
+		quote := quoteCell.Quote()
+
+		editOwnerAmountUSD, _ := decimal.NewFromString(fmt.Sprintf("%d", editOwnerCapacity))
+		decQuote, _ := decimal.NewFromString(fmt.Sprintf("%d", quote))
+		decUsdRateBase := decimal.NewFromInt(common.UsdRateBase)
+		editOwnerAmountUSD = editOwnerAmountUSD.Mul(decQuote).DivRound(decUsdRateBase, 6)
+		amountTotalPayToken := editOwnerAmountUSD.Div(payToken.Price).Mul(decimal.New(1, payToken.Decimals)).Ceil()
+		if payToken.TokenId == tables.TokenIdCkb {
+			amountTotalPayToken, _ = decimal.NewFromString(fmt.Sprintf("%d", editOwnerCapacity))
+		}
+		log.Info("edit owner amountTotalPayToken:", amountTotalPayToken, editOwnerCapacity)
+
+		premiumPercentage := decimal.Zero
+		premiumBase := decimal.Zero
+		premiumAmount := decimal.Zero
+
+		if req.PayTokenId == tables.TokenIdStripeUSD {
+			premiumPercentage = config.Cfg.Stripe.PremiumPercentage
+			premiumBase = config.Cfg.Stripe.PremiumBase
+			premiumAmount = amountTotalPayToken
+			amountTotalPayToken = amountTotalPayToken.Mul(premiumPercentage.Add(decimal.NewFromInt(1))).Add(premiumBase.Mul(decimal.NewFromInt(100)))
+			amountTotalPayToken = decimal.NewFromInt(amountTotalPayToken.Ceil().IntPart())
+			premiumAmount = amountTotalPayToken.Sub(premiumAmount)
+		}
+		res, err := unipay.CreateOrder(unipay.ReqOrderCreate{
+			ChainTypeAddress:  req.ChainTypeAddress,
+			BusinessId:        unipay.BusinessIdDasRegisterSvr,
+			Amount:            amountTotalPayToken,
+			PayTokenId:        req.PayTokenId,
+			PaymentAddress:    unipayAddr,
+			PremiumPercentage: premiumPercentage,
+			PremiumBase:       premiumBase,
+			PremiumAmount:     premiumAmount,
+			MetaData: map[string]string{
+				"account":      req.Account,
+				"algorithm_id": addrHex.ChainType.ToString(),
+				"address":      req.ChainTypeAddress.KeyInfo.Key,
+				"action":       "edit_owner",
+			},
+		})
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to create order by unipay")
+			return fmt.Errorf("unipay.CreateOrder err: %s", err.Error())
+		}
+
+		order = tables.TableDasOrderInfo{
+			OrderType:         tables.OrderTypeSelf,
+			OrderId:           res.OrderId,
+			AccountId:         accountId,
+			Account:           req.Account,
+			Action:            common.DasActionRenewAccount,
+			ChainType:         addrHex.ChainType,
+			Address:           addrHex.AddressHex,
+			Timestamp:         time.Now().UnixMilli(),
+			PayTokenId:        req.PayTokenId,
+			PayAmount:         amountTotalPayToken,
+			PayStatus:         tables.TxStatusDefault,
+			HedgeStatus:       tables.TxStatusDefault,
+			PreRegisterStatus: tables.TxStatusDefault,
+			RegisterStatus:    tables.RegisterStatusDefault,
+			OrderStatus:       tables.OrderStatusDefault,
+			IsUniPay:          tables.IsUniPayTrue,
+			PremiumPercentage: premiumPercentage,
+			PremiumBase:       premiumBase,
+			PremiumAmount:     premiumAmount,
+		}
+		if req.PayTokenId == tables.TokenIdStripeUSD && res.StripePaymentIntentId != "" {
+			paymentInfo = tables.TableDasOrderPayInfo{
+				Hash:      res.StripePaymentIntentId,
+				OrderId:   res.OrderId,
+				ChainType: order.ChainType,
+				Address:   order.Address,
+				Status:    tables.OrderTxStatusDefault,
+				Timestamp: time.Now().UnixMilli(),
+				AccountId: order.AccountId,
+			}
+		}
+
+		resp.OrderId = order.OrderId
+		resp.ReceiptAddress = unipayAddr
+		resp.Amount = order.PayAmount
+		resp.ContractAddress = res.ContractAddress
+		resp.ClientSecret = res.ClientSecret
+
+		if err := h.dbDao.CreateOrderWithPayment(order, paymentInfo); err != nil {
+			log.Error("CreateOrder err:", err.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
+			return fmt.Errorf("CreateOrderWithPayment err: %s", err.Error())
+		}
+	}
+
 	apiResp.ApiRespOK(resp)
 	return nil
 }
