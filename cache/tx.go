@@ -31,3 +31,24 @@ func (r *RedisCache) SetSignTxCache(key, txStr string) error {
 	}
 	return nil
 }
+
+func (r *RedisCache) SetCache(key, value string, expiration time.Duration) error {
+	if r.red == nil {
+		return fmt.Errorf("redis is nil")
+	}
+	if err := r.red.Set(key, value, expiration).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *RedisCache) GetCache(key string) (string, error) {
+	if r.red == nil {
+		return "", fmt.Errorf("redis is nil")
+	}
+	if txStr, err := r.red.Get(key).Result(); err != nil {
+		return "", err
+	} else {
+		return txStr, nil
+	}
+}

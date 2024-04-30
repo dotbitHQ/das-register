@@ -149,6 +149,20 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		}
 	}
 
+	// account cell -> did cell
+	if sic.Action == common.DasActionTransferAccount && sic.OrderId != "" {
+		didCellTxCache := DidCellTxCache{
+			BuilderTx: txBuilder.DasTxBuilderTransaction,
+		}
+		didCellTxCacheStr := toolib.JsonString(&didCellTxCache)
+		if err := h.rc.SetCache(sic.OrderId, didCellTxCacheStr, time.Hour*24); err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to cache did cell tx")
+			return fmt.Errorf("SetCache err: %s", err.Error())
+		}
+		apiResp.ApiRespOK(resp)
+		return nil
+	}
+
 	// send tx
 	if hash, err := txBuilder.SendTransaction(); err != nil {
 		if strings.Contains(err.Error(), "PoolRejectedDuplicatedTransaction") ||

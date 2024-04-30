@@ -202,6 +202,7 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 }
 
 type reqBuildTx struct {
+	OrderId     string `json:"order_id"`
 	Action      common.DasAction
 	ChainType   common.ChainType `json:"chain_type"`
 	Address     string           `json:"address"`
@@ -381,6 +382,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	}
 
 	var sic SignInfoCache
+	sic.OrderId = req.OrderId
 	sic.Action = req.Action
 	sic.ChainType = req.ChainType
 	sic.Address = req.Address
