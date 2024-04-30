@@ -304,7 +304,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			OrderId:           res.OrderId,
 			AccountId:         accountId,
 			Account:           req.Account,
-			Action:            common.DasActionRenewAccount,
+			Action:            common.DasActionTransferAccount,
 			ChainType:         addrHex.ChainType,
 			Address:           addrHex.AddressHex,
 			Timestamp:         time.Now().UnixMilli(),
