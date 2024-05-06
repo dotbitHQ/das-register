@@ -305,13 +305,14 @@ func (h *HttpHandle) doEditRecordsForDidCell(req *ReqEditRecords, apiResp *api_c
 	didCellOutpoint := common.String2OutPointStruct(didAccount.Outpoint)
 	txParams, err := txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
 		DasCore:             h.dasCore,
+		DasCache:            h.dasCache,
 		Action:              common.DidCellActionEditRecords,
 		DidCellOutPoint:     didCellOutpoint,
 		AccountCellOutPoint: nil,
 		EditRecords:         editRecords,
 		EditOwnerLock:       nil,
-		NormalCkbLiveCell:   nil,
 		RenewYears:          0,
+		NormalCellScript:    nil,
 	})
 
 	var reqBuild reqBuildTx

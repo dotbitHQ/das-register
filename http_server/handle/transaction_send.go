@@ -151,7 +151,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 	}
 
 	// account cell -> did cell
-	if sic.Action == common.DasActionTransferAccount && sic.OrderId != "" {
+	if (sic.Action == common.DasActionTransferAccount || sic.Action == common.DasActionRenewAccount) && sic.OrderId != "" {
 		didCellTxCache := txtool.DidCellTxCache{
 			BuilderTx: txBuilder.DasTxBuilderTransaction,
 		}

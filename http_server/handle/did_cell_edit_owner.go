@@ -14,7 +14,6 @@ import (
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
-	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
@@ -86,19 +85,22 @@ func (h *HttpHandle) DidCellEditOwner(ctx *gin.Context) {
 func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellEditOwner
 
-	isFromAnyLock, fromParseAddr, err := h.isAnyLock(req.ChainTypeAddress, apiResp)
+	isFromAnyLock, fromParseAddr, err := req.ChainTypeAddress.FormatAnyLock()
 	if err != nil {
-		return fmt.Errorf("isAnyLock err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")
+		return fmt.Errorf("FormatAnyLock err: %s", err.Error())
 	}
-	isToAnyLock, toParseAddr, err := h.isAnyLock(core.ChainTypeAddress{
+	toCTA := core.ChainTypeAddress{
 		Type: "blockchain",
 		KeyInfo: core.KeyInfo{
 			CoinType: req.RawParam.ReceiverCoinType,
 			Key:      req.RawParam.ReceiverAddress,
 		},
-	}, apiResp)
+	}
+	isToAnyLock, toParseAddr, err := toCTA.FormatAnyLock()
 	if err != nil {
-		return fmt.Errorf("isAnyLock err: %s", err.Error())
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "receiver address is invalid")
+		return fmt.Errorf("FormatAnyLock err: %s", err.Error())
 	}
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 
@@ -121,13 +123,14 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 
 		txParams, err = txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
 			DasCore:             h.dasCore,
+			DasCache:            h.dasCache,
 			Action:              common.DidCellActionEditOwner,
 			DidCellOutPoint:     didAccount.GetOutpoint(),
 			AccountCellOutPoint: nil,
 			EditRecords:         nil,
 			EditOwnerLock:       toParseAddr.Script,
-			NormalCkbLiveCell:   nil,
 			RenewYears:          0,
+			NormalCellScript:    nil,
 		})
 		if err != nil {
 			apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to build tx")
@@ -147,7 +150,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		}
 
 		var editOwnerLock *types.Script
-		var normalCkbLiveCell []*indexer.LiveCell
+		var normalCellScript *types.Script
 		if !isToAnyLock {
 			// account cell -> account cell
 			chainTypeAddress := core.ChainTypeAddress{
@@ -182,17 +185,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 				return fmt.Errorf("address.Parse err: %s", err.Error())
 			}
-			_, normalCkbLiveCell, err = h.dasCore.GetBalanceCellWithLock(&core.ParamGetBalanceCells{
-				DasCache:          h.dasCache,
-				LockScript:        parseSvrAddr.Script,
-				CapacityNeed:      editOwnerCapacity,
-				CapacityForChange: common.MinCellOccupiedCkb,
-				SearchOrder:       indexer.SearchOrderDesc,
-			})
-			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
-				return fmt.Errorf("GetBalanceCellWithLock err: %s", err.Error())
-			}
+			normalCellScript = parseSvrAddr.Script
 		}
 
 		txParams, err = txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
@@ -202,8 +195,8 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			AccountCellOutPoint: acc.GetOutpoint(),
 			EditRecords:         nil,
 			EditOwnerLock:       editOwnerLock,
-			NormalCkbLiveCell:   normalCkbLiveCell,
 			RenewYears:          0,
+			NormalCellScript:    normalCellScript,
 		})
 		if err != nil {
 			apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to build tx")
@@ -212,20 +205,6 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 	} else {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return nil
-	}
-	reqBuild := reqBuildTx{
-		Action:     common.DasActionTransferAccount,
-		ChainType:  0,
-		Address:    req.KeyInfo.Key,
-		Account:    req.Account,
-		EvmChainId: req.GetChainId(config.Cfg.Server.Net),
-	}
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
-		checkBuildTxErr(err, apiResp)
-		//apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err")
-		return fmt.Errorf("buildTx: %s", err.Error())
-	} else {
-		resp.SignInfo = *si
 	}
 
 	if editOwnerCapacity > 0 {
@@ -343,6 +322,21 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
 			return fmt.Errorf("CreateOrderWithPayment err: %s", err.Error())
 		}
+	}
+
+	reqBuild := reqBuildTx{
+		OrderId:    resp.OrderId,
+		Action:     common.DasActionTransferAccount,
+		ChainType:  0,
+		Address:    req.KeyInfo.Key,
+		Account:    req.Account,
+		EvmChainId: req.GetChainId(config.Cfg.Server.Net),
+	}
+	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+		checkBuildTxErr(err, apiResp)
+		return fmt.Errorf("buildTx: %s", err.Error())
+	} else {
+		resp.SignInfo = *si
 	}
 
 	apiResp.ApiRespOK(resp)

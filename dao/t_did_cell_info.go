@@ -23,3 +23,9 @@ func (d *DbDao) GetDidAccountByAccountId(accountId, args string) (info tables.Ta
 		accountId, args).Order("expired_at DESC").Limit(1).Find(&info).Error
 	return
 }
+
+func (d *DbDao) GetDidAccountByAccountIdWithoutArgs(accountId string) (info tables.TableDidCellInfo, err error) {
+	err = d.parserDb.Where("account_id=?", accountId).
+		Order("expired_at DESC").Limit(1).Find(&info).Error
+	return
+}
