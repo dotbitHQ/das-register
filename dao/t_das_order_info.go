@@ -266,8 +266,15 @@ func (d *DbDao) DoActionRenewAccount(orderId, hash string) error {
 }
 
 func (d *DbDao) GetNeedSendPayOrderList(action common.DasAction) (list []tables.TableDasOrderInfo, err error) {
-	err = d.db.Where("action=? AND order_type=? AND pay_status=? AND order_status=?",
-		action, tables.OrderTypeSelf, tables.TxStatusSending, tables.OrderStatusDefault).
+	err = d.db.Where("action=? AND order_type=? AND pay_status=? AND order_status=? AND is_did_cell=?",
+		action, tables.OrderTypeSelf, tables.TxStatusSending, tables.OrderStatusDefault, tables.IsDidCellNo).
+		Order("id").Limit(20).Find(&list).Error
+	return
+}
+
+func (d *DbDao) GetNeedSendDidCellOrderList(actions []common.DasAction) (list []tables.TableDasOrderInfo, err error) {
+	err = d.db.Where("action IN(?) AND order_type=? AND pay_status=? AND order_status=? AND is_did_cell=?",
+		actions, tables.OrderTypeSelf, tables.TxStatusSending, tables.OrderStatusDefault, tables.IsDidCellYes).
 		Order("id").Limit(20).Find(&list).Error
 	return
 }

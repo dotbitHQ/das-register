@@ -300,6 +300,7 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 		PremiumPercentage: premiumPercentage,
 		PremiumBase:       premiumBase,
 		PremiumAmount:     premiumAmount,
+		IsDidCell:         tables.IsDidCellYes,
 	}
 	if req.PayTokenId == tables.TokenIdStripeUSD && res.StripePaymentIntentId != "" {
 		paymentInfo = tables.TableDasOrderPayInfo{

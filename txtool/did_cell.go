@@ -39,7 +39,8 @@ type DidCellTxCache struct {
 }
 
 func (t *TxTool) doDidCellTx() error {
-	list, err := t.DbDao.GetNeedSendPayOrderList(common.DasActionTransferAccount)
+	actions := []common.DasAction{common.DasActionTransferAccount, common.DasActionRenewAccount}
+	list, err := t.DbDao.GetNeedSendDidCellOrderList(actions)
 	if err != nil {
 		return fmt.Errorf("GetNeedSendPayOrderList err: %s", err.Error())
 	}
@@ -68,7 +69,7 @@ func (t *TxTool) doDidCellTx() error {
 		// update tx hash
 		orderTx := tables.TableDasOrderTxInfo{
 			OrderId:   v.OrderId,
-			Action:    tables.TxActionTransferAccount,
+			Action:    tables.OrderTxAction(v.Action),
 			Hash:      hash.Hex(),
 			Status:    tables.OrderTxStatusDefault,
 			Timestamp: time.Now().UnixMilli(),

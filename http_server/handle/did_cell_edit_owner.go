@@ -298,6 +298,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			PremiumPercentage: premiumPercentage,
 			PremiumBase:       premiumBase,
 			PremiumAmount:     premiumAmount,
+			IsDidCell:         tables.IsDidCellYes,
 		}
 		if req.PayTokenId == tables.TokenIdStripeUSD && res.StripePaymentIntentId != "" {
 			paymentInfo = tables.TableDasOrderPayInfo{
