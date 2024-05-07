@@ -125,14 +125,15 @@ func TestDidCellEditOwner(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(toolib.JsonString(&data))
-	if err := doSig(&data.SignInfo); err != nil {
-		t.Fatal(err)
-	}
 	fmt.Println("===========================")
-	fmt.Println(toolib.JsonString(&data))
-	if err := sendTx2(data.SignInfo); err != nil {
-		t.Fatal(err)
-	}
+
+	//if err := doSig(&data.SignInfo); err != nil {
+	//	t.Fatal(err)
+	//}
+	//fmt.Println(toolib.JsonString(&data))
+	//if err := sendTx2(data.SignInfo); err != nil {
+	//	t.Fatal(err)
+	//}
 }
 
 func doSig(sigInfo *handle.SignInfo) error {
