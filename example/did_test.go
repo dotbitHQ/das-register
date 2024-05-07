@@ -106,7 +106,7 @@ func TestDidCellEditOwner(t *testing.T) {
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
 				CoinType: common.CoinTypeEth,
-				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+				Key:      "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
 			},
 		},
 		Account: "20240507.bit",
@@ -114,8 +114,8 @@ func TestDidCellEditOwner(t *testing.T) {
 			ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 			ReceiverAddress  string          `json:"receiver_address"`
 		}{
-			ReceiverCoinType: common.CoinTypeEth,
-			ReceiverAddress:  "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+			ReceiverCoinType: common.CoinTypeCKB,
+			ReceiverAddress:  "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgpzk3ntzys3nuwmvnar2lrs54l9pat6wy3qqcmu76w",
 		},
 		PayTokenId: "",
 	}

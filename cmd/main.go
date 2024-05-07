@@ -16,9 +16,9 @@ import (
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/dascache"
-	"github.com/dotbitHQ/das-lib/remote_sign"
 	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/http_api/logger"
+	"github.com/dotbitHQ/das-lib/remote_sign"
 	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
@@ -259,7 +259,7 @@ func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
 		common.DasContractNameBalanceCellType, common.DasContractNameDispatchCellType, common.DasContractNameApplyRegisterCellType,
 		common.DasContractNamePreAccountCellType, common.DasContractNameProposalCellType, common.DasContractNameReverseRecordCellType,
 		common.DasContractNameIncomeCellType, common.DasContractNameAlwaysSuccess, common.DASContractNameEip712LibCellType,
-		common.DASContractNameSubAccountCellType, common.DasKeyListCellType, common.DasContractNameDpCellType)
+		common.DASContractNameSubAccountCellType, common.DasKeyListCellType, common.DasContractNameDpCellType, common.DasContractNameDidCellType)
 	ops := []core.DasCoreOption{
 		core.WithClient(ckbClient),
 		core.WithDasContractArgs(env.ContractArgs),
