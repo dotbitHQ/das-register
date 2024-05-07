@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
+	"das_register_server/internal"
 	"das_register_server/tables"
 	"das_register_server/timer"
 	"das_register_server/unipay"
@@ -108,6 +109,13 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 	if strings.EqualFold(req.KeyInfo.Key, req.RawParam.ReceiverAddress) {
 		apiResp.ApiRespErr(api_code.ApiCodeSameLock, "same address")
 		return nil
+	}
+	if err := h.checkSystemUpgrade(apiResp); err != nil {
+		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
+	}
+	if ok := internal.IsLatestBlockNumber(config.Cfg.Server.ParserUrl); !ok {
+		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
+		return fmt.Errorf("sync block number")
 	}
 
 	var txParams *txbuilder.BuildTransactionParams
