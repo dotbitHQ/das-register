@@ -148,6 +148,7 @@ func runServer(ctx *cli.Context) error {
 		TxBuilderBase: txBuilderBase,
 		ServerScript:  serverScript,
 		RebootTime:    time.Now(),
+		RC:            rc,
 	}
 	txTool.Run()
 	txTool.RunDidCellTx()
