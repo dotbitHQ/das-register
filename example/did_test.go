@@ -127,13 +127,14 @@ func TestDidCellEditOwner(t *testing.T) {
 	fmt.Println(toolib.JsonString(&data))
 	fmt.Println("===========================")
 
-	//if err := doSig(&data.SignInfo); err != nil {
-	//	t.Fatal(err)
-	//}
-	//fmt.Println(toolib.JsonString(&data))
-	//if err := sendTx2(data.SignInfo); err != nil {
-	//	t.Fatal(err)
-	//}
+	if err := doSig(&data.SignInfo); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+	fmt.Println("===========================")
+	if err := sendTx2(data.SignInfo); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func doSig(sigInfo *handle.SignInfo) error {
@@ -144,6 +145,8 @@ func doSig(sigInfo *handle.SignInfo) error {
 		var signData []byte
 		sigMsg := []byte(v.SignMsg)
 		switch v.SignType {
+		case common.DasAlgorithmIdCkb:
+			continue
 		case common.DasAlgorithmIdTron:
 			signData, err = sign.TronSignature(true, sigMsg, private)
 			if err != nil {
@@ -195,7 +198,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "f13afd2cafd4cd29049d79e9292f69ad",
+		OrderId:    "e1127c2e9a26aaaf073861359de3bdeb",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"

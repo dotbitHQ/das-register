@@ -150,6 +150,7 @@ func runServer(ctx *cli.Context) error {
 		RebootTime:    time.Now(),
 	}
 	txTool.Run()
+	txTool.RunDidCellTx()
 
 	// prometheus
 	prometheus.Init()
