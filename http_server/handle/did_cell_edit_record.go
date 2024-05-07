@@ -197,6 +197,7 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 	reqBuild.Account = req.Account
 	reqBuild.ChainType = addrHex.ChainType
 	reqBuild.Address = addrHex.AddressHex
+	reqBuild.EvmChainId = req.GetChainId(config.Cfg.Server.Net)
 
 	records := witness.ConvertToCellRecords(editRecords)
 	recordsBys := records.AsSlice()

@@ -26,6 +26,45 @@ func sendTx2(sigInfo handle.SignInfo) error {
 	return nil
 }
 
+func TestDidCellEditRecord(t *testing.T) {
+	req := handle.ReqDidCellEditRecord{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeEth,
+				Key:      "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+			},
+		},
+		Account: "20240507.bit",
+		RawParam: struct {
+			Records []handle.ReqRecord `json:"records"`
+		}{},
+	}
+	var records []handle.ReqRecord
+	records = append(records, handle.ReqRecord{
+		Key:   "60",
+		Type:  "address",
+		Label: "",
+		Value: "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+		TTL:   "300",
+	})
+	req.RawParam.Records = records
+	url := TestUrl + "/did/cell/edit/record"
+	var data handle.RespDidCellEditRecord
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+	if err := doSig(&data.SignInfo); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println("===========================")
+	fmt.Println(toolib.JsonString(&data))
+	if err := sendTx2(data.SignInfo); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestDidCellRenew(t *testing.T) {
 	req := handle.ReqDidCellRenew{
 		ChainTypeAddress: core.ChainTypeAddress{
