@@ -160,6 +160,11 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to cache did cell tx")
 			return fmt.Errorf("SetCache err: %s", err.Error())
 		}
+		var outpoints []string
+		for _, v := range txBuilder.Transaction.Inputs {
+			outpoints = append(outpoints, common.OutPointStruct2String(v.PreviousOutput))
+		}
+		h.dasCache.AddOutPointWithDuration(outpoints, time.Hour*12)
 		apiResp.ApiRespOK(resp)
 		return nil
 	}
