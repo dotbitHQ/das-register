@@ -2,6 +2,7 @@ package txtool
 
 import (
 	"context"
+	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/dao"
 	"das_register_server/notify"
@@ -29,6 +30,7 @@ type TxTool struct {
 	TxBuilderBase *txbuilder.DasTxBuilderBase
 	ServerScript  *types.Script
 	RebootTime    time.Time
+	RC            *cache.RedisCache
 }
 
 func (t *TxTool) Run() {

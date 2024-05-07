@@ -98,7 +98,7 @@ func checkChainType(chainType common.ChainType) bool {
 	switch chainType {
 	case common.ChainTypeTron, common.ChainTypeMixin,
 		common.ChainTypeEth, common.ChainTypeDogeCoin,
-		common.ChainTypeWebauthn, common.ChainTypeBitcoin:
+		common.ChainTypeWebauthn:
 		return true
 	}
 	return false

@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/tables"
+	"das_register_server/txtool"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -147,6 +148,25 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 		} else {
 			log.Info("edit records:", sic.Account, sic.ChainType, sic.Address, toolib.JsonString(builder.Records))
 		}
+	}
+
+	// account cell -> did cell
+	if (sic.Action == common.DasActionTransferAccount || sic.Action == common.DasActionRenewAccount) && sic.OrderId != "" {
+		didCellTxCache := txtool.DidCellTxCache{
+			BuilderTx: txBuilder.DasTxBuilderTransaction,
+		}
+		didCellTxCacheStr := toolib.JsonString(&didCellTxCache)
+		if err := h.rc.SetCache(sic.OrderId, didCellTxCacheStr, time.Hour*24); err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to cache did cell tx")
+			return fmt.Errorf("SetCache err: %s", err.Error())
+		}
+		var outpoints []string
+		for _, v := range txBuilder.Transaction.Inputs {
+			outpoints = append(outpoints, common.OutPointStruct2String(v.PreviousOutput))
+		}
+		h.dasCache.AddOutPointWithDuration(outpoints, time.Hour*12)
+		apiResp.ApiRespOK(resp)
+		return nil
 	}
 
 	// send tx

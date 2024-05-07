@@ -65,6 +65,7 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/auction/order-status", api_code.DoMonitorLog(api_code.MethodAuctionOrderStatus), h.h.GetAuctionOrderStatus)
 		v1.POST("/account/auction/pending-order", api_code.DoMonitorLog(api_code.MethodAuctionPendingOrder), cacheHandleLong, h.h.GetPendingAuctionOrder)
 		v1.POST("/account/recommend", api_code.DoMonitorLog("account-recommend"), cacheHandleShort, h.h.AccountRecommend)
+		v1.POST("/did/cell/list", api_code.DoMonitorLog("did-cell-list"), cacheHandleShort, h.h.DidCellList)
 
 		// operate
 		//v1.POST("/reverse/declare", api_code.DoMonitorLog(api_code.MethodReverseDeclare), h.h.ReverseDeclare)
@@ -85,6 +86,9 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/coupon/check", api_code.DoMonitorLog(api_code.MethodOrderCheckCoupon), cacheHandleShort, h.h.CheckCoupon)
 		//v1.POST("/account/edit/script", api_code.DoMonitorLog(api_code.MethodEditScript), h.h.EditScript)
 		v1.POST("/account/auction/bid", api_code.DoMonitorLog(api_code.MethodAuctionBid), h.h.AccountAuctionBid)
+		v1.POST("/did/cell/recycle", api_code.DoMonitorLog("did-cell-recycle"), h.h.DidCellRecycle)
+		v1.POST("/did/cell/edit/owner", api_code.DoMonitorLog("did-cell-edit-owner"), h.h.DidCellEditOwner)
+		v1.POST("/did/cell/renew", api_code.DoMonitorLog("did-cell-renew"), h.h.DidCellRenew)
 
 		// node rpc
 		v1.POST("/node/ckb/rpc", api_code.DoMonitorLog(api_code.MethodCkbRpc), h.h.CkbRpc)

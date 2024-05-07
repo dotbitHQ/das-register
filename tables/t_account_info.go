@@ -2,6 +2,7 @@ package tables
 
 import (
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"time"
 )
 
@@ -37,6 +38,7 @@ const (
 	AccountStatusOnAuction       AccountStatus = 2
 	AccountStatusOnCross         AccountStatus = 3
 	AccountStatusOnApproval      AccountStatus = 4
+	AccountStatusOnUpgrade       AccountStatus = 153
 	TableNameAccountInfo                       = "t_account_info"
 )
 
@@ -74,6 +76,10 @@ func (t *TableAccountInfo) IsExpired() bool {
 		return true
 	}
 	return false
+}
+
+func (t *TableAccountInfo) GetOutpoint() *types.OutPoint {
+	return common.String2OutPointStruct(t.Outpoint)
 }
 
 func (t *TableAccountInfo) CheckStatus() bool {

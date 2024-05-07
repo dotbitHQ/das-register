@@ -51,6 +51,7 @@ type AuctionInfo struct {
 }
 
 type SignInfoCache struct {
+	OrderId     string                             `json:"order_id"`
 	ChainType   common.ChainType                   `json:"chain_type"`
 	Address     string                             `json:"address"`
 	Action      string                             `json:"action"`

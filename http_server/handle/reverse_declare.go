@@ -202,6 +202,7 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 }
 
 type reqBuildTx struct {
+	OrderId     string `json:"order_id"`
 	Action      common.DasAction
 	ChainType   common.ChainType `json:"chain_type"`
 	Address     string           `json:"address"`
@@ -314,6 +315,10 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		DasCore:       h.dasCore,
 	}
 	switch req.Action {
+	case common.DidCellActionRecycle:
+		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
+		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
+		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
 	case common.DasActionConfigSubAccountCustomScript:
 		skipGroups = []int{1}
 		changeCapacity := txBuilder.Transaction.Outputs[1].Capacity - txFee
@@ -379,6 +384,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	}
 
 	var sic SignInfoCache
+	sic.OrderId = req.OrderId
 	sic.Action = req.Action
 	sic.ChainType = req.ChainType
 	sic.Address = req.Address
