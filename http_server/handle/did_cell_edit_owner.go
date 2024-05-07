@@ -117,9 +117,10 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
 		return fmt.Errorf("sync block number")
 	}
-
-	var txParams *txbuilder.BuildTransactionParams
 	var editOwnerCapacity uint64
+	var didCellOutPoint, accountCellOutPoint *types.OutPoint
+	var editOwnerLock, normalCellScript *types.Script
+
 	if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock && addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
 		// did cell -> did cell
 		didAccount, err := h.dbDao.GetDidAccountByAccountIdWithoutArgs(accountId)
@@ -136,22 +137,8 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
 			return nil
 		}
-
-		txParams, err = txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
-			DasCore:             h.dasCore,
-			DasCache:            h.dasCache,
-			Action:              common.DidCellActionEditOwner,
-			DidCellOutPoint:     didAccount.GetOutpoint(),
-			AccountCellOutPoint: nil,
-			EditRecords:         nil,
-			EditOwnerLock:       addrHexTo.ParsedAddress.Script,
-			RenewYears:          0,
-			NormalCellScript:    nil,
-		})
-		if err != nil {
-			apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to build tx")
-			return fmt.Errorf("BuildDidCellTx err: %s", err.Error())
-		}
+		didCellOutPoint = didAccount.GetOutpoint()
+		editOwnerLock = addrHexTo.ParsedAddress.Script
 	} else if addrHexFrom.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
 		acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 		if err != nil {
@@ -170,9 +157,8 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
 			return nil
 		}
+		accountCellOutPoint = acc.GetOutpoint()
 
-		var editOwnerLock *types.Script
-		var normalCellScript *types.Script
 		if addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
 			// account cell -> account cell
 			editOwnerLock, _, err = h.dasCore.Daf().HexToScript(*addrHexTo)
@@ -196,24 +182,23 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			}
 			normalCellScript = parseSvrAddr.Script
 		}
-
-		txParams, err = txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
-			DasCore:             h.dasCore,
-			Action:              common.DidCellActionEditOwner,
-			DidCellOutPoint:     nil,
-			AccountCellOutPoint: acc.GetOutpoint(),
-			EditRecords:         nil,
-			EditOwnerLock:       editOwnerLock,
-			RenewYears:          0,
-			NormalCellScript:    normalCellScript,
-		})
-		if err != nil {
-			apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to build tx")
-			return fmt.Errorf("BuildDidCellTx err: %s", err.Error())
-		}
 	} else {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
 		return nil
+	}
+
+	txParams, err := txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
+		DasCore:             h.dasCore,
+		DasCache:            h.dasCache,
+		Action:              common.DidCellActionEditOwner,
+		DidCellOutPoint:     didCellOutPoint,
+		AccountCellOutPoint: accountCellOutPoint,
+		EditOwnerLock:       editOwnerLock,
+		NormalCellScript:    normalCellScript,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to build tx")
+		return fmt.Errorf("BuildDidCellTx err: %s", err.Error())
 	}
 
 	if editOwnerCapacity > 0 {
