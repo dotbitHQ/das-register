@@ -300,7 +300,6 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 		PremiumPercentage: premiumPercentage,
 		PremiumBase:       premiumBase,
 		PremiumAmount:     premiumAmount,
-		IsDidCell:         tables.IsDidCellYes,
 	}
 	if req.PayTokenId == tables.TokenIdStripeUSD && res.StripePaymentIntentId != "" {
 		paymentInfo = tables.TableDasOrderPayInfo{
@@ -326,11 +325,6 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 		resp.ReceiptAddress = addr
 	}
 
-	if err := h.dbDao.CreateOrderWithPayment(order, paymentInfo); err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
-		return fmt.Errorf("CreateOrderWithPayment err: %s", err.Error())
-	}
-
 	//
 	if txParams != nil {
 		reqBuild := reqBuildTx{
@@ -347,6 +341,12 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 		} else {
 			resp.SignInfo = *si
 		}
+		order.IsDidCell = tables.IsDidCellYes
+	}
+
+	if err := h.dbDao.CreateOrderWithPayment(order, paymentInfo); err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
+		return fmt.Errorf("CreateOrderWithPayment err: %s", err.Error())
 	}
 
 	// notify
