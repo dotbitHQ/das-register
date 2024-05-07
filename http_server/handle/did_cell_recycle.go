@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"das_register_server/config"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
@@ -9,7 +10,6 @@ import (
 	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/gin-gonic/gin"
-	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
 )
@@ -68,12 +68,15 @@ func (h *HttpHandle) DidCellRecycle(ctx *gin.Context) {
 func (h *HttpHandle) doDidCellRecycle(req *ReqDidCellRecycle, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellRecycle
 
-	addr, err := address.Parse(req.ChainTypeAddress.KeyInfo.Key)
+	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
-		return fmt.Errorf("address.Parse err: %s", err.Error())
+		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
+	} else if addrHex.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
+		return nil
 	}
-	args := common.Bytes2Hex(addr.Script.Args)
+	args := common.Bytes2Hex(addrHex.ParsedAddress.Script.Args)
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 
 	didAccount, err := h.dbDao.GetDidAccountByAccountId(accountId, args)
@@ -110,13 +113,10 @@ func (h *HttpHandle) doDidCellRecycle(req *ReqDidCellRecycle, apiResp *http_api.
 
 	// todo
 	reqBuild := reqBuildTx{
-		Action:      common.DidCellActionRecycle,
-		ChainType:   0,
-		Address:     req.KeyInfo.Key,
-		Account:     req.Account,
-		Capacity:    0,
-		EvmChainId:  0,
-		AuctionInfo: AuctionInfo{},
+		Action:    common.DidCellActionRecycle,
+		ChainType: addrHex.ChainType,
+		Address:   addrHex.AddressHex,
+		Account:   req.Account,
 	}
 	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		doBuildTxErr(err, apiResp)

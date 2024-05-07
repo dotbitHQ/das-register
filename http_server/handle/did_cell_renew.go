@@ -99,9 +99,8 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
 		return nil
 	}
-	if config.Cfg.Server.IsUpdate {
-		apiResp.ApiRespErr(api_code.ApiCodeSystemUpgrade, "The service is under maintenance, please try again later.")
-		return fmt.Errorf("backend system upgrade")
+	if err := h.checkSystemUpgrade(apiResp); err != nil {
+		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
 	}
 	if ok := internal.IsLatestBlockNumber(config.Cfg.Server.ParserUrl); !ok {
 		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
