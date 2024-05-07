@@ -22,7 +22,7 @@ func TestDidCellEditOwner(t *testing.T) {
 			ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 			ReceiverAddress  string          `json:"receiver_address"`
 		}{
-			ReceiverCoinType: "common.CoinTypeEth",
+			ReceiverCoinType: common.CoinTypeEth,
 			ReceiverAddress:  "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 		},
 		PayTokenId: "",

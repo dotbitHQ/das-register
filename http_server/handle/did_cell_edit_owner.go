@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"bytes"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"das_register_server/tables"
@@ -18,6 +19,7 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -85,10 +87,10 @@ func (h *HttpHandle) DidCellEditOwner(ctx *gin.Context) {
 func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellEditOwner
 
-	isFromAnyLock, fromParseAddr, err := req.ChainTypeAddress.FormatAnyLock()
+	addrHexFrom, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")
-		return fmt.Errorf("FormatAnyLock err: %s", err.Error())
+		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
 	toCTA := core.ChainTypeAddress{
 		Type: "blockchain",
@@ -97,19 +99,22 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			Key:      req.RawParam.ReceiverAddress,
 		},
 	}
-	isToAnyLock, toParseAddr, err := toCTA.FormatAnyLock()
+	addrHexTo, err := toCTA.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "receiver address is invalid")
-		return fmt.Errorf("FormatAnyLock err: %s", err.Error())
+		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+	if strings.EqualFold(req.KeyInfo.Key, req.RawParam.ReceiverAddress) {
+		apiResp.ApiRespErr(api_code.ApiCodeSameLock, "same address")
+		return nil
+	}
 
 	var txParams *txbuilder.BuildTransactionParams
 	var editOwnerCapacity uint64
-	if isFromAnyLock && isToAnyLock {
+	if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock && addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
 		// did cell -> did cell
-		fromArgs := common.Bytes2Hex(fromParseAddr.Script.Args)
-		didAccount, err := h.dbDao.GetDidAccountByAccountId(accountId, fromArgs)
+		didAccount, err := h.dbDao.GetDidAccountByAccountIdWithoutArgs(accountId)
 		if err != nil {
 			apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get did cell info")
 			return fmt.Errorf("GetDidAccountByAccountId err: %s", err.Error())
@@ -118,6 +123,9 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			return nil
 		} else if didAccount.IsExpired() {
 			apiResp.ApiRespErr(http_api.ApiCodeAccountIsExpired, "did cell expired")
+			return nil
+		} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHexFrom.ParsedAddress.Script.Args) != 0 {
+			apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
 			return nil
 		}
 
@@ -128,7 +136,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			DidCellOutPoint:     didAccount.GetOutpoint(),
 			AccountCellOutPoint: nil,
 			EditRecords:         nil,
-			EditOwnerLock:       toParseAddr.Script,
+			EditOwnerLock:       addrHexTo.ParsedAddress.Script,
 			RenewYears:          0,
 			NormalCellScript:    nil,
 		})
@@ -136,7 +144,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to build tx")
 			return fmt.Errorf("BuildDidCellTx err: %s", err.Error())
 		}
-	} else if !isFromAnyLock {
+	} else if addrHexFrom.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
 		acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 		if err != nil {
 			apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get account info")
@@ -147,39 +155,31 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		} else if acc.IsExpired() {
 			apiResp.ApiRespErr(http_api.ApiCodeAccountIsExpired, "account expired")
 			return nil
+		} else if addrHexFrom.ChainType != acc.OwnerChainType || !strings.EqualFold(addrHexFrom.AddressHex, acc.Owner) {
+			apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "transfer owner permission denied")
+			return nil
+		} else if acc.ParentAccountId != "" {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
+			return nil
 		}
 
 		var editOwnerLock *types.Script
 		var normalCellScript *types.Script
-		if !isToAnyLock {
+		if addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
 			// account cell -> account cell
-			chainTypeAddress := core.ChainTypeAddress{
-				Type: "blockchain",
-				KeyInfo: core.KeyInfo{
-					CoinType: req.RawParam.ReceiverCoinType,
-					Key:      req.RawParam.ReceiverAddress,
-				},
-			}
-			ownerHex, err := chainTypeAddress.FormatChainTypeAddress(config.Cfg.Server.Net, true)
-			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "receiver address is invalid")
-				return nil
-			}
-			editOwnerLock, _, err = h.dasCore.Daf().HexToScript(*ownerHex)
+			editOwnerLock, _, err = h.dasCore.Daf().HexToScript(*addrHexTo)
 			if err != nil {
 				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "receiver address is invalid")
 				return nil
 			}
 		} else {
 			// account cell -> did cell
-			editOwnerLock = toParseAddr.Script
 			editOwnerCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(editOwnerLock)
 			if err != nil {
 				apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get did cell capacity")
 				return fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
 			}
 			log.Info("GetDidCellOccupiedCapacity:", editOwnerCapacity)
-			// get normalCkbLiveCell
 			parseSvrAddr, err := address.Parse(config.Cfg.Server.PayServerAddress)
 			if err != nil {
 				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
@@ -210,19 +210,11 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 	if editOwnerCapacity > 0 {
 		var order tables.TableDasOrderInfo
 		var paymentInfo tables.TableDasOrderPayInfo
-
-		addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
-			return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
-		}
-
 		unipayAddr := config.GetUnipayAddress(req.PayTokenId)
 		if unipayAddr == "" {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", req.PayTokenId))
 			return nil
 		}
-
 		payToken := timer.GetTokenInfo(req.PayTokenId)
 		if payToken.TokenId == "" {
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
@@ -268,7 +260,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			PremiumAmount:     premiumAmount,
 			MetaData: map[string]string{
 				"account":      req.Account,
-				"algorithm_id": addrHex.ChainType.ToString(),
+				"algorithm_id": addrHexFrom.ChainType.ToString(),
 				"address":      req.ChainTypeAddress.KeyInfo.Key,
 				"action":       "edit_owner",
 			},
@@ -284,8 +276,8 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			AccountId:         accountId,
 			Account:           req.Account,
 			Action:            common.DasActionTransferAccount,
-			ChainType:         addrHex.ChainType,
-			Address:           addrHex.AddressHex,
+			ChainType:         addrHexFrom.ChainType,
+			Address:           addrHexFrom.AddressHex,
 			Timestamp:         time.Now().UnixMilli(),
 			PayTokenId:        req.PayTokenId,
 			PayAmount:         amountTotalPayToken,
@@ -328,8 +320,8 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 	reqBuild := reqBuildTx{
 		OrderId:    resp.OrderId,
 		Action:     common.DasActionTransferAccount,
-		ChainType:  0,
-		Address:    req.KeyInfo.Key,
+		ChainType:  addrHexFrom.ChainType,
+		Address:    addrHexFrom.AddressHex,
 		Account:    req.Account,
 		EvmChainId: req.GetChainId(config.Cfg.Server.Net),
 	}
