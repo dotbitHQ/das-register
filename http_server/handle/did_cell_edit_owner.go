@@ -169,7 +169,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		} else {
 			// account cell -> did cell
 			editOwnerLock = addrHexTo.ParsedAddress.Script
-			editOwnerCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(editOwnerLock)
+			editOwnerCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(editOwnerLock, req.Account)
 			if err != nil {
 				apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get did cell capacity")
 				return fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
