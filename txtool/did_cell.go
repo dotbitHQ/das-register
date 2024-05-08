@@ -57,6 +57,7 @@ func (t *TxTool) doDidCellTx() error {
 		if err := t.DbDao.UpdatePayStatus(v.OrderId, tables.TxStatusSending, tables.TxStatusOk); err != nil {
 			return fmt.Errorf("UpdatePayStatus err: %s", err.Error())
 		}
+		log.Info("doDidCellTx:", txBuilder.TxString())
 		hash, err := txBuilder.SendTransaction()
 		if err != nil {
 			if err := t.DbDao.UpdatePayStatus(v.OrderId, tables.TxStatusOk, tables.TxStatusSending); err != nil {

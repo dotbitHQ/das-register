@@ -26,6 +26,29 @@ func sendTx2(sigInfo handle.SignInfo) error {
 	return nil
 }
 
+func TestDidCellList(t *testing.T) {
+	req := handle.ReqDidCellList{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgpzk3ntzys3nuwmvnar2lrs54l9pat6wy3qqcmu76w",
+			},
+		},
+		Pagination: handle.Pagination{
+			Page: 1,
+			Size: 20,
+		},
+	}
+	url := TestUrl + "/did/cell/list"
+	var data handle.RespDidCellList
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+	fmt.Println("===========================")
+}
+
 func TestDidCellEditRecord(t *testing.T) {
 	req := handle.ReqDidCellEditRecord{
 		ChainTypeAddress: core.ChainTypeAddress{
@@ -198,7 +221,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "e1127c2e9a26aaaf073861359de3bdeb",
+		OrderId:    "da85c16b77eeb7c530841a9581c7f220",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"
