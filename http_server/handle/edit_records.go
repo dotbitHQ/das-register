@@ -90,22 +90,6 @@ func (h *HttpHandle) EditRecords(ctx *gin.Context) {
 func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiResp) error {
 	var resp RespEditRecords
 
-	// check any lock
-	if req.KeyInfo.CoinType == common.CoinTypeCKB {
-		addrParse, err := address.Parse(req.KeyInfo.Key)
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")
-			return fmt.Errorf("address.Parse err: %s", err.Error())
-		}
-		contractDispatch, err := core.GetDasContractInfo(common.DasContractNameDispatchCellType)
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get dispatch contract")
-			return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
-		} else if !contractDispatch.IsSameTypeId(addrParse.Script.CodeHash) {
-			return h.doEditRecordsForDidCell(req, apiResp, addrParse)
-		}
-	}
-
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
