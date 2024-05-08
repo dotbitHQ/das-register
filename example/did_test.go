@@ -221,7 +221,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "6537c0dd41c57c0a9742d03072cdd960",
+		OrderId:    "7de94ff90e3ce2bdb75fc3172c751982",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"
@@ -238,4 +238,165 @@ func TestBalancePay2(t *testing.T) {
 	if err := sendTx2(data.SignInfo); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func Test712(t *testing.T) {
+	chainId := 17000
+	digest := "0x18665bb86d3789c1d27b229f78144d6090686e9bfa35ddf5c91d1e306af5b142"
+	private := ""
+	mmJson := `{
+        "types": {
+            "EIP712Domain": [
+                {
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "name": "version",
+                    "type": "string"
+                },
+                {
+                    "name": "chainId",
+                    "type": "uint256"
+                },
+                {
+                    "name": "verifyingContract",
+                    "type": "address"
+                }
+            ],
+            "Action": [
+                {
+                    "name": "action",
+                    "type": "string"
+                },
+                {
+                    "name": "params",
+                    "type": "string"
+                }
+            ],
+            "Cell": [
+                {
+                    "name": "capacity",
+                    "type": "string"
+                },
+                {
+                    "name": "lock",
+                    "type": "string"
+                },
+                {
+                    "name": "type",
+                    "type": "string"
+                },
+                {
+                    "name": "data",
+                    "type": "string"
+                },
+                {
+                    "name": "extraData",
+                    "type": "string"
+                }
+            ],
+            "Transaction": [
+                {
+                    "name": "DAS_MESSAGE",
+                    "type": "string"
+                },
+                {
+                    "name": "inputsCapacity",
+                    "type": "string"
+                },
+                {
+                    "name": "outputsCapacity",
+                    "type": "string"
+                },
+                {
+                    "name": "fee",
+                    "type": "string"
+                },
+                {
+                    "name": "action",
+                    "type": "Action"
+                },
+                {
+                    "name": "inputs",
+                    "type": "Cell[]"
+                },
+                {
+                    "name": "outputs",
+                    "type": "Cell[]"
+                },
+                {
+                    "name": "digest",
+                    "type": "bytes32"
+                }
+            ]
+        },
+        "primaryType": "Transaction",
+        "domain": {
+            "name": "d.id",
+            "version": "1",
+            "chainId": 17000,
+            "verifyingContract": "0x0000000000000000000000000000000020210722"
+        },
+        "message": {
+            "DAS_MESSAGE": "TRANSFER THE ACCOUNT 20240507.bit TO 0x15a33588908cf8edb27d1abe3852bf287abd3891",
+            "inputsCapacity": "1758.64161614 CKB",
+            "outputsCapacity": "1758.64156958 CKB",
+            "fee": "0.00004656 CKB",
+            "digest": "",
+            "action": {
+                "action": "transfer_account",
+                "params": "0x00"
+            },
+            "inputs": [
+                {
+                    "capacity": "218.99986273 CKB",
+                    "lock": "das-lock,0x01,0x0515a33588908cf8edb27d1abe3852bf287abd38...",
+                    "type": "account-cell-type,0x01,0x",
+                    "data": "{ account: 20240507.bit, expired_at: 1778140699 }",
+                    "extraData": "{ status: 0, records_hash: 0x55478d76900611eb079b22088081124ed6c8bae21a05dd1a0d197efcc7c114ce }"
+                }
+            ],
+            "outputs": [
+                {
+                    "capacity": "218.99981617 CKB",
+                    "lock": "das-lock,0x01,0x0515a33588908cf8edb27d1abe3852bf287abd38...",
+                    "type": "account-cell-type,0x01,0x",
+                    "data": "{ account: 20240507.bit, expired_at: 1778140699 }",
+                    "extraData": "{ status: 153, records_hash: 0x55478d76900611eb079b22088081124ed6c8bae21a05dd1a0d197efcc7c114ce }"
+                },
+                {
+                    "capacity": "160 CKB",
+                    "lock": "",
+                    "type": "did-cell-type,0x01,0x",
+                    "data": "0x000000003c00000010000000240000002c000000...",
+                    "extraData": ""
+                }
+            ]
+        }
+    }`
+	var obj3 apitypes.TypedData
+	oldChainId := fmt.Sprintf("chainId\": %d", chainId)
+	newChainId := fmt.Sprintf("chainId\":\"%d\"", chainId)
+	mmJson = strings.ReplaceAll(mmJson, oldChainId, newChainId)
+	oldDigest := "\"digest\": \"\""
+	newDigest := fmt.Sprintf("\"digest\":\"%s\"", digest)
+	mmJson = strings.ReplaceAll(mmJson, oldDigest, newDigest)
+	fmt.Println(mmJson)
+	err1 := json.Unmarshal([]byte(mmJson), &obj3)
+	if err1 != nil {
+		t.Fatal(err1)
+	}
+	var mmHash, signature []byte
+	mmHash, signature, err := sign.EIP712Signature(obj3, private)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println("mmHash:", common.Bytes2Hex(mmHash))
+	fmt.Println("signature:", common.Bytes2Hex(signature))
+	signData := append(signature, mmHash...)
+	hexChainId := fmt.Sprintf("%x", chainId)
+	chainIdData := common.Hex2Bytes(fmt.Sprintf("%016s", hexChainId))
+	signData = append(signData, chainIdData...)
+	fmt.Println("signData:", common.Bytes2Hex(signData))
 }
