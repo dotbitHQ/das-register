@@ -64,6 +64,7 @@ func TestDidCellEditRecord(t *testing.T) {
 		RawParam: struct {
 			Records []handle.ReqRecord `json:"records"`
 		}{},
+		DidCellOutpoint: "0x4fc36caf07ad3b0c4fe17f3553bb42797fc777397230fc45bac14541e46d6dfb-1",
 	}
 	var records []handle.ReqRecord
 	records = append(records, handle.ReqRecord{
@@ -80,11 +81,14 @@ func TestDidCellEditRecord(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(toolib.JsonString(&data))
-	if err := doSig(&data.SignInfo); err != nil {
-		t.Fatal(err)
-	}
 	fmt.Println("===========================")
-	fmt.Println(toolib.JsonString(&data))
+
+	//if err := doSig(&data.SignInfo); err != nil {
+	//	t.Fatal(err)
+	//}
+	//fmt.Println(toolib.JsonString(&data))
+	//fmt.Println("===========================")
+
 	if err := sendTx2(data.SignInfo); err != nil {
 		t.Fatal(err)
 	}
