@@ -370,14 +370,15 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	log.Info("buildTx:", txBuilder.TxString())
 
 	var mmJsonObj *common.MMJsonObj
-	switch req.Action {
-	case common.DasActionConfigSubAccountCustomScript:
-	default:
-		mmJsonObj, err = txBuilder.BuildMMJsonObj(req.EvmChainId)
-		if req.Action != tables.DasActionTransferBalance && err != nil {
-			return nil, fmt.Errorf("txBuilder.BuildMMJsonObj err: %s", err.Error())
-		} else {
-			log.Info("BuildTx:", mmJsonObj.String())
+	for _, v := range signList {
+		if v.SignType == common.DasAlgorithmIdEth712 {
+			mmJsonObj, err = txBuilder.BuildMMJsonObj(req.EvmChainId)
+			if req.Action != tables.DasActionTransferBalance && err != nil {
+				return nil, fmt.Errorf("txBuilder.BuildMMJsonObj err: %s", err.Error())
+			} else {
+				log.Info("BuildTx:", mmJsonObj.String())
+			}
+			break
 		}
 	}
 
