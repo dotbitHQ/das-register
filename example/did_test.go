@@ -9,6 +9,8 @@ import (
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
+	"github.com/nervosnetwork/ckb-sdk-go/address"
+	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
 	"strings"
 	"testing"
@@ -54,11 +56,11 @@ func TestDidCellEditRecord(t *testing.T) {
 		ChainTypeAddress: core.ChainTypeAddress{
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
-				CoinType: common.CoinTypeEth,
-				Key:      "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			},
 		},
-		Account: "20240507.bit",
+		Account: "20240509.bit",
 		RawParam: struct {
 			Records []handle.ReqRecord `json:"records"`
 		}{},
@@ -68,7 +70,7 @@ func TestDidCellEditRecord(t *testing.T) {
 		Key:   "60",
 		Type:  "address",
 		Label: "",
-		Value: "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+		Value: "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
 		TTL:   "300",
 	})
 	req.RawParam.Records = records
@@ -132,13 +134,14 @@ func TestDidCellEditOwner(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		Account: "20240507.bit",
+		Account: "20240509.bit",
 		RawParam: struct {
 			ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 			ReceiverAddress  string          `json:"receiver_address"`
 		}{
 			ReceiverCoinType: common.CoinTypeCKB,
-			ReceiverAddress:  "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgpzk3ntzys3nuwmvnar2lrs54l9pat6wy3qqcmu76w",
+			ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
+			//ReceiverAddress:  "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgpzk3ntzys3nuwmvnar2lrs54l9pat6wy3qqcmu76w",
 		},
 		PayTokenId: tables.TokenIdDas,
 	}
@@ -221,7 +224,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "7de94ff90e3ce2bdb75fc3172c751982",
+		OrderId:    "e5abdcdf20d0ca7e74845da81830a72d",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"
@@ -244,137 +247,7 @@ func Test712(t *testing.T) {
 	chainId := 17000
 	digest := "0x18665bb86d3789c1d27b229f78144d6090686e9bfa35ddf5c91d1e306af5b142"
 	private := ""
-	mmJson := `{
-        "types": {
-            "EIP712Domain": [
-                {
-                    "name": "name",
-                    "type": "string"
-                },
-                {
-                    "name": "version",
-                    "type": "string"
-                },
-                {
-                    "name": "chainId",
-                    "type": "uint256"
-                },
-                {
-                    "name": "verifyingContract",
-                    "type": "address"
-                }
-            ],
-            "Action": [
-                {
-                    "name": "action",
-                    "type": "string"
-                },
-                {
-                    "name": "params",
-                    "type": "string"
-                }
-            ],
-            "Cell": [
-                {
-                    "name": "capacity",
-                    "type": "string"
-                },
-                {
-                    "name": "lock",
-                    "type": "string"
-                },
-                {
-                    "name": "type",
-                    "type": "string"
-                },
-                {
-                    "name": "data",
-                    "type": "string"
-                },
-                {
-                    "name": "extraData",
-                    "type": "string"
-                }
-            ],
-            "Transaction": [
-                {
-                    "name": "DAS_MESSAGE",
-                    "type": "string"
-                },
-                {
-                    "name": "inputsCapacity",
-                    "type": "string"
-                },
-                {
-                    "name": "outputsCapacity",
-                    "type": "string"
-                },
-                {
-                    "name": "fee",
-                    "type": "string"
-                },
-                {
-                    "name": "action",
-                    "type": "Action"
-                },
-                {
-                    "name": "inputs",
-                    "type": "Cell[]"
-                },
-                {
-                    "name": "outputs",
-                    "type": "Cell[]"
-                },
-                {
-                    "name": "digest",
-                    "type": "bytes32"
-                }
-            ]
-        },
-        "primaryType": "Transaction",
-        "domain": {
-            "name": "d.id",
-            "version": "1",
-            "chainId": 17000,
-            "verifyingContract": "0x0000000000000000000000000000000020210722"
-        },
-        "message": {
-            "DAS_MESSAGE": "TRANSFER THE ACCOUNT 20240507.bit TO 0x15a33588908cf8edb27d1abe3852bf287abd3891",
-            "inputsCapacity": "1758.64161614 CKB",
-            "outputsCapacity": "1758.64156958 CKB",
-            "fee": "0.00004656 CKB",
-            "digest": "",
-            "action": {
-                "action": "transfer_account",
-                "params": "0x00"
-            },
-            "inputs": [
-                {
-                    "capacity": "218.99986273 CKB",
-                    "lock": "das-lock,0x01,0x0515a33588908cf8edb27d1abe3852bf287abd38...",
-                    "type": "account-cell-type,0x01,0x",
-                    "data": "{ account: 20240507.bit, expired_at: 1778140699 }",
-                    "extraData": "{ status: 0, records_hash: 0x55478d76900611eb079b22088081124ed6c8bae21a05dd1a0d197efcc7c114ce }"
-                }
-            ],
-            "outputs": [
-                {
-                    "capacity": "218.99981617 CKB",
-                    "lock": "das-lock,0x01,0x0515a33588908cf8edb27d1abe3852bf287abd38...",
-                    "type": "account-cell-type,0x01,0x",
-                    "data": "{ account: 20240507.bit, expired_at: 1778140699 }",
-                    "extraData": "{ status: 153, records_hash: 0x55478d76900611eb079b22088081124ed6c8bae21a05dd1a0d197efcc7c114ce }"
-                },
-                {
-                    "capacity": "160 CKB",
-                    "lock": "",
-                    "type": "did-cell-type,0x01,0x",
-                    "data": "0x000000003c00000010000000240000002c000000...",
-                    "extraData": ""
-                }
-            ]
-        }
-    }`
+	mmJson := ``
 	var obj3 apitypes.TypedData
 	oldChainId := fmt.Sprintf("chainId\": %d", chainId)
 	newChainId := fmt.Sprintf("chainId\":\"%d\"", chainId)
@@ -399,4 +272,16 @@ func Test712(t *testing.T) {
 	chainIdData := common.Hex2Bytes(fmt.Sprintf("%016s", hexChainId))
 	signData = append(signData, chainIdData...)
 	fmt.Println("signData:", common.Bytes2Hex(signData))
+}
+
+func TestAlwaysSuccessAddr(t *testing.T) {
+	addr, err := address.ConvertScriptToAddress(address.Testnet, &types.Script{
+		CodeHash: types.HexToHash("0xf1ef61b6977508d9ec56fe43399a01e576086a76cf0f7c687d1418335e8c401f"),
+		HashType: "type",
+		Args:     common.Hex2Bytes("0x1"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(addr)
 }
