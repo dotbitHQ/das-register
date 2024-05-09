@@ -23,8 +23,9 @@ import (
 
 type ReqDidCellEditRecord struct {
 	core.ChainTypeAddress
-	Account  string `json:"account"`
-	RawParam struct {
+	Account         string `json:"account"`
+	DidCellOutpoint string `json:"did_cell_outpoint"`
+	RawParam        struct {
 		Records []ReqRecord `json:"records"`
 	} `json:"raw_param"`
 }
@@ -98,7 +99,9 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 	var didCellOutPoint *types.OutPoint
 	var accountCellOutPoint *types.OutPoint
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
-	if addrHex.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
+	if req.DidCellOutpoint != "" {
+		didCellOutPoint = common.String2OutPointStruct(req.DidCellOutpoint)
+	} else if addrHex.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
 		args := common.Bytes2Hex(addrHex.ParsedAddress.Script.Args)
 		didAccount, err := h.dbDao.GetDidAccountByAccountId(accountId, args)
 		if err != nil {
@@ -114,6 +117,7 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 			apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
 			return nil
 		}
+		didCellOutPoint = didAccount.GetOutpoint()
 	} else {
 		acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 		if err != nil {
