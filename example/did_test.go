@@ -64,7 +64,6 @@ func TestDidCellEditRecord(t *testing.T) {
 		RawParam: struct {
 			Records []handle.ReqRecord `json:"records"`
 		}{},
-		DidCellOutpoint: "0x137c71751ec4528fac284b26d0cc5f26cf3f64ac54a616398dd57ecf7846dc1b-1",
 	}
 	var records []handle.ReqRecord
 	records = append(records, handle.ReqRecord{
@@ -134,23 +133,22 @@ func TestDidCellEditOwner(t *testing.T) {
 		ChainTypeAddress: core.ChainTypeAddress{
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
-				CoinType: common.CoinTypeCKB,
-				//Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
-				Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
+				CoinType: common.CoinTypeEth,
+				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+				//Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			},
 		},
-		Account: "20240510.bit",
+		Account: "20240511.bit",
 		RawParam: struct {
 			ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 			ReceiverAddress  string          `json:"receiver_address"`
 		}{
 			ReceiverCoinType: common.CoinTypeCKB,
-			ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
-			//ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
+			//ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
+			ReceiverAddress: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			//ReceiverAddress:  "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgpzk3ntzys3nuwmvnar2lrs54l9pat6wy3qqcmu76w",
 		},
-		PayTokenId:      tables.TokenIdDas,
-		DidCellOutpoint: "0xa4ae6ae21607a0119126b2ae54c556ea61133e21f7dd63c4fa6c047f575e7a6c-0",
+		PayTokenId: tables.TokenIdDas,
 	}
 	url := TestUrl + "/did/cell/edit/owner"
 	var data handle.RespDidCellEditOwner
@@ -231,7 +229,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "b1b3a32d73a36daa168cf39a440b3d1b",
+		OrderId:    "0bcb125c713fdcceddfa8e11ee5ada4e",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"

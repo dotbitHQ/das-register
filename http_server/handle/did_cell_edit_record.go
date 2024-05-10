@@ -24,9 +24,8 @@ import (
 
 type ReqDidCellEditRecord struct {
 	core.ChainTypeAddress
-	Account         string `json:"account"`
-	DidCellOutpoint string `json:"did_cell_outpoint"`
-	RawParam        struct {
+	Account  string `json:"account"`
+	RawParam struct {
 		Records []ReqRecord `json:"records"`
 	} `json:"raw_param"`
 }
@@ -123,26 +122,22 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 			return nil
 		}
 	} else if acc.Status == tables.AccountStatusOnUpgrade {
-		if req.DidCellOutpoint != "" {
-			didCellOutPoint = common.String2OutPointStruct(req.DidCellOutpoint)
-		} else {
-			args := common.Bytes2Hex(addrHex.ParsedAddress.Script.Args)
-			didAccount, err := h.dbDao.GetDidAccountByAccountId(accountId, args)
-			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
-				return fmt.Errorf("SearchAccount err: %s", err.Error())
-			} else if didAccount.Id == 0 {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
-				return nil
-			} else if didAccount.IsExpired() {
-				apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")
-				return nil
-			} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHex.ParsedAddress.Script.Args) != 0 {
-				apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
-				return nil
-			}
-			didCellOutPoint = didAccount.GetOutpoint()
+		args := common.Bytes2Hex(addrHex.ParsedAddress.Script.Args)
+		didAccount, err := h.dbDao.GetDidAccountByAccountId(accountId, args)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
+			return fmt.Errorf("SearchAccount err: %s", err.Error())
+		} else if didAccount.Id == 0 {
+			apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
+			return nil
+		} else if didAccount.IsExpired() {
+			apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")
+			return nil
+		} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHex.ParsedAddress.Script.Args) != 0 {
+			apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
+			return nil
 		}
+		didCellOutPoint = didAccount.GetOutpoint()
 	} else {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountStatusNotNormal, "account status is not normal")
 		return nil
