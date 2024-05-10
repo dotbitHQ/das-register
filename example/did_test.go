@@ -149,7 +149,8 @@ func TestDidCellEditOwner(t *testing.T) {
 			//ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			//ReceiverAddress:  "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgpzk3ntzys3nuwmvnar2lrs54l9pat6wy3qqcmu76w",
 		},
-		PayTokenId: tables.TokenIdDas,
+		PayTokenId:      tables.TokenIdDas,
+		DidCellOutpoint: "0xa4ae6ae21607a0119126b2ae54c556ea61133e21f7dd63c4fa6c047f575e7a6c-0",
 	}
 	url := TestUrl + "/did/cell/edit/owner"
 	var data handle.RespDidCellEditOwner

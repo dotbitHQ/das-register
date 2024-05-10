@@ -132,15 +132,16 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 	} else if acc.IsExpired() {
 		apiResp.ApiRespErr(http_api.ApiCodeAccountIsExpired, "account expired")
 		return nil
-	} else if addrHexFrom.ChainType != acc.OwnerChainType || !strings.EqualFold(addrHexFrom.AddressHex, acc.Owner) {
-		apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "transfer owner permission denied")
-		return nil
 	} else if acc.ParentAccountId != "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
 		return nil
 	}
 	if acc.Status == tables.AccountStatusNormal {
 		accountCellOutPoint = acc.GetOutpoint()
+		if addrHexFrom.ChainType != acc.OwnerChainType || !strings.EqualFold(addrHexFrom.AddressHex, acc.Owner) {
+			apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "transfer owner permission denied")
+			return nil
+		}
 	} else if acc.Status == tables.AccountStatusOnUpgrade {
 		if req.DidCellOutpoint != "" {
 			didCellOutPoint = common.String2OutPointStruct(req.DidCellOutpoint)

@@ -112,15 +112,16 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 	} else if acc.IsExpired() {
 		apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")
 		return nil
-	} else if addrHex.ChainType != acc.ManagerChainType || !strings.EqualFold(addrHex.AddressHex, acc.Manager) {
-		apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "edit records permission denied")
-		return nil
 	} else if acc.ParentAccountId != "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
 		return nil
 	}
 	if acc.Status == tables.AccountStatusNormal {
 		accountCellOutPoint = acc.GetOutpoint()
+		if addrHex.ChainType != acc.ManagerChainType || !strings.EqualFold(addrHex.AddressHex, acc.Manager) {
+			apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "edit records permission denied")
+			return nil
+		}
 	} else if acc.Status == tables.AccountStatusOnUpgrade {
 		if req.DidCellOutpoint != "" {
 			didCellOutPoint = common.String2OutPointStruct(req.DidCellOutpoint)
