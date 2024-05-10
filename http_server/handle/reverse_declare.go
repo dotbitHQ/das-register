@@ -371,6 +371,9 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 
 	var mmJsonObj *common.MMJsonObj
 	for _, v := range signList {
+		if req.Action == common.DasActionRenewAccount {
+			continue
+		}
 		if v.SignType == common.DasAlgorithmIdEth712 {
 			mmJsonObj, err = txBuilder.BuildMMJsonObj(req.EvmChainId)
 			if req.Action != tables.DasActionTransferBalance && err != nil {
