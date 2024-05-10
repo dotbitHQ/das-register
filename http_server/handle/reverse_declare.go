@@ -351,8 +351,8 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
 		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
 	case common.DasActionRenewAccount:
-		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
-		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
+		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity - txFee
+		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
 		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
 		skipGroups = []int{0}
 	}
