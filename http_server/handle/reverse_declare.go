@@ -350,6 +350,11 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
 		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
+	case common.DasActionRenewAccount:
+		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
+		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
+		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
+		skipGroups = []int{0}
 	}
 	//txBuilder, err = h.checkTxFee(txBuilder, rebuildTxParams, txFee)
 	//if err != nil {
