@@ -31,7 +31,8 @@ type ReqDidCellEditOwner struct {
 		ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 		ReceiverAddress  string          `json:"receiver_address"`
 	} `json:"raw_param"`
-	PayTokenId tables.PayTokenId `json:"pay_token_id"`
+	PayTokenId      tables.PayTokenId `json:"pay_token_id"`
+	DidCellOutpoint string            `json:"did_cell_outpoint"`
 }
 
 type RespDidCellEditOwner struct {
@@ -121,44 +122,54 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 	var didCellOutPoint, accountCellOutPoint *types.OutPoint
 	var editOwnerLock, normalCellScript *types.Script
 
+	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get account info")
+		return fmt.Errorf("GetAccountInfoByAccountId err: %s", err.Error())
+	} else if acc.Id == 0 {
+		apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, "account not exist")
+		return nil
+	} else if acc.IsExpired() {
+		apiResp.ApiRespErr(http_api.ApiCodeAccountIsExpired, "account expired")
+		return nil
+	} else if addrHexFrom.ChainType != acc.OwnerChainType || !strings.EqualFold(addrHexFrom.AddressHex, acc.Owner) {
+		apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "transfer owner permission denied")
+		return nil
+	} else if acc.ParentAccountId != "" {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
+		return nil
+	}
+	if acc.Status == tables.AccountStatusNormal {
+		accountCellOutPoint = acc.GetOutpoint()
+	} else if acc.Status == tables.AccountStatusOnUpgrade {
+		if req.DidCellOutpoint != "" {
+			didCellOutPoint = common.String2OutPointStruct(req.DidCellOutpoint)
+		} else {
+			didAccount, err := h.dbDao.GetDidAccountByAccountIdWithoutArgs(accountId)
+			if err != nil {
+				apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get did cell info")
+				return fmt.Errorf("GetDidAccountByAccountId err: %s", err.Error())
+			} else if didAccount.Id == 0 {
+				apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, "did cell not exist")
+				return nil
+			} else if didAccount.IsExpired() {
+				apiResp.ApiRespErr(http_api.ApiCodeAccountIsExpired, "did cell expired")
+				return nil
+			} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHexFrom.ParsedAddress.Script.Args) != 0 {
+				apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
+				return nil
+			}
+			didCellOutPoint = didAccount.GetOutpoint()
+		}
+	} else {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountStatusNotNormal, "account status is not normal")
+		return nil
+	}
+
 	if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock && addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
 		// did cell -> did cell
-		didAccount, err := h.dbDao.GetDidAccountByAccountIdWithoutArgs(accountId)
-		if err != nil {
-			apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get did cell info")
-			return fmt.Errorf("GetDidAccountByAccountId err: %s", err.Error())
-		} else if didAccount.Id == 0 {
-			apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, "did cell not exist")
-			return nil
-		} else if didAccount.IsExpired() {
-			apiResp.ApiRespErr(http_api.ApiCodeAccountIsExpired, "did cell expired")
-			return nil
-		} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHexFrom.ParsedAddress.Script.Args) != 0 {
-			apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
-			return nil
-		}
-		didCellOutPoint = didAccount.GetOutpoint()
 		editOwnerLock = addrHexTo.ParsedAddress.Script
 	} else if addrHexFrom.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
-		acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
-		if err != nil {
-			apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get account info")
-			return fmt.Errorf("GetAccountInfoByAccountId err: %s", err.Error())
-		} else if acc.Id == 0 {
-			apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, "account not exist")
-			return nil
-		} else if acc.IsExpired() {
-			apiResp.ApiRespErr(http_api.ApiCodeAccountIsExpired, "account expired")
-			return nil
-		} else if addrHexFrom.ChainType != acc.OwnerChainType || !strings.EqualFold(addrHexFrom.AddressHex, acc.Owner) {
-			apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "transfer owner permission denied")
-			return nil
-		} else if acc.ParentAccountId != "" {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
-			return nil
-		}
-		accountCellOutPoint = acc.GetOutpoint()
-
 		if addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
 			// account cell -> account cell
 			editOwnerLock, _, err = h.dasCore.Daf().HexToScript(*addrHexTo)

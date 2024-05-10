@@ -5,6 +5,7 @@ import (
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"das_register_server/internal"
+	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -99,48 +100,51 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 	var didCellOutPoint *types.OutPoint
 	var accountCellOutPoint *types.OutPoint
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
-	if req.DidCellOutpoint != "" {
-		didCellOutPoint = common.String2OutPointStruct(req.DidCellOutpoint)
-	} else if addrHex.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
-		args := common.Bytes2Hex(addrHex.ParsedAddress.Script.Args)
-		didAccount, err := h.dbDao.GetDidAccountByAccountId(accountId, args)
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
-			return fmt.Errorf("SearchAccount err: %s", err.Error())
-		} else if didAccount.Id == 0 {
-			apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
-			return nil
-		} else if didAccount.IsExpired() {
-			apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")
-			return nil
-		} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHex.ParsedAddress.Script.Args) != 0 {
-			apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
-			return nil
-		}
-		didCellOutPoint = didAccount.GetOutpoint()
-	} else {
-		acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
-			return fmt.Errorf("SearchAccount err: %s", err.Error())
-		}
-		if acc.Id == 0 {
-			apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
-			return nil
-		} else if statusOk := acc.CheckStatus(); !statusOk {
-			apiResp.ApiRespErr(api_code.ApiCodeAccountStatusNotNormal, "account status is not normal")
-			return nil
-		} else if acc.IsExpired() {
-			apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")
-			return nil
-		} else if addrHex.ChainType != acc.ManagerChainType || !strings.EqualFold(addrHex.AddressHex, acc.Manager) {
-			apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "edit records permission denied")
-			return nil
-		} else if acc.ParentAccountId != "" {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
-			return nil
-		}
+
+	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
+		return fmt.Errorf("SearchAccount err: %s", err.Error())
+	}
+	if acc.Id == 0 {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
+		return nil
+	} else if acc.IsExpired() {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")
+		return nil
+	} else if addrHex.ChainType != acc.ManagerChainType || !strings.EqualFold(addrHex.AddressHex, acc.Manager) {
+		apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "edit records permission denied")
+		return nil
+	} else if acc.ParentAccountId != "" {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
+		return nil
+	}
+	if acc.Status == tables.AccountStatusNormal {
 		accountCellOutPoint = acc.GetOutpoint()
+	} else if acc.Status == tables.AccountStatusOnUpgrade {
+		if req.DidCellOutpoint != "" {
+			didCellOutPoint = common.String2OutPointStruct(req.DidCellOutpoint)
+		} else {
+			args := common.Bytes2Hex(addrHex.ParsedAddress.Script.Args)
+			didAccount, err := h.dbDao.GetDidAccountByAccountId(accountId, args)
+			if err != nil {
+				apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
+				return fmt.Errorf("SearchAccount err: %s", err.Error())
+			} else if didAccount.Id == 0 {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
+				return nil
+			} else if didAccount.IsExpired() {
+				apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")
+				return nil
+			} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHex.ParsedAddress.Script.Args) != 0 {
+				apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
+				return nil
+			}
+			didCellOutPoint = didAccount.GetOutpoint()
+		}
+	} else {
+		apiResp.ApiRespErr(api_code.ApiCodeAccountStatusNotNormal, "account status is not normal")
+		return nil
 	}
 
 	// check records

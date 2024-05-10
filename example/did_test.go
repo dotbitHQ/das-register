@@ -60,11 +60,11 @@ func TestDidCellEditRecord(t *testing.T) {
 				Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			},
 		},
-		Account: "20240509.bit",
+		Account: "20240510.bit",
 		RawParam: struct {
 			Records []handle.ReqRecord `json:"records"`
 		}{},
-		DidCellOutpoint: "0x4fc36caf07ad3b0c4fe17f3553bb42797fc777397230fc45bac14541e46d6dfb-1",
+		DidCellOutpoint: "0x137c71751ec4528fac284b26d0cc5f26cf3f64ac54a616398dd57ecf7846dc1b-1",
 	}
 	var records []handle.ReqRecord
 	records = append(records, handle.ReqRecord{
@@ -134,17 +134,19 @@ func TestDidCellEditOwner(t *testing.T) {
 		ChainTypeAddress: core.ChainTypeAddress{
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
-				CoinType: common.CoinTypeEth,
-				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+				CoinType: common.CoinTypeCKB,
+				//Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+				Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			},
 		},
-		Account: "20240509.bit",
+		Account: "20240510.bit",
 		RawParam: struct {
 			ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 			ReceiverAddress  string          `json:"receiver_address"`
 		}{
 			ReceiverCoinType: common.CoinTypeCKB,
-			ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
+			ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
+			//ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			//ReceiverAddress:  "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgpzk3ntzys3nuwmvnar2lrs54l9pat6wy3qqcmu76w",
 		},
 		PayTokenId: tables.TokenIdDas,
@@ -175,7 +177,7 @@ func doSig(sigInfo *handle.SignInfo) error {
 		var signData []byte
 		sigMsg := []byte(v.SignMsg)
 		switch v.SignType {
-		case common.DasAlgorithmIdCkb:
+		case common.DasAlgorithmIdCkb, common.DasAlgorithmIdAnyLock:
 			continue
 		case common.DasAlgorithmIdTron:
 			signData, err = sign.TronSignature(true, sigMsg, private)
@@ -228,7 +230,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "e5abdcdf20d0ca7e74845da81830a72d",
+		OrderId:    "b1b3a32d73a36daa168cf39a440b3d1b",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"
@@ -282,7 +284,7 @@ func TestAlwaysSuccessAddr(t *testing.T) {
 	addr, err := address.ConvertScriptToAddress(address.Testnet, &types.Script{
 		CodeHash: types.HexToHash("0xf1ef61b6977508d9ec56fe43399a01e576086a76cf0f7c687d1418335e8c401f"),
 		HashType: "type",
-		Args:     common.Hex2Bytes("0x1"),
+		Args:     common.Hex2Bytes("0x2"),
 	})
 	if err != nil {
 		t.Fatal(err)
