@@ -247,7 +247,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "99c72a48a3410ee5d5cdcc9b19207345",
+		OrderId:    "926f8bbf163408554daa80cc9380c25b",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"
