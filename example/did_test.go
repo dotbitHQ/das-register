@@ -34,7 +34,7 @@ func TestDidCellList(t *testing.T) {
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
 				CoinType: common.CoinTypeCKB,
-				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgpzk3ntzys3nuwmvnar2lrs54l9pat6wy3qqcmu76w",
+				Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			},
 		},
 		Pagination: handle.Pagination{
@@ -51,6 +51,18 @@ func TestDidCellList(t *testing.T) {
 	fmt.Println("===========================")
 }
 
+func TestAccountRecords(t *testing.T) {
+	req := handle.ReqAccountRecords{
+		Account: "20240511.bit",
+	}
+	url := TestUrl + "/account/records"
+	var data handle.RespAccountRecords
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+}
+
 func TestDidCellEditRecord(t *testing.T) {
 	req := handle.ReqDidCellEditRecord{
 		ChainTypeAddress: core.ChainTypeAddress{
@@ -60,7 +72,7 @@ func TestDidCellEditRecord(t *testing.T) {
 				Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			},
 		},
-		Account: "20240510.bit",
+		Account: "20240511.bit",
 		RawParam: struct {
 			Records []handle.ReqRecord `json:"records"`
 		}{},
@@ -100,9 +112,11 @@ func TestDidCellRenew(t *testing.T) {
 			KeyInfo: core.KeyInfo{
 				CoinType: common.CoinTypeEth,
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+				//CoinType: common.CoinTypeCKB,
+				//Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
 			},
 		},
-		Account:    "20240507.bit",
+		Account:    "20240512.bit",
 		PayTokenId: tables.TokenIdDas,
 		RenewYears: 1,
 	}
@@ -116,15 +130,15 @@ func TestDidCellRenew(t *testing.T) {
 	fmt.Println("===========================")
 
 	if len(data.SignInfo.SignList) > 0 {
-		if err := doSig(&data.SignInfo); err != nil {
-			t.Fatal(err)
-		}
-		fmt.Println(toolib.JsonString(&data))
-		fmt.Println("===========================")
-
-		if err := sendTx2(data.SignInfo); err != nil {
-			t.Fatal(err)
-		}
+		//if err := doSig(&data.SignInfo); err != nil {
+		//	t.Fatal(err)
+		//}
+		//fmt.Println(toolib.JsonString(&data))
+		//fmt.Println("===========================")
+		//
+		//if err := sendTx2(data.SignInfo); err != nil {
+		//	t.Fatal(err)
+		//}
 	}
 }
 
@@ -133,19 +147,20 @@ func TestDidCellEditOwner(t *testing.T) {
 		ChainTypeAddress: core.ChainTypeAddress{
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
-				CoinType: common.CoinTypeEth,
-				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
-				//Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
+				CoinType: common.CoinTypeCKB,
+				//Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+				Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
+				//Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
 			},
 		},
-		Account: "20240511.bit",
+		Account: "20240512.bit",
 		RawParam: struct {
 			ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 			ReceiverAddress  string          `json:"receiver_address"`
 		}{
 			ReceiverCoinType: common.CoinTypeCKB,
-			//ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
-			ReceiverAddress: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
+			ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
+			//ReceiverAddress: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			//ReceiverAddress:  "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgpzk3ntzys3nuwmvnar2lrs54l9pat6wy3qqcmu76w",
 		},
 		PayTokenId: tables.TokenIdDas,
@@ -229,7 +244,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "0bcb125c713fdcceddfa8e11ee5ada4e",
+		OrderId:    "16eec40d766527cbaac8e933d433920d",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"
