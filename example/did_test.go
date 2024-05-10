@@ -130,15 +130,15 @@ func TestDidCellRenew(t *testing.T) {
 	fmt.Println("===========================")
 
 	if len(data.SignInfo.SignList) > 0 {
-		//if err := doSig(&data.SignInfo); err != nil {
-		//	t.Fatal(err)
-		//}
-		//fmt.Println(toolib.JsonString(&data))
-		//fmt.Println("===========================")
-		//
-		//if err := sendTx2(data.SignInfo); err != nil {
-		//	t.Fatal(err)
-		//}
+		if err := doSig(&data.SignInfo); err != nil {
+			t.Fatal(err)
+		}
+		fmt.Println(toolib.JsonString(&data))
+		fmt.Println("===========================")
+
+		if err := sendTx2(data.SignInfo); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -188,6 +188,9 @@ func doSig(sigInfo *handle.SignInfo) error {
 	chainId := 17000
 	var err error
 	for i, v := range sigInfo.SignList {
+		if v.SignMsg == "" {
+			continue
+		}
 		var signData []byte
 		sigMsg := []byte(v.SignMsg)
 		switch v.SignType {
@@ -244,7 +247,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "16eec40d766527cbaac8e933d433920d",
+		OrderId:    "99c72a48a3410ee5d5cdcc9b19207345",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"
