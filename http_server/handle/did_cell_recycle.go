@@ -2,7 +2,6 @@ package handle
 
 import (
 	"das_register_server/config"
-	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -88,30 +87,24 @@ func (h *HttpHandle) doDidCellRecycle(req *ReqDidCellRecycle, apiResp *http_api.
 		return nil
 	}
 
-	expiredAt := tables.GetDidCellRecycleExpiredAt()
-	if didAccount.ExpiredAt > expiredAt {
-		apiResp.ApiRespErr(http_api.ApiCodeNotYetDueForRecycle, "not yet due for recycle")
-		return nil
-	}
+	//expiredAt := tables.GetDidCellRecycleExpiredAt()
+	//if didAccount.ExpiredAt > expiredAt {
+	//	apiResp.ApiRespErr(http_api.ApiCodeNotYetDueForRecycle, "not yet due for recycle")
+	//	return nil
+	//}
 
 	didCellOutpoint := common.String2OutPointStruct(didAccount.Outpoint)
 	txParams, err := txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
-		DasCore:             h.dasCore,
-		DasCache:            h.dasCache,
-		Action:              common.DidCellActionRecycle,
-		DidCellOutPoint:     didCellOutpoint,
-		AccountCellOutPoint: nil,
-		EditRecords:         nil,
-		EditOwnerLock:       nil,
-		RenewYears:          0,
-		NormalCellScript:    nil,
+		DasCore:         h.dasCore,
+		DasCache:        h.dasCache,
+		Action:          common.DidCellActionRecycle,
+		DidCellOutPoint: didCellOutpoint,
 	})
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to build recycle tx")
 		return fmt.Errorf("BuildDidCellTx err: %s", err.Error())
 	}
 
-	// todo
 	reqBuild := reqBuildTx{
 		Action:    common.DidCellActionRecycle,
 		ChainType: addrHex.ChainType,

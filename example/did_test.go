@@ -183,6 +183,35 @@ func TestDidCellEditOwner(t *testing.T) {
 	}
 }
 
+func TestDidCellRecycle(t *testing.T) {
+	req := handle.ReqDidCellRecycle{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
+			},
+		},
+		Account: "20240512.bit",
+	}
+	url := TestUrl + "/did/cell/recycle"
+	var data handle.RespDidCellRenew
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+	fmt.Println("===========================")
+	if err := doSig(&data.SignInfo); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+	fmt.Println("===========================")
+
+	if err := sendTx2(data.SignInfo); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func doSig(sigInfo *handle.SignInfo) error {
 	private := ""
 	chainId := 17000
@@ -247,7 +276,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "926f8bbf163408554daa80cc9380c25b",
+		OrderId:    "6d6ce009ac245244cee8d4490dd3c780",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"
