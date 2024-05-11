@@ -18,6 +18,12 @@ func (b *BlockParser) ActionRenewAccount(req FuncTransactionHandleReq) (resp Fun
 		return
 	}
 
+	var outpoints []string
+	for _, v := range req.Tx.Inputs {
+		outpoints = append(outpoints, common.OutPointStruct2String(v.PreviousOutput))
+	}
+	b.DasCache.ClearOutPoint(outpoints)
+
 	builderOld, err := witness.AccountCellDataBuilderFromTx(req.Tx, common.DataTypeOld)
 	if err != nil {
 		resp.Err = fmt.Errorf("AccountCellDataBuilderFromTx err: %s", err.Error())

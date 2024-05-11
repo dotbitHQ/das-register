@@ -160,6 +160,7 @@ func runServer(ctx *cli.Context) error {
 	// block parser
 	bp := block_parser.BlockParser{
 		DasCore:            dasCore,
+		DasCache:           dasCache,
 		CurrentBlockNumber: config.Cfg.Chain.CurrentBlockNumber,
 		DbDao:              dbDao,
 		ConcurrencyNum:     config.Cfg.Chain.ConcurrencyNum,

@@ -17,5 +17,11 @@ func (b *BlockParser) ActionTransferAccount(req FuncTransactionHandleReq) (resp 
 		resp.Err = fmt.Errorf("UpdatePendingStatusToConfirm err: %s", err.Error())
 		return
 	}
+
+	var outpoints []string
+	for _, v := range req.Tx.Inputs {
+		outpoints = append(outpoints, common.OutPointStruct2String(v.PreviousOutput))
+	}
+	b.DasCache.ClearOutPoint(outpoints)
 	return
 }

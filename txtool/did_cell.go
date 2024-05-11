@@ -22,7 +22,7 @@ func (t *TxTool) RunDidCellTx() {
 				log.Debug("doDidCellTx start ...")
 				if err := t.doDidCellTx(); err != nil {
 					log.Error("doDidCellTx err: ", err.Error())
-					notify.SendLarkErrNotify(common.DasActionTransferAccount, notify.GetLarkTextNotifyStr("doDidCellTx", "", err.Error()))
+					notify.SendLarkErrNotify("RunDidCellTx", notify.GetLarkTextNotifyStr("doDidCellTx", "", err.Error()))
 				}
 				log.Debug("doDidCellTx end ...")
 			case <-t.Ctx.Done():
@@ -57,16 +57,29 @@ func (t *TxTool) doDidCellTx() error {
 		if err := t.DbDao.UpdatePayStatus(v.OrderId, tables.TxStatusSending, tables.TxStatusOk); err != nil {
 			return fmt.Errorf("UpdatePayStatus err: %s", err.Error())
 		}
-		log.Info("doDidCellTx:", txBuilder.TxString())
+		log.Info("doDidCellTx:", v.Action, txBuilder.TxString())
 		hash, err := txBuilder.SendTransaction()
 		if err != nil {
-			if err := t.DbDao.UpdatePayStatus(v.OrderId, tables.TxStatusOk, tables.TxStatusSending); err != nil {
-				log.Error("UpdatePayStatus err:", err.Error(), v.OrderId)
-				notify.SendLarkErrNotify(common.DasActionTransferAccount, notify.GetLarkTextNotifyStr("UpdatePayStatus", v.OrderId, err.Error()))
+			// clear cache
+			var outpoints []string
+			for _, input := range txBuilder.Transaction.Inputs {
+				outpoints = append(outpoints, common.OutPointStruct2String(input.PreviousOutput))
 			}
+			t.DasCache.ClearOutPoint(outpoints)
+			// refund
+			if err := t.DbDao.UpdateDidCellOrderToRefund(v.OrderId); err != nil {
+				log.Error("UpdateDidCellOrderToRefund err:", err.Error(), v.OrderId)
+				notify.SendLarkErrNotify("doDidCellTx", notify.GetLarkTextNotifyStr("UpdateDidCellOrderToRefund", v.OrderId, err.Error()))
+			}
+
+			//if err := t.DbDao.UpdatePayStatus(v.OrderId, tables.TxStatusOk, tables.TxStatusSending); err != nil {
+			//	log.Error("UpdatePayStatus err:", err.Error(), v.OrderId)
+			//	notify.SendLarkErrNotify(common.DasActionTransferAccount, notify.GetLarkTextNotifyStr("UpdatePayStatus", v.OrderId, err.Error()))
+			//}
+
 			return fmt.Errorf("SendTransaction err: %s", err.Error())
 		}
-		log.Info("SendTransaction ok:", common.DasActionTransferAccount, hash)
+		log.Info("doDidCellTx hash ok:", v.Action, hash)
 		// update tx hash
 		orderTx := tables.TableDasOrderTxInfo{
 			OrderId:   v.OrderId,
