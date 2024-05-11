@@ -345,6 +345,30 @@ func (d *DbDao) UpdateOrderToRefund(orderId string) error {
 	})
 }
 
+func (d *DbDao) UpdateDidCellOrderToRefund(orderId string) error {
+	return d.db.Transaction(func(tx *gorm.DB) error {
+
+		if err := tx.Model(tables.TableDasOrderInfo{}).
+			Where("order_id=? AND order_type=? AND is_did_cell=?",
+				orderId, tables.OrderTypeSelf, tables.IsDidCellYes).
+			Updates(map[string]interface{}{
+				"order_status": tables.OrderStatusClosed,
+			}).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(tables.TableDasOrderPayInfo{}).
+			Where("order_id=? AND `status`=? AND uni_pay_refund_status=? ",
+				orderId, tables.OrderTxStatusConfirm, tables.UniPayRefundStatusDefault).
+			Updates(map[string]interface{}{
+				"uni_pay_refund_status": tables.UniPayRefundStatusUnRefund,
+			}).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 type ExpiredOrder struct {
 	OrderId string `json:"order_id" gorm:"column:order_id"`
 }

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/dotbitHQ/das-lib/dascache"
 	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/witness"
@@ -22,6 +23,7 @@ var log = logger.NewLogger("block_parser", logger.LevelDebug)
 
 type BlockParser struct {
 	DasCore              *core.DasCore
+	DasCache             *dascache.DasCache
 	mapTransactionHandle map[common.DasAction]FuncTransactionHandle
 	CurrentBlockNumber   uint64
 	DbDao                *dao.DbDao
