@@ -225,7 +225,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		}
 		quote := quoteCell.Quote()
 
-		editOwnerAmountUSD, _ := decimal.NewFromString(fmt.Sprintf("%d", editOwnerCapacity))
+		editOwnerAmountUSD, _ := decimal.NewFromString(fmt.Sprintf("%d", editOwnerCapacity/common.OneCkb))
 		decQuote, _ := decimal.NewFromString(fmt.Sprintf("%d", quote))
 		decUsdRateBase := decimal.NewFromInt(common.UsdRateBase)
 		editOwnerAmountUSD = editOwnerAmountUSD.Mul(decQuote).DivRound(decUsdRateBase, 6)
