@@ -92,7 +92,7 @@ func (h *HttpHandle) doDidCellUpgradePrice(req *ReqDidCellUpgradePrice, apiResp 
 		return fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
 	}
 
-	editOwnerAmountUSD, _ := decimal.NewFromString(fmt.Sprintf("%d", editOwnerCapacity))
+	editOwnerAmountUSD, _ := decimal.NewFromString(fmt.Sprintf("%d", editOwnerCapacity/common.OneCkb))
 	decQuote, _ := decimal.NewFromString(fmt.Sprintf("%d", quote))
 	decUsdRateBase := decimal.NewFromInt(common.UsdRateBase)
 
