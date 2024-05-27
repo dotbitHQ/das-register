@@ -236,6 +236,29 @@ func TestDidCellRecycle(t *testing.T) {
 	}
 }
 
+func TestDidCellUpgradableList(t *testing.T) {
+	req := handle.ReqDidCellUpgradableList{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeEth,
+				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+			},
+		},
+		Pagination: handle.Pagination{
+			Page: 1,
+			Size: 10,
+		},
+		Keyword: "",
+	}
+	url := TestUrl + "/did/cell/upgradable/list"
+	var data handle.RespDidCellUpgradableList
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+}
+
 func TestDidCellUpgradePrice(t *testing.T) {
 	req := handle.ReqDidCellUpgradePrice{
 		ChainTypeAddress: core.ChainTypeAddress{

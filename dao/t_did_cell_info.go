@@ -20,7 +20,8 @@ func (d *DbDao) GetAccountUpgradableList(chainType common.ChainType, address, ke
 }
 
 func (d *DbDao) GetAccountUpgradableListTotal(chainType common.ChainType, address, keyword string) (count int64, err error) {
-	db := d.parserDb.Where("owner_chain_type=? AND owner=?", chainType, address)
+	db := d.parserDb.Model(tables.TableAccountInfo{}).
+		Where("owner_chain_type=? AND owner=?", chainType, address)
 	db = db.Where("status!=? and status!=? and expired_at >= ?", tables.AccountStatusOnCross, tables.AccountStatusOnUpgrade, time.Now().Unix()-90*86400)
 	db = db.Where("parent_account_id=''")
 
