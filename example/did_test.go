@@ -34,7 +34,7 @@ func TestDidCellList(t *testing.T) {
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
 				CoinType: common.CoinTypeCKB,
-				Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
+				Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
 			},
 		},
 		Pagination: handle.Pagination{
@@ -49,6 +49,30 @@ func TestDidCellList(t *testing.T) {
 	}
 	fmt.Println(toolib.JsonString(&data))
 	fmt.Println("===========================")
+}
+
+func TestAccountMine2(t *testing.T) {
+	req := handle.ReqAccountMine{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeEth,
+				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+			},
+		},
+		Pagination: handle.Pagination{
+			Page: 1,
+			Size: 20,
+		},
+		Keyword:  "202405",
+		Category: 0,
+	}
+	url := TestUrl + "/account/mine"
+	var data handle.RespAccountMine
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
 }
 
 func TestAccountRecords(t *testing.T) {
@@ -147,13 +171,13 @@ func TestDidCellEditOwner(t *testing.T) {
 		ChainTypeAddress: core.ChainTypeAddress{
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
-				CoinType: common.CoinTypeCKB,
-				//Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
-				Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
+				CoinType: common.CoinTypeEth,
+				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+				//Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 				//Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
 			},
 		},
-		Account: "20240512.bit",
+		Account: "20240525.bit",
 		RawParam: struct {
 			ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 			ReceiverAddress  string          `json:"receiver_address"`
@@ -276,7 +300,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "6d6ce009ac245244cee8d4490dd3c780",
+		OrderId:    "09cab7b06922359c88b646af8d1d5731",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"

@@ -15,6 +15,7 @@ import (
 type ReqDidCellList struct {
 	core.ChainTypeAddress
 	Pagination
+	Keyword string `json:"keyword"`
 }
 
 type RespDidCellList struct {
@@ -80,7 +81,7 @@ func (h *HttpHandle) doDidCellList(req *ReqDidCellList, apiResp *http_api.ApiRes
 	}
 	args := common.Bytes2Hex(addr.Script.Args)
 
-	list, err := h.dbDao.GetDidAccountList(args, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.GetDidAccountList(args, req.Keyword, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get did account list")
 		return fmt.Errorf("GetDidAccountList err: %s", err.Error())
@@ -94,7 +95,7 @@ func (h *HttpHandle) doDidCellList(req *ReqDidCellList, apiResp *http_api.ApiRes
 		resp.List = append(resp.List, didAcc)
 	}
 
-	count, err := h.dbDao.GetDidAccountListTotal(args)
+	count, err := h.dbDao.GetDidAccountListTotal(args, req.Keyword)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get did account count")
 		return fmt.Errorf("GetDidAccountListTotal err: %s", err.Error())
