@@ -130,9 +130,6 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 		} else if didAccount.Id == 0 {
 			apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
 			return nil
-		} else if didAccount.IsExpired() {
-			apiResp.ApiRespErr(api_code.ApiCodeAccountIsExpired, "account is expired")
-			return nil
 		} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHex.ParsedAddress.Script.Args) != 0 {
 			apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
 			return nil

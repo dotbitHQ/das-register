@@ -3,6 +3,9 @@ package handle
 import (
 	"bytes"
 	"das_register_server/config"
+	"github.com/nervosnetwork/ckb-sdk-go/address"
+	"github.com/nervosnetwork/ckb-sdk-go/types"
+
 	//"das_register_server/http_server/api_code"
 	"das_register_server/tables"
 	"encoding/binary"
@@ -290,6 +293,34 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 
 		apiResp.ApiRespOK(resp)
 		return nil
+	}
+	if acc.Status == tables.AccountStatusOnUpgrade {
+		didAcc, err := h.dbDao.GetDidAccountByAccountIdWithoutArgs(accountId)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeDbError, "Failed to get did cell info")
+			return fmt.Errorf("GetDidAccountByAccountId err: %s", err.Error())
+		}
+		mode := address.Mainnet
+		if config.Cfg.Server.Net != common.DasNetTypeMainNet {
+			mode = address.Testnet
+		}
+		addrOwner, err := address.ConvertScriptToAddress(mode, &types.Script{
+			CodeHash: types.HexToHash(didAcc.LockCodeHash),
+			HashType: types.HashTypeType,
+			Args:     common.Hex2Bytes(didAcc.Args),
+		})
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get did cell addr")
+			return fmt.Errorf("ConvertScriptToAddress err: %s", err.Error())
+		}
+
+		resp.OwnerChainType = common.ChainTypeAnyLock
+		resp.OwnerCoinType = common.CoinTypeCKB
+		resp.Owner = addrOwner
+
+		resp.ManagerChainType = resp.OwnerChainType
+		resp.ManagerCoinType = resp.OwnerCoinType
+		resp.Manager = resp.Owner
 	}
 
 	if count == 1 {
