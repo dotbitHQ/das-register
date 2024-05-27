@@ -66,6 +66,7 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/auction/pending-order", api_code.DoMonitorLog(api_code.MethodAuctionPendingOrder), cacheHandleLong, h.h.GetPendingAuctionOrder)
 		v1.POST("/account/recommend", api_code.DoMonitorLog("account-recommend"), cacheHandleShort, h.h.AccountRecommend)
 		v1.POST("/did/cell/list", api_code.DoMonitorLog("did-cell-list"), cacheHandleShort, h.h.DidCellList)
+		v1.POST("/did/cell/upgradable/list", api_code.DoMonitorLog("did-cell-upgradable-list"), cacheHandleShort, h.h.DidCellUpgradableList)
 		v1.POST("/did/cell/upgrade/price", api_code.DoMonitorLog("did-cell-upgrade-price"), cacheHandleShort, h.h.DidCellUpgradePrice)
 
 		// operate

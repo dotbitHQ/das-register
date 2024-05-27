@@ -1,13 +1,13 @@
 package handle
 
 import (
+	"das_register_server/config"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
-	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
 )
@@ -74,13 +74,15 @@ func (h *HttpHandle) doDidCellList(req *ReqDidCellList, apiResp *http_api.ApiRes
 	var resp RespDidCellList
 	resp.List = make([]DidAccount, 0)
 
-	addr, err := address.Parse(req.ChainTypeAddress.KeyInfo.Key)
+	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
-		return fmt.Errorf("address.Parse err: %s", err.Error())
+		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
+	} else if addrHex.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
+		return nil
 	}
-	args := common.Bytes2Hex(addr.Script.Args)
-
+	args := common.Bytes2Hex(addrHex.ParsedAddress.Script.Args)
 	list, err := h.dbDao.GetDidAccountList(args, req.Keyword, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get did account list")
