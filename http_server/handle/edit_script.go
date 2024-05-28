@@ -142,7 +142,7 @@ func (h *HttpHandle) doEditScript(req *ReqEditScript, apiResp *api_code.ApiResp)
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
 	}
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

@@ -201,7 +201,7 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 		return fmt.Errorf("buildBalanceWithdrawTx err: %s", err.Error())
 	}
 
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err ")
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

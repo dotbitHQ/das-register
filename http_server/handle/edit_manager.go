@@ -191,7 +191,7 @@ func (h *HttpHandle) doEditManager(req *ReqEditManager, apiResp *api_code.ApiRes
 		//apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
 	}
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		checkBuildTxErr(err, apiResp)
 		//apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildTx: %s", err.Error())

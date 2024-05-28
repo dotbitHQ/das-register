@@ -135,6 +135,25 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 	}
 
 	// sign
+	if req.CKBTx != nil && len(req.CKBTx.Inputs) > 0 {
+		cacheTxHash, err := sic.BuilderTx.Transaction.ComputeHash()
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "ComputeHash err")
+			return fmt.Errorf("ComputeHash err: %s", err.Error())
+		}
+		userTx := txbuilder.TransactionToTx(req.CKBTx)
+		userTxHash, err := userTx.ComputeHash()
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "ComputeHash err")
+			return fmt.Errorf("ComputeHash err: %s", err.Error())
+		}
+		if userTxHash.String() != cacheTxHash.String() {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "ckb tx invalid")
+			return nil
+		}
+		sic.BuilderTx.Transaction = userTx
+	}
+
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, sic.BuilderTx)
 	if err := txBuilder.AddSignatureForTx(req.SignList); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "add signature fail")

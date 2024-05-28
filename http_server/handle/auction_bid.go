@@ -197,7 +197,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
 	}
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

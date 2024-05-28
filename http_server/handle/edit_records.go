@@ -210,7 +210,7 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 		checkBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
 	}
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		doBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {
@@ -307,7 +307,7 @@ func (h *HttpHandle) doEditRecordsForDidCell(req *ReqEditRecords, apiResp *api_c
 	reqBuild.Capacity = 0
 	reqBuild.EvmChainId = req.EvmChainId
 
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		doBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {
