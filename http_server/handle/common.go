@@ -34,10 +34,11 @@ func (p Pagination) GetOffset() int {
 // ======
 
 type SignInfo struct {
-	SignKey     string               `json:"sign_key"`               // sign tx key
-	SignAddress string               `json:"sign_address,omitempty"` // sign address
-	SignList    []txbuilder.SignData `json:"sign_list"`              // sign list
-	MMJson      *common.MMJsonObj    `json:"mm_json"`                // 712 mmjson
+	SignKey     string                 `json:"sign_key"`               // sign tx key
+	SignAddress string                 `json:"sign_address,omitempty"` // sign address
+	SignList    []txbuilder.SignData   `json:"sign_list"`              // sign list
+	MMJson      *common.MMJsonObj      `json:"mm_json"`                // 712 mmjson
+	CKBTx       *txbuilder.Transaction `json:"ckb_tx"`
 }
 
 func (s *SignInfo) SignListString() string {

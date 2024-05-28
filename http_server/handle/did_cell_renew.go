@@ -334,11 +334,12 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 			Account:    req.Account,
 			EvmChainId: req.GetChainId(config.Cfg.Server.Net),
 		}
-		if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+		if didCellTx, si, err := h.buildTx(&reqBuild, txParams); err != nil {
 			checkBuildTxErr(err, apiResp)
 			return fmt.Errorf("buildTx: %s", err.Error())
 		} else {
 			resp.SignInfo = *si
+			resp.SignInfo.CKBTx = didCellTx
 		}
 		order.IsDidCell = tables.IsDidCellYes
 	}

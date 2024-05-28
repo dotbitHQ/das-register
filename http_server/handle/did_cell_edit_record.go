@@ -208,11 +208,14 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 		return nil
 	}
 
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if didCellTx, si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		doBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {
 		resp.SignInfo = *si
+		if acc.Status == tables.AccountStatusOnUpgrade {
+			resp.SignInfo.CKBTx = didCellTx
+		}
 	}
 
 	apiResp.ApiRespOK(resp)

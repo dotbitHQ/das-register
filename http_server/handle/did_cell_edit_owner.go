@@ -323,11 +323,14 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		Account:    req.Account,
 		EvmChainId: req.GetChainId(config.Cfg.Server.Net),
 	}
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if didCellTx, si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		checkBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {
 		resp.SignInfo = *si
+		if acc.Status == tables.AccountStatusOnUpgrade {
+			resp.SignInfo.CKBTx = didCellTx
+		}
 	}
 
 	apiResp.ApiRespOK(resp)

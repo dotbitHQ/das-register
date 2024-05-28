@@ -145,7 +145,7 @@ func (h *HttpHandle) doReverseRetract(req *ReqReverseRetract, apiResp *api_code.
 		return fmt.Errorf("buildRetractReverseRecordTx err: %s", err.Error())
 	}
 
-	if si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err ")
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {
