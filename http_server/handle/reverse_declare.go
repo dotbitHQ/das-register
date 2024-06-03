@@ -288,14 +288,14 @@ func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txb
 	return txBuilder, nil
 }
 
-func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (*types.Transaction, *SignInfo, error) {
+func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (string, *SignInfo, error) {
 	rebuildTxParams, err := txbuilder.DeepCopyTxParams(txParams)
 	if err != nil {
-		return nil, nil, fmt.Errorf("deepCopy err %s", err.Error())
+		return "", nil, fmt.Errorf("deepCopy err %s", err.Error())
 	}
 	txBuilder := txbuilder.NewDasTxBuilderFromBase(h.txBuilderBase, nil)
 	if err := txBuilder.BuildTransaction(txParams); err != nil {
-		return nil, nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
+		return "", nil, fmt.Errorf("txBuilder.BuildTransaction err: %s", err.Error())
 	}
 	sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 	txFeeRate := config.Cfg.Server.TxTeeRate
@@ -335,13 +335,13 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	case common.DasActionBidExpiredAccountAuction:
 		accTx, err := h.dasCore.Client().GetTransaction(h.ctx, txParams.Inputs[0].PreviousOutput.TxHash)
 		if err != nil {
-			return nil, nil, fmt.Errorf("GetTransaction err: %s", err.Error())
+			return "", nil, fmt.Errorf("GetTransaction err: %s", err.Error())
 		}
 		accLock := accTx.Transaction.Outputs[txParams.Inputs[0].PreviousOutput.Index].Lock
 
 		dpTx, err := h.dasCore.Client().GetTransaction(h.ctx, txParams.Inputs[1].PreviousOutput.TxHash)
 		if err != nil {
-			return nil, nil, fmt.Errorf("GetTransaction err: %s", err.Error())
+			return "", nil, fmt.Errorf("GetTransaction err: %s", err.Error())
 		}
 		dpLock := dpTx.Transaction.Outputs[txParams.Inputs[1].PreviousOutput.Index].Lock
 		if !accLock.Equals(dpLock) {
@@ -362,24 +362,25 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	//}
 	newTxBuilder, err := txbuilder.CheckTxFee(checkTxFeeParam)
 	if err != nil {
-		return nil, nil, fmt.Errorf("CheckTxFee err %s ", err.Error())
+		return "", nil, fmt.Errorf("CheckTxFee err %s ", err.Error())
 	}
 	if newTxBuilder != nil {
 		txBuilder = newTxBuilder
 	}
 	signList, err := txBuilder.GenerateDigestListFromTx(skipGroups)
 	if err != nil {
-		return nil, nil, fmt.Errorf("txBuilder.GenerateDigestListFromTx err: %s", err.Error())
+		return "", nil, fmt.Errorf("txBuilder.GenerateDigestListFromTx err: %s", err.Error())
 	}
 
-	log.Info("buildTx:", txBuilder.TxString())
+	txStr := txBuilder.TxString()
+	log.Info("buildTx:", txStr)
 
 	var mmJsonObj *common.MMJsonObj
 	for _, v := range signList {
 		if v.SignType == common.DasAlgorithmIdEth712 && v.SignMsg != "" {
 			mmJsonObj, err = txBuilder.BuildMMJsonObj(req.EvmChainId)
 			if req.Action != tables.DasActionTransferBalance && err != nil {
-				return nil, nil, fmt.Errorf("txBuilder.BuildMMJsonObj err: %s", err.Error())
+				return "", nil, fmt.Errorf("txBuilder.BuildMMJsonObj err: %s", err.Error())
 			} else {
 				log.Info("BuildTx:", mmJsonObj.String())
 			}
@@ -404,7 +405,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	signKey := sic.SignKey()
 	cacheStr := toolib.JsonString(&sic)
 	if err = h.rc.SetSignTxCache(signKey, cacheStr); err != nil {
-		return nil, nil, fmt.Errorf("SetSignTxCache err: %s", err.Error())
+		return "", nil, fmt.Errorf("SetSignTxCache err: %s", err.Error())
 	}
 
 	var si SignInfo
@@ -414,7 +415,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 
 	//tx := txbuilder.TxToTransaction(txBuilder.Transaction)
 
-	return txBuilder.Transaction, &si, nil
+	return txStr, &si, nil
 }
 
 func doBuildTxErr(err error, apiResp *api_code.ApiResp) {

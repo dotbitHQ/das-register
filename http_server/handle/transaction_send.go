@@ -12,6 +12,7 @@ import (
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
+	"github.com/nervosnetwork/ckb-sdk-go/rpc"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
 	"strings"
@@ -135,13 +136,17 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 	}
 
 	// sign
-	if req.CKBTx != nil && len(req.CKBTx.Inputs) > 0 {
+	if req.CKBTx != "" {
+		userTx, err := rpc.TransactionFromString(req.CKBTx)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("rpc.TransactionFromString err: %s", err.Error()))
+			return fmt.Errorf("rpc.TransactionFromString err: %s", err.Error())
+		}
 		cacheTxHash, err := sic.BuilderTx.Transaction.ComputeHash()
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "ComputeHash err")
 			return fmt.Errorf("ComputeHash err: %s", err.Error())
 		}
-		userTx := req.CKBTx
 		//userTx := txbuilder.TransactionToTx(req.CKBTx)
 		userTxHash, err := userTx.ComputeHash()
 		if err != nil {
