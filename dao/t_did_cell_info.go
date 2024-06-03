@@ -37,8 +37,9 @@ func (d *DbDao) GetUpgradeOrder(accountIds []string) (list []tables.TableDasOrde
 	if len(accountIds) == 0 {
 		return
 	}
-	err = d.db.Where("account_id IN(?) AND action=? AND pay_status=? AND order_status=?",
-		accountIds, common.DasActionTransferAccount, tables.TxStatusSending, tables.OrderStatusDefault).Find(&list).Error
+	statusList := []tables.TxStatus{tables.TxStatusSending, tables.TxStatusOk}
+	err = d.db.Where("account_id IN(?) AND action=? AND pay_status IN(?) AND order_status=?",
+		accountIds, common.DasActionTransferAccount, statusList, tables.OrderStatusDefault).Find(&list).Error
 	return
 }
 
