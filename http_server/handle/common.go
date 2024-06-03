@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/txbuilder"
+	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"time"
@@ -34,11 +35,11 @@ func (p Pagination) GetOffset() int {
 // ======
 
 type SignInfo struct {
-	SignKey     string                 `json:"sign_key"`               // sign tx key
-	SignAddress string                 `json:"sign_address,omitempty"` // sign address
-	SignList    []txbuilder.SignData   `json:"sign_list"`              // sign list
-	MMJson      *common.MMJsonObj      `json:"mm_json"`                // 712 mmjson
-	CKBTx       *txbuilder.Transaction `json:"ckb_tx"`
+	SignKey     string               `json:"sign_key"`               // sign tx key
+	SignAddress string               `json:"sign_address,omitempty"` // sign address
+	SignList    []txbuilder.SignData `json:"sign_list"`              // sign list
+	MMJson      *common.MMJsonObj    `json:"mm_json"`                // 712 mmjson
+	CKBTx       *types.Transaction   `json:"ckb_tx"`
 }
 
 func (s *SignInfo) SignListString() string {

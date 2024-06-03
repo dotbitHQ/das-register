@@ -288,7 +288,7 @@ func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txb
 	return txBuilder, nil
 }
 
-func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (*txbuilder.Transaction, *SignInfo, error) {
+func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (*types.Transaction, *SignInfo, error) {
 	rebuildTxParams, err := txbuilder.DeepCopyTxParams(txParams)
 	if err != nil {
 		return nil, nil, fmt.Errorf("deepCopy err %s", err.Error())
@@ -412,9 +412,9 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	si.SignList = signList
 	si.MMJson = mmJsonObj
 
-	tx := txbuilder.TxToTransaction(txBuilder.Transaction)
+	//tx := txbuilder.TxToTransaction(txBuilder.Transaction)
 
-	return tx, &si, nil
+	return txBuilder.Transaction, &si, nil
 }
 
 func doBuildTxErr(err error, apiResp *api_code.ApiResp) {
