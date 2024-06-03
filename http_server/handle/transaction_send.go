@@ -141,7 +141,8 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "ComputeHash err")
 			return fmt.Errorf("ComputeHash err: %s", err.Error())
 		}
-		userTx := txbuilder.TransactionToTx(req.CKBTx)
+		userTx := req.CKBTx
+		//userTx := txbuilder.TransactionToTx(req.CKBTx)
 		userTxHash, err := userTx.ComputeHash()
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "ComputeHash err")
