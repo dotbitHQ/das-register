@@ -34,7 +34,7 @@ func TestDidCellList(t *testing.T) {
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
 				CoinType: common.CoinTypeCKB,
-				Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgytmmrfg7aczevlxngqnr28npj2849erjyqqhe2guh",
 			},
 		},
 		Pagination: handle.Pagination{
@@ -93,30 +93,31 @@ func TestDidCellEditRecord(t *testing.T) {
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
 				CoinType: common.CoinTypeCKB,
-				Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgytmmrfg7aczevlxngqnr28npj2849erjyqqhe2guh",
 			},
 		},
-		Account: "20240511.bit",
+		Account: "20240604.bit",
 		RawParam: struct {
 			Records []handle.ReqRecord `json:"records"`
 		}{},
 	}
 	var records []handle.ReqRecord
 	records = append(records, handle.ReqRecord{
-		Key:   "60",
+		Key:   "0",
 		Type:  "address",
 		Label: "",
-		Value: "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+		Value: "tb1pzl9nkuavvt303hly08u3ug0v55yd3a8x86d8g5jsrllsaell8j5s8gzedg",
 		TTL:   "300",
 	})
 	req.RawParam.Records = records
-	url := TestUrl + "/did/cell/edit/record"
+	url := TestUrl + "/account/edit/records"
 	var data handle.RespDidCellEditRecord
 	if err := doReq(url, req, &data); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(toolib.JsonString(&data))
 	fmt.Println("===========================")
+	fmt.Println(data.CKBTx)
 
 	//if err := doSig(&data.SignInfo); err != nil {
 	//	t.Fatal(err)
@@ -124,9 +125,9 @@ func TestDidCellEditRecord(t *testing.T) {
 	//fmt.Println(toolib.JsonString(&data))
 	//fmt.Println("===========================")
 
-	if err := sendTx2(data.SignInfo); err != nil {
-		t.Fatal(err)
-	}
+	//if err := sendTx2(data.SignInfo); err != nil {
+	//	t.Fatal(err)
+	//}
 }
 
 func TestDidCellRenew(t *testing.T) {
@@ -134,18 +135,18 @@ func TestDidCellRenew(t *testing.T) {
 		ChainTypeAddress: core.ChainTypeAddress{
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
-				CoinType: common.CoinTypeEth,
-				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgytmmrfg7aczevlxngqnr28npj2849erjyqqhe2guh",
 				//CoinType: common.CoinTypeCKB,
 				//Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
 			},
 		},
-		Account:    "20240512.bit",
+		Account:    "20240604.bit",
 		PayTokenId: tables.TokenIdDas,
 		RenewYears: 1,
 	}
 
-	url := TestUrl + "/did/cell/renew"
+	url := TestUrl + "/account/order/renew"
 	var data handle.RespDidCellRenew
 	if err := doReq(url, req, &data); err != nil {
 		t.Fatal(err)
@@ -153,17 +154,17 @@ func TestDidCellRenew(t *testing.T) {
 	fmt.Println(toolib.JsonString(&data))
 	fmt.Println("===========================")
 
-	if len(data.SignInfo.SignList) > 0 {
-		if err := doSig(&data.SignInfo); err != nil {
-			t.Fatal(err)
-		}
-		fmt.Println(toolib.JsonString(&data))
-		fmt.Println("===========================")
-
-		if err := sendTx2(data.SignInfo); err != nil {
-			t.Fatal(err)
-		}
-	}
+	//if len(data.SignInfo.SignList) > 0 {
+	//	if err := doSig(&data.SignInfo); err != nil {
+	//		t.Fatal(err)
+	//	}
+	//	fmt.Println(toolib.JsonString(&data))
+	//	fmt.Println("===========================")
+	//
+	//	if err := sendTx2(data.SignInfo); err != nil {
+	//		t.Fatal(err)
+	//	}
+	//}
 }
 
 func TestDidCellEditOwner(t *testing.T) {
@@ -177,19 +178,19 @@ func TestDidCellEditOwner(t *testing.T) {
 				//Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
 			},
 		},
-		Account: "20240525.bit",
+		Account: "20240605.bit",
 		RawParam: struct {
 			ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 			ReceiverAddress  string          `json:"receiver_address"`
 		}{
 			ReceiverCoinType: common.CoinTypeCKB,
-			ReceiverAddress:  "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
+			ReceiverAddress:  "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgytmmrfg7aczevlxngqnr28npj2849erjyqqhe2guh",
 			//ReceiverAddress: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgp95zz80",
 			//ReceiverAddress:  "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgpzk3ntzys3nuwmvnar2lrs54l9pat6wy3qqcmu76w",
 		},
 		PayTokenId: tables.TokenIdDas,
 	}
-	url := TestUrl + "/did/cell/edit/owner"
+	url := TestUrl + "/account/edit/owner"
 	var data handle.RespDidCellEditOwner
 	if err := doReq(url, req, &data); err != nil {
 		t.Fatal(err)
@@ -342,7 +343,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "09cab7b06922359c88b646af8d1d5731",
+		OrderId:    "533ed77fbd3f7220be792f939733e909",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"
