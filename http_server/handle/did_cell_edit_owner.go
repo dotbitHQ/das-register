@@ -93,6 +93,11 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")
 		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
+	switch addrHexFrom.DasAlgorithmId {
+	case common.DasAlgorithmIdBitcoin:
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address invalid")
+		return nil
+	}
 	toCTA := core.ChainTypeAddress{
 		Type: "blockchain",
 		KeyInfo: core.KeyInfo{
@@ -105,6 +110,12 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "receiver address is invalid")
 		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
+	if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock &&
+		addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address invalid")
+		return nil
+	}
+
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	if strings.EqualFold(req.KeyInfo.Key, req.RawParam.ReceiverAddress) {
 		apiResp.ApiRespErr(api_code.ApiCodeSameLock, "same address")

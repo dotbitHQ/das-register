@@ -91,6 +91,12 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
 
+	switch addrHex.DasAlgorithmId {
+	case common.DasAlgorithmIdAnyLock, common.DasAlgorithmIdBitcoin:
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address invalid")
+		return nil
+	}
+
 	if req.Account == "" || !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
