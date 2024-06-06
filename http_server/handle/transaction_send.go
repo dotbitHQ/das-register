@@ -137,6 +137,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 
 	// sign
 	if req.CKBTx != "" {
+		log.Info("CKBTx:", req.CKBTx)
 		userTx, err := rpc.TransactionFromString(req.CKBTx)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("rpc.TransactionFromString err: %s", err.Error()))
