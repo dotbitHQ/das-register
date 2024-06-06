@@ -315,9 +315,9 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 			resp.OwnerCoinType = common.CoinTypeCKB
 			resp.Owner = addrOwner
 
-			resp.ManagerChainType = resp.OwnerChainType
-			resp.ManagerCoinType = resp.OwnerCoinType
-			resp.Manager = resp.Owner
+			resp.ManagerChainType = 0
+			resp.ManagerCoinType = ""
+			resp.Manager = ""
 		}
 
 		apiResp.ApiRespOK(resp)
