@@ -178,7 +178,7 @@ func TestDidCellEditOwner(t *testing.T) {
 				//Key: "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
 			},
 		},
-		Account: "20240605.bit",
+		Account: "20230616.bit",
 		RawParam: struct {
 			ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 			ReceiverAddress  string          `json:"receiver_address"`
@@ -343,7 +343,7 @@ func TestBalancePay2(t *testing.T) {
 				Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 			},
 		},
-		OrderId:    "533ed77fbd3f7220be792f939733e909",
+		OrderId:    "18b37d883abd76e19046379c05920972",
 		EvmChainId: 17000,
 	}
 	url := TestUrl + "/balance/pay"
