@@ -28,6 +28,17 @@ func sendTx2(sigInfo handle.SignInfo) error {
 	return nil
 }
 
+func TestAccountDetail2(t *testing.T) {
+	req := handle.ReqAccountDetail{Account: "web3max004.bit"}
+	url := TestUrl + "/account/detail"
+	var data handle.RespAccountDetail
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+	fmt.Println("===========================")
+}
+
 func TestDidCellList(t *testing.T) {
 	req := handle.ReqDidCellList{
 		ChainTypeAddress: core.ChainTypeAddress{
