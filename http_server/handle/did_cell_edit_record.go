@@ -122,16 +122,15 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 			return nil
 		}
 	} else if acc.Status == tables.AccountStatusOnUpgrade {
-		args := common.Bytes2Hex(addrHex.ParsedAddress.Script.Args)
-		didAccount, err := h.dbDao.GetDidAccountByAccountId(accountId, args)
+		didAccount, err := h.dbDao.GetDidAccountByAccountIdWithoutArgs(accountId)
 		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account err")
-			return fmt.Errorf("SearchAccount err: %s", err.Error())
+			apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get did cell info")
+			return fmt.Errorf("GetDidAccountByAccountId err: %s", err.Error())
 		} else if didAccount.Id == 0 {
-			apiResp.ApiRespErr(api_code.ApiCodeAccountNotExist, "account not exist")
+			apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, "did cell not exist")
 			return nil
 		} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHex.ParsedAddress.Script.Args) != 0 {
-			apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
+			apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "edit record permission denied")
 			return nil
 		}
 		didCellOutPoint = didAccount.GetOutpoint()
