@@ -54,7 +54,8 @@ func (d *DbDao) UpdateRejectedTx(action tables.OrderTxAction, orderId string) er
 		switch action {
 		case tables.TxActionApplyRegister, tables.TxActionRenewAccount:
 			if err := tx.Model(tables.TableDasOrderInfo{}).
-				Where("order_id=? AND pay_status=? AND order_status=?", orderId, tables.TxStatusOk, tables.OrderStatusDefault).
+				Where("order_id=? AND pay_status=? AND order_status=? AND is_did_cell=？",
+					orderId, tables.TxStatusOk, tables.OrderStatusDefault, tables.IsDidCellNo).
 				Updates(map[string]interface{}{
 					"pay_status": tables.TxStatusSending,
 				}).Error; err != nil {
