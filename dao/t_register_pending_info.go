@@ -3,6 +3,7 @@ package dao
 import (
 	"das_register_server/tables"
 	"github.com/dotbitHQ/das-lib/common"
+	"time"
 )
 
 func (d *DbDao) CreatePending(pending *tables.TableRegisterPendingInfo) error {
@@ -22,9 +23,9 @@ func (d *DbDao) UpdatePendingToConfirm(id, blockNumber, blockTimestamp uint64) e
 	}).Error
 }
 
-func (d *DbDao) UpdatePendingToRejected(timestamp int64) error {
+func (d *DbDao) UpdatePendingToRejected(rejectedIDs []uint64) error {
 	return d.db.Model(tables.TableRegisterPendingInfo{}).
-		Where(" block_number=0 AND status=0 AND block_timestamp<? ", timestamp).
+		Where(" block_number=0 AND status=0 AND id IN(?) ", rejectedIDs).
 		Updates(map[string]interface{}{
 			"status": tables.StatusRejected,
 		}).Error
@@ -35,8 +36,11 @@ func (d *DbDao) GetPendingStatus(chainType common.ChainType, address string, act
 	return
 }
 
-func (d *DbDao) SearchMaybeRejectedPending(timestamp int64) (list []tables.TableRegisterPendingInfo, err error) {
-	err = d.db.Where(" block_number=0 AND `status`=0 AND block_timestamp<? ", timestamp).Limit(100).Find(&list).Error
+func (d *DbDao) SearchMaybeRejectedPending() (list []tables.TableRegisterPendingInfo, err error) {
+	start := time.Now().Add(-time.Hour * 24).UnixMilli()
+	end := time.Now().UnixMilli()
+	err = d.db.Where(" block_number=0 AND `status`=0 AND block_timestamp>? AND block_timestamp<? ",
+		start, end).Limit(100).Find(&list).Error
 	return
 }
 

@@ -52,7 +52,7 @@ func (t *TxTimer) Run() error {
 		return fmt.Errorf("doUpdateTokenMap init token err: %s", err.Error())
 	}
 	tickerToken := time.NewTicker(time.Second * 50)
-	tickerRejected := time.NewTicker(time.Minute * 3)
+	tickerRejected := time.NewTicker(time.Second * 35)
 	tickerTxRejected := time.NewTicker(time.Minute * 5)
 
 	tickerExpired := time.NewTicker(time.Minute * 30)
