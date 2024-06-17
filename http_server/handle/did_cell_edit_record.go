@@ -129,7 +129,7 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 		} else if didAccount.Id == 0 {
 			apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, "did cell not exist")
 			return nil
-		} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHex.ParsedAddress.Script.Args) != 0 {
+		} else if addrHex.ParsedAddress == nil || bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHex.ParsedAddress.Script.Args) != 0 {
 			apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "edit record permission denied")
 			return nil
 		}
