@@ -3,7 +3,6 @@ package handle
 import (
 	"bytes"
 	"das_register_server/config"
-	"das_register_server/http_server/api_code"
 	"das_register_server/internal"
 	"das_register_server/tables"
 	"das_register_server/timer"
@@ -16,6 +15,7 @@ import (
 	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
+	"github.com/nervosnetwork/ckb-sdk-go/transaction"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
@@ -90,12 +90,12 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 
 	addrHexFrom, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
 		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
 	switch addrHexFrom.DasAlgorithmId {
 	case common.DasAlgorithmIdBitcoin:
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address invalid")
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
 		return nil
 	}
 	toCTA := core.ChainTypeAddress{
@@ -107,25 +107,30 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 	}
 	addrHexTo, err := toCTA.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "receiver address is invalid")
+		apiResp.ApiRespErr(http_api.ApiCodeInvalidTargetAddress, "receiver address is invalid")
 		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
 	if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock &&
 		addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address invalid")
+		apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
+		return nil
+	}
+	if addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock &&
+		addrHexTo.ParsedAddress.Script.CodeHash.Hex() == transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
+		apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
 		return nil
 	}
 
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	if strings.EqualFold(req.KeyInfo.Key, req.RawParam.ReceiverAddress) {
-		apiResp.ApiRespErr(api_code.ApiCodeSameLock, "same address")
+		apiResp.ApiRespErr(http_api.ApiCodeSameLock, "same address")
 		return nil
 	}
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
 	}
 	if ok := internal.IsLatestBlockNumber(config.Cfg.Server.ParserUrl); !ok {
-		apiResp.ApiRespErr(api_code.ApiCodeSyncBlockNumber, "sync block number")
+		apiResp.ApiRespErr(http_api.ApiCodeSyncBlockNumber, "sync block number")
 		return fmt.Errorf("sync block number")
 	}
 	var editOwnerCapacity uint64
@@ -143,13 +148,13 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		apiResp.ApiRespErr(http_api.ApiCodeAccountIsExpired, "account expired")
 		return nil
 	} else if acc.ParentAccountId != "" {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "not support sub account")
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "not support sub account")
 		return nil
 	}
 	if acc.Status == tables.AccountStatusNormal {
 		accountCellOutPoint = acc.GetOutpoint()
 		if addrHexFrom.ChainType != acc.OwnerChainType || !strings.EqualFold(addrHexFrom.AddressHex, acc.Owner) {
-			apiResp.ApiRespErr(api_code.ApiCodePermissionDenied, "transfer owner permission denied")
+			apiResp.ApiRespErr(http_api.ApiCodePermissionDenied, "transfer owner permission denied")
 			return nil
 		}
 	} else if acc.Status == tables.AccountStatusOnUpgrade {
@@ -166,7 +171,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		}
 		didCellOutPoint = didAccount.GetOutpoint()
 	} else {
-		apiResp.ApiRespErr(api_code.ApiCodeAccountStatusNotNormal, "account status is not normal")
+		apiResp.ApiRespErr(http_api.ApiCodeAccountStatusNotNormal, "account status is not normal")
 		return nil
 	}
 
@@ -178,7 +183,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			// account cell -> account cell
 			editOwnerLock, _, err = h.dasCore.Daf().HexToScript(*addrHexTo)
 			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "receiver address is invalid")
+				apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "receiver address is invalid")
 				return nil
 			}
 		} else {
@@ -186,19 +191,19 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			editOwnerLock = addrHexTo.ParsedAddress.Script
 			editOwnerCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(editOwnerLock, req.Account)
 			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get did cell capacity")
+				apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to get did cell capacity")
 				return fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
 			}
 			log.Info("GetDidCellOccupiedCapacity:", editOwnerCapacity)
 			parseSvrAddr, err := address.Parse(config.Cfg.Server.PayServerAddress)
 			if err != nil {
-				apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+				apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
 				return fmt.Errorf("address.Parse err: %s", err.Error())
 			}
 			normalCellScript = parseSvrAddr.Script
 		}
 	} else {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid")
 		return nil
 	}
 
@@ -221,17 +226,17 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		var paymentInfo tables.TableDasOrderPayInfo
 		unipayAddr := config.GetUnipayAddress(req.PayTokenId)
 		if unipayAddr == "" {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("not supported [%s]", req.PayTokenId))
+			apiResp.ApiRespErr(http_api.ApiCodeError500, fmt.Sprintf("not supported [%s]", req.PayTokenId))
 			return nil
 		}
 		payToken := timer.GetTokenInfo(req.PayTokenId)
 		if payToken.TokenId == "" {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
+			apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid")
 			return fmt.Errorf("timer.GetTokenInfo is nil [%s]", req.PayTokenId)
 		}
 		quoteCell, err := h.dasCore.GetQuoteCell()
 		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get quote cell")
+			apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to get quote cell")
 			return fmt.Errorf("GetQuoteCell err: %s", err.Error())
 		}
 		quote := quoteCell.Quote()
@@ -275,7 +280,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 			},
 		})
 		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to create order by unipay")
+			apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to create order by unipay")
 			return fmt.Errorf("unipay.CreateOrder err: %s", err.Error())
 		}
 
@@ -321,7 +326,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 
 		if err := h.dbDao.CreateOrderWithPayment(order, paymentInfo); err != nil {
 			log.Error("CreateOrder err:", err.Error())
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
+			apiResp.ApiRespErr(http_api.ApiCodeError500, "create order fail")
 			return fmt.Errorf("CreateOrderWithPayment err: %s", err.Error())
 		}
 	}
@@ -352,12 +357,12 @@ func (h *HttpHandle) isAnyLock(cta core.ChainTypeAddress, apiResp *http_api.ApiR
 	if cta.KeyInfo.CoinType == common.CoinTypeCKB {
 		addrParse, err := address.Parse(cta.KeyInfo.Key)
 		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")
+			apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
 			return false, nil, fmt.Errorf("address.Parse err: %s", err.Error())
 		}
 		contractDispatch, err := core.GetDasContractInfo(common.DasContractNameDispatchCellType)
 		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "Failed to get dispatch contract")
+			apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to get dispatch contract")
 			return false, nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 		} else if !contractDispatch.IsSameTypeId(addrParse.Script.CodeHash) {
 			return true, addrParse, nil
