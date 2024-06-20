@@ -222,6 +222,10 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 	}
 
 	if editOwnerCapacity > 0 {
+		if req.PayTokenId == "" {
+			apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "pay token id is nil")
+			return nil
+		}
 		var order tables.TableDasOrderInfo
 		var paymentInfo tables.TableDasOrderPayInfo
 		unipayAddr := config.GetUnipayAddress(req.PayTokenId)
