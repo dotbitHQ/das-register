@@ -112,24 +112,33 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		apiResp.ApiRespErr(http_api.ApiCodeInvalidTargetAddress, "receiver address is invalid")
 		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
-	if req.IsUpgrade && addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
-		apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
-		return nil
-	}
-	if !req.IsUpgrade && addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
-		apiResp.ApiRespErr(http_api.ApiCodeInvalidTargetAddress, "address invalid")
-		return nil
-	}
 
-	if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock &&
-		addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
-		apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
-		return nil
-	}
-	if addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock &&
-		addrHexTo.ParsedAddress.Script.CodeHash.Hex() == transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
-		apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
-		return nil
+	if req.IsUpgrade {
+		if addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
+			apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
+			return nil
+		}
+		if addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock &&
+			addrHexTo.ParsedAddress.Script.CodeHash.Hex() == transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
+			apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
+			return nil
+		}
+	} else {
+		if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock && addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
+			apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
+			return nil
+		}
+		if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock &&
+			addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock &&
+			addrHexTo.ParsedAddress.Script.CodeHash.Hex() == transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
+			apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
+			return nil
+		}
+		if addrHexFrom.DasAlgorithmId != common.DasAlgorithmIdAnyLock &&
+			addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
+			apiResp.ApiRespErr(http_api.ApiCodeInvalidTargetAddress, "address invalid")
+			return nil
+		}
 	}
 
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
