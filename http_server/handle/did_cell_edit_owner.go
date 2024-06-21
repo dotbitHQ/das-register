@@ -32,6 +32,7 @@ type ReqDidCellEditOwner struct {
 		ReceiverAddress  string          `json:"receiver_address"`
 	} `json:"raw_param"`
 	PayTokenId tables.PayTokenId `json:"pay_token_id"`
+	IsUpgrade  bool              `json:"is_upgrade"`
 }
 
 type RespDidCellEditOwner struct {
@@ -93,6 +94,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
 		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
+
 	switch addrHexFrom.DasAlgorithmId {
 	case common.DasAlgorithmIdBitcoin:
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
@@ -110,6 +112,15 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		apiResp.ApiRespErr(http_api.ApiCodeInvalidTargetAddress, "receiver address is invalid")
 		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
+	if req.IsUpgrade && addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
+		apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
+		return nil
+	}
+	if !req.IsUpgrade && addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
+		apiResp.ApiRespErr(http_api.ApiCodeInvalidTargetAddress, "address invalid")
+		return nil
+	}
+
 	if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock &&
 		addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
 		apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
