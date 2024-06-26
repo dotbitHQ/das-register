@@ -81,6 +81,7 @@ func (h *HttpHandle) EditOwner(ctx *gin.Context) {
 func (h *HttpHandle) doEditOwner(req *ReqEditOwner, apiResp *api_code.ApiResp) error {
 	var resp RespEditOwner
 
+	req.Account = strings.ToLower(req.Account)
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")

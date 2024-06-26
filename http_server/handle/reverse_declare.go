@@ -84,6 +84,7 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address NormalToHex err")
 		return fmt.Errorf("NormalToHex err: %s", err.Error())
 	}
+	req.Account = strings.ToLower(req.Account)
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {

@@ -77,6 +77,7 @@ func (h *HttpHandle) AccountRenew(ctx *gin.Context) {
 func (h *HttpHandle) doAccountRenew(req *ReqAccountRenew, apiResp *api_code.ApiResp) error {
 	var resp RespAccountRenew
 
+	req.Account = strings.ToLower(req.Account)
 	if req.Address == "" || req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
