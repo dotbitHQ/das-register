@@ -101,6 +101,7 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
+	req.Account = strings.ToLower(req.Account)
 	if yes := req.PayTokenId.IsTokenIdCkbInternal(); yes {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
 		return nil

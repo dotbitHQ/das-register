@@ -16,6 +16,7 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -92,6 +93,7 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
+	req.Account = strings.ToLower(req.Account)
 	if yes := req.PayTokenId.IsTokenIdCkbInternal(); yes {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
 		return nil

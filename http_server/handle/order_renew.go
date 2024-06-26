@@ -94,6 +94,7 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
+	req.Account = strings.ToLower(req.Account)
 	if yes := req.PayTokenId.IsTokenIdCkbInternal(); yes {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
 		return nil

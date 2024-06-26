@@ -14,6 +14,7 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"strings"
 )
 
 type ReqOrderDetail struct {
@@ -92,6 +93,7 @@ func (h *HttpHandle) doOrderDetail(req *ReqOrderDetail, apiResp *api_code.ApiRes
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
+	req.Account = strings.ToLower(req.Account)
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())

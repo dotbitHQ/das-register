@@ -86,6 +86,7 @@ func (h *HttpHandle) AccountSearch(ctx *gin.Context) {
 
 func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.ApiResp) error {
 	var resp RespAccountSearch
+	req.Account = strings.ToLower(req.Account)
 	resp.RegisterTxMap = make(map[tables.RegisterStatus]RegisterTx)
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
 	resp.PremiumBase = config.Cfg.Stripe.PremiumBase
