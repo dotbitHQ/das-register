@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
+	"strings"
 )
 
 type ReqDidCellList struct {
@@ -74,6 +75,7 @@ func (h *HttpHandle) doDidCellList(req *ReqDidCellList, apiResp *http_api.ApiRes
 	var resp RespDidCellList
 	resp.List = make([]DidAccount, 0)
 
+	req.Keyword = strings.ToLower(req.Keyword)
 	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
