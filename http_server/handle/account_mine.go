@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -75,6 +76,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 	var resp RespAccountMine
 	resp.List = make([]AccountData, 0)
 
+	req.Keyword = strings.ToLower(req.Keyword)
 	action := "AccountMine"
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {

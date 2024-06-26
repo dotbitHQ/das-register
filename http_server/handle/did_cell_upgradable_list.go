@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
+	"strings"
 )
 
 type ReqDidCellUpgradableList struct {
@@ -82,7 +83,7 @@ func (h *HttpHandle) DidCellUpgradableList(ctx *gin.Context) {
 func (h *HttpHandle) doDidCellUpgradableList(req *ReqDidCellUpgradableList, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellUpgradableList
 	resp.List = make([]UpgradableAccount, 0)
-
+	req.Keyword = strings.ToLower(req.Keyword)
 	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
