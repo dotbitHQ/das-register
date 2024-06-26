@@ -1,23 +1,24 @@
-   * [Prerequisites](#prerequisites)
-   * [Install &amp; Run](#install--run)
-      * [Source Compile](#source-compile)
-      * [Docker](#docker)
-   * [Usage](#usage)
-      * [Register](#register)
-      * [Set Reverse Record](#set-reverse-record)
-      * [Others](#others)
-   * [Documents](#documents)
-   
+* [Prerequisites](#prerequisites)
+* [Install &amp; Run](#install--run)
+     * [Source Compile](#source-compile)
+     * [Docker](#docker)
+* [Usage](#usage)
+     * [Register](#register)
+     * [Set Reverse Record](#set-reverse-record)
+     * [Others](#others)
+* [Documents](#documents)
+
 # das-register
 
-Backend of DAS registration service. You can use this repo to build your own DAS registration website (as like https://app.did.id)
+Backend of DAS registration service. You can use this repo to build your own DAS registration website (as like https://d.id/bit)
 
 ## Prerequisites
 
 * Ubuntu 18.04 or newer
 * MYSQL >= 8.0
-* Redis >= 5.0 (for cache) 
-* GO version >= 1.17.10
+* Redis >= 5.0 (for cache)
+* Elasticsearch >= 7.17 (for Recommended account)
+* GO version >= 1.21.3
 * [ckb-node](https://github.com/nervosnetwork/ckb) (Must be synced to latest height and add `Indexer` module to ckb.toml)
 * [das-database](https://github.com/dotbitHQ/das-database)
 * [unipay](https://github.com/dotbitHQ/unipay) (Payment service used for registered accounts)
@@ -59,35 +60,36 @@ docker run -dp 8119-8120:8119-8120 -v $PWD/config/config.yaml:/app/config/config
 ```
 
 ## Usage
-You need to run [das-pay](https://github.com/dotbitHQ/das-pay) before you can run this service
+* You need to run [unipay](https://github.com/dotbitHQ/unipay) before you can run this service
+* You need to run [das-database](https://github.com/dotbitHQ/das-database) before you can run this service
 ### Register
 * Use [register API](https://github.com/dotbitHQ/das-register/blob/main/API.md#account-order-register) get the `order ID`
-* The server `das-pay` is monitoring the balance change of the receiving address on chain, and wait for user to pay with the `order ID` attached to the payment
-* `Das-pay` will notify the `das-register` to start the registration process after the user's payment is completed
+* The server `unipay` is monitoring the balance change of the receiving address on chain, and wait for user to pay with the `order ID` attached to the payment
+* `unipay` will notify the `das-register` to start the registration process after the user's payment is completed
 * Wait for `das-register` to complete the entire registration process
 
 ```
-   +---------+                 +----------------+        +-----------+
-   |   user  |                 |  das_register  |        |  das pay  |
-   +----|----+                 +-------|--------+        +-----|-----+
-        |                              |                       |
-        |                              |                       |
-        +----- Get order id ---------->+                       |
-        |                              |                       |
-        |                              |                       |
-        +<---- Return order id --------+                       |
-        |                              |                       |
-        |                              |                       |
-Pay for the order                      |                       |
-      on chain                         |                       |
-        |                              |            Update the order status
-        |                              |                       |
-        |                              |                       |
-        |                  Continue the registration           |
-        |                              |                       |
-        |                              |                       |
-        |                              |                       |
-        +                              +                       +
+   +---------+                 +----------------+        +-----------+        +-----------+
+   |   user  |                 |  das_register  |        |  unipay  |         |das-database|
+   +----|----+                 +-------|--------+        +-----|-----+        +-----|-----+
+        |                              |                       |                    |
+        |                              |                       |                    |
+        +----- Get order id ---------->+                       |                    |
+        |                              |                       |                    |
+        |                              |                       |                    |
+        +<---- Return order id --------+                       |                    |
+        |                              |                       |                    |
+        |                              |                       |                    |
+Pay for the order                      |                       |                    |
+      on chain                         |                       |                    |
+        |                              |            Update the order status   parse block data
+        |                              |                       |                    |
+        |                              |                       |                    |
+        |                  Continue the registration           |                    |
+        |                              |                       |                    |
+        |                              |                       |                    |
+        |                              |                       |                    |
+        +                              +                       +                    +
 
 ```
 
@@ -98,6 +100,5 @@ Pay for the order                      |                       |
 More APIs see [API.md](https://github.com/dotbitHQ/das-register/blob/main/API.md)
 
 ## Documents
-* [What is DAS](https://github.com/dotbitHQ/das-contracts/blob/master/docs/en/Overview-of-DAS.md)
-* [What is a DAS transaction on CKB](https://github.com/dotbitHQ/das-contracts/blob/master/docs/en/Data-Structure-and-Protocol/Transaction-Structure.md)
-
+* [What is DAS](https://github.com/dotbitHQ/did-contracts/blob/docs/docs/en/design/Overview-of-DAS.md)
+* [What is a DAS transaction on CKB](https://github.com/dotbitHQ/did-contracts/blob/docs/docs/en/developer/Transaction-Structure.md)
