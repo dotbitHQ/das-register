@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
+	"strings"
 )
 
 type ReqDidCellRecycle struct {
@@ -67,6 +68,7 @@ func (h *HttpHandle) DidCellRecycle(ctx *gin.Context) {
 func (h *HttpHandle) doDidCellRecycle(req *ReqDidCellRecycle, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellRecycle
 
+	req.Account = strings.ToLower(req.Account)
 	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")

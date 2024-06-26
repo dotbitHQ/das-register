@@ -179,6 +179,7 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 	if !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
 		req.Account += common.DasAccountSuffix
 	}
+	req.Account = strings.ToLower(req.Account)
 	resp.Account = req.Account
 	resp.Status = tables.SearchStatusRegisterAble
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
