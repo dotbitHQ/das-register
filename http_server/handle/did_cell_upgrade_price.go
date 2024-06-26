@@ -12,6 +12,7 @@ import (
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"strings"
 )
 
 type ReqDidCellUpgradePrice struct {
@@ -69,6 +70,7 @@ func (h *HttpHandle) DidCellUpgradePrice(ctx *gin.Context) {
 func (h *HttpHandle) doDidCellUpgradePrice(req *ReqDidCellUpgradePrice, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellUpgradePrice
 
+	req.Account = strings.ToLower(req.Account)
 	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address is invalid")

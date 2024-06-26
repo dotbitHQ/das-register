@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
+	"strings"
 )
 
 type ReqAccountRecords struct {
@@ -74,6 +75,7 @@ func (h *HttpHandle) doAccountRecords(req *ReqAccountRecords, apiResp *api_code.
 	resp.Records = make([]RespAccountRecordsData, 0)
 
 	// account
+	req.Account = strings.ToLower(req.Account)
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {

@@ -89,6 +89,7 @@ func (h *HttpHandle) DidCellEditOwner(ctx *gin.Context) {
 func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellEditOwner
 
+	req.Account = strings.ToLower(req.Account)
 	addrHexFrom, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
