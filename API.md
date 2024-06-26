@@ -1,12 +1,11 @@
 * [Query API LIST](#query-api-list)
+    * [Version](#version)
     * [Token List](#token-list)
     * [Config Info](#config-info)
     * [Account List](#account-list)
     * [Account Mine](#account-mine)
     * [Account Detail](#account-detail)
     * [Account Records](#account-records)
-    * [Reverse Latest (Deprecated)](#reverse-latest)
-    * [Reverse List (Deprecated)](#reverse-list)
     * [Transaction Status](#transaction-status)
     * [Balance Info](#balance-info)
     * [Transaction List](#transaction-list)
@@ -22,11 +21,10 @@
     * [Account Auction OrderStatus](#account-auction-order_status)
     * [Account Auction PendingOrders](#account-auction-pending_orders)
     * [Account Recommend](#account-recommend)
+    * [Account Check Coupon](#account-check-coupon)
 * [OPERATE API LIST](#operate-api-list)
-    * [Reverse Declare (Deprecated)](#reverse-declare)
-    * [Reverse Redeclare (Deprecated)](#reverse-redeclare)
-    * [Reverse Retract (Deprecated)](#reverse-retract)
     * [Transaction Send](#transaction-send)
+    * [Balance Pay](#balance-pay)
     * [Balance Withdraw](#balance-withdraw)
     * [Balance Transfer](#balance-transfer)
     * [Balance Deposit](#balance-deposit)
@@ -34,7 +32,7 @@
     * [Account Edit Owner](#account-edit-owner)
     * [Account Edit Records](#account-edit-records)
     * [Account Order Renew](#account-order-renew)
-    * [Balance Pay](#balance-pay)
+    
     * [Account Order Register](#account-order-register)
     * [Account Order Change](#account-order-change)
     * [Account Order Pay Hash](#account-order-pay-hash)
@@ -45,6 +43,32 @@
     * [Node Ckb Rpc](#node-ckb-rpc)
 
 ### Query API LIST
+
+#### Version
+
+**Request**
+
+* path: /version
+* param: none
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "version": 1.0
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8120/v1/config/info
+```
+
 
 #### Token List
 
@@ -154,28 +178,28 @@ curl -X POST http://127.0.0.1:8120/v1/token/list
 
 ```json
 {
-  "err_no": 0,
-  "err_msg": "",
   "data": {
-    "reverse_record_capacity": 20100000000,
-    "min_change_capacity": 11600000000,
-    "sale_cell_capacity": 20100000000,
-    "min_sell_price": 20000000000,
-    "account_expiration_grace_period": 2592000,
-    "min_ttl": 300,
-    "profit_rate_of_inviter": "0.1",
-    "inviter_discount": "0.05",
-    "min_account_len": 4,
-    "max_account_len": 42,
-    "edit_records_throttle": 300,
+    "account_expiration_grace_period": 7776000,
     "edit_manager_throttle": 300,
-    "transfer_throttle": 300,
-    "income_cell_min_transfer_value": 11600000000,
-    "premium": "0.1",
-    "timestamp_on_chain": 1647589995,
-    "premium_percentage": "",// for stripe usd premium
-    "premium_base": "" // for stripe usd premium
-  }
+    "edit_records_throttle": 300,
+    "income_cell_min_transfer_value": 12000000000,
+    "inviter_discount": "0.05",
+    "max_account_len": 42,
+    "min_account_len": 4,
+    "min_change_capacity": 12000000000,
+    "min_sell_price": 20000000000,
+    "min_ttl": 300,
+    "premium": "0",
+    "premium_base": "0.6",
+    "premium_percentage": "0.037",
+    "profit_rate_of_inviter": "0.1",
+    "reverse_record_capacity": 20100000000,
+    "sale_cell_capacity": 20100000000,
+    "timestamp_on_chain": 1719417385,
+    "transfer_throttle": 300
+  },
+  "err_msg": "",
+  "err_no": 0
 }
 ```
 
@@ -217,7 +241,10 @@ curl -X POST http://127.0.0.1:8120/v1/config/info
         "account": "9aaaaaaa.bit",
         "status": 8,
         "expired_at": 1718955772000,
-        "registered_at": 1624347772000
+        "registered_at": 1624347772000,
+        "enable_sub_account": 0,
+        "renew_sub_account_price": 15,
+        "nonce": 2
       }
     ]
   }
@@ -247,14 +274,16 @@ curl -X POST http://127.0.0.1:8120/v1/account/list -d'{"chain_type":1,"address":
     * CategoryMainAccountEnableSecondLevelDID = 7
 
 ```json
-
 {
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
-  "page": 1,
-  "size": 2,
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "309",
+    "key": "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qggqumxlsr77xk84ppzmm2rlmfvam37gc2t75yqwdn0cpl0rtr6ss3da4pla5kwaclyv99l27qlxcl"
+  },
   "keyword": "",
-  "category": 0
+  "category": 0,
+  "page": 1,
+  "size": 20
 }
 ```
 
@@ -265,19 +294,25 @@ curl -X POST http://127.0.0.1:8120/v1/account/list -d'{"chain_type":1,"address":
   "err_no": 0,
   "err_msg": "",
   "data": {
-    "total": 47,
+    "total": 2,
     "list": [
       {
         "account": "0001.bit",
         "status": 6,
         "expired_at": 1822199174000,
-        "registered_at": 1632983174000
+        "registered_at": 1632983174000,
+        "enable_sub_account": 0,
+        "renew_sub_account_price": 12,
+        "nonce": 2
       },
       {
         "account": "10086.bit",
         "status": 8,
         "expired_at": 1662546730000,
-        "registered_at": 1629196330000
+        "registered_at": 1629196330000,
+        "enable_sub_account": 0,
+        "renew_sub_account_price": 12,
+        "nonce": 2
       }
     ]
   }
@@ -287,9 +322,8 @@ curl -X POST http://127.0.0.1:8120/v1/account/list -d'{"chain_type":1,"address":
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad","page":1,"size":2}'
+curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"type":"blockchain","key_info":{"coin_type":"309","key":"ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qggqumxlsr77xk84ppzmm2rlmfvam37gc2t75yqwdn0cpl0rtr6ss3da4pla5kwaclyv99l27qlxcl"},"keyword":"","category":0,"page":1,"size":20}'
 ```
-
 #### Account Detail
 
 **Request**
@@ -341,9 +375,13 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"chain_type":1,"address":
     "account_price": "10",
     "base_amount": "3.89",
     "confirm_proposal_hash": "0xec7bec47a4d3ad467253925a7e097f311e0738d625d55f8b3420cabaaa9b5201",
-    "premium_percentage": "",// for stripe usd premium
-    "premium_base": "", // for stripe usd premium
-    "re_registered_time": 1672211096
+    "enable_sub_account": 1,
+    "renew_sub_account_price": 12,
+    "nonce": 2,
+    "custom_script": "",
+    "premium_percentage": "0.036",
+    "premium_base": "0.52",
+    "re_register_time": 0
   }
 }
 ```
@@ -391,78 +429,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/detail -d'{"account":"king.bit"}'
 
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/account/records -d'{"account":"king.bit"}'
-```
-
-#### Reverse Latest (Deprecated)
-
-**Request**
-
-* path: /reverse/latest
-* param:
-
-```json
-{
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad"
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": {
-    "account": "9aaaaaaa.bit",
-    "is_valid": true
-  }
-}
-```
-
-**Usage**
-
-```curl
-curl -X POST http://127.0.0.1:8120/v1/reverse/latest -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad"}'
-```
-
-#### Reverse List (Deprecated)
-
-**Request**
-
-* path: /reverse/list
-* param:
-
-```json
-{
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad"
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": {
-    "list": [
-      {
-        "account": "9aaaaaaa.bit",
-        "block_number": 3752755,
-        "hash": "0x9b6d4eee5c32f9b4aa52a1188e035d5afe695fbea2d90504d9d62bc869bd5ca8",
-        "index": 0
-      }
-    ]
-  }
-}
-```
-
-**Usage**
-
-```curl
-curl -X POST http://127.0.0.1:8120/v1/reverse/list -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad"}'
 ```
 
 #### Transaction Status
@@ -664,10 +630,12 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/list -d'{"chain_type":1,"addre
     "list": [
       {
         "invitee": "9baaaaaa.bit",
+        "invitation_time":1719418521,
         "reward": "5149000000"
       },
       {
         "invitee": "9caaaaaa.bit",
+        "invitation_time":1719418521,
         "reward": "12872500000"
       }
     ]
@@ -869,7 +837,8 @@ curl -X POST http://127.0.0.1:8120/v1/account/search -d'{"account":"aaaa.bit","c
     "registering_accounts": [
       {
         "account": "",
-        "status": 1
+        "status": 1,
+        "cross_coin_type": "309"
       }
     ]
   }
@@ -898,7 +867,8 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
   },
   "chain_type": 1, // 1-evm, 3-tron, 7-doge
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad", 
-  "account": "xasdaaxaaa.bit"
+  "account": "xasdaaxaaa.bit",
+  "action": "pre_register
 }
 ```
 
@@ -912,10 +882,12 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
   "data": {
     "order_id": "780bb68a7dd3b0554d95d6e0b3ca3ef3",
     "account": "asxasadasx.bit",
+    "action": "pre_register",
     "status": 0,
     "timestamp": 1642059562457, // order time
     "pay_token_id": "ckb_das", // payment token type
     "pay_amount": "50502165739", // payment amount, token minimum precision
+    "pay_type": "",
     "receipt_address": "ckt1qyqvsej8jggu4hmr45g4h8d9pfkpd0fayfksz44t9q", // user payment address
     "inviter_account": "", // inviter account of order
     "channel_account": "", // channel account of order
@@ -975,7 +947,9 @@ curl -X POST http://127.0.0.1:8120/v1/address/deposit -d'{"algorithm_id":6,"addr
 * param:
 
 ```json
-{}
+{
+  "char_type": 0
+}
 ```
 
 **Response**
@@ -1022,130 +996,293 @@ curl -X POST http://127.0.0.1:8120/v1/address/deposit -d'{"algorithm_id":6,"addr
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/character/set/list -d'{}'
 ```
+#### Account Auction Info
+
+**Request**
+
+* path: /account/auction/info
+  * get dutch auction info of a account
+* param:
+
+```json
+{
+  "account":"michaeltest1.bit",
+  "type":"blockchain",
+  "key_info":{
+    "coin_type":"60",
+    "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+  }
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "account_id": "",
+    "account": "",
+    "bid_status": 2,
+    "hash": "",
+    "start_auction_time": 0,
+    "end_auction_time": 0,
+    "expired_at": 0,
+    "account_price": "5",
+    "base_amount": "0.82"
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://127.0.0.1:8120/v1/account/auction/info' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account":"michaeltest1.bit",
+    "type":"blockchain",
+    "key_info":{
+        "coin_type":"60",
+        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+    }
+}'
+```
+
+
+#### Account Auction Price
+
+**Request**
+
+* path: /account/auction/price
+  * get dutch auction price of a account
+* param:
+
+```json
+{
+  "account":"michaeltest1.bit"
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "account_price": "5",
+    "base_amount": "0.82",
+    "premium_price": 20
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://127.0.0.1:8120/v1/account/auction/price' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account":"michaeltest1.bit"
+}'
+```
+
+#### Account Auction OrderStatus
+
+**Request**
+
+* path: /account/auction/order-status
+  * get  status of a dutch auction order
+* param:
+
+```json
+{
+  "account":"michaeltest1.bit",
+  "hash": "0xb9e094dd6fcaa6c68d44233cb5331e63bd966fa86659fc45d30089336021f26e",
+  "type":"blockchain",
+  "key_info":{
+    "coin_type":"60",
+    "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+  }
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "account": "michaeltest1.bit",
+    "hash": "0xeb4871b7af2ca7129a43c5991c408148abd195eb5699223fad11a712b1e1d584",
+    "status": 0,
+    "basic_price": "6",
+    "premium_price": "100"
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://127.0.0.1:8120/v1/account/auction/order-status' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account":"michaeltest1.bit",
+    "type":"blockchain",
+    "key_info":{
+        "coin_type":"60",
+        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+    }
+}'
+```
+
+#### Account Auction PendingOrders
+
+**Request**
+
+* path: /account/auction/pending-order
+  * get dutch auction order with pending status
+* param:
+
+```json
+{
+  "type":"blockchain",
+  "key_info":{
+    "coin_type":"60",
+    "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+  }
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": [
+    {
+      "account": "michaeltest1.bit",
+      "outpoint": "0xeb4871b7af2ca7129a43c5991c408148abd195eb5699223fad11a712b1e1d584-0",
+      "status": 0,
+      "basic_price": "6",
+      "premium_price": "100"
+    }
+  ]
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://127.0.0.1:8120/v1/account/auction/pending-order' \
+--header 'Content-Type: application/json' \
+--data '{
+    "type":"blockchain",
+    "key_info":{
+        "coin_type":"60",
+        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+    }
+}'
+```
+
+#### Account Recommend
+
+**Request**
+
+* path: /account/recommend
+  * get recommend account list
+* param:
+
+```json
+{
+  "account":"goadgame.bit",
+  "page":1,
+  "size":6
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "total_page": 2,
+    "page": 1,
+    "acc_list": [
+      "goadgame.bit",
+      "loadgame.bit",
+      "roadgame.bit",
+      "toadgame.bit",
+      "goalgame.bit",
+      "goasgame.bit"
+    ]
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://localhost:8120/v1/account/recommend' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account":"goad.bit"
+}'
+```
+#### Account Check Coupon
+
+**Request**
+
+* path: /account/recommend
+  * get recommend account list
+* param:
+
+```json
+{
+  "coupon":""
+}
+```
+
+**Response**
+* type:
+  * 1: 4 
+  * 2: 5
+* status:
+  * 1: Not found
+  * 2: Used
+  * 3: Expired
+  * 4: Available
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "type": 2,
+    "status": 1
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl --location 'http://localhost:8120/v1/check/coupon' \
+--header 'Content-Type: application/json' \
+--data '{
+    "coupon":""
+}'
+```
+
 
 ### OPERATE API LIST
 
-#### Reverse Declare (Deprecated)
-
-**Request**
-
-* path: /reverse/declare
-* param:
-    * evm_chain_id: eth-1/5 bsc-56/97 polygon-137/8001
-
-```json
-{
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
-  "account": "aaaaa.bit",
-  "evm_chain_id": 5
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": {
-    "sign_key": "",
-    "sign_list": [
-      {
-        "sign_type": 5,
-        "sign_msg": ""
-      }
-    ],
-    "mm_json": {}
-  }
-}
-```
-
-**Usage**
-
-```curl
-curl -X POST http://127.0.0.1:8120/v1/reverse/declare -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"aaaa.bit","evm_chain_id":5}'
-```
-
-#### Reverse Redeclare (Deprecated)
-
-**Request**
-
-* path: /reverse/redeclare
-* param:
-```json
-{
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
-  "account": "aaaaa.bit",
-  "evm_chain_id": 5
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": {
-    "sign_key": "",
-    "sign_list": [
-      {
-        "sign_type": 5,
-        "sign_msg": ""
-      }
-    ],
-    "mm_json": {}
-  }
-}
-```
-
-**Usage**
-
-```curl
-curl -X POST http://127.0.0.1:8120/v1/reverse/redeclare -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"9aaaaaaa.bit","evm_chain_id":5}'
-```
-
-#### Reverse Retract (Deprecated)
-
-**Request**
-
-* path: /reverse/retract
-* param:
-
-```json
-{
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
-  "evm_chain_id": 5
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": {
-    "sign_key": "",
-    "sign_list": [
-      {
-        "sign_type": 5,
-        "sign_msg": ""
-      }
-    ],
-    "mm_json": {}
-  }
-}
-```
-
-**Usage**
-
-```curl
-curl -X POST http://127.0.0.1:8120/v1/reverse/retract -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","evm_chain_id":5}'
-```
 
 #### Transaction Send
 
@@ -1184,6 +1321,51 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/retract -d'{"chain_type":1,"addres
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/transaction/send -d'{"sign_key": "","sign_list": [{"sign_type": 5,"sign_msg": ""}]}'
 ```
+#### Balance Pay
+
+**Request**
+
+* path: /balance/pay
+* param:
+
+```json
+{
+  "type": "blockchain",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
+  "evm_chain_id": 97,
+  "chain_type": 1,
+  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
+  "order_id": "d2ccdcee9a7c163efb50d4a808a3d3f1"
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "sign_key": "",
+    "sign_list": [
+      {
+        "sign_type": 5,
+        "sign_msg": ""
+      }
+    ],
+    "mm_json": {}
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","order_id":"d2ccdcee9a7c163efb50d4a808a3d3f1"}'
+```
 
 #### Balance Withdraw
 
@@ -1194,7 +1376,6 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/send -d'{"sign_key": "","sign_
 
 ```json
 {
-  "evm_chain_id": 5,
   "type": "blockchain",
   "key_info": {
     "coin_type": "60",
@@ -1202,10 +1383,10 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/send -d'{"sign_key": "","sign_
   },
   "chain_type": 1,
   "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
-  "receiver_chain_type": 0,
   "receiver_address": "ckt1qsexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6q7f75a3mpf4ddsy20uxwcgg3rvf5zmx0tgre86nk8v9x44kq3flsemppzyd3xstveadktaqfa",
   "withdraw_all": false,
-  "amount": "20000000000"
+  "amount": "20000000000",
+  "evm_chain_id": 5
 }
 ```
 
@@ -1338,6 +1519,7 @@ curl -X POST http://127.0.0.1:8120/v1/balance/deposit -d'{"from_ckb_address":"",
   "account": "0001.bit",
   "raw_param": {
     "manager_chain_type": 1,
+    "manager_coin_type": "60",
     "manager_address": "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
   }
 }
@@ -1388,6 +1570,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/manager -d'{"evm_chain_id":5,
   "evm_chain_id": 5,
   "raw_param": {
     "receiver_chain_type": 1,
+    "receiver_coin_type": "60",
     "receiver_address": "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"
   }
 }
@@ -1444,7 +1627,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/owner -d'{"evm_chain_id":5,"c
         "label": "",
         "value": "111",
         "ttl": "300",
-        "action": "add"
       }
     ]
   }
@@ -1525,51 +1707,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,
 curl -X POST http://127.0.0.1:8120/v1/account/order/renew -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"0001.bit","pay_chain_type":0,"pay_token_id":"ckb_das","pay_type":"","pay_address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","renew_years":1}'
 ```
 
-#### Balance Pay
 
-**Request**
-
-* path: /balance/pay
-* param:
-
-```json
-{
-  "type": "blockchain",
-  "key_info": {
-    "coin_type": "60",
-    "key": "0x111..."
-  },
-  "evm_chain_id": 97,
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
-  "order_id": "d2ccdcee9a7c163efb50d4a808a3d3f1"
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": {
-    "sign_key": "",
-    "sign_list": [
-      {
-        "sign_type": 5,
-        "sign_msg": ""
-      }
-    ],
-    "mm_json": {}
-  }
-}
-```
-
-**Usage**
-
-```curl
-curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","order_id":"d2ccdcee9a7c163efb50d4a808a3d3f1"}'
-```
 
 #### Account Order Register
 
@@ -1654,7 +1792,8 @@ curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_t
     }
   ],
   "coin_type": "",
-  "cross_coin_type": ""
+  "cross_coin_type": "",
+  "gift_card": ""
 }
 ```
 
@@ -1947,246 +2086,7 @@ curl -X POST http://127.0.0.1:8120/v1/node/ckb/rpc -d'{"jsonrpc":"2.0","id":2976
 ```
 
 
-#### Account Auction Info
 
-**Request**
-
-* path: /account/auction/info
-  * get dutch auction info of a account
-* param:
-
-```json
-{
-  "account":"michaeltest1.bit",
-  "type":"blockchain",
-  "key_info":{
-    "coin_type":"60",
-    "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
-  }
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": {
-    "account_id": "",
-    "account": "",
-    "bid_status": 2,
-    "hash": "",
-    "start_auction_time": 0,
-    "end_auction_time": 0,
-    "expired_at": 0,
-    "account_price": "5",
-    "base_amount": "0.82"
-  }
-}
-```
-
-**Usage**
-
-```curl
-curl --location 'http://127.0.0.1:8120/v1/account/auction/info' \
---header 'Content-Type: application/json' \
---data '{
-    "account":"michaeltest1.bit",
-    "type":"blockchain",
-    "key_info":{
-        "coin_type":"60",
-        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
-    }
-}'
-```
-
-
-#### Account Auction Price
-
-**Request**
-
-* path: /account/auction/price
-  * get dutch auction price of a account
-* param:
-
-```json
-{
-  "account":"michaeltest1.bit"
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": {
-    "account_price": "5",
-    "base_amount": "0.82",
-    "premium_price": 20
-  }
-}
-```
-
-**Usage**
-
-```curl
-curl --location 'http://127.0.0.1:8120/v1/account/auction/price' \
---header 'Content-Type: application/json' \
---data '{
-    "account":"michaeltest1.bit"
-}'
-```
-
-#### Account Auction OrderStatus
-
-**Request**
-
-* path: /account/auction/order-status
-  * get  status of a dutch auction order
-* param:
-
-```json
-{
-  "account":"michaeltest1.bit",
-  "hash": "0xb9e094dd6fcaa6c68d44233cb5331e63bd966fa86659fc45d30089336021f26e",
-  "type":"blockchain",
-  "key_info":{
-    "coin_type":"60",
-    "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
-  }
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": {
-    "account": "michaeltest1.bit",
-    "hash": "0xeb4871b7af2ca7129a43c5991c408148abd195eb5699223fad11a712b1e1d584",
-    "status": 0,
-    "basic_price": "6",
-    "premium_price": "100"
-  }
-}
-```
-
-**Usage**
-
-```curl
-curl --location 'http://127.0.0.1:8120/v1/account/auction/order-status' \
---header 'Content-Type: application/json' \
---data '{
-    "account":"michaeltest1.bit",
-    "type":"blockchain",
-    "key_info":{
-        "coin_type":"60",
-        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
-    }
-}'
-```
-
-#### Account Auction PendingOrders
-
-**Request**
-
-* path: /account/auction/pending-order
-  * get dutch auction order with pending status
-* param:
-
-```json
-{
-  "type":"blockchain",
-  "key_info":{
-    "coin_type":"60",
-    "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
-  }
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": [
-    {
-      "account": "michaeltest1.bit",
-      "outpoint": "0xeb4871b7af2ca7129a43c5991c408148abd195eb5699223fad11a712b1e1d584-0",
-      "status": 0,
-      "basic_price": "6",
-      "premium_price": "100"
-    }
-  ]
-}
-```
-
-**Usage**
-
-```curl
-curl --location 'http://127.0.0.1:8120/v1/account/auction/pending-order' \
---header 'Content-Type: application/json' \
---data '{
-    "type":"blockchain",
-    "key_info":{
-        "coin_type":"60",
-        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
-    }
-}'
-```
-
-#### Account Recommend
-
-**Request**
-
-* path: /account/recommend
-  * get recommend account list
-* param:
-
-```json
-{
-  "account":"goadgame.bit",
-  "page":1,
-  "size":6
-}
-```
-
-**Response**
-
-```json
-{
-  "err_no": 0,
-  "err_msg": "",
-  "data": {
-    "total_page": 2,
-    "page": 1,
-    "acc_list": [
-      "goadgame.bit",
-      "loadgame.bit",
-      "roadgame.bit",
-      "toadgame.bit",
-      "goalgame.bit",
-      "goasgame.bit"
-    ]
-  }
-}
-```
-
-**Usage**
-
-```curl
-curl --location 'http://localhost:8120/v1/account/recommend' \
---header 'Content-Type: application/json' \
---data '{
-    "account":"goad.bit"
-}'
-```
 
 
 

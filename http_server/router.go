@@ -65,6 +65,7 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/auction/order-status", api_code.DoMonitorLog(api_code.MethodAuctionOrderStatus), h.h.GetAuctionOrderStatus)
 		v1.POST("/account/auction/pending-order", api_code.DoMonitorLog(api_code.MethodAuctionPendingOrder), cacheHandleLong, h.h.GetPendingAuctionOrder)
 		v1.POST("/account/recommend", api_code.DoMonitorLog("account-recommend"), cacheHandleShort, h.h.AccountRecommend)
+		v1.POST("/account/coupon/check", api_code.DoMonitorLog(api_code.MethodOrderCheckCoupon), cacheHandleShort, h.h.CheckCoupon)
 
 		// operate
 		//v1.POST("/reverse/declare", api_code.DoMonitorLog(api_code.MethodReverseDeclare), h.h.ReverseDeclare)
@@ -82,7 +83,6 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/order/register", api_code.DoMonitorLog(api_code.MethodOrderRegister), h.h.OrderRegister)
 		v1.POST("/account/order/change", api_code.DoMonitorLog(api_code.MethodOrderChange), h.h.OrderChange)
 		v1.POST("/account/order/pay/hash", api_code.DoMonitorLog(api_code.MethodOrderPayHash), h.h.OrderPayHash)
-		v1.POST("/account/coupon/check", api_code.DoMonitorLog(api_code.MethodOrderCheckCoupon), cacheHandleShort, h.h.CheckCoupon)
 		//v1.POST("/account/edit/script", api_code.DoMonitorLog(api_code.MethodEditScript), h.h.EditScript)
 		v1.POST("/account/auction/bid", api_code.DoMonitorLog(api_code.MethodAuctionBid), h.h.AccountAuctionBid)
 
