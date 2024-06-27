@@ -143,21 +143,40 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("rpc.TransactionFromString err: %s", err.Error()))
 			return fmt.Errorf("rpc.TransactionFromString err: %s", err.Error())
 		}
-		cacheTxHash, err := sic.BuilderTx.Transaction.ComputeHash()
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "ComputeHash err")
-			return fmt.Errorf("ComputeHash err: %s", err.Error())
-		}
-		//userTx := txbuilder.TransactionToTx(req.CKBTx)
-		userTxHash, err := userTx.ComputeHash()
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "ComputeHash err")
-			return fmt.Errorf("ComputeHash err: %s", err.Error())
-		}
-		if userTxHash.String() != cacheTxHash.String() {
+		if len(userTx.Inputs) != len(sic.BuilderTx.Transaction.Inputs) ||
+			len(userTx.Outputs) != len(sic.BuilderTx.Transaction.Outputs) {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "ckb tx invalid")
 			return nil
 		}
+		for i, v := range sic.BuilderTx.Transaction.Inputs {
+			if v.PreviousOutput.TxHash.Hex() != userTx.Inputs[i].PreviousOutput.TxHash.Hex() ||
+				v.PreviousOutput.Index != userTx.Inputs[i].PreviousOutput.Index {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "ckb tx invalid")
+				return nil
+			}
+		}
+		for i, v := range sic.BuilderTx.Transaction.Outputs {
+			if !v.Lock.Equals(userTx.Outputs[i].Lock) {
+				apiResp.ApiRespErr(api_code.ApiCodeError500, "ckb tx invalid")
+				return nil
+			}
+		}
+
+		//cacheTxHash, err := sic.BuilderTx.Transaction.ComputeHash()
+		//if err != nil {
+		//	apiResp.ApiRespErr(api_code.ApiCodeError500, "ComputeHash err")
+		//	return fmt.Errorf("ComputeHash err: %s", err.Error())
+		//}
+		////userTx := txbuilder.TransactionToTx(req.CKBTx)
+		//userTxHash, err := userTx.ComputeHash()
+		//if err != nil {
+		//	apiResp.ApiRespErr(api_code.ApiCodeError500, "ComputeHash err")
+		//	return fmt.Errorf("ComputeHash err: %s", err.Error())
+		//}
+		//if userTxHash.String() != cacheTxHash.String() {
+		//	apiResp.ApiRespErr(api_code.ApiCodeError500, "ckb tx invalid")
+		//	return nil
+		//}
 		sic.BuilderTx.Transaction = userTx
 	}
 
