@@ -192,6 +192,17 @@ func (t *TxTool) getAccountScript(accountId []byte) (*types.Script, error) {
 	if err != nil {
 		return nil, fmt.Errorf("GetAccountInfoByAccountId err: %s", err.Error())
 	} else if acc.Id > 0 {
+		if acc.Status == tables.AccountStatusOnUpgrade {
+			didAcc, err := t.DbDao.GetDidAccountByAccountIdWithoutArgs(common.Bytes2Hex(accountId))
+			if err != nil {
+				return nil, fmt.Errorf("GetDidAccountByAccountIdWithoutArgs err: %s", err.Error())
+			}
+			return &types.Script{
+				CodeHash: types.HexToHash(didAcc.LockCodeHash),
+				HashType: types.HashTypeType,
+				Args:     common.Hex2Bytes(didAcc.Args),
+			}, nil
+		}
 		ownerLockScript, _, err := t.DasCore.Daf().HexToScript(core.DasAddressHex{
 			DasAlgorithmId: acc.OwnerChainType.ToDasAlgorithmId(true),
 			AddressHex:     acc.Owner,
