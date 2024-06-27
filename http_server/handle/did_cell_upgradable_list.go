@@ -2,6 +2,7 @@ package handle
 
 import (
 	"das_register_server/config"
+	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -34,8 +35,9 @@ type UpgradableAccount struct {
 type UpgradeStatus int
 
 const (
-	UpgradeStatusDefault UpgradeStatus = 0
-	UpgradeStatusIng     UpgradeStatus = 1
+	UpgradeStatusDefault        UpgradeStatus = 0
+	UpgradeStatusConfirmPayment UpgradeStatus = 1
+	UpgradeStatusIng            UpgradeStatus = 2
 )
 
 func (h *HttpHandle) RpcDidCellUpgradableList(p json.RawMessage, apiResp *http_api.ApiResp) {
@@ -124,14 +126,19 @@ func (h *HttpHandle) doDidCellUpgradableList(req *ReqDidCellUpgradableList, apiR
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get upgrade order")
 		return fmt.Errorf("GetUpgradeOrder err: %s", err.Error())
 	}
-	var upgradingMap = make(map[string]struct{})
+	var upgradingMap = make(map[string]UpgradeStatus)
 	for _, v := range orders {
-		upgradingMap[v.AccountId] = struct{}{}
+		switch v.PayStatus {
+		case tables.TxStatusDefault:
+			upgradingMap[v.AccountId] = UpgradeStatusConfirmPayment
+		case tables.TxStatusSending, tables.TxStatusOk:
+			upgradingMap[v.AccountId] = UpgradeStatusIng
+		}
 	}
 
 	for i, v := range resp.List {
-		if _, ok := upgradingMap[v.AccountId]; ok {
-			resp.List[i].UpgradeStatus = UpgradeStatusIng
+		if s, ok := upgradingMap[v.AccountId]; ok {
+			resp.List[i].UpgradeStatus = s
 		}
 	}
 
