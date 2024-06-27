@@ -6,6 +6,8 @@
     * [Account Mine](#account-mine)
     * [Account Detail](#account-detail)
     * [Account Records](#account-records)
+    * [Reverse Latest (Deprecated)](#reverse-latest)
+    * [Reverse List (Deprecated)](#reverse-list)
     * [Transaction Status](#transaction-status)
     * [Balance Info](#balance-info)
     * [Transaction List](#transaction-list)
@@ -23,6 +25,9 @@
     * [Account Recommend](#account-recommend)
     * [Account Check Coupon](#account-check-coupon)
 * [OPERATE API LIST](#operate-api-list)
+    * [Reverse Declare (Deprecated)](#reverse-declare)
+    * [Reverse Redeclare (Deprecated)](#reverse-redeclare)
+    * [Reverse Retract (Deprecated)](#reverse-retract)
     * [Transaction Send](#transaction-send)
     * [Balance Pay](#balance-pay)
     * [Balance Withdraw](#balance-withdraw)
@@ -430,6 +435,79 @@ curl -X POST http://127.0.0.1:8120/v1/account/detail -d'{"account":"king.bit"}'
 ```curl
 curl -X POST http://127.0.0.1:8120/v1/account/records -d'{"account":"king.bit"}'
 ```
+
+#### Reverse Latest (Deprecated)
+
+**Request**
+
+* path: /reverse/latest
+* param:
+
+```json
+{
+  "chain_type": 1,
+  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad"
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "account": "9aaaaaaa.bit",
+    "is_valid": true
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8120/v1/reverse/latest -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad"}'
+```
+
+#### Reverse List (Deprecated)
+
+**Request**
+
+* path: /reverse/list
+* param:
+
+```json
+{
+  "chain_type": 1,
+  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad"
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "list": [
+      {
+        "account": "9aaaaaaa.bit",
+        "block_number": 3752755,
+        "hash": "0x9b6d4eee5c32f9b4aa52a1188e035d5afe695fbea2d90504d9d62bc869bd5ca8",
+        "index": 0
+      }
+    ]
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8120/v1/reverse/list -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad"}'
+```
+
 
 #### Transaction Status
 
@@ -1283,6 +1361,128 @@ curl --location 'http://localhost:8120/v1/check/coupon' \
 
 ### OPERATE API LIST
 
+
+#### Reverse Declare (Deprecated)
+
+**Request**
+
+* path: /reverse/declare
+* param:
+  * evm_chain_id: eth-1/5 bsc-56/97 polygon-137/8001
+
+```json
+{
+  "chain_type": 1,
+  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
+  "account": "aaaaa.bit",
+  "evm_chain_id": 5
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "sign_key": "",
+    "sign_list": [
+      {
+        "sign_type": 5,
+        "sign_msg": ""
+      }
+    ],
+    "mm_json": {}
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8120/v1/reverse/declare -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"aaaa.bit","evm_chain_id":5}'
+```
+
+#### Reverse Redeclare (Deprecated)
+
+**Request**
+
+* path: /reverse/redeclare
+* param:
+```json
+{
+  "chain_type": 1,
+  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
+  "account": "aaaaa.bit",
+  "evm_chain_id": 5
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "sign_key": "",
+    "sign_list": [
+      {
+        "sign_type": 5,
+        "sign_msg": ""
+      }
+    ],
+    "mm_json": {}
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8120/v1/reverse/redeclare -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"9aaaaaaa.bit","evm_chain_id":5}'
+```
+
+#### Reverse Retract (Deprecated)
+
+**Request**
+
+* path: /reverse/retract
+* param:
+
+```json
+{
+  "chain_type": 1,
+  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
+  "evm_chain_id": 5
+}
+```
+
+**Response**
+
+```json
+{
+  "err_no": 0,
+  "err_msg": "",
+  "data": {
+    "sign_key": "",
+    "sign_list": [
+      {
+        "sign_type": 5,
+        "sign_msg": ""
+      }
+    ],
+    "mm_json": {}
+  }
+}
+```
+
+**Usage**
+
+```curl
+curl -X POST http://127.0.0.1:8120/v1/reverse/retract -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","evm_chain_id":5}'
+```
 
 #### Transaction Send
 
