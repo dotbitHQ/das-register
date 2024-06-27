@@ -37,7 +37,7 @@ func (d *DbDao) GetUpgradeOrder(accountIds []string) (list []tables.TableDasOrde
 	if len(accountIds) == 0 {
 		return
 	}
-	timestamp := time.Now().Add(-time.Hour).UnixMilli()
+	timestamp := time.Now().Add(-time.Minute * 15).UnixMilli()
 	statusList := []tables.TxStatus{tables.TxStatusDefault, tables.TxStatusSending, tables.TxStatusOk}
 	err = d.db.Where("account_id IN(?) AND action=? AND order_status=? AND pay_status IN(?) AND timestamp>=?",
 		accountIds, common.DasActionTransferAccount, tables.OrderStatusDefault, statusList, timestamp).Find(&list).Error
