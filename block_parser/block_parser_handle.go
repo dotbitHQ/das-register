@@ -27,8 +27,12 @@ func (b *BlockParser) registerTransactionHandle() {
 	b.mapTransactionHandle[common.DasActionEditManager] = b.ActionEditManager
 	b.mapTransactionHandle[common.DasActionTransferAccount] = b.ActionTransferAccount
 	b.mapTransactionHandle[common.DasActionBidExpiredAccountAuction] = b.ActionBidExpiredAccountAuction
-	b.mapTransactionHandle[common.DidCellActionEditOwner] = b.ActionDidCell
-	b.mapTransactionHandle[common.DidCellActionEditRecords] = b.ActionDidCell
+
+	//b.mapTransactionHandle[common.DidCellActionEditOwner] = b.ActionDidCell
+	//b.mapTransactionHandle[common.DidCellActionEditRecords] = b.ActionDidCell
+
+	b.mapTransactionHandle[common.DidCellActionUpdate] = b.DidCellActionUpdate
+
 	//
 	//b.mapTransactionHandle[common.DasActionDeclareReverseRecord] = b.ActionDeclareReverseRecord
 	//b.mapTransactionHandle[common.DasActionRedeclareReverseRecord] = b.ActionRedeclareReverseRecord
@@ -60,6 +64,7 @@ type FuncTransactionHandleReq struct {
 	BlockNumber    uint64
 	BlockTimestamp uint64
 	Action         common.DasAction
+	TxDidCellMap   core.TxDidCellMap
 }
 
 type FuncTransactionHandleResp struct {
