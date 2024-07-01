@@ -1,65 +1,98 @@
 server:
   name: "register"
-  is_update: false # stop send tx or system update
-  net: 1 # 1 mainnet 2 testnet
+  is_update: true
+  net: 2
   http_server_addr: ":8120"
   http_server_internal_addr: ":8119"
-  pay_server_address: "" # for send register tx
+  pay_server_address: ""
   pay_private: ""
-  # Use das-database instead if running with docker compose.
-  parser_url: "http://127.0.0.1:8118/v1" # das-database server
-  tx_tool_switch: true # open send register tx
-  recover_ckb: 1000
-  recover_time: 1 # min
+  remote_sign_api_url: "http://127.0.0.1:9094/v1/remote/sign" #"http://127.0.0.1:8345"
+  push_log_index: "das-register-index"
+  push_log_url: "" #"http://172.31.96.233:9090/v1/push/log"
+  parser_url: "http://127.0.0.1:8118/v1"
+  tx_tool_switch: true
+  recycle_all_pre: true
   split_ckb: 2000
-  uni_pay_url: "" # url for Payment service unipay
-  uni_pay_refund_switch: true # Whether to enable payment refunds
-  hedge_url: "" # Services for exchanging payment currencies
-  prometheus_push_gateway: "http://127.0.0.1:9091"
-origins: # cross domain
+  recover_ckb: 20000
+  recycle_pre_early: true
+  recycle_pre_early_cron_spec: "0 40 * * * ?"
+  coupon_file_path: ""
+  coupon_encry_salt: ""
+  coupon_qrcode_prefix: ""
+  coupon_code_length: 8
+  uni_pay_url: "http://127.0.0.1:9092"
+  uni_pay_refund_switch: true
+  hedge_url: ""
+  prometheus_push_gateway: "http://127.0.0.1:9096"
+  transfer_whitelist: ""
+  transfer_whitelist_private: ""
+  capacity_whitelist: ""
+  capacity_whitelist_private: ""
+  split_count: 2
+  split_amount: 20000000
+  tx_fee_rate: 1
+origins:
   - ""
-pay_address_map: # receiver's address
+
+inviter_whitelist:
+  "0x123**": ""
+notify:
+  lark_error_key: ""
+  lark_register_key: ""
+  lark_register_ok_key: ""
+  lark_das_info_key: ""
+  discord_webhook: ""
+  sentry_dsn: ""
+monitor: #monitor service
+  url: ""
+  service_id: 1
+pay_address_map:
   "ckb": ""
   "eth": ""
   "tron": ""
   "bsc": ""
   "polygon": ""
   "doge": ""
+  "btc": ""
+  "did_point": ""
 chain:
-  # Use host.docker.internal instead if running with docker compose.
-  ckb_url: "http://127.0.0.1:8114"
-  index_url: "http://127.0.0.1:8116"
-  current_block_number: 0 # 0-start from the latest block number, 4872287-start from  the earliest block number
-  confirm_num: 4
+  ckb_url: "http://127.0.0.1:8114" #"https://testnet.ckb.dev" #"http://127.0.0.1:8114" #"https://testnet.ckb.dev/"
+  index_url: "http://127.0.0.1:8114" #"http://127.0.0.1:8114" #"https://testnet.ckb.dev/indexer" #"http://127.0.0.1:8116" #"https://testnet.ckb.dev/indexer"
+  current_block_number: 0 #1927285
+  confirm_num: 3
   concurrency_num: 100
 db:
   mysql:
-    # Use mysql instead if running with docker compose.
-    addr: "127.0.0.1:3306" # 172.17.0.1: docker 182.17.0.1: docker-compose
-    user: "root"
-    password: "123456"
-    db_name: "das_register"
+    addr: ""
+    user: ""
+    password: ""
+    db_name: ""
     max_open_conn: 100
     max_idle_conn: 50
   parser_mysql:
-    # Use mysql instead if running with docker compose.
-    addr: "127.0.0.1:3306" # 172.17.0.1: docker 182.17.0.1: docker-compose
-    user: "root"
-    password: "123456"
-    db_name: "das_database"
+    addr: ""
+    user: ""
+    password: ""
+    db_name: ""
     max_open_conn: 100
     max_idle_conn: 50
 cache:
   redis:
-    # Use redis instead if running with docker compose.
-    addr: "127.0.0.1:6379" # 172.17.0.1: docker 182.17.0.1: docker-compose
+    addr: ""
     password: ""
-    db_num: 0
+    db_num: 17
+es:
+  addr: ""
+  user: ""
+  password: ""
 das:
   account_min_length: 4
   account_max_length: 42
   open_account_min_length: 4
   open_account_max_length: 9
   max_register_years: 20
-  premium: "0.1"
+  premium: "0"
   discount: "0"
+stripe:
+  premium_percentage: "0.036"
+  premium_base: "0.52"
