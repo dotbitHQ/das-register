@@ -63,7 +63,7 @@ Please familiarize yourself with the meaning of some common parameters before re
 
 **Request**
 
-* path: /version
+* path: /v1/version
 * param: none
 
 **Response**
@@ -89,7 +89,7 @@ curl -X POST http://127.0.0.1:8120/v1/config/info
 
 **Request**
 
-* path: /token/list
+* path: /v1/token/list
 * param: none
 
 **Response**
@@ -186,7 +186,7 @@ curl -X POST http://127.0.0.1:8120/v1/token/list
 
 **Request**
 
-* path: /config/info
+* path: /v1/config/info
 * param: none
 
 **Response**
@@ -228,7 +228,7 @@ curl -X POST http://127.0.0.1:8120/v1/config/info
 
 **Request**
 
-* path: /account/list
+* path: /v1/account/list
     * get user's not on sale accounts
 * param:
 
@@ -276,7 +276,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/list -d'{"chain_type":1,"address":
 
 **Request**
 
-* path: /account/mine
+* path: /v1/account/mine
     * get user's accounts by pagination
 * param:
     * CategoryDefault Category = 0
@@ -343,7 +343,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/mine -d'{"type":"blockchain","key_
 
 **Request**
 
-* path: /account/detail
+* path: /v1/account/detail
 * param:
 
 ```json
@@ -411,7 +411,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/detail -d'{"account":"king.bit"}'
 
 **Request**
 
-* path: /account/records
+* path: /v1/account/records
 * param:
 
 ```json
@@ -450,7 +450,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/records -d'{"account":"king.bit"}'
 
 **Request**
 
-* path: /reverse/latest
+* path: /v1/reverse/latest
 * param:
 
 ```json
@@ -483,7 +483,7 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/latest -d'{"chain_type":1,"address
 
 **Request**
 
-* path: /reverse/list
+* path: /v1/reverse/list
 * param:
 
 ```json
@@ -523,7 +523,7 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/list -d'{"chain_type":1,"address":
 
 **Request**
 
-* path: /transaction/status
+* path: /v1/transaction/status
 * param:
   * actions: business transaction type
     * ActionWithdrawFromWallet TxAction = 0  // withdraw
@@ -593,7 +593,7 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/status -d'{"chain_type":1,"add
 
 **Request**
 
-* path: /balance/info
+* path: /v1/balance/info
 * param:
 
 ```json
@@ -632,7 +632,7 @@ curl -X POST http://127.0.0.1:8120/v1/balance/info -d'{"chain_type":1,"address":
 
 **Request**
 
-* path: /transaction/list
+* path: /v1/transaction/list
 * param:
 
 ```json
@@ -689,7 +689,7 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/list -d'{"chain_type":1,"addre
 
 **Request**
 
-* path: /rewards/mine
+* path: /v1/rewards/mine
 * param:
 
 ```json
@@ -741,7 +741,7 @@ curl -X POST http://127.0.0.1:8120/v1/rewards/mine -d'{"chain_type":1,"address":
 
 **Request**
 
-* path: /withdraw/list
+* path: /v1/withdraw/list
 * param:
 
 ```json
@@ -793,7 +793,7 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
 
 **Request**
 
-* path: /account/search
+* path: /v1/account/search
 * param:
   * account_char_str <sup>[1](https://github.com/dotbitHQ/cell-data-generator/tree/master/data)</sup>: 
     * char_set_name: 0-emoji,1-digit,2-en,3-Chinese Simplified,4-Chinese Traditional,5-Japanese,6-Korean,7-Russian,8-Turkish,9-Thai,10-Vietnamese
@@ -900,7 +900,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/search -d'{"account":"aaaa.bit","c
 
 **Request**
 
-* path: /account/registering/list
+* path: /v1/account/registering/list
 * param:
 
 ```json
@@ -943,7 +943,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
 
 **Request**
 
-* path: /account/order/detail
+* path: /v1/account/order/detail
 * param:
 
 ```json
@@ -998,7 +998,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/detail -d'{"chain_type":1,"a
 
 **Request**
 
-* path: /address/deposit
+* path: /v1/address/deposit
 * param:
     * algorithm_id: 3-evm, 5-712, 4-tron, 6-Ed25519
 
@@ -1031,7 +1031,7 @@ curl -X POST http://127.0.0.1:8120/v1/address/deposit -d'{"algorithm_id":6,"addr
 
 **Request**
 
-* path: /character/set/list
+* path: /v1/character/set/list
 * param:
 
 ```json
@@ -1088,7 +1088,7 @@ curl -X POST http://127.0.0.1:8120/v1/character/set/list -d'{}'
 
 **Request**
 
-* path: /account/auction/info
+* path: /v1/account/auction/info
   * get dutch auction info of a account
 * param:
 
@@ -1143,7 +1143,7 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/info' \
 
 **Request**
 
-* path: /account/auction/price
+* path: /v1/account/auction/price
   * get dutch auction price of a account
 * param:
 
@@ -1181,7 +1181,7 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/price' \
 
 **Request**
 
-* path: /account/auction/order-status
+* path: /v1/account/auction/order-status
   * get  status of a dutch auction order
 * param:
 
@@ -1232,7 +1232,7 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/order-status' \
 
 **Request**
 
-* path: /account/auction/pending-order
+* path: /v1/account/auction/pending-order
   * get dutch auction order with pending status
 * param:
 
@@ -1282,7 +1282,7 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/pending-order' \
 
 **Request**
 
-* path: /account/recommend
+* path: /v1/account/recommend
   * get recommend account list
 * param:
 
@@ -1328,7 +1328,7 @@ curl --location 'http://localhost:8120/v1/account/recommend' \
 
 **Request**
 
-* path: /account/recommend
+* path: /v1/account/recommend
   * get recommend account list
 * param:
 
@@ -1376,7 +1376,7 @@ curl --location 'http://localhost:8120/v1/check/coupon' \
 
 **Request**
 
-* path: /reverse/declare
+* path: /v1/reverse/declare
 * param:
   * evm_chain_id: eth-1/5 bsc-56/97 polygon-137/8001
 
@@ -1418,7 +1418,7 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/declare -d'{"chain_type":1,"addres
 
 **Request**
 
-* path: /reverse/redeclare
+* path: /v1/reverse/redeclare
 * param:
 ```json
 {
@@ -1458,7 +1458,7 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/redeclare -d'{"chain_type":1,"addr
 
 **Request**
 
-* path: /reverse/retract
+* path: /v1/reverse/retract
 * param:
 
 ```json
@@ -1498,7 +1498,7 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/retract -d'{"chain_type":1,"addres
 
 **Request**
 
-* path: /transaction/send
+* path: /v1/transaction/send
 * param:
   * sign_address: The actual address of the signature（Unnecessary，Used for webauthn algorithm）
 ```json
@@ -1535,7 +1535,7 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/send -d'{"sign_key": "","sign_
 
 **Request**
 
-* path: /balance/pay
+* path: /v1/balance/pay
 * param:
 
 ```json
@@ -1581,7 +1581,7 @@ curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_t
 
 **Request**
 
-* path: /balance/withdraw
+* path: /v1/balance/withdraw
 * param:
 
 ```json
@@ -1629,7 +1629,7 @@ curl -X POST http://127.0.0.1:8120/v1/balance/withdraw -d'{"evm_chain_id":5,"cha
 
 **Request**
 
-* path: /balance/transfer
+* path: /v1/balance/transfer
 * param:
 
 ```json
@@ -1673,7 +1673,7 @@ curl -X POST http://127.0.0.1:8120/v1/balance/transfer -d'{"chain_type":1,"addre
 
 **Request**
 
-* path: /balance/deposit
+* path: /v1/balance/deposit
 * param:
 
 ```json
@@ -1713,7 +1713,7 @@ curl -X POST http://127.0.0.1:8120/v1/balance/deposit -d'{"from_ckb_address":"",
 
 **Request**
 
-* path: /account/edit/manager
+* path: /v1/account/edit/manager
 * param:
 
 ```json
@@ -1764,7 +1764,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/manager -d'{"evm_chain_id":5,
 
 **Request**
 
-* path: /account/edit/owner
+* path: /v1/account/edit/owner
 * param:
 
 ```json
@@ -1815,7 +1815,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/owner -d'{"evm_chain_id":5,"c
 
 **Request**
 
-* path: /account/edit/records
+* path: /v1/account/edit/records
 * param:
 
 ```json
@@ -1872,7 +1872,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,
 
 **Request**
 
-* path: /account/order/renew
+* path: /v1/account/order/renew
 * param:
 
 ```json
@@ -1923,7 +1923,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/renew -d'{"chain_type":1,"ad
 
 **Request**
 
-* path: /account/order/register
+* path: /v1/account/order/register
 * param:
 
 ```json
@@ -2034,7 +2034,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"chain_type":1,
 
 **Request**
 
-* path: /account/order/change
+* path: /v1/account/order/change
 * param:
 
 ```json
@@ -2086,7 +2086,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/change -d'{"chain_type":1,"a
 
 **Request**
 
-* path: /account/order/pay/hash
+* path: /v1/account/order/pay/hash
 * param:
 
 ```json
@@ -2133,7 +2133,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/pay/hash -d'{"chain_type":1,
 **Request**
 
 * (Internal Service Api)
-* path: /account/register
+* path: /v1/account/register
 * param:
 
 ```json
@@ -2204,7 +2204,7 @@ curl -X POST http://127.0.0.1:8119/v1/account/register -d'{"chain_type":1,"addre
 **Request**
 
 * (Internal Service Api)
-* path: /account/renew
+* path: /v1/account/renew
 * param:
 
 ```json
@@ -2238,7 +2238,7 @@ curl -X POST http://127.0.0.1:8119/v1/account/renew -d'{"chain_type":1,"address"
 
 **Request**
 
-* path: /node/ckb/rpc
+* path: /v1/node/ckb/rpc
 * param:
 
 ```json
@@ -2304,7 +2304,7 @@ curl -X POST http://127.0.0.1:8120/v1/node/ckb/rpc -d'{"jsonrpc":"2.0","id":2976
 
 **Request**
 
-* path: /account/auction/bid
+* path: /v1/account/auction/bid
   * bid a account during dutch auction period
 * param:
 
