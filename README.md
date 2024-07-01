@@ -94,7 +94,7 @@ Pay for the order                      |                       |                
 ```
 
 ### Set Reverse Record
-`Das-register` will use user's das balance to set reverse record via API [reverse declare](https://github.com/dotbitHQ/das-register/blob/main/API.md#reverse-declare)
+Reverse APIs see  [reverse svr](https://github.com/dotbitHQ/reverse-svr/blob/main/API.md)
 
 ### Others
 More APIs see [API.md](https://github.com/dotbitHQ/das-register/blob/main/API.md)
