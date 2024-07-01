@@ -82,7 +82,7 @@ docker run -dp 8119-8120:8119-8120 -v $PWD/config/config.yaml:/app/config/config
         |                              |                       |                    |
 Pay for the order                      |                       |                    |
       on chain                         |                       |                    |
-        |                              |            Update the order status   parse block data
+        |                              |            Update the order status   Parse block data
         |                              |                       |                    |
         |                              |                       |                    |
         |                  Continue the registration           |                    |
