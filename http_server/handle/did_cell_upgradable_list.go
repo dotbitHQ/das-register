@@ -3,6 +3,7 @@ package handle
 import (
 	"das_register_server/config"
 	"das_register_server/tables"
+	"das_register_server/txtool"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -30,6 +31,7 @@ type UpgradableAccount struct {
 	Account       string        `json:"account"`
 	ExpiredAt     uint64        `json:"expired_at"`
 	UpgradeStatus UpgradeStatus `json:"upgrade_status"`
+	UpgradeHash   string        `json:"upgrade_hash"`
 }
 
 type UpgradeStatus int
@@ -127,6 +129,7 @@ func (h *HttpHandle) doDidCellUpgradableList(req *ReqDidCellUpgradableList, apiR
 		return fmt.Errorf("GetUpgradeOrder err: %s", err.Error())
 	}
 	var upgradingMap = make(map[string]UpgradeStatus)
+	var upgradingTxMap = make(map[string]string)
 	for _, v := range orders {
 		switch v.PayStatus {
 		case tables.TxStatusDefault:
@@ -134,11 +137,31 @@ func (h *HttpHandle) doDidCellUpgradableList(req *ReqDidCellUpgradableList, apiR
 		case tables.TxStatusSending, tables.TxStatusOk:
 			upgradingMap[v.AccountId] = UpgradeStatusIng
 		}
+
+		didCellTxStr, err := h.rc.GetCache(v.OrderId)
+		if err != nil {
+			log.Error("GetCache err: %s", err.Error())
+			continue
+		}
+		var txCache txtool.DidCellTxCache
+		if err := json.Unmarshal([]byte(didCellTxStr), &txCache); err != nil {
+			log.Error("txtool.DidCellTxCache json.Unmarshal err: %s", err.Error())
+			continue
+		}
+		txHash, err := txCache.BuilderTx.Transaction.ComputeHash()
+		if err != nil {
+			log.Error("txCache.BuilderTx.Transaction.ComputeHash err: %s", err.Error())
+			continue
+		}
+		upgradingTxMap[v.AccountId] = txHash.Hex()
 	}
 
 	for i, v := range resp.List {
 		if s, ok := upgradingMap[v.AccountId]; ok {
 			resp.List[i].UpgradeStatus = s
+		}
+		if txHash, ok := upgradingTxMap[v.AccountId]; ok {
+			resp.List[i].UpgradeHash = txHash
 		}
 	}
 
