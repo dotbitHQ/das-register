@@ -55,6 +55,38 @@ func (d *DbDao) GetDidAccountList(args, keyword string, limit, offset int) (list
 	return
 }
 
+func (d *DbDao) GetDidCellRecyclableList(args, keyword string, limit, offset int) (list []tables.TableDidCellInfo, err error) {
+	expiredAt := tables.GetDidCellRecycleExpiredAt()
+
+	db := d.parserDb.Where("args=? AND expired_at<=?", args, expiredAt)
+	if keyword != "" {
+		db = db.Where("account LIKE ?", "%"+keyword+"%")
+	}
+	err = db.Limit(limit).Offset(offset).Find(&list).Error
+	return
+}
+
+func (d *DbDao) GetDidCellRecyclableListTotal(args, keyword string) (count int64, err error) {
+	expiredAt := tables.GetDidCellRecycleExpiredAt()
+
+	db := d.parserDb.Model(tables.TableDidCellInfo{}).
+		Where("args=? AND expired_at<=?", args, expiredAt)
+	if keyword != "" {
+		db = db.Where("account LIKE ?", "%"+keyword+"%")
+	}
+	err = db.Count(&count).Error
+	return
+}
+
+func (d *DbDao) GetRecyclingByAddr(chainType common.ChainType, address string, accounts []string) (list []tables.TableRegisterPendingInfo, err error) {
+	if len(accounts) == 0 {
+		return
+	}
+	err = d.db.Where("chain_type=? AND address=? AND action=? AND account IN(?) AND status!=?",
+		chainType, address, common.DidCellActionRecycle, accounts, tables.StatusRejected).Find(&list).Error
+	return
+}
+
 func (d *DbDao) GetDidAccountListTotal(args, keyword string) (count int64, err error) {
 	expiredAt := tables.GetDidCellRecycleExpiredAt()
 
