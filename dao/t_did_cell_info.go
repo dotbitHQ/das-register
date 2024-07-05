@@ -55,8 +55,8 @@ func (d *DbDao) GetDidAccountList(args, keyword string, limit, offset int) (list
 	return
 }
 
-func (d *DbDao) GetDidCellRecyclableList(args, keyword string, limit, offset int) (list []tables.TableDidCellInfo, err error) {
-	expiredAt := tables.GetDidCellRecycleExpiredAt()
+func (d *DbDao) GetDidCellRecyclableList(args, keyword string, limit, offset int, expiredAt uint64) (list []tables.TableDidCellInfo, err error) {
+	//expiredAt := tables.GetDidCellRecycleExpiredAt()
 
 	db := d.parserDb.Where("args=? AND expired_at<=?", args, expiredAt)
 	if keyword != "" {
@@ -66,8 +66,8 @@ func (d *DbDao) GetDidCellRecyclableList(args, keyword string, limit, offset int
 	return
 }
 
-func (d *DbDao) GetDidCellRecyclableListTotal(args, keyword string) (count int64, err error) {
-	expiredAt := tables.GetDidCellRecycleExpiredAt()
+func (d *DbDao) GetDidCellRecyclableListTotal(args, keyword string, expiredAt uint64) (count int64, err error) {
+	//expiredAt := tables.GetDidCellRecycleExpiredAt()
 
 	db := d.parserDb.Model(tables.TableDidCellInfo{}).
 		Where("args=? AND expired_at<=?", args, expiredAt)
