@@ -2,7 +2,6 @@ package handle
 
 import (
 	"das_register_server/config"
-	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -90,11 +89,11 @@ func (h *HttpHandle) doDidCellRecycle(req *ReqDidCellRecycle, apiResp *http_api.
 		return nil
 	}
 
-	expiredAt := tables.GetDidCellRecycleExpiredAt()
-	if didAccount.ExpiredAt > expiredAt {
-		apiResp.ApiRespErr(http_api.ApiCodeNotYetDueForRecycle, "not yet due for recycle")
-		return nil
-	}
+	//expiredAt := tables.GetDidCellRecycleExpiredAt()
+	//if didAccount.ExpiredAt > expiredAt {
+	//	apiResp.ApiRespErr(http_api.ApiCodeNotYetDueForRecycle, "not yet due for recycle")
+	//	return nil
+	//}
 
 	didCellOutpoint := common.String2OutPointStruct(didAccount.Outpoint)
 	txParams, err := txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
