@@ -2,7 +2,6 @@ package handle
 
 import (
 	"das_register_server/config"
-	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -90,7 +89,26 @@ func (h *HttpHandle) doDidCellRecycle(req *ReqDidCellRecycle, apiResp *http_api.
 		return nil
 	}
 
-	expiredAt := tables.GetDidCellRecycleExpiredAt()
+	// expireAt
+	timeCell, err := h.dasCore.GetTimeCell()
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "failed to get time cell")
+		return fmt.Errorf("GetTimeCell err: %s", err.Error())
+	}
+	builderConfigCell, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsAccount)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "failed to get config cell")
+		return fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+	}
+	expirationGracePeriod, err := builderConfigCell.ExpirationGracePeriod()
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "ExpirationGracePeriod err")
+		return fmt.Errorf("ExpirationGracePeriod err: %s", err.Error())
+	}
+	expiredAt := uint64(timeCell.Timestamp()) - uint64(expirationGracePeriod)
+	log.Info("doDidCellRecycle:", expiredAt, timeCell.Timestamp(), expirationGracePeriod)
+
+	//expiredAt := tables.GetDidCellRecycleExpiredAt()
 	if didAccount.ExpiredAt > expiredAt {
 		apiResp.ApiRespErr(http_api.ApiCodeNotYetDueForRecycle, "not yet due for recycle")
 		return nil

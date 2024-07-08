@@ -93,9 +93,28 @@ func (h *HttpHandle) doDidCellRecyclableList(req *ReqDidCellRecyclableList, apiR
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
 		return nil
 	}
+	// expireAt
+	timeCell, err := h.dasCore.GetTimeCell()
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "failed to get time cell")
+		return fmt.Errorf("GetTimeCell err: %s", err.Error())
+	}
+	builderConfigCell, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsAccount)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "failed to get config cell")
+		return fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+	}
+	expirationGracePeriod, err := builderConfigCell.ExpirationGracePeriod()
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "ExpirationGracePeriod err")
+		return fmt.Errorf("ExpirationGracePeriod err: %s", err.Error())
+	}
+	expiredAt := uint64(timeCell.Timestamp()) - uint64(expirationGracePeriod)
+	log.Info("doDidCellRecyclableList:", expiredAt, timeCell.Timestamp(), expirationGracePeriod)
 
+	//
 	args := common.Bytes2Hex(addrHex.ParsedAddress.Script.Args)
-	list, err := h.dbDao.GetDidCellRecyclableList(args, req.Keyword, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.GetDidCellRecyclableList(args, req.Keyword, req.GetLimit(), req.GetOffset(), expiredAt)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get did account list")
 		return fmt.Errorf("GetDidCellRecyclableList err: %s", err.Error())
@@ -110,7 +129,7 @@ func (h *HttpHandle) doDidCellRecyclableList(req *ReqDidCellRecyclableList, apiR
 		accounts = append(accounts, v.Account)
 	}
 
-	count, err := h.dbDao.GetDidCellRecyclableListTotal(args, req.Keyword)
+	count, err := h.dbDao.GetDidCellRecyclableListTotal(args, req.Keyword, expiredAt)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get did account count")
 		return fmt.Errorf("GetDidAccountListTotal err: %s", err.Error())
