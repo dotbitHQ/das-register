@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/http_server/compatible"
 	"encoding/json"
@@ -47,7 +48,7 @@ func (h *HttpHandle) RpcBalanceWithdraw(p json.RawMessage, apiResp *api_code.Api
 		return
 	}
 
-	if err = h.doBalanceWithdraw(&req[0], apiResp); err != nil {
+	if err = h.doBalanceWithdraw(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doBalanceWithdraw err:", err.Error())
 	}
 }
@@ -62,21 +63,21 @@ func (h *HttpHandle) BalanceWithdraw(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doBalanceWithdraw(&req, &apiResp); err != nil {
-		log.Error("doBalanceWithdraw err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doBalanceWithdraw(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doBalanceWithdraw err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doBalanceWithdraw(ctx context.Context, req *ReqBalanceWithdraw, apiResp *api_code.ApiResp) error {
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
@@ -201,7 +202,7 @@ func (h *HttpHandle) doBalanceWithdraw(req *ReqBalanceWithdraw, apiResp *api_cod
 		return fmt.Errorf("buildBalanceWithdrawTx err: %s", err.Error())
 	}
 
-	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err ")
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

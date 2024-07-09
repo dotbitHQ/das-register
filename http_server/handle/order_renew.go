@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/http_server/compatible"
 	"das_register_server/internal"
@@ -58,7 +59,7 @@ func (h *HttpHandle) RpcOrderRenew(p json.RawMessage, apiResp *api_code.ApiResp)
 		return
 	}
 
-	if err = h.doOrderRenew(&req[0], apiResp); err != nil {
+	if err = h.doOrderRenew(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doOrderRenew err:", err.Error())
 	}
 }
@@ -73,21 +74,21 @@ func (h *HttpHandle) OrderRenew(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doOrderRenew(&req, &apiResp); err != nil {
-		log.Error("doOrderRenew err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doOrderRenew(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doOrderRenew err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doOrderRenew(ctx context.Context, req *ReqOrderRenew, apiResp *api_code.ApiResp) error {
 	var resp RespOrderRenew
 
 	if req.Account == "" || !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
@@ -124,7 +125,7 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 		return nil
 	}
 
-	h.doRenewOrder(acc, req, apiResp, &resp)
+	h.doRenewOrder(ctx, acc, req, apiResp, &resp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -135,7 +136,7 @@ func (h *HttpHandle) doOrderRenew(req *ReqOrderRenew, apiResp *api_code.ApiResp)
 	return nil
 }
 
-func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRenew, apiResp *api_code.ApiResp, resp *RespOrderRenew) {
+func (h *HttpHandle) doRenewOrder(ctx context.Context, acc *tables.TableAccountInfo, req *ReqOrderRenew, apiResp *api_code.ApiResp, resp *RespOrderRenew) {
 	if acc == nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "acc is nil")
 		return
@@ -153,31 +154,31 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 	accOutpoint := common.String2OutPointStruct(acc.Outpoint)
 	accTx, err := h.dasCore.Client().GetTransaction(h.ctx, accOutpoint.TxHash)
 	if err != nil {
-		log.Error("GetTransaction err: ", err.Error())
+		log.Error(ctx, "GetTransaction err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 		return
 	}
 	mapAcc, err := witness.AccountIdCellDataBuilderFromTx(accTx.Transaction, common.DataTypeNew)
 	if err != nil {
-		log.Error("GetTransaction err: ", err.Error())
+		log.Error(ctx, "GetTransaction err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 		return
 	}
 	accBuilder, ok := mapAcc[acc.AccountId]
 	if !ok {
-		log.Error("mapAcc is nil")
+		log.Error(ctx, "mapAcc is nil")
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "mapAcc is nil")
 		return
 	}
 
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(uint8(accBuilder.AccountChars.Len()), common.Bytes2Hex(args), req.Account, "", req.RenewYears, true, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, uint8(accBuilder.AccountChars.Len()), common.Bytes2Hex(args), req.Account, "", req.RenewYears, true, req.PayTokenId)
 	if err != nil {
-		log.Error("getOrderAmount err: ", err.Error())
+		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
 	if amountTotalUSD.Cmp(decimal.Zero) != 1 || amountTotalCKB.Cmp(decimal.Zero) != 1 || amountTotalPayToken.Cmp(decimal.Zero) != 1 {
-		log.Error("order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
+		log.Error(ctx, "order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
@@ -190,14 +191,14 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 	}
 	contentDataStr, err := json.Marshal(&orderContent)
 	if err != nil {
-		log.Error("json marshal err:", err.Error())
+		log.Error(ctx, "json marshal err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "json marshal fail")
 		return
 	}
 	if req.PayTokenId == tables.TokenIdDas {
 		dasLock, _, err := h.dasCore.Daf().HexToScript(addrHex)
 		if err != nil {
-			log.Error("HexToArgs err: ", err.Error())
+			log.Error(ctx, "HexToArgs err: ", err.Error())
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 			return
 		}
@@ -339,7 +340,7 @@ func (h *HttpHandle) doRenewOrder(acc *tables.TableAccountInfo, req *ReqOrderRen
 	}
 
 	if err := h.dbDao.CreateOrderWithPayment(order, paymentInfo); err != nil {
-		log.Error("CreateOrder err:", err.Error())
+		log.Error(ctx, "CreateOrder err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
 		return
 	}

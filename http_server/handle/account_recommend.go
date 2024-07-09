@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -32,20 +33,20 @@ func (h *HttpHandle) AccountRecommend(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doAccountRecommend(&req, &apiResp); err != nil {
-		log.Error("doAccountRecommend err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doAccountRecommend(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doAccountRecommend err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_api.ApiResp) error {
+func (h *HttpHandle) doAccountRecommend(ctx context.Context, req *ReqAccountRecommend, apiResp *http_api.ApiResp) error {
 	var resp RepAccountRecommend
 	//check top level acc
 	acc := req.Account
@@ -63,7 +64,7 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 		apiResp.ApiRespErr(http_api.ApiCodeError500, fmt.Sprintf("separateToken err"))
 		return err
 	}
-	log.Info("tokens: ", tokens)
+	log.Info(ctx, "tokens: ", tokens)
 	//token recommend
 	recommendTokens, err := h.tokenRecommend(tokens)
 	if err != nil {
@@ -71,7 +72,7 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 		apiResp.ApiRespErr(http_api.ApiCodeError500, fmt.Sprintf("tokenRecommend err"))
 		return err
 	}
-	log.Info("recommendTokens: ", recommendTokens)
+	log.Info(ctx, "recommendTokens: ", recommendTokens)
 	//Combine recommend
 	length := len(tokens)
 	recommendAcc := make([]string, 0)
@@ -85,9 +86,9 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 			tempToken[i] = v
 			newWord := strings.ToLower(strings.Join(tempToken, separateType))
 			fmt.Println("newword: ", newWord)
-			available, err := h.checkRecommendAvailable(acc, newWord)
+			available, err := h.checkRecommendAvailable(ctx, acc, newWord)
 			if err != nil {
-				log.Errorf("checkRecommendAvailable err: %s", err.Error())
+				log.Errorf("checkRecommendAvailable err: %s", err.Error(), ctx)
 				continue
 			}
 			if !available {
@@ -110,7 +111,7 @@ func (h *HttpHandle) doAccountRecommend(req *ReqAccountRecommend, apiResp *http_
 	return nil
 }
 
-func (h *HttpHandle) checkRecommendAvailable(acc, recommendAcc string) (available bool, err error) {
+func (h *HttpHandle) checkRecommendAvailable(ctx context.Context, acc, recommendAcc string) (available bool, err error) {
 	charSet, err := h.dasCore.GetAccountCharSetList(recommendAcc + common.DasAccountSuffix)
 	if err != nil {
 		err = fmt.Errorf("GetAccountCharSetList err: %s", err.Error())
@@ -128,7 +129,7 @@ func (h *HttpHandle) checkRecommendAvailable(acc, recommendAcc string) (availabl
 		AccountCharStr: charSet,
 	}
 	var tempRep http_api.ApiResp
-	_, status, _, _ := h.checkAccountBase(tempReq, &tempRep)
+	_, status, _, _ := h.checkAccountBase(ctx, tempReq, &tempRep)
 	if tempRep.ErrNo != http_api.ApiCodeSuccess {
 		return false, nil
 	}

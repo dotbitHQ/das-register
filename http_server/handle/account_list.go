@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/http_server/compatible"
 	"das_register_server/tables"
 	"encoding/json"
@@ -46,7 +47,7 @@ func (h *HttpHandle) RpcAccountList(p json.RawMessage, apiResp *api_code.ApiResp
 		return
 	}
 
-	if err = h.doAccountList(&req[0], apiResp); err != nil {
+	if err = h.doAccountList(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doAccountList err:", err.Error())
 	}
 }
@@ -68,14 +69,14 @@ func (h *HttpHandle) AccountList(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
 
-	if err = h.doAccountList(&req, &apiResp); err != nil {
+	if err = h.doAccountList(ctx.Request.Context(), &req, &apiResp); err != nil {
 		log.Error("doAccountList err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doAccountList(req *ReqAccountList, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doAccountList(ctx context.Context, req *ReqAccountList, apiResp *api_code.ApiResp) error {
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())

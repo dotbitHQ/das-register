@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/http_server/compatible"
 	"das_register_server/tables"
 	"encoding/json"
@@ -41,7 +42,7 @@ func (h *HttpHandle) RpcTransactionStatus(p json.RawMessage, apiResp *api_code.A
 		return
 	}
 
-	if err = h.doTransactionStatus(&req[0], apiResp); err != nil {
+	if err = h.doTransactionStatus(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doTransactionStatus err:", err.Error())
 	}
 }
@@ -63,14 +64,14 @@ func (h *HttpHandle) TransactionStatus(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
 
-	if err = h.doTransactionStatus(&req, &apiResp); err != nil {
+	if err = h.doTransactionStatus(ctx.Request.Context(), &req, &apiResp); err != nil {
 		log.Error("doTransactionStatus err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doTransactionStatus(req *ReqTransactionStatus, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doTransactionStatus(ctx context.Context, req *ReqTransactionStatus, apiResp *api_code.ApiResp) error {
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")

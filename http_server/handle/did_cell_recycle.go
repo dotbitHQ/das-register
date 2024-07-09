@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/tables"
 	"encoding/json"
@@ -37,7 +38,7 @@ func (h *HttpHandle) RpcDidCellRecycle(p json.RawMessage, apiResp *http_api.ApiR
 		return
 	}
 
-	if err = h.doDidCellRecycle(&req[0], apiResp); err != nil {
+	if err = h.doDidCellRecycle(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doDidCellRecycle err:", err.Error())
 	}
 }
@@ -52,21 +53,21 @@ func (h *HttpHandle) DidCellRecycle(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doDidCellRecycle(&req, &apiResp); err != nil {
-		log.Error("doDidCellRecycle err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doDidCellRecycle(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doDidCellRecycle err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doDidCellRecycle(req *ReqDidCellRecycle, apiResp *http_api.ApiResp) error {
+func (h *HttpHandle) doDidCellRecycle(ctx context.Context, req *ReqDidCellRecycle, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellRecycle
 
 	req.Account = strings.ToLower(req.Account)
@@ -114,7 +115,7 @@ func (h *HttpHandle) doDidCellRecycle(req *ReqDidCellRecycle, apiResp *http_api.
 		Address:   addrHex.AddressHex,
 		Account:   req.Account,
 	}
-	if didCellTx, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if didCellTx, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		doBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

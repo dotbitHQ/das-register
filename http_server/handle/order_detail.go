@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/http_server/compatible"
 	"das_register_server/tables"
@@ -58,7 +59,7 @@ func (h *HttpHandle) RpcOrderDetail(p json.RawMessage, apiResp *api_code.ApiResp
 		return
 	}
 
-	if err = h.doOrderDetail(&req[0], apiResp); err != nil {
+	if err = h.doOrderDetail(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doOrderDetail err:", err.Error())
 	}
 }
@@ -73,21 +74,21 @@ func (h *HttpHandle) OrderDetail(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doOrderDetail(&req, &apiResp); err != nil {
-		log.Error("doOrderDetail err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doOrderDetail(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doOrderDetail err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doOrderDetail(req *ReqOrderDetail, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doOrderDetail(ctx context.Context, req *ReqOrderDetail, apiResp *api_code.ApiResp) error {
 	var resp RespOrderDetail
 	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")

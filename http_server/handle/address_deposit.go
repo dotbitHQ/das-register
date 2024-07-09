@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -31,21 +32,21 @@ func (h *HttpHandle) AddressDeposit(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doAddressDeposit(&req, &apiResp); err != nil {
-		log.Error("doAddressDeposit err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doAddressDeposit(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doAddressDeposit err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doAddressDeposit(req *ReqAddressDeposit, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doAddressDeposit(ctx context.Context, req *ReqAddressDeposit, apiResp *api_code.ApiResp) error {
 	var resp RespAddressDeposit
 
 	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
@@ -64,7 +65,7 @@ func (h *HttpHandle) doAddressDeposit(req *ReqAddressDeposit, apiResp *api_code.
 		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 		return fmt.Errorf("HexToScript err: %s", err.Error())
 	}
-	log.Info("doAddressDeposit:", req.Address, common.Bytes2Hex(lockScript.Args))
+	log.Info(ctx, "doAddressDeposit:", req.Address, common.Bytes2Hex(lockScript.Args))
 
 	if config.Cfg.Server.Net == common.DasNetTypeMainNet {
 		addr, err := address.ConvertScriptToAddress(address.Mainnet, lockScript)

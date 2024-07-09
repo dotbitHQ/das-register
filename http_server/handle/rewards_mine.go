@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/http_server/compatible"
 	"das_register_server/tables"
 	"encoding/json"
@@ -46,7 +47,7 @@ func (h *HttpHandle) RpcRewardsMine(p json.RawMessage, apiResp *api_code.ApiResp
 		return
 	}
 
-	if err = h.doRewardsMine(&req[0], apiResp); err != nil {
+	if err = h.doRewardsMine(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doVersion err:", err.Error())
 	}
 }
@@ -61,21 +62,21 @@ func (h *HttpHandle) RewardsMine(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doRewardsMine(&req, &apiResp); err != nil {
-		log.Error("doRewardsMine err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doRewardsMine(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doRewardsMine err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doRewardsMine(req *ReqRewardsMine, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doRewardsMine(ctx context.Context, req *ReqRewardsMine, apiResp *api_code.ApiResp) error {
 	var resp RespRewardsMine
 	resp.List = make([]RewardsData, 0)
 

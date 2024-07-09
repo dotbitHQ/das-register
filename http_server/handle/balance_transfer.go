@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/http_server/compatible"
 	"das_register_server/tables"
 	"encoding/json"
@@ -43,7 +44,7 @@ func (h *HttpHandle) RpcBalanceTransfer(p json.RawMessage, apiResp *api_code.Api
 		return
 	}
 
-	if err = h.doBalanceTransfer(&req[0], apiResp); err != nil {
+	if err = h.doBalanceTransfer(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doBalanceTransfer err:", err.Error())
 	}
 }
@@ -58,21 +59,21 @@ func (h *HttpHandle) BalanceTransfer(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doBalanceTransfer(&req, &apiResp); err != nil {
-		log.Error("doBalanceTransfer err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doBalanceTransfer(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doBalanceTransfer err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doBalanceTransfer(ctx context.Context, req *ReqBalanceTransfer, apiResp *api_code.ApiResp) error {
 	var resp RespBalanceTransfer
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
@@ -170,7 +171,7 @@ func (h *HttpHandle) doBalanceTransfer(req *ReqBalanceTransfer, apiResp *api_cod
 		return fmt.Errorf("buildBalanceTransferTx err: %s", err.Error())
 	}
 
-	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err ")
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"encoding/json"
 	"fmt"
@@ -51,7 +52,7 @@ func (h *HttpHandle) RpcDidCellRecyclableList(p json.RawMessage, apiResp *http_a
 		return
 	}
 
-	if err = h.doDidCellRecyclableList(&req[0], apiResp); err != nil {
+	if err = h.doDidCellRecyclableList(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doDidCellRecyclableList err:", err.Error())
 	}
 }
@@ -66,21 +67,21 @@ func (h *HttpHandle) DidCellRecyclableList(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doDidCellRecyclableList(&req, &apiResp); err != nil {
-		log.Error("doDidCellRecyclableList err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doDidCellRecyclableList(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doDidCellRecyclableList err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doDidCellRecyclableList(req *ReqDidCellRecyclableList, apiResp *http_api.ApiResp) error {
+func (h *HttpHandle) doDidCellRecyclableList(ctx context.Context, req *ReqDidCellRecyclableList, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellRecyclableList
 	resp.List = make([]DidCellRecyclable, 0)
 

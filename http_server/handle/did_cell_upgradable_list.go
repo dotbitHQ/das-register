@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/tables"
 	"das_register_server/txtool"
@@ -55,7 +56,7 @@ func (h *HttpHandle) RpcDidCellUpgradableList(p json.RawMessage, apiResp *http_a
 		return
 	}
 
-	if err = h.doDidCellUpgradableList(&req[0], apiResp); err != nil {
+	if err = h.doDidCellUpgradableList(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doDidCellUpgradableList err:", err.Error())
 	}
 }
@@ -70,21 +71,21 @@ func (h *HttpHandle) DidCellUpgradableList(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doDidCellUpgradableList(&req, &apiResp); err != nil {
-		log.Error("doDidCellUpgradableList err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doDidCellUpgradableList(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doDidCellUpgradableList err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doDidCellUpgradableList(req *ReqDidCellUpgradableList, apiResp *http_api.ApiResp) error {
+func (h *HttpHandle) doDidCellUpgradableList(ctx context.Context, req *ReqDidCellUpgradableList, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellUpgradableList
 	resp.List = make([]UpgradableAccount, 0)
 

@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/cache"
 	"das_register_server/http_server/compatible"
 	"das_register_server/tables"
@@ -43,7 +44,7 @@ func (h *HttpHandle) RpcAccountMine(p json.RawMessage, apiResp *api_code.ApiResp
 		return
 	}
 
-	if err = h.doAccountMine(&req[0], apiResp); err != nil {
+	if err = h.doAccountMine(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doAccountMine err:", err.Error())
 	}
 }
@@ -65,14 +66,14 @@ func (h *HttpHandle) AccountMine(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
 
-	if err = h.doAccountMine(&req, &apiResp); err != nil {
+	if err = h.doAccountMine(ctx.Request.Context(), &req, &apiResp); err != nil {
 		log.Error("doAccountMine err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doAccountMine(ctx context.Context, req *ReqAccountMine, apiResp *api_code.ApiResp) error {
 	var resp RespAccountMine
 	resp.List = make([]AccountData, 0)
 
@@ -86,7 +87,7 @@ func (h *HttpHandle) doAccountMine(req *ReqAccountMine, apiResp *api_code.ApiRes
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if req.Keyword != "" {
-		if err := h.rc.LockWithRedis(req.ChainType, req.Address, action, time.Millisecond*600); err != nil {
+		if err := h.rc.LockWithRedis(ctx, req.ChainType, req.Address, action, time.Millisecond*600); err != nil {
 			if err == cache.ErrDistributedLockPreemption {
 				apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "The operation is too frequent")
 				return nil

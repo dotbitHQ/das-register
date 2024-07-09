@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -23,7 +24,7 @@ type RespAuctionPrice struct {
 	PremiumPrice decimal.Decimal `json:"premium_price"`
 }
 
-//查询价格
+// 查询价格
 func (h *HttpHandle) GetAccountAuctionPrice(ctx *gin.Context) {
 	var (
 		funcName = "GetAccountAuctionPrice"
@@ -34,19 +35,19 @@ func (h *HttpHandle) GetAccountAuctionPrice(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doGetAccountAuctionPrice(&req, &apiResp); err != nil {
-		log.Error("doGetAccountAuctionPrice err:", err.Error(), funcName, clientIp)
+	if err = h.doGetAccountAuctionPrice(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doGetAccountAuctionPrice err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
-func (h *HttpHandle) doGetAccountAuctionPrice(req *ReqAuctionPrice, apiResp *http_api.ApiResp) (err error) {
+func (h *HttpHandle) doGetAccountAuctionPrice(ctx context.Context, req *ReqAuctionPrice, apiResp *http_api.ApiResp) (err error) {
 	var resp RespAuctionPrice
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
@@ -65,7 +66,7 @@ func (h *HttpHandle) doGetAccountAuctionPrice(req *ReqAuctionPrice, apiResp *htt
 	//exp + 90 + 27 +3
 	//now > exp+117 exp< now - 117
 	//now< exp+90 exp>now -90
-	if status, _, err := h.checkDutchAuction(acc.ExpiredAt, uint64(nowTime)); err != nil {
+	if status, _, err := h.checkDutchAuction(ctx, acc.ExpiredAt, uint64(nowTime)); err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "checkDutchAuction err")
 		return fmt.Errorf("checkDutchAuction err: %s", err.Error())
 	} else if status != tables.SearchStatusOnDutchAuction {
@@ -82,7 +83,7 @@ func (h *HttpHandle) doGetAccountAuctionPrice(req *ReqAuctionPrice, apiResp *htt
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
-	baseAmount, accountPrice, err := h.getAccountPrice(uint8(accLen), "", req.Account, false)
+	baseAmount, accountPrice, err := h.getAccountPrice(ctx, uint8(accLen), "", req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())

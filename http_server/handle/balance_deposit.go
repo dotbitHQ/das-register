@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/tables"
 	"encoding/json"
@@ -41,7 +42,7 @@ func (h *HttpHandle) RpcBalanceDeposit(p json.RawMessage, apiResp *api_code.ApiR
 		return
 	}
 
-	if err = h.doBalanceDeposit(&req[0], apiResp); err != nil {
+	if err = h.doBalanceDeposit(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doBalanceDeposit err:", err.Error())
 	}
 }
@@ -56,21 +57,21 @@ func (h *HttpHandle) BalanceDeposit(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doBalanceDeposit(&req, &apiResp); err != nil {
-		log.Error("doBalanceDeposit err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doBalanceDeposit(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doBalanceDeposit err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doBalanceDeposit(ctx context.Context, req *ReqBalanceDeposit, apiResp *api_code.ApiResp) error {
 	var resp RespBalanceDeposit
 
 	fromAddress, err := address.Parse(req.FromCkbAddress)
@@ -180,7 +181,7 @@ func (h *HttpHandle) doBalanceDeposit(req *ReqBalanceDeposit, apiResp *api_code.
 		return fmt.Errorf("txBuilder.GenerateDigestListFromTx err: %s", err.Error())
 	}
 
-	log.Info("buildTx:", txBuilder.TxString())
+	log.Info(ctx, "buildTx:", txBuilder.TxString())
 
 	var sic SignInfoCache
 	sic.Action = action

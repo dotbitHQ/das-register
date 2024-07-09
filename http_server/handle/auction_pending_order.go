@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -26,21 +27,21 @@ func (h *HttpHandle) GetPendingAuctionOrder(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
 
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doGetPendingAuctionOrder(&req, &apiResp); err != nil {
-		log.Error("doGetPendingAuctionOrder err:", err.Error(), funcName, clientIp)
+	if err = h.doGetPendingAuctionOrder(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doGetPendingAuctionOrder err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doGetPendingAuctionOrder(req *ReqGetPendingAuctionOrder, apiResp *http_api.ApiResp) (err error) {
+func (h *HttpHandle) doGetPendingAuctionOrder(ctx context.Context, req *ReqGetPendingAuctionOrder, apiResp *http_api.ApiResp) (err error) {
 	resp := make([]RepReqGetAuctionOrder, 0)
 	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {

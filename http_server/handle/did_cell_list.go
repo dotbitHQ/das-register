@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"encoding/json"
 	"fmt"
@@ -42,7 +43,7 @@ func (h *HttpHandle) RpcDidCellList(p json.RawMessage, apiResp *http_api.ApiResp
 		return
 	}
 
-	if err = h.doDidCellList(&req[0], apiResp); err != nil {
+	if err = h.doDidCellList(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doDidCellList err:", err.Error())
 	}
 }
@@ -57,21 +58,21 @@ func (h *HttpHandle) DidCellList(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doDidCellList(&req, &apiResp); err != nil {
-		log.Error("doDidCellList err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doDidCellList(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doDidCellList err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doDidCellList(req *ReqDidCellList, apiResp *http_api.ApiResp) error {
+func (h *HttpHandle) doDidCellList(ctx context.Context, req *ReqDidCellList, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellList
 	resp.List = make([]DidAccount, 0)
 

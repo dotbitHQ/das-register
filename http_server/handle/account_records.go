@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
@@ -41,7 +42,7 @@ func (h *HttpHandle) RpcAccountRecords(p json.RawMessage, apiResp *api_code.ApiR
 		return
 	}
 
-	if err = h.doAccountRecords(&req[0], apiResp); err != nil {
+	if err = h.doAccountRecords(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doVersion err:", err.Error())
 	}
 }
@@ -63,14 +64,14 @@ func (h *HttpHandle) AccountRecords(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
 
-	if err = h.doAccountRecords(&req, &apiResp); err != nil {
+	if err = h.doAccountRecords(ctx.Request.Context(), &req, &apiResp); err != nil {
 		log.Error("doAccountRecords err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doAccountRecords(req *ReqAccountRecords, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doAccountRecords(ctx context.Context, req *ReqAccountRecords, apiResp *api_code.ApiResp) error {
 	var resp RespAccountRecords
 	resp.Records = make([]RespAccountRecordsData, 0)
 

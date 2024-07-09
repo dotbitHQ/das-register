@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/http_server/compatible"
 	"encoding/json"
 	"fmt"
@@ -39,7 +40,7 @@ func (h *HttpHandle) RpcBalanceInfo(p json.RawMessage, apiResp *api_code.ApiResp
 		return
 	}
 
-	if err = h.doBalanceInfo(&req[0], apiResp); err != nil {
+	if err = h.doBalanceInfo(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doBalanceInfo err:", err.Error())
 	}
 }
@@ -61,14 +62,14 @@ func (h *HttpHandle) BalanceInfo(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
 
-	if err = h.doBalanceInfo(&req, &apiResp); err != nil {
+	if err = h.doBalanceInfo(ctx.Request.Context(), &req, &apiResp); err != nil {
 		log.Error("doBalanceInfo err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doBalanceInfo(req *ReqBalanceInfo, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doBalanceInfo(ctx context.Context, req *ReqBalanceInfo, apiResp *api_code.ApiResp) error {
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())

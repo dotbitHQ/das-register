@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"encoding/json"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
@@ -29,7 +30,7 @@ func (h *HttpHandle) RpcVersion(p json.RawMessage, apiResp *api_code.ApiResp) {
 		return
 	}
 
-	if err = h.doVersion(&req[0], apiResp); err != nil {
+	if err = h.doVersion(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doVersion err:", err.Error())
 	}
 }
@@ -49,20 +50,18 @@ func (h *HttpHandle) Version(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doVersion(&req, &apiResp); err != nil {
+	if err = h.doVersion(ctx.Request.Context(), &req, &apiResp); err != nil {
 		log.Error("doVersion err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doVersion(req *ReqVersion, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doVersion(ctx context.Context, req *ReqVersion, apiResp *api_code.ApiResp) error {
 	var resp RespVersion
-
 	resp.Version = time.Now().String()
-
 	apiResp.ApiRespOK(resp)
 	return nil
 }

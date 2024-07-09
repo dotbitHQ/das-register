@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -35,21 +36,21 @@ func (h *HttpHandle) GetAuctionOrderStatus(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
 
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doGetAuctionOrderStatus(&req, &apiResp); err != nil {
-		log.Error("doGetAuctionOrderStatus err:", err.Error(), funcName, clientIp)
+	if err = h.doGetAuctionOrderStatus(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doGetAuctionOrderStatus err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doGetAuctionOrderStatus(req *ReqAuctionOrderStatus, apiResp *http_api.ApiResp) (err error) {
+func (h *HttpHandle) doGetAuctionOrderStatus(ctx context.Context, req *ReqAuctionOrderStatus, apiResp *http_api.ApiResp) (err error) {
 	var resp RepReqGetAuctionOrder
 
 	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)

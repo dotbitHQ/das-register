@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/tables"
 	"das_register_server/timer"
 	"encoding/json"
@@ -27,7 +28,7 @@ type TokenData struct {
 }
 
 func (h *HttpHandle) RpcTokenList(p json.RawMessage, apiResp *api_code.ApiResp) {
-	if err := h.doTokenList(apiResp); err != nil {
+	if err := h.doTokenList(h.ctx, apiResp); err != nil {
 		log.Error("doTokenList err:", err.Error())
 	}
 }
@@ -41,16 +42,15 @@ func (h *HttpHandle) TokenList(ctx *gin.Context) {
 	)
 	log.Info("ApiReq:", funcName, clientIp, ctx)
 
-	if err = h.doTokenList(&apiResp); err != nil {
+	if err = h.doTokenList(ctx.Request.Context(), &apiResp); err != nil {
 		log.Error("doTokenList err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doTokenList(apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doTokenList(ctx context.Context, apiResp *api_code.ApiResp) error {
 	var resp RespTokenList
-
 	resp.TokenList = make([]TokenData, 0)
 	list := timer.GetTokenList()
 	for _, v := range list {

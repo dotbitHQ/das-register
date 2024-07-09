@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/http_server/compatible"
 	"encoding/json"
 	"fmt"
@@ -45,7 +46,7 @@ func (h *HttpHandle) RpcWithdrawList(p json.RawMessage, apiResp *api_code.ApiRes
 		return
 	}
 
-	if err = h.doWithdrawList(&req[0], apiResp); err != nil {
+	if err = h.doWithdrawList(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doWithdrawList err:", err.Error())
 	}
 }
@@ -60,21 +61,21 @@ func (h *HttpHandle) WithdrawList(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doWithdrawList(&req, &apiResp); err != nil {
-		log.Error("doWithdrawList err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doWithdrawList(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doWithdrawList err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doWithdrawList(req *ReqWithdrawList, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doWithdrawList(ctx context.Context, req *ReqWithdrawList, apiResp *api_code.ApiResp) error {
 	var resp RespWithdrawList
 	resp.List = make([]WithdrawListData, 0)
 

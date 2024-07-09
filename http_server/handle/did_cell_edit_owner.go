@@ -2,6 +2,7 @@ package handle
 
 import (
 	"bytes"
+	"context"
 	"das_register_server/config"
 	"das_register_server/internal"
 	"das_register_server/tables"
@@ -57,7 +58,7 @@ func (h *HttpHandle) RpcDidCellEditOwner(p json.RawMessage, apiResp *http_api.Ap
 		return
 	}
 
-	if err = h.doDidCellEditOwner(&req[0], apiResp); err != nil {
+	if err = h.doDidCellEditOwner(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doDidCellEditOwner err:", err.Error())
 	}
 }
@@ -72,21 +73,21 @@ func (h *HttpHandle) DidCellEditOwner(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doDidCellEditOwner(&req, &apiResp); err != nil {
-		log.Error("doDidCellEditOwner err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doDidCellEditOwner(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doDidCellEditOwner err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_api.ApiResp) error {
+func (h *HttpHandle) doDidCellEditOwner(ctx context.Context, req *ReqDidCellEditOwner, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellEditOwner
 
 	req.Account = strings.ToLower(req.Account)
@@ -215,7 +216,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 				apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to get did cell capacity")
 				return fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
 			}
-			log.Info("GetDidCellOccupiedCapacity:", editOwnerCapacity)
+			log.Info(ctx, "GetDidCellOccupiedCapacity:", editOwnerCapacity)
 			parseSvrAddr, err := address.Parse(config.Cfg.Server.PayServerAddress)
 			if err != nil {
 				apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
@@ -274,7 +275,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		if payToken.TokenId == tables.TokenIdCkb {
 			amountTotalPayToken, _ = decimal.NewFromString(fmt.Sprintf("%d", editOwnerCapacity))
 		}
-		log.Info("edit owner amountTotalPayToken:", amountTotalPayToken, editOwnerCapacity)
+		log.Info(ctx, "edit owner amountTotalPayToken:", amountTotalPayToken, editOwnerCapacity)
 
 		premiumPercentage := decimal.Zero
 		premiumBase := decimal.Zero
@@ -350,7 +351,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		resp.ClientSecret = res.ClientSecret
 
 		if err := h.dbDao.CreateOrderWithPayment(order, paymentInfo); err != nil {
-			log.Error("CreateOrder err:", err.Error())
+			log.Error(ctx, "CreateOrder err:", err.Error())
 			apiResp.ApiRespErr(http_api.ApiCodeError500, "create order fail")
 			return fmt.Errorf("CreateOrderWithPayment err: %s", err.Error())
 		}
@@ -364,7 +365,7 @@ func (h *HttpHandle) doDidCellEditOwner(req *ReqDidCellEditOwner, apiResp *http_
 		Account:    req.Account,
 		EvmChainId: req.GetChainId(config.Cfg.Server.Net),
 	}
-	if didCellTx, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if didCellTx, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		checkBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

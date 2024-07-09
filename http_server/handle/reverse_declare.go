@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/internal"
 	"das_register_server/tables"
@@ -45,7 +46,7 @@ func (h *HttpHandle) RpcReverseDeclare(p json.RawMessage, apiResp *api_code.ApiR
 		return
 	}
 
-	if err = h.doReverseDeclare(&req[0], apiResp); err != nil {
+	if err = h.doReverseDeclare(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doReverseDeclare err:", err.Error())
 	}
 }
@@ -60,21 +61,21 @@ func (h *HttpHandle) ReverseDeclare(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doReverseDeclare(&req, &apiResp); err != nil {
-		log.Error("doReverseDeclare err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doReverseDeclare(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doReverseDeclare err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doReverseDeclare(ctx context.Context, req *ReqReverseDeclare, apiResp *api_code.ApiResp) error {
 	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
 		ChainType:     req.ChainType,
 		AddressNormal: req.Address,
@@ -191,7 +192,7 @@ func (h *HttpHandle) doReverseDeclare(req *ReqReverseDeclare, apiResp *api_code.
 		return fmt.Errorf("buildDeclareReverseRecordTx err: %s", err.Error())
 	}
 
-	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {
@@ -289,7 +290,7 @@ func (h *HttpHandle) checkTxFee(txBuilder *txbuilder.DasTxBuilder, txParams *txb
 	return txBuilder, nil
 }
 
-func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (string, *SignInfo, error) {
+func (h *HttpHandle) buildTx(ctx context.Context, req *reqBuildTx, txParams *txbuilder.BuildTransactionParams) (string, *SignInfo, error) {
 	rebuildTxParams, err := txbuilder.DeepCopyTxParams(txParams)
 	if err != nil {
 		return "", nil, fmt.Errorf("deepCopy err %s", err.Error())
@@ -304,7 +305,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		txFeeRate = 1
 	}
 	txFee := txFeeRate*sizeInBlock + 1000
-	log.Info("buildTx tx fee:", req.Action, txFee, sizeInBlock, txFee)
+	log.Info(ctx, "buildTx tx fee:", req.Action, txFee, sizeInBlock, txFee)
 	var skipGroups []int
 	checkTxFeeParam := &txbuilder.CheckTxFeeParam{
 		TxParams:      rebuildTxParams,
@@ -318,20 +319,20 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	case common.DidCellActionRecycle:
 		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
-		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
+		log.Info(ctx, "buildTx user:", req.Action, sizeInBlock, changeCapacity)
 	case common.DasActionConfigSubAccountCustomScript:
 		skipGroups = []int{1}
 		changeCapacity := txBuilder.Transaction.Outputs[1].Capacity - txFee
 		txBuilder.Transaction.Outputs[1].Capacity = changeCapacity
-		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
+		log.Info(ctx, "buildTx user:", req.Action, sizeInBlock, changeCapacity)
 	case common.DasActionTransfer, common.DasActionWithdrawFromWallet, tables.DasActionTransferBalance:
 		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity - txFee
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
-		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
+		log.Info(ctx, "buildTx user:", req.Action, sizeInBlock, changeCapacity)
 	case common.DasActionEditRecords, common.DasActionEditManager, common.DasActionTransferAccount:
 		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
-		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
+		log.Info(ctx, "buildTx user:", req.Action, sizeInBlock, changeCapacity)
 
 	case common.DasActionBidExpiredAccountAuction:
 		accTx, err := h.dasCore.Client().GetTransaction(h.ctx, txParams.Inputs[0].PreviousOutput.TxHash)
@@ -350,11 +351,11 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 		}
 		changeCapacity := txBuilder.Transaction.Outputs[0].Capacity - txFee
 		txBuilder.Transaction.Outputs[0].Capacity = changeCapacity
-		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
+		log.Info(ctx, "buildTx user:", req.Action, sizeInBlock, changeCapacity)
 	case common.DasActionRenewAccount:
 		changeCapacity := txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity - txFee
 		txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity = changeCapacity
-		log.Info("buildTx user:", req.Action, sizeInBlock, changeCapacity)
+		log.Info(ctx, "buildTx user:", req.Action, sizeInBlock, changeCapacity)
 		skipGroups = []int{0}
 	}
 	//txBuilder, err = h.checkTxFee(txBuilder, rebuildTxParams, txFee)
@@ -374,7 +375,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 	}
 
 	txStr := txBuilder.TxString()
-	log.Info("buildTx:", txStr)
+	log.Info(ctx, "buildTx:", txStr)
 
 	var mmJsonObj *common.MMJsonObj
 	for _, v := range signList {
@@ -383,7 +384,7 @@ func (h *HttpHandle) buildTx(req *reqBuildTx, txParams *txbuilder.BuildTransacti
 			if req.Action != tables.DasActionTransferBalance && err != nil {
 				return "", nil, fmt.Errorf("txBuilder.BuildMMJsonObj err: %s", err.Error())
 			} else {
-				log.Info("BuildTx:", mmJsonObj.String())
+				log.Info(ctx, "BuildTx:", mmJsonObj.String())
 			}
 			break
 		}

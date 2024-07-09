@@ -2,6 +2,7 @@ package handle
 
 import (
 	"bytes"
+	"context"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"das_register_server/internal"
@@ -47,7 +48,7 @@ func (h *HttpHandle) RpcDidCellEditRecord(p json.RawMessage, apiResp *http_api.A
 		return
 	}
 
-	if err = h.doDidCellEditRecord(&req[0], apiResp); err != nil {
+	if err = h.doDidCellEditRecord(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doDidCellEditRecord err:", err.Error())
 	}
 }
@@ -62,21 +63,21 @@ func (h *HttpHandle) DidCellEditRecord(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doDidCellEditRecord(&req, &apiResp); err != nil {
-		log.Error("doDidCellEditRecord err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doDidCellEditRecord(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doDidCellEditRecord err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *http_api.ApiResp) error {
+func (h *HttpHandle) doDidCellEditRecord(ctx context.Context, req *ReqDidCellEditRecord, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellEditRecord
 
 	req.Account = strings.ToLower(req.Account)
@@ -146,7 +147,7 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
 		return fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
 	}
-	log.Info("ConfigCellRecordKeys:", builder.ConfigCellRecordKeys)
+	log.Info(ctx, "ConfigCellRecordKeys:", builder.ConfigCellRecordKeys)
 	var mapRecordKey = make(map[string]struct{})
 	for _, v := range builder.ConfigCellRecordKeys {
 		mapRecordKey[v] = struct{}{}
@@ -202,13 +203,13 @@ func (h *HttpHandle) doDidCellEditRecord(req *ReqDidCellEditRecord, apiResp *htt
 
 	records := witness.ConvertToCellRecords(editRecords)
 	recordsBys := records.AsSlice()
-	log.Info("doEditRecords recordsBys:", len(recordsBys))
+	log.Info(ctx, "doEditRecords recordsBys:", len(recordsBys))
 	if len(recordsBys) >= 5000 {
 		apiResp.ApiRespErr(http_api.ApiCodeTooManyRecords, "too many records")
 		return nil
 	}
 
-	if didCellTx, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if didCellTx, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		doBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

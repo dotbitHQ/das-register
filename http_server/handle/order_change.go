@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/http_server/compatible"
@@ -59,7 +60,7 @@ func (h *HttpHandle) RpcOrderChange(p json.RawMessage, apiResp *api_code.ApiResp
 		return
 	}
 
-	if err = h.doOrderChange(&req[0], apiResp); err != nil {
+	if err = h.doOrderChange(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doOrderChange err:", err.Error())
 	}
 }
@@ -74,21 +75,21 @@ func (h *HttpHandle) OrderChange(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doOrderChange(&req, &apiResp); err != nil {
-		log.Error("doOrderChange err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doOrderChange(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doOrderChange err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doOrderChange(ctx context.Context, req *ReqOrderChange, apiResp *api_code.ApiResp) error {
 	var resp RespOrderChange
 	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
@@ -134,13 +135,13 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 	}
 
 	// old Order
-	oldOrderContent := h.oldOrderCheck(req, apiResp)
+	oldOrderContent := h.oldOrderCheck(ctx, req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
 
 	// new Older
-	h.doNewOrder(req, apiResp, &resp, oldOrderContent)
+	h.doNewOrder(ctx, req, apiResp, &resp, oldOrderContent)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -151,7 +152,7 @@ func (h *HttpHandle) doOrderChange(req *ReqOrderChange, apiResp *api_code.ApiRes
 	return nil
 }
 
-func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, resp *RespOrderChange, oldOrderContent *tables.TableOrderContent) {
+func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiResp *api_code.ApiResp, resp *RespOrderChange, oldOrderContent *tables.TableOrderContent) {
 	// pay amount
 	hexAddress := core.DasAddressHex{
 		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
@@ -161,7 +162,7 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 	}
 	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
 	if err != nil {
-		log.Error("HexToArgs err:", err.Error())
+		log.Error(ctx, "HexToArgs err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 		return
 	}
@@ -169,14 +170,14 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 	if tables.EndWithDotBitChar(oldOrderContent.AccountCharStr) {
 		accLen -= 4
 	}
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
-		log.Error("getOrderAmount err: ", err.Error())
+		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
 	if amountTotalUSD.Cmp(decimal.Zero) != 1 || amountTotalCKB.Cmp(decimal.Zero) != 1 || amountTotalPayToken.Cmp(decimal.Zero) != 1 {
-		log.Error("order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
+		log.Error(ctx, "order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
@@ -196,7 +197,7 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 	}
 	contentDataStr, err := json.Marshal(&orderContent)
 	if err != nil {
-		log.Error("json marshal err:", err.Error())
+		log.Error(ctx, "json marshal err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "json marshal fail")
 		return
 	}
@@ -329,7 +330,7 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 	}
 
 	if err := h.dbDao.CreateOrderWithPayment(order, paymentInfo); err != nil {
-		log.Error("CreateOrder err:", err.Error())
+		log.Error(ctx, "CreateOrder err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
 		return
 	}
@@ -348,11 +349,11 @@ func (h *HttpHandle) doNewOrder(req *ReqOrderChange, apiResp *api_code.ApiResp, 
 	}()
 }
 
-func (h *HttpHandle) oldOrderCheck(req *ReqOrderChange, apiResp *api_code.ApiResp) (oldOrderContent *tables.TableOrderContent) {
+func (h *HttpHandle) oldOrderCheck(ctx context.Context, req *ReqOrderChange, apiResp *api_code.ApiResp) (oldOrderContent *tables.TableOrderContent) {
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	order, err := h.dbDao.GetLatestRegisterOrderBySelf(req.ChainType, req.Address, accountId)
 	if err != nil {
-		log.Error("GetLatestRegisterOrderBySelf err: ", err.Error())
+		log.Error(ctx, "GetLatestRegisterOrderBySelf err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
 		return
 	} else if order.Id == 0 {
@@ -368,7 +369,7 @@ func (h *HttpHandle) oldOrderCheck(req *ReqOrderChange, apiResp *api_code.ApiRes
 
 	var contentData tables.TableOrderContent
 	if err := json.Unmarshal([]byte(order.Content), &contentData); err != nil {
-		log.Error("json.Unmarshal err: ", err.Error())
+		log.Error(ctx, "json.Unmarshal err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "json.Unmarshal fail")
 		return
 	}

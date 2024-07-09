@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/http_server/compatible"
 	"das_register_server/internal"
@@ -46,7 +47,7 @@ func (h *HttpHandle) RpcAccountRegister(p json.RawMessage, apiResp *api_code.Api
 		return
 	}
 
-	if err = h.doAccountRegister(&req[0], apiResp); err != nil {
+	if err = h.doAccountRegister(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doAccountRegister err:", err.Error())
 	}
 }
@@ -61,21 +62,21 @@ func (h *HttpHandle) AccountRegister(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doAccountRegister(&req, &apiResp); err != nil {
-		log.Error("doAccountRegister err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doAccountRegister(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doAccountRegister err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doAccountRegister(ctx context.Context, req *ReqAccountRegister, apiResp *api_code.ApiResp) error {
 	var resp RespAccountRegister
 
 	if req.Account == "" {
@@ -91,7 +92,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 			return nil
 		}
 		req.AccountCharStr = accountChars
-		log.Info("AccountToAccountChars:", toolib.JsonString(req.AccountCharStr))
+		log.Info(ctx, "AccountToAccountChars:", toolib.JsonString(req.AccountCharStr))
 	}
 
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
@@ -131,7 +132,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	}
 
 	// base check
-	_, status, _, _ := h.checkAccountBase(&req.ReqAccountSearch, apiResp)
+	_, status, _, _ := h.checkAccountBase(ctx, &req.ReqAccountSearch, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -149,7 +150,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 		return nil
 	}
 	// self order
-	status, _ = h.checkAddressOrder(&req.ReqAccountSearch, apiResp, false)
+	status, _ = h.checkAddressOrder(ctx, &req.ReqAccountSearch, apiResp, false)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if status != tables.SearchStatusRegisterAble {
@@ -157,7 +158,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 		return nil
 	}
 	// registering check
-	status = h.checkOtherAddressOrder(&req.ReqAccountSearch, apiResp)
+	status = h.checkOtherAddressOrder(ctx, &req.ReqAccountSearch, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if status >= tables.SearchStatusRegistering {
@@ -166,7 +167,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	}
 
 	// create order
-	h.doInternalRegisterOrder(req, apiResp, &resp)
+	h.doInternalRegisterOrder(ctx, req, apiResp, &resp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -175,7 +176,7 @@ func (h *HttpHandle) doAccountRegister(req *ReqAccountRegister, apiResp *api_cod
 	return nil
 }
 
-func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *api_code.ApiResp, resp *RespAccountRegister) {
+func (h *HttpHandle) doInternalRegisterOrder(ctx context.Context, req *ReqAccountRegister, apiResp *api_code.ApiResp, resp *RespAccountRegister) {
 	payTokenId := tables.TokenIdCkbInternal
 	// pay amount
 	hexAddress := core.DasAddressHex{
@@ -186,7 +187,7 @@ func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *a
 	}
 	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
 	if err != nil {
-		log.Error("HexToArgs err:", err.Error())
+		log.Error(ctx, "HexToArgs err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 		return
 	}
@@ -194,14 +195,14 @@ func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *a
 	if tables.EndWithDotBitChar(req.ReqAccountSearch.AccountCharStr) {
 		accLen -= 4
 	}
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, payTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, payTokenId)
 	if err != nil {
-		log.Error("getOrderAmount err: ", err.Error())
+		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
 	if amountTotalUSD.Cmp(decimal.Zero) != 1 || amountTotalCKB.Cmp(decimal.Zero) != 1 || amountTotalPayToken.Cmp(decimal.Zero) != 1 {
-		log.Error("order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
+		log.Error(ctx, "order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
@@ -217,7 +218,7 @@ func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *a
 	}
 	contentDataStr, err := json.Marshal(&orderContent)
 	if err != nil {
-		log.Error("json marshal err:", err.Error())
+		log.Error(ctx, "json marshal err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "json marshal fail")
 		return
 	}
@@ -246,7 +247,7 @@ func (h *HttpHandle) doInternalRegisterOrder(req *ReqAccountRegister, apiResp *a
 	resp.OrderId = order.OrderId
 
 	if err := h.dbDao.CreateOrder(&order); err != nil {
-		log.Error("CreateOrder err:", err.Error())
+		log.Error(ctx, "CreateOrder err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
 		return
 	}

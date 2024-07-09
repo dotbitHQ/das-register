@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/tables"
 	"fmt"
@@ -44,20 +45,20 @@ func (h *HttpHandle) GetAccountAuctionInfo(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doGetAccountAuctionInfo(&req, &apiResp); err != nil {
-		log.Error("GetAccountAuctionInfo err:", err.Error(), funcName, clientIp)
+	if err = h.doGetAccountAuctionInfo(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("GetAccountAuctionInfo err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp *http_api.ApiResp) (err error) {
+func (h *HttpHandle) doGetAccountAuctionInfo(ctx context.Context, req *ReqAccountAuctionInfo, apiResp *http_api.ApiResp) (err error) {
 	var resp RespAccountAuctionInfo
 	var addrHex *core.DasAddressHex
 	if req.KeyInfo.Key != "" {
@@ -86,7 +87,7 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 		return fmt.Errorf("GetTimeCell err: %s", err.Error())
 	}
 	nowTime := timeCell.Timestamp()
-	if status, _, err := h.checkDutchAuction(acc.ExpiredAt, uint64(nowTime)); err != nil {
+	if status, _, err := h.checkDutchAuction(ctx, acc.ExpiredAt, uint64(nowTime)); err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "checkDutchAuction err")
 		return fmt.Errorf("checkDutchAuction err: %s", err.Error())
 	} else if status != tables.SearchStatusOnDutchAuction {
@@ -126,7 +127,7 @@ func (h *HttpHandle) doGetAccountAuctionInfo(req *ReqAccountAuctionInfo, apiResp
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
-	baseAmount, accountPrice, err := h.getAccountPrice(uint8(accLen), "", req.Account, false)
+	baseAmount, accountPrice, err := h.getAccountPrice(ctx, uint8(accLen), "", req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())

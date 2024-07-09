@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/http_server/compatible"
 	"das_register_server/internal"
@@ -58,7 +59,7 @@ func (h *HttpHandle) RpcEditRecords(p json.RawMessage, apiResp *api_code.ApiResp
 		return
 	}
 
-	if err = h.doEditRecords(&req[0], apiResp); err != nil {
+	if err = h.doEditRecords(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doEditRecords err:", err.Error())
 	}
 }
@@ -73,21 +74,21 @@ func (h *HttpHandle) EditRecords(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doEditRecords(&req, &apiResp); err != nil {
-		log.Error("doEditRecords err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doEditRecords(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doEditRecords err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doEditRecords(ctx context.Context, req *ReqEditRecords, apiResp *api_code.ApiResp) error {
 	var resp RespEditRecords
 
 	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
@@ -210,7 +211,7 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 		checkBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
 	}
-	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		doBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {
@@ -221,7 +222,7 @@ func (h *HttpHandle) doEditRecords(req *ReqEditRecords, apiResp *api_code.ApiRes
 	return nil
 }
 
-func (h *HttpHandle) doEditRecordsForDidCell(req *ReqEditRecords, apiResp *api_code.ApiResp, addrParse *address.ParsedAddress) error {
+func (h *HttpHandle) doEditRecordsForDidCell(ctx context.Context, req *ReqEditRecords, apiResp *api_code.ApiResp, addrParse *address.ParsedAddress) error {
 	var resp RespEditRecords
 
 	if req.Account == "" {
@@ -307,7 +308,7 @@ func (h *HttpHandle) doEditRecordsForDidCell(req *ReqEditRecords, apiResp *api_c
 	reqBuild.Capacity = 0
 	reqBuild.EvmChainId = req.EvmChainId
 
-	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		doBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

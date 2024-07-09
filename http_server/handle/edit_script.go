@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/internal"
 	"das_register_server/tables"
@@ -43,7 +44,7 @@ func (h *HttpHandle) RpcEditScript(p json.RawMessage, apiResp *api_code.ApiResp)
 		return
 	}
 
-	if err = h.doEditScript(&req[0], apiResp); err != nil {
+	if err = h.doEditScript(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doEditScript err:", err.Error())
 	}
 }
@@ -58,21 +59,21 @@ func (h *HttpHandle) EditScript(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doEditScript(&req, &apiResp); err != nil {
-		log.Error("doEditScript err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doEditScript(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doEditScript err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doEditScript(req *ReqEditScript, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doEditScript(ctx context.Context, req *ReqEditScript, apiResp *api_code.ApiResp) error {
 	var resp RespEditScript
 
 	hexAddress, err := req.FormatChainTypeAddress(h.dasCore.NetType(), true)
@@ -142,7 +143,7 @@ func (h *HttpHandle) doEditScript(req *ReqEditScript, apiResp *api_code.ApiResp)
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
 	}
-	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

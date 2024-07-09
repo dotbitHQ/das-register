@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/tables"
 	"fmt"
@@ -49,19 +50,18 @@ func (h *HttpHandle) AccountAuctionBid(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req))
 
-	if err = h.doAccountAuctionBid(&req, &apiResp); err != nil {
+	if err = h.doAccountAuctionBid(ctx.Request.Context(), &req, &apiResp); err != nil {
 		log.Error("doAccountAuctionBid err:", err.Error(), funcName, clientIp)
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
-func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.ApiResp) (err error) {
+func (h *HttpHandle) doAccountAuctionBid(ctx context.Context, req *ReqAuctionBid, apiResp *http_api.ApiResp) (err error) {
 	var resp RespAuctionBid
 	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	fmt.Println(addrHex.DasAlgorithmId, addrHex.DasSubAlgorithmId, addrHex.AddressHex)
 	fromLock, _, err := h.dasCore.Daf().HexToScript(*addrHex)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "key info is invalid: "+err.Error())
@@ -86,7 +86,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	}
 	nowTime := timeCell.Timestamp()
 
-	if status, _, err := h.checkDutchAuction(acc.ExpiredAt, uint64(nowTime)); err != nil {
+	if status, _, err := h.checkDutchAuction(ctx, acc.ExpiredAt, uint64(nowTime)); err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "checkDutchAuction err")
 		return fmt.Errorf("checkDutchAuction err: %s", err.Error())
 	} else if status != tables.SearchStatusOnDutchAuction {
@@ -102,14 +102,14 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
-	baseAmount, accountPrice, err := h.getAccountPrice(uint8(accLen), "", req.Account, false)
+	baseAmount, accountPrice, err := h.getAccountPrice(ctx, uint8(accLen), "", req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
 	}
 	basicPrice := baseAmount.Add(accountPrice)
 
-	log.Info("expiredat: ", int64(acc.ExpiredAt), "nowTime: ", nowTime)
+	log.Info(ctx, "expiredat: ", int64(acc.ExpiredAt), "nowTime: ", nowTime)
 
 	auctionConfig, err := h.GetAuctionConfig(h.dasCore)
 	if err != nil {
@@ -118,9 +118,9 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 	}
 	premiumPrice := decimal.NewFromFloat(common.Premium(int64(acc.ExpiredAt+uint64(auctionConfig.GracePeriodTime)), nowTime))
 	amountDP := basicPrice.Add(premiumPrice).Mul(decimal.NewFromInt(common.UsdRateBase)).BigInt().Uint64()
-	log.Info("baseAmount: ", baseAmount, " accountPrice: ", accountPrice, " basicPrice: ", basicPrice, " premiumPrice: ", premiumPrice, " amountDP: ", amountDP)
+	log.Info(ctx, "baseAmount: ", baseAmount, " accountPrice: ", accountPrice, " basicPrice: ", basicPrice, " premiumPrice: ", premiumPrice, " amountDP: ", amountDP)
 
-	log.Info("GetDpCells:", common.Bytes2Hex(fromLock.Args), amountDP)
+	log.Info(ctx, "GetDpCells:", common.Bytes2Hex(fromLock.Args), amountDP)
 	_, _, _, err = h.dasCore.GetDpCells(&core.ParamGetDpCells{
 		DasCache:           h.dasCache,
 		LockScript:         fromLock,
@@ -181,7 +181,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 			TTL:   300,
 		})
 	} else {
-		log.Error("buildOrderPreRegisterTx FormatAddressByCoinType err: ", err.Error())
+		log.Error(ctx, "buildOrderPreRegisterTx FormatAddressByCoinType err: ", err.Error())
 	}
 
 	var p auctionBidParams
@@ -197,7 +197,7 @@ func (h *HttpHandle) doAccountAuctionBid(req *ReqAuctionBid, apiResp *http_api.A
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildEditManagerTx err: %s", err.Error())
 	}
-	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "build tx err: "+err.Error())
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

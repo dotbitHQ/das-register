@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/internal"
 	"das_register_server/tables"
@@ -40,7 +41,7 @@ func (h *HttpHandle) RpcReverseRetract(p json.RawMessage, apiResp *api_code.ApiR
 		return
 	}
 
-	if err = h.doReverseRetract(&req[0], apiResp); err != nil {
+	if err = h.doReverseRetract(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doReverseRetract err:", err.Error())
 	}
 }
@@ -55,21 +56,21 @@ func (h *HttpHandle) ReverseRetract(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doReverseRetract(&req, &apiResp); err != nil {
-		log.Error("doReverseRetract err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doReverseRetract(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doReverseRetract err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doReverseRetract(req *ReqReverseRetract, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doReverseRetract(ctx context.Context, req *ReqReverseRetract, apiResp *api_code.ApiResp) error {
 	addressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
 		ChainType:     req.ChainType,
 		AddressNormal: req.Address,
@@ -145,7 +146,7 @@ func (h *HttpHandle) doReverseRetract(req *ReqReverseRetract, apiResp *api_code.
 		return fmt.Errorf("buildRetractReverseRecordTx err: %s", err.Error())
 	}
 
-	if _, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "build tx err ")
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {

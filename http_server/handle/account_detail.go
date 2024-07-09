@@ -2,6 +2,7 @@ package handle
 
 import (
 	"bytes"
+	"context"
 	"das_register_server/config"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
@@ -64,7 +65,7 @@ func (h *HttpHandle) RpcAccountDetail(p json.RawMessage, apiResp *api_code.ApiRe
 		return
 	}
 
-	if err = h.doAccountDetail(&req[0], apiResp); err != nil {
+	if err = h.doAccountDetail(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doAccountDetail err:", err.Error())
 	}
 }
@@ -86,14 +87,14 @@ func (h *HttpHandle) AccountDetail(ctx *gin.Context) {
 	}
 	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
 
-	if err = h.doAccountDetail(&req, &apiResp); err != nil {
+	if err = h.doAccountDetail(ctx.Request.Context(), &req, &apiResp); err != nil {
 		log.Error("doAccountDetail err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) getAccountPrice(accLen uint8, args, account string, isRenew bool) (baseAmount, accountPrice decimal.Decimal, err error) {
+func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, account string, isRenew bool) (baseAmount, accountPrice decimal.Decimal, err error) {
 	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(common.ConfigCellTypeArgsPrice, common.ConfigCellTypeArgsAccount)
 	if err != nil {
 		err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
@@ -133,7 +134,7 @@ func (h *HttpHandle) getAccountPrice(accLen uint8, args, account string, isRenew
 		err = fmt.Errorf("PreparedFeeCapacity err: %s", err.Error())
 		return
 	}
-	log.Info("BasicCapacity:", basicCapacity, "PreparedFeeCapacity:", preparedFeeCapacity, "Quote:", quote, "Price:", newPrice, renewPrice)
+	log.Info(ctx, "BasicCapacity:", basicCapacity, "PreparedFeeCapacity:", preparedFeeCapacity, "Quote:", quote, "Price:", newPrice, renewPrice)
 
 	basicCapacity = basicCapacity/common.OneCkb + uint64(len([]byte(account))) + preparedFeeCapacity/common.OneCkb
 	baseAmount, _ = decimal.NewFromString(fmt.Sprintf("%d", basicCapacity))
@@ -151,7 +152,7 @@ func (h *HttpHandle) getAccountPrice(accLen uint8, args, account string, isRenew
 	return
 }
 
-func (h *HttpHandle) checkDutchAuction(expiredAt, nowTime uint64) (status tables.SearchStatus, reRegisterTime uint64, err error) {
+func (h *HttpHandle) checkDutchAuction(ctx context.Context, expiredAt, nowTime uint64) (status tables.SearchStatus, reRegisterTime uint64, err error) {
 	auctionConfig, err := h.GetAuctionConfig(h.dasCore)
 	if err != nil {
 		err = fmt.Errorf("GetAuctionConfig err: %s", err.Error())
@@ -160,7 +161,7 @@ func (h *HttpHandle) checkDutchAuction(expiredAt, nowTime uint64) (status tables
 	gracePeriodTime := auctionConfig.GracePeriodTime
 	auctionPeriodTime := auctionConfig.AuctionPeriodTime
 	deliverPeriodTime := auctionConfig.DeliverPeriodTime
-	log.Info("time cell: ", nowTime, " gracePeriodTime: ", gracePeriodTime, " auctionPeriodTime: ", auctionPeriodTime, " deliverPeriodTime: ", deliverPeriodTime)
+	log.Info(ctx, "time cell: ", nowTime, " gracePeriodTime: ", gracePeriodTime, " auctionPeriodTime: ", auctionPeriodTime, " deliverPeriodTime: ", deliverPeriodTime)
 	if nowTime-uint64(gracePeriodTime)-uint64(auctionPeriodTime) < expiredAt && expiredAt < nowTime-uint64(gracePeriodTime) {
 		status = tables.SearchStatusOnDutchAuction
 	}
@@ -173,7 +174,7 @@ func (h *HttpHandle) checkDutchAuction(expiredAt, nowTime uint64) (status tables
 	return
 }
 
-func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doAccountDetail(ctx context.Context, req *ReqAccountDetail, apiResp *api_code.ApiResp) error {
 	var resp RespAccountDetail
 	var err error
 	if !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
@@ -207,7 +208,7 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 			return err
 		}
 		nowTime := uint64(timeCell.Timestamp())
-		if status, reRegisterTime, err := h.checkDutchAuction(acc.ExpiredAt, nowTime); err != nil {
+		if status, reRegisterTime, err := h.checkDutchAuction(ctx, acc.ExpiredAt, nowTime); err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "checkDutchAuction err")
 			return fmt.Errorf("checkDutchAuction err: %s", err.Error())
 		} else if status != 0 {
@@ -235,7 +236,7 @@ func (h *HttpHandle) doAccountDetail(req *ReqAccountDetail, apiResp *api_code.Ap
 		}
 
 		// price
-		resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(uint8(accBuilder.AccountChars.Len()), "", req.Account, true)
+		resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(ctx, uint8(accBuilder.AccountChars.Len()), "", req.Account, true)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 			return fmt.Errorf("getAccountPrice err: %s", err.Error())

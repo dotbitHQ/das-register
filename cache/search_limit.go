@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -15,15 +16,15 @@ func (r *RedisCache) getSearchLimitKey(chainType common.ChainType, address, acti
 
 var ErrDistributedLockPreemption = errors.New("distributed lock preemption")
 
-func (r *RedisCache) LockWithRedis(chainType common.ChainType, address, action string, expiration time.Duration) error {
-	log.Info("LockWithRedis:", chainType, address, action)
+func (r *RedisCache) LockWithRedis(ctx context.Context, chainType common.ChainType, address, action string, expiration time.Duration) error {
+	log.Info(ctx, "LockWithRedis:", chainType, address, action)
 	key := r.getSearchLimitKey(chainType, address, action)
 	ret := r.red.SetNX(key, "", expiration)
 	if err := ret.Err(); err != nil {
 		return fmt.Errorf("redis set order nx-->%s", err.Error())
 	}
 	ok := ret.Val()
-	log.Info("LockWithRedis:", ok)
+	log.Info(ctx, "LockWithRedis:", ok)
 	if !ok {
 		return ErrDistributedLockPreemption
 	}

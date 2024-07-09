@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/tables"
 	"das_register_server/txtool"
 	"encoding/json"
@@ -40,7 +41,7 @@ func (h *HttpHandle) RpcTransactionSend(p json.RawMessage, apiResp *api_code.Api
 		return
 	}
 
-	if err = h.doTransactionSend(&req[0], apiResp); err != nil {
+	if err = h.doTransactionSend(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doVersion err:", err.Error())
 	}
 }
@@ -55,21 +56,21 @@ func (h *HttpHandle) TransactionSend(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doTransactionSend(&req, &apiResp); err != nil {
-		log.Error("doTransactionSend err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doTransactionSend(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doTransactionSend err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doTransactionSend(ctx context.Context, req *ReqTransactionSend, apiResp *api_code.ApiResp) error {
 	var resp RespTransactionSend
 
 	var sic SignInfoCache
@@ -107,7 +108,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "SignAddress err")
 			return nil
 		}
-		log.Info("req.signaddress: ", req.SignAddress)
+		log.Info(ctx, "req.signaddress: ", req.SignAddress)
 		signAddressHex, err := h.dasCore.Daf().NormalToHex(core.DasAddressNormal{
 			ChainType:     common.ChainTypeWebauthn,
 			AddressNormal: req.SignAddress,
@@ -116,8 +117,8 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "sign address NormalToHex err")
 			return err
 		}
-		log.Info("loginAddrHex.AddressHex: ", loginAddrHex.AddressHex)
-		log.Info("signAddressHex.AddressHex: ", signAddressHex.AddressHex)
+		log.Info(ctx, "loginAddrHex.AddressHex: ", loginAddrHex.AddressHex)
+		log.Info(ctx, "signAddressHex.AddressHex: ", signAddressHex.AddressHex)
 		idx, err := h.dasCore.GetIdxOfKeylist(loginAddrHex, signAddressHex)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "GetIdxOfKeylist err: "+err.Error())
@@ -137,7 +138,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 
 	// sign
 	if req.CKBTx != "" {
-		log.Info("CKBTx:", req.CKBTx)
+		log.Info(ctx, "CKBTx:", req.CKBTx)
 		userTx, err := rpc.TransactionFromString(req.CKBTx)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("rpc.TransactionFromString err: %s", err.Error()))
@@ -189,9 +190,9 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 	if sic.Action == common.DasActionEditRecords {
 		builder, err := witness.AccountCellDataBuilderFromTx(txBuilder.Transaction, common.DataTypeNew)
 		if err != nil {
-			log.Warn("AccountCellDataBuilderFromTx err: ", err.Error())
+			log.Warn(ctx, "AccountCellDataBuilderFromTx err: ", err.Error())
 		} else {
-			log.Info("edit records:", sic.Account, sic.ChainType, sic.Address, toolib.JsonString(builder.Records))
+			log.Info(ctx, "edit records:", sic.Account, sic.ChainType, sic.Address, toolib.JsonString(builder.Records))
 		}
 	}
 
@@ -254,7 +255,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 				BlockTimestamp: uint64(time.Now().UnixNano() / 1e6),
 			}
 			if err = h.dbDao.CreatePending(&pending); err != nil {
-				log.Error("CreatePending err: ", err.Error(), toolib.JsonString(pending))
+				log.Error(ctx, "CreatePending err: ", err.Error(), toolib.JsonString(pending))
 			}
 
 			if sic.Action == common.DasActionBidExpiredAccountAuction {
@@ -271,7 +272,7 @@ func (h *HttpHandle) doTransactionSend(req *ReqTransactionSend, apiResp *api_cod
 				}
 				auctionOrder.CreateOrderId()
 				if err = h.dbDao.CreateAuctionOrder(auctionOrder); err != nil {
-					log.Error("CreateAuctionOrder err: ", err.Error(), toolib.JsonString(auctionOrder))
+					log.Error(ctx, "CreateAuctionOrder err: ", err.Error(), toolib.JsonString(auctionOrder))
 				}
 			}
 		}

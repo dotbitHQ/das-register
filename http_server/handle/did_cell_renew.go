@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"das_register_server/internal"
@@ -53,7 +54,7 @@ func (h *HttpHandle) RpcDidCellRenew(p json.RawMessage, apiResp *http_api.ApiRes
 		return
 	}
 
-	if err = h.doDidCellRenew(&req[0], apiResp); err != nil {
+	if err = h.doDidCellRenew(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doDidCellRenew err:", err.Error())
 	}
 }
@@ -68,21 +69,21 @@ func (h *HttpHandle) DidCellRenew(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doDidCellRenew(&req, &apiResp); err != nil {
-		log.Error("doDidCellRenew err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doDidCellRenew(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doDidCellRenew err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiResp) error {
+func (h *HttpHandle) doDidCellRenew(ctx context.Context, req *ReqDidCellRenew, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellRenew
 
 	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
@@ -122,7 +123,7 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
-		log.Error("GetAccountInfoByAccountId err: ", err.Error())
+		log.Error(ctx, "GetAccountInfoByAccountId err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account fail")
 		return nil
 	} else if acc.Id == 0 {
@@ -143,7 +144,7 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 		return nil
 	}
 	expirationGracePeriod, _ := builder.ExpirationGracePeriod()
-	log.Info("checkRenewOrder:", expirationGracePeriod)
+	log.Info(ctx, "checkRenewOrder:", expirationGracePeriod)
 	if int64(acc.ExpiredAt+uint64(expirationGracePeriod)) <= time.Now().Unix() {
 		apiResp.ApiRespErr(api_code.ApiCodeAfterGracePeriod, "after the grace period")
 		return nil
@@ -200,7 +201,7 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 		return fmt.Errorf("mapAcc is nil")
 	}
 
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(uint8(accBuilder.AccountChars.Len()), "", req.Account, "", req.RenewYears, true, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, uint8(accBuilder.AccountChars.Len()), "", req.Account, "", req.RenewYears, true, req.PayTokenId)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return fmt.Errorf("getOrderAmount err: %s", err.Error())
@@ -341,7 +342,7 @@ func (h *HttpHandle) doDidCellRenew(req *ReqDidCellRenew, apiResp *http_api.ApiR
 			Account:    req.Account,
 			EvmChainId: req.GetChainId(config.Cfg.Server.Net),
 		}
-		if didCellTx, si, err := h.buildTx(&reqBuild, txParams); err != nil {
+		if didCellTx, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 			checkBuildTxErr(err, apiResp)
 			return fmt.Errorf("buildTx: %s", err.Error())
 		} else {

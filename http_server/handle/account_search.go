@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/http_server/compatible"
 	"das_register_server/tables"
@@ -56,7 +57,7 @@ func (h *HttpHandle) RpcAccountSearch(p json.RawMessage, apiResp *api_code.ApiRe
 		return
 	}
 
-	if err = h.doAccountSearch(&req[0], apiResp); err != nil {
+	if err = h.doAccountSearch(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doAccountSearch err:", err.Error())
 	}
 }
@@ -71,20 +72,20 @@ func (h *HttpHandle) AccountSearch(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doAccountSearch(&req, &apiResp); err != nil {
-		log.Error("doAccountSearch err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doAccountSearch(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doAccountSearch err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doAccountSearch(ctx context.Context, req *ReqAccountSearch, apiResp *api_code.ApiResp) error {
 	var resp RespAccountSearch
 	req.Account = strings.ToLower(req.Account)
 	resp.RegisterTxMap = make(map[tables.RegisterStatus]RegisterTx)
@@ -106,7 +107,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 
 	// check sub account
 	isSubAccount := false
-	resp.Status, resp.IsSelf, isSubAccount = h.checkSubAccount(req, apiResp)
+	resp.Status, resp.IsSelf, isSubAccount = h.checkSubAccount(ctx, req, apiResp)
 	if isSubAccount {
 		if apiResp.ErrNo != api_code.ApiCodeSuccess {
 			return nil
@@ -122,7 +123,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	}
 
 	confirmProposalHash := ""
-	confirmProposalHash, resp.Status, resp.IsSelf, resp.OpenTimestamp = h.checkAccountBase(req, apiResp)
+	confirmProposalHash, resp.Status, resp.IsSelf, resp.OpenTimestamp = h.checkAccountBase(ctx, req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if resp.Status != tables.SearchStatusRegisterAble && !resp.IsSelf {
@@ -152,14 +153,14 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 	if tables.EndWithDotBitChar(req.AccountCharStr) {
 		accLen -= 4
 	}
-	baseAmount, accountPrice, err := h.getAccountPrice(accLen, argsStr, req.Account, false)
+	baseAmount, accountPrice, err := h.getAccountPrice(ctx, accLen, argsStr, req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
 	}
 	resp.BaseAmount, resp.AccountPrice = baseAmount, accountPrice
 	// address order
-	status, registerTxMap := h.checkAddressOrder(req, apiResp, true)
+	status, registerTxMap := h.checkAddressOrder(ctx, req, apiResp, true)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if status != tables.SearchStatusRegisterAble {
@@ -178,7 +179,7 @@ func (h *HttpHandle) doAccountSearch(req *ReqAccountSearch, apiResp *api_code.Ap
 		return nil
 	}
 	// other register
-	status = h.checkOtherAddressOrder(req, apiResp)
+	status = h.checkOtherAddressOrder(ctx, req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if status != tables.SearchStatusRegisterAble {
@@ -290,11 +291,11 @@ var OpenCharTypeMap = map[common.AccountCharType]struct{}{
 	//common.AccountCharTypeVi:    {},
 }
 
-func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.ApiResp) (confirmProposalHash string, status tables.SearchStatus, isSelf bool, openTs int64) {
+func (h *HttpHandle) checkAccountBase(ctx context.Context, req *ReqAccountSearch, apiResp *api_code.ApiResp) (confirmProposalHash string, status tables.SearchStatus, isSelf bool, openTs int64) {
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
-		log.Error("GetAccountInfoByAccountId err:", err.Error())
+		log.Error(ctx, "GetAccountInfoByAccountId err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account fail")
 		return
 	} else if acc.Id > 0 {
@@ -323,7 +324,7 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 		if tables.EndWithDotBitChar(req.AccountCharStr) {
 			accLen -= 4
 		}
-		log.Info("account len:", accLen, req.Account)
+		log.Info(ctx, "account len:", accLen, req.Account)
 		if accLen < config.Cfg.Das.AccountMinLength || accLen > config.Cfg.Das.AccountMaxLength {
 			apiResp.ApiRespErr(api_code.ApiCodeAccountLenInvalid, fmt.Sprintf("account len err:%d [%s]", accLen, accountName))
 			return
@@ -364,12 +365,12 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 
 			configRelease, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsRelease)
 			if err != nil {
-				log.Error("GetDasConfigCellInfo err:", err.Error())
+				log.Error(ctx, "GetDasConfigCellInfo err:", err.Error())
 				apiResp.ApiRespErr(api_code.ApiCodeError500, "search config release fail")
 				return
 			}
 			luckyNumber, _ := configRelease.LuckyNumber()
-			log.Info("config release lucky number: ", luckyNumber)
+			log.Info(ctx, "config release lucky number: ", luckyNumber)
 			if resNum, _ := Blake256AndFourBytesBigEndian([]byte(req.Account)); resNum > luckyNumber {
 				status = tables.SearchStatusRegisterNotOpen
 				if isSameDaoCharType {
@@ -382,7 +383,7 @@ func (h *HttpHandle) checkAccountBase(req *ReqAccountSearch, apiResp *api_code.A
 	return
 }
 
-func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.ApiResp, isGetOrderTx bool) (status tables.SearchStatus, mapTx map[tables.RegisterStatus]RegisterTx) {
+func (h *HttpHandle) checkAddressOrder(ctx context.Context, req *ReqAccountSearch, apiResp *api_code.ApiResp, isGetOrderTx bool) (status tables.SearchStatus, mapTx map[tables.RegisterStatus]RegisterTx) {
 	mapTx = make(map[tables.RegisterStatus]RegisterTx)
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 
@@ -390,15 +391,15 @@ func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.
 	var order tables.TableDasOrderInfo
 	order, err := h.dbDao.GetLatestRegisterOrderByAddress(req.ChainType, req.Address, accountId)
 	if err != nil {
-		log.Error("GetLatestRegisterOrderByAddress err:", err.Error())
+		log.Error(ctx, "GetLatestRegisterOrderByAddress err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
 		return
 	}
 	timeCheck := time.Now().Add(-time.Hour*24*365).UnixNano() / 1e6
-	log.Info("checkAddressOrder:", timeCheck, order.Timestamp)
+	log.Info(ctx, "checkAddressOrder:", timeCheck, order.Timestamp)
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
-		log.Error("GetAccountInfoByAccountId err:", err.Error())
+		log.Error(ctx, "GetAccountInfoByAccountId err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account fail")
 		return
 	}
@@ -418,7 +419,7 @@ func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.
 			}
 			payInfo, err := h.dbDao.GetPayInfoByOrderId(order.OrderId)
 			if err != nil {
-				log.Error("GetPayInfoByOrderId err:", err.Error())
+				log.Error(ctx, "GetPayInfoByOrderId err:", err.Error())
 				apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order pay fail")
 				return
 			} else if payInfo.Id > 0 {
@@ -443,7 +444,7 @@ func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.
 		}
 		txList, err = h.dbDao.GetOrderTxListByOrderId(order.OrderId)
 		if err != nil {
-			log.Error("GetOrderTxListByOrderId err:", err.Error())
+			log.Error(ctx, "GetOrderTxListByOrderId err:", err.Error())
 			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order tx fail")
 			return
 		}
@@ -475,11 +476,11 @@ func (h *HttpHandle) checkAddressOrder(req *ReqAccountSearch, apiResp *api_code.
 	return
 }
 
-func (h *HttpHandle) checkOtherAddressOrder(req *ReqAccountSearch, apiResp *api_code.ApiResp) (status tables.SearchStatus) {
+func (h *HttpHandle) checkOtherAddressOrder(ctx context.Context, req *ReqAccountSearch, apiResp *api_code.ApiResp) (status tables.SearchStatus) {
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	order, err := h.dbDao.GetLatestRegisterOrderByLatest(accountId)
 	if err != nil {
-		log.Error("GetLatestRegisterOrderByLatest err:", err.Error())
+		log.Error(ctx, "GetLatestRegisterOrderByLatest err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
 		return
 	} else if order.Id > 0 {
@@ -488,14 +489,14 @@ func (h *HttpHandle) checkOtherAddressOrder(req *ReqAccountSearch, apiResp *api_
 	return
 }
 
-func (h *HttpHandle) checkSubAccount(req *ReqAccountSearch, apiResp *api_code.ApiResp) (status tables.SearchStatus, isSelf, isSubAccount bool) {
+func (h *HttpHandle) checkSubAccount(ctx context.Context, req *ReqAccountSearch, apiResp *api_code.ApiResp) (status tables.SearchStatus, isSelf, isSubAccount bool) {
 	count := strings.Count(req.Account, ".")
 	if count > 1 {
 		isSubAccount = true
 		accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 		acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 		if err != nil {
-			log.Error("GetAccountInfoByAccountId err:", err.Error())
+			log.Error(ctx, "GetAccountInfoByAccountId err:", err.Error())
 			apiResp.ApiRespErr(api_code.ApiCodeDbError, "search account fail")
 			return
 		} else if acc.Id > 0 {

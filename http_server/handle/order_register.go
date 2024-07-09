@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/http_server/compatible"
@@ -78,7 +79,7 @@ func (h *HttpHandle) RpcCheckCouponr(p json.RawMessage, apiResp *api_code.ApiRes
 		return
 	}
 
-	if err = h.doCheckCoupon(&req[0], apiResp); err != nil {
+	if err = h.doCheckCoupon(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doOrderRegister err:", err.Error())
 	}
 }
@@ -92,26 +93,26 @@ func (h *HttpHandle) CheckCoupon(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doCheckCoupon(&req, &apiResp); err != nil {
-		log.Error("doCheckCoupon err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doCheckCoupon(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doCheckCoupon err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doCheckCoupon(req *ReqCheckCoupon, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doCheckCoupon(ctx context.Context, req *ReqCheckCoupon, apiResp *api_code.ApiResp) error {
 	if req.Coupon == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeCouponInvalid, "params invalid")
 		return nil
 	}
-	err, respResult := h.getCouponInfo(req.Coupon)
+	err, respResult := h.getCouponInfo(ctx, req.Coupon)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "getCouponInfo err")
 		return err
@@ -133,7 +134,7 @@ func (h *HttpHandle) RpcOrderRegister(p json.RawMessage, apiResp *api_code.ApiRe
 		return
 	}
 
-	if err = h.doOrderRegister(&req[0], apiResp); err != nil {
+	if err = h.doOrderRegister(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doOrderRegister err:", err.Error())
 	}
 }
@@ -148,21 +149,21 @@ func (h *HttpHandle) OrderRegister(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doOrderRegister(&req, &apiResp); err != nil {
-		log.Error("doOrderRegister err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doOrderRegister(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doOrderRegister err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister, apiResp *api_code.ApiResp) error {
 	var resp RespOrderRegister
 
 	req.CrossCoinType = "" // closed cross nft
@@ -212,7 +213,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "failed to check order count")
 		return nil
 	} else if unPayCount > maxUnPayCount {
-		log.Info("GetUnPayOrderCount:", req.ChainType, req.Address, unPayCount)
+		log.Info(ctx, "GetUnPayOrderCount:", req.ChainType, req.Address, unPayCount)
 		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
 		return nil
 	}
@@ -236,7 +237,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 	// base check
-	_, status, _, _ := h.checkAccountBase(&req.ReqAccountSearch, apiResp)
+	_, status, _, _ := h.checkAccountBase(ctx, &req.ReqAccountSearch, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	}
@@ -254,7 +255,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 	// self order
-	status, _ = h.checkAddressOrder(&req.ReqAccountSearch, apiResp, false)
+	status, _ = h.checkAddressOrder(ctx, &req.ReqAccountSearch, apiResp, false)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if status != tables.SearchStatusRegisterAble {
@@ -262,7 +263,7 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 		return nil
 	}
 	// registering check
-	status = h.checkOtherAddressOrder(&req.ReqAccountSearch, apiResp)
+	status = h.checkOtherAddressOrder(ctx, &req.ReqAccountSearch, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
 	} else if status >= tables.SearchStatusRegistering {
@@ -272,9 +273,9 @@ func (h *HttpHandle) doOrderRegister(req *ReqOrderRegister, apiResp *api_code.Ap
 
 	// create order
 	if req.GiftCard != "" {
-		h.doRegisterCouponOrder(req, apiResp, &resp)
+		h.doRegisterCouponOrder(ctx, req, apiResp, &resp)
 	} else {
-		h.doRegisterOrder(req, apiResp, &resp)
+		h.doRegisterOrder(ctx, req, apiResp, &resp)
 	}
 
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -340,7 +341,7 @@ func (h *HttpHandle) checkOrderInfo(coinType, crossCoinType string, req *ReqOrde
 	return nil
 }
 
-func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
+func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
 	// pay amount
 	addrHex := core.DasAddressHex{
 		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
@@ -350,7 +351,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	}
 	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
 	if err != nil {
-		log.Error("HexToArgs err: ", err.Error())
+		log.Error(ctx, "HexToArgs err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 		return
 	}
@@ -359,15 +360,15 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 		accLen -= 4
 	}
 
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
-		log.Error("getOrderAmount err: ", err.Error())
+		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
 
 	if amountTotalUSD.Cmp(decimal.Zero) != 1 || amountTotalCKB.Cmp(decimal.Zero) != 1 || amountTotalPayToken.Cmp(decimal.Zero) != 1 {
-		log.Error("order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
+		log.Error(ctx, "order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
@@ -388,7 +389,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 
 	contentDataStr, err := json.Marshal(&orderContent)
 	if err != nil {
-		log.Error("json marshal err:", err.Error())
+		log.Error(ctx, "json marshal err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "json marshal fail")
 		return
 	}
@@ -397,7 +398,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	if req.PayTokenId == tables.TokenIdDas {
 		dasLock, _, err := h.dasCore.Daf().HexToScript(addrHex)
 		if err != nil {
-			log.Error("HexToArgs err: ", err.Error())
+			log.Error(ctx, "HexToArgs err: ", err.Error())
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 			return
 		}
@@ -545,7 +546,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	}
 
 	if err := h.dbDao.CreateOrderWithPayment(order, paymentInfo); err != nil {
-		log.Error("CreateOrder err:", err.Error())
+		log.Error(ctx, "CreateOrder err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
 		return
 	}
@@ -566,7 +567,7 @@ func (h *HttpHandle) doRegisterOrder(req *ReqOrderRegister, apiResp *api_code.Ap
 	return
 }
 
-func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
+func (h *HttpHandle) doRegisterCouponOrder(ctx context.Context, req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
 	req.PayTokenId = tables.TokenCoupon
 	// pay amount
 	addrHex := core.DasAddressHex{
@@ -577,7 +578,7 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 	}
 	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
 	if err != nil {
-		log.Error("HexToArgs err: ", err.Error())
+		log.Error(ctx, "HexToArgs err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 		return
 	}
@@ -592,7 +593,7 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 		return
 	}
 
-	coupon = h.checkCoupon(req.GiftCard, apiResp)
+	coupon = h.checkCoupon(ctx, req.GiftCard, apiResp)
 	if coupon == nil {
 		return
 	}
@@ -613,15 +614,15 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 		return
 	}
 
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
-		log.Error("getOrderAmount err: ", err.Error())
+		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
 
 	if amountTotalUSD.Cmp(decimal.Zero) != 0 || amountTotalCKB.Cmp(decimal.Zero) != 0 || amountTotalPayToken.Cmp(decimal.Zero) != 0 {
-		log.Error("order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
+		log.Error(ctx, "order amount err:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return
 	}
@@ -638,7 +639,7 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 
 	contentDataStr, err := json.Marshal(&orderContent)
 	if err != nil {
-		log.Error("json marshal err:", err.Error())
+		log.Error(ctx, "json marshal err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "json marshal fail")
 		return
 	}
@@ -675,10 +676,10 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 
 	err = h.dbDao.CreateCouponOrder(&order, coupon.Code)
 	if redisErr := h.rc.DeleteCouponLockWithRedis(coupon.Code); redisErr != nil {
-		log.Error("delete coupon redis lock error : ", redisErr.Error())
+		log.Error(ctx, "delete coupon redis lock error : ", redisErr.Error())
 	}
 	if err != nil {
-		log.Error("CreateOrder err:", err.Error())
+		log.Error(ctx, "CreateOrder err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "create order fail")
 		return
 	}
@@ -699,7 +700,7 @@ func (h *HttpHandle) doRegisterCouponOrder(req *ReqOrderRegister, apiResp *api_c
 	return
 }
 
-func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
+func (h *HttpHandle) getOrderAmount(ctx context.Context, accLen uint8, args, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
 	// pay token
 	if payTokenId == tables.TokenCoupon {
 		amountTotalUSD = decimal.Zero
@@ -721,7 +722,7 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 	quote := quoteCell.Quote()
 	decQuote := decimal.NewFromInt(int64(quote)).Div(decimal.NewFromInt(common.UsdRateBase))
 	// base price
-	baseAmount, accountPrice, err := h.getAccountPrice(accLen, args, account, isRenew)
+	baseAmount, accountPrice, err := h.getAccountPrice(ctx, accLen, args, account, isRenew)
 	if err != nil {
 		e = fmt.Errorf("getAccountPrice err: %s", err.Error())
 		return
@@ -742,7 +743,7 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 	}
 	amountTotalUSD = accountPrice
 
-	log.Info("before Premium:", account, isRenew, amountTotalUSD, baseAmount, accountPrice)
+	log.Info(ctx, "before Premium:", account, isRenew, amountTotalUSD, baseAmount, accountPrice)
 	if config.Cfg.Das.Premium.Cmp(decimal.Zero) == 1 {
 		amountTotalUSD = amountTotalUSD.Mul(config.Cfg.Das.Premium.Add(decimal.NewFromInt(1)))
 	}
@@ -750,13 +751,13 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 		amountTotalUSD = amountTotalUSD.Mul(config.Cfg.Das.Discount)
 	}
 	amountTotalUSD = amountTotalUSD.Add(baseAmount)
-	log.Info("after Premium:", account, isRenew, amountTotalUSD, baseAmount, accountPrice)
+	log.Info(ctx, "after Premium:", account, isRenew, amountTotalUSD, baseAmount, accountPrice)
 
 	amountTotalUSD = amountTotalUSD.Mul(decimal.NewFromInt(100)).Ceil().DivRound(decimal.NewFromInt(100), 2)
 	amountTotalCKB = amountTotalUSD.Div(decQuote).Mul(decimal.NewFromInt(int64(common.OneCkb))).Ceil()
 	amountTotalPayToken = amountTotalUSD.Div(payToken.Price).Mul(decimal.New(1, payToken.Decimals)).Ceil()
 
-	log.Info("getOrderAmount:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
+	log.Info(ctx, "getOrderAmount:", amountTotalUSD, amountTotalCKB, amountTotalPayToken)
 	if payToken.TokenId == tables.TokenIdCkb {
 		amountTotalPayToken = amountTotalCKB
 	}
@@ -772,17 +773,17 @@ func (h *HttpHandle) getOrderAmount(accLen uint8, args, account, inviterAccount 
 	amountTotalPayToken = unipay.RoundAmount(amountTotalPayToken, payToken.TokenId)
 	return
 }
-func (h *HttpHandle) getCouponInfo(code string) (err error, info *RespCouponInfo) {
+func (h *HttpHandle) getCouponInfo(ctx context.Context, code string) (err error, info *RespCouponInfo) {
 	info = new(RespCouponInfo)
 	salt := config.Cfg.Server.CouponEncrySalt
 	if salt == "" {
-		log.Error("GetCoupon err: config coupon_encry_salt is empty")
+		log.Error(ctx, "GetCoupon err: config coupon_encry_salt is empty")
 		return fmt.Errorf("system setting error"), info
 	}
 	code = couponEncry(code, salt)
 	res, err := h.dbDao.GetCouponByCode(code)
 	if err != nil {
-		log.Error("GetCoupon err:", err.Error())
+		log.Error(ctx, "GetCoupon err:", err.Error())
 		return fmt.Errorf("get gift card error"), info
 	}
 	if res.Id == 0 {
@@ -804,17 +805,17 @@ func (h *HttpHandle) getCouponInfo(code string) (err error, info *RespCouponInfo
 	return nil, info
 }
 
-func (h *HttpHandle) checkCoupon(code string, apiResp *api_code.ApiResp) (coupon *tables.TableCoupon) {
+func (h *HttpHandle) checkCoupon(ctx context.Context, code string, apiResp *api_code.ApiResp) (coupon *tables.TableCoupon) {
 	salt := config.Cfg.Server.CouponEncrySalt
 	if salt == "" {
-		log.Error("GetCoupon err: config coupon_encry_salt is empty")
+		log.Error(ctx, "GetCoupon err: config coupon_encry_salt is empty")
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "system setting error")
 		return nil
 	}
 	code = couponEncry(code, salt)
 	res, err := h.dbDao.GetCouponByCode(code)
 	if err != nil {
-		log.Error("GetCoupon err:", err.Error())
+		log.Error(ctx, "GetCoupon err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get gift card error")
 		return nil
 	}

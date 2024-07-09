@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"das_register_server/http_server/api_code"
 	"encoding/json"
@@ -38,7 +39,7 @@ func (h *HttpHandle) RpcDidCellUpgradePrice(p json.RawMessage, apiResp *http_api
 		return
 	}
 
-	if err = h.doDidCellUpgradePrice(&req[0], apiResp); err != nil {
+	if err = h.doDidCellUpgradePrice(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doDidCellUpgradePrice err:", err.Error())
 	}
 }
@@ -53,21 +54,21 @@ func (h *HttpHandle) DidCellUpgradePrice(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doDidCellUpgradePrice(&req, &apiResp); err != nil {
-		log.Error("doDidCellUpgradePrice err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doDidCellUpgradePrice(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doDidCellUpgradePrice err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doDidCellUpgradePrice(req *ReqDidCellUpgradePrice, apiResp *http_api.ApiResp) error {
+func (h *HttpHandle) doDidCellUpgradePrice(ctx context.Context, req *ReqDidCellUpgradePrice, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellUpgradePrice
 
 	req.Account = strings.ToLower(req.Account)

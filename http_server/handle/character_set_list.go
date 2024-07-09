@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/dotbitHQ/das-lib/common"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
@@ -36,7 +37,7 @@ func (h *HttpHandle) RpcCharacterSetList(p json.RawMessage, apiResp *api_code.Ap
 		return
 	}
 
-	if err = h.doCharacterSetList(&req[0], apiResp); err != nil {
+	if err = h.doCharacterSetList(h.ctx, &req[0], apiResp); err != nil {
 		log.Error("doCharacterSetList err:", err.Error())
 	}
 }
@@ -51,21 +52,21 @@ func (h *HttpHandle) CharacterSetList(ctx *gin.Context) {
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
+		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx.Request.Context())
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
-	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx)
+	log.Info("ApiReq:", funcName, clientIp, toolib.JsonString(req), ctx.Request.Context())
 
-	if err = h.doCharacterSetList(&req, &apiResp); err != nil {
-		log.Error("doCharacterSetList err:", err.Error(), funcName, clientIp, ctx)
+	if err = h.doCharacterSetList(ctx.Request.Context(), &req, &apiResp); err != nil {
+		log.Error("doCharacterSetList err:", err.Error(), funcName, clientIp, ctx.Request.Context())
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doCharacterSetList(req *ReqCharacterSetList, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doCharacterSetList(ctx context.Context, req *ReqCharacterSetList, apiResp *api_code.ApiResp) error {
 	var resp RespCharacterSetList
 
 	for k, _ := range common.CharSetTypeEmojiMap {

@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"context"
 	"das_register_server/config"
 	"encoding/json"
 	"fmt"
@@ -34,7 +35,7 @@ type RespConfigInfo struct {
 }
 
 func (h *HttpHandle) RpcConfigInfo(p json.RawMessage, apiResp *api_code.ApiResp) {
-	if err := h.doConfigInfo(apiResp); err != nil {
+	if err := h.doConfigInfo(h.ctx, apiResp); err != nil {
 		log.Error("doConfigInfo err:", err.Error())
 	}
 }
@@ -49,14 +50,14 @@ func (h *HttpHandle) ConfigInfo(ctx *gin.Context) {
 
 	log.Info("ApiReq:", funcName, clientIp, ctx)
 
-	if err = h.doConfigInfo(&apiResp); err != nil {
+	if err = h.doConfigInfo(ctx.Request.Context(), &apiResp); err != nil {
 		log.Error("doConfigInfo err:", err.Error(), funcName, clientIp, ctx)
 	}
 
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doConfigInfo(apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doConfigInfo(ctx context.Context, apiResp *api_code.ApiResp) error {
 	var resp RespConfigInfo
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
 	resp.PremiumBase = config.Cfg.Stripe.PremiumBase
