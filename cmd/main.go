@@ -47,6 +47,11 @@ func main() {
 				Aliases: []string{"c"},
 				Usage:   "Load configuration from `FILE`",
 			},
+			&cli.StringFlag{
+				Name:    "mode",
+				Aliases: []string{"m"},
+				Usage:   "Server Type `0`(default): api and timer, `1`: api, `2`: timer",
+			},
 		},
 		Action: runServer,
 	}
@@ -57,6 +62,7 @@ func main() {
 }
 
 func runServer(ctx *cli.Context) error {
+
 	// config file
 	configFilePath := ctx.String("config")
 	if err := config.InitCfg(configFilePath); err != nil {
@@ -111,117 +117,137 @@ func runServer(ctx *cli.Context) error {
 		return fmt.Errorf("initTxBuilder err: %s", err.Error())
 	}
 
-	// service timer
-	txTimer := timer.NewTxTimer(timer.TxTimerParam{
-		Ctx:           ctxServer,
-		Wg:            &wgServer,
-		DbDao:         dbDao,
-		DasCore:       dasCore,
-		DasCache:      dasCache,
-		TxBuilderBase: txBuilderBase,
-	})
-	if err = txTimer.Run(); err != nil {
-		return fmt.Errorf("txTimer.Run() err: %s", err.Error())
-	}
-	txTimer.DoRecyclePreEarly()
-	log.Info("timer ok")
-
-	if config.Cfg.Server.UniPayUrl != "" {
-		toolUniPay := unipay.ToolUniPay{
-			Ctx:   ctxServer,
-			Wg:    &wgServer,
-			DbDao: dbDao,
-		}
-		toolUniPay.RunConfirmStatus()
-		toolUniPay.RunOrderRefund()
-		toolUniPay.RunDoOrderHedge()
-		toolUniPay.RunRegisterInfo()
-	}
-
-	// tx timer
-	txTool := &txtool.TxTool{
-		Ctx:           ctxServer,
-		Wg:            &wgServer,
-		DbDao:         dbDao,
-		DasCore:       dasCore,
-		DasCache:      dasCache,
-		TxBuilderBase: txBuilderBase,
-		ServerScript:  serverScript,
-		RebootTime:    time.Now(),
-		RC:            rc,
-	}
-	txTool.Run()
-	txTool.RunDidCellTx()
-
 	// prometheus
 	prometheus.Init()
 	prometheus.Tools.Run()
 
-	// block parser
-	bp := block_parser.BlockParser{
-		DasCore:            dasCore,
-		DasCache:           dasCache,
-		CurrentBlockNumber: config.Cfg.Chain.CurrentBlockNumber,
-		DbDao:              dbDao,
-		ConcurrencyNum:     config.Cfg.Chain.ConcurrencyNum,
-		ConfirmNum:         config.Cfg.Chain.ConfirmNum,
-		Ctx:                ctxServer,
-		Cancel:             cancel,
-		Wg:                 &wgServer,
+	//service mode
+	mode := ctx.String("mode")
+
+	if mode == "api" {
+		if err := initApiServer(txBuilderBase, serverScript, dasCore, dasCache, dbDao, rc, es); err != nil {
+			return fmt.Errorf("initApiServer err : %s", err.Error())
+		}
+	} else if mode == "timer" {
+		if err := initTimer(txBuilderBase, serverScript, dasCore, dasCache, dbDao, rc); err != nil {
+			return fmt.Errorf("initTimer err : %s", err.Error())
+		}
+	} else {
+		if err := initTimer(txBuilderBase, serverScript, dasCore, dasCache, dbDao, rc); err != nil {
+			return fmt.Errorf("initTimer err : %s", err.Error())
+		}
+		if err := initApiServer(txBuilderBase, serverScript, dasCore, dasCache, dbDao, rc, es); err != nil {
+			return fmt.Errorf("initApiServer err : %s", err.Error())
+		}
 	}
-	if err := bp.Run(); err != nil {
-		return fmt.Errorf("block parser err: %s", err.Error())
-	}
-	log.Info("block parser ok")
+
+	//// service timer
+	//txTimer := timer.NewTxTimer(timer.TxTimerParam{
+	//	Ctx:           ctxServer,
+	//	Wg:            &wgServer,
+	//	DbDao:         dbDao,
+	//	DasCore:       dasCore,
+	//	DasCache:      dasCache,
+	//	TxBuilderBase: txBuilderBase,
+	//})
+	//if err = txTimer.Run(); err != nil {
+	//	return fmt.Errorf("txTimer.Run() err: %s", err.Error())
+	//}
+	//txTimer.DoRecyclePreEarly()
+	//log.Info("timer ok")
+	//
+	//if config.Cfg.Server.UniPayUrl != "" {
+	//	toolUniPay := unipay.ToolUniPay{
+	//		Ctx:   ctxServer,
+	//		Wg:    &wgServer,
+	//		DbDao: dbDao,
+	//	}
+	//	toolUniPay.RunConfirmStatus()
+	//	toolUniPay.RunOrderRefund()
+	//	toolUniPay.RunDoOrderHedge()
+	//	toolUniPay.RunRegisterInfo()
+	//}
+	//
+	//// tx timer
+	//txTool := &txtool.TxTool{
+	//	Ctx:           ctxServer,
+	//	Wg:            &wgServer,
+	//	DbDao:         dbDao,
+	//	DasCore:       dasCore,
+	//	DasCache:      dasCache,
+	//	TxBuilderBase: txBuilderBase,
+	//	ServerScript:  serverScript,
+	//	RebootTime:    time.Now(),
+	//	RC:            rc,
+	//}
+	//txTool.Run()
+	//txTool.RunDidCellTx()
+	//
+	//// block parser
+	//bp := block_parser.BlockParser{
+	//	DasCore:            dasCore,
+	//	DasCache:           dasCache,
+	//	CurrentBlockNumber: config.Cfg.Chain.CurrentBlockNumber,
+	//	DbDao:              dbDao,
+	//	ConcurrencyNum:     config.Cfg.Chain.ConcurrencyNum,
+	//	ConfirmNum:         config.Cfg.Chain.ConfirmNum,
+	//	Ctx:                ctxServer,
+	//	Cancel:             cancel,
+	//	Wg:                 &wgServer,
+	//}
+	//if err := bp.Run(); err != nil {
+	//	return fmt.Errorf("block parser err: %s", err.Error())
+	//}
+	//log.Info("block parser ok")
 
 	//
-	builderConfigCell, err := dasCore.ConfigCellDataBuilderByTypeArgsList(
-		common.ConfigCellTypeArgsPreservedAccount00,
-		common.ConfigCellTypeArgsPreservedAccount01,
-		common.ConfigCellTypeArgsPreservedAccount02,
-		common.ConfigCellTypeArgsPreservedAccount03,
-		common.ConfigCellTypeArgsPreservedAccount04,
-		common.ConfigCellTypeArgsPreservedAccount05,
-		common.ConfigCellTypeArgsPreservedAccount06,
-		common.ConfigCellTypeArgsPreservedAccount07,
-		common.ConfigCellTypeArgsPreservedAccount08,
-		common.ConfigCellTypeArgsPreservedAccount09,
-		common.ConfigCellTypeArgsPreservedAccount10,
-		common.ConfigCellTypeArgsPreservedAccount11,
-		common.ConfigCellTypeArgsPreservedAccount12,
-		common.ConfigCellTypeArgsPreservedAccount13,
-		common.ConfigCellTypeArgsPreservedAccount14,
-		common.ConfigCellTypeArgsPreservedAccount15,
-		common.ConfigCellTypeArgsPreservedAccount16,
-		common.ConfigCellTypeArgsPreservedAccount17,
-		common.ConfigCellTypeArgsPreservedAccount18,
-		common.ConfigCellTypeArgsPreservedAccount19,
-		common.ConfigCellTypeArgsUnavailable,
-	)
-	if err != nil {
-		return fmt.Errorf("unavailable account and preserved account init err: %s", err.Error())
-	}
-
-	// http service
-	hs, err := http_server.Initialize(http_server.HttpServerParams{
-		Address:                config.Cfg.Server.HttpServerAddr,
-		InternalAddress:        config.Cfg.Server.HttpServerInternalAddr,
-		DbDao:                  dbDao,
-		Rc:                     rc,
-		Es:                     es,
-		Ctx:                    ctxServer,
-		DasCore:                dasCore,
-		DasCache:               dasCache,
-		TxBuilderBase:          txBuilderBase,
-		ServerScript:           serverScript,
-		MapReservedAccounts:    builderConfigCell.ConfigCellPreservedAccountMap,
-		MapUnAvailableAccounts: builderConfigCell.ConfigCellUnavailableAccountMap,
-	})
-	if err != nil {
-		return fmt.Errorf("http server Initialize err:%s", err.Error())
-	}
-	hs.Run()
-	log.Info("httpserver ok")
+	//builderConfigCell, err := dasCore.ConfigCellDataBuilderByTypeArgsList(
+	//	common.ConfigCellTypeArgsPreservedAccount00,
+	//	common.ConfigCellTypeArgsPreservedAccount01,
+	//	common.ConfigCellTypeArgsPreservedAccount02,
+	//	common.ConfigCellTypeArgsPreservedAccount03,
+	//	common.ConfigCellTypeArgsPreservedAccount04,
+	//	common.ConfigCellTypeArgsPreservedAccount05,
+	//	common.ConfigCellTypeArgsPreservedAccount06,
+	//	common.ConfigCellTypeArgsPreservedAccount07,
+	//	common.ConfigCellTypeArgsPreservedAccount08,
+	//	common.ConfigCellTypeArgsPreservedAccount09,
+	//	common.ConfigCellTypeArgsPreservedAccount10,
+	//	common.ConfigCellTypeArgsPreservedAccount11,
+	//	common.ConfigCellTypeArgsPreservedAccount12,
+	//	common.ConfigCellTypeArgsPreservedAccount13,
+	//	common.ConfigCellTypeArgsPreservedAccount14,
+	//	common.ConfigCellTypeArgsPreservedAccount15,
+	//	common.ConfigCellTypeArgsPreservedAccount16,
+	//	common.ConfigCellTypeArgsPreservedAccount17,
+	//	common.ConfigCellTypeArgsPreservedAccount18,
+	//	common.ConfigCellTypeArgsPreservedAccount19,
+	//	common.ConfigCellTypeArgsUnavailable,
+	//)
+	//if err != nil {
+	//	return fmt.Errorf("unavailable account and preserved account init err: %s", err.Error())
+	//}
+	//
+	//// http service
+	//hs, err := http_server.Initialize(http_server.HttpServerParams{
+	//	Address:                config.Cfg.Server.HttpServerAddr,
+	//	InternalAddress:        config.Cfg.Server.HttpServerInternalAddr,
+	//	DbDao:                  dbDao,
+	//	Rc:                     rc,
+	//	Es:                     es,
+	//	Ctx:                    ctxServer,
+	//	DasCore:                dasCore,
+	//	DasCache:               dasCache,
+	//	TxBuilderBase:          txBuilderBase,
+	//	ServerScript:           serverScript,
+	//	MapReservedAccounts:    builderConfigCell.ConfigCellPreservedAccountMap,
+	//	MapUnAvailableAccounts: builderConfigCell.ConfigCellUnavailableAccountMap,
+	//})
+	//if err != nil {
+	//	return fmt.Errorf("http server Initialize err:%s", err.Error())
+	//}
+	//hs.Run()
+	//log.Info("httpserver ok")
 
 	//nameDaoTimer := timer.NameDaoTimer{DbDao: dbDao}
 	//nameDaoTimer.RunCheckNameDaoMember()
@@ -234,9 +260,9 @@ func runServer(ctx *cli.Context) error {
 			_ = watcher.Close()
 		}
 		cancel()
-		hs.Shutdown()
+		//hs.Shutdown()
 		//nameDaoTimer.CloseCron()
-		txTimer.CloseCron()
+		//txTimer.CloseCron()
 
 		wgServer.Wait()
 		log.Warn("success exit server. bye bye!")
@@ -319,4 +345,118 @@ func initTxBuilder(dasCore *core.DasCore) (*txbuilder.DasTxBuilderBase, *types.S
 	log.Info("tx builder ok")
 
 	return txBuilderBase, serverScript, nil
+}
+
+func initTimer(txBuilderBase *txbuilder.DasTxBuilderBase, serverScript *types.Script, dasCore *core.DasCore, dasCache *dascache.DasCache, dbDao *dao.DbDao, rc *cache.RedisCache) error {
+	// service timer
+	txTimer := timer.NewTxTimer(timer.TxTimerParam{
+		Ctx:           ctxServer,
+		Wg:            &wgServer,
+		DbDao:         dbDao,
+		DasCore:       dasCore,
+		DasCache:      dasCache,
+		TxBuilderBase: txBuilderBase,
+	})
+	if err := txTimer.Run(); err != nil {
+		return fmt.Errorf("txTimer.Run() err: %s", err.Error())
+	}
+	txTimer.DoRecyclePreEarly()
+	log.Info("timer ok")
+
+	if config.Cfg.Server.UniPayUrl != "" {
+		toolUniPay := unipay.ToolUniPay{
+			Ctx:   ctxServer,
+			Wg:    &wgServer,
+			DbDao: dbDao,
+		}
+		toolUniPay.RunConfirmStatus()
+		toolUniPay.RunOrderRefund()
+		toolUniPay.RunDoOrderHedge()
+		toolUniPay.RunRegisterInfo()
+	}
+
+	// tx timer
+	txTool := &txtool.TxTool{
+		Ctx:           ctxServer,
+		Wg:            &wgServer,
+		DbDao:         dbDao,
+		DasCore:       dasCore,
+		DasCache:      dasCache,
+		TxBuilderBase: txBuilderBase,
+		ServerScript:  serverScript,
+		RebootTime:    time.Now(),
+		RC:            rc,
+	}
+	txTool.Run()
+	txTool.RunDidCellTx()
+
+	// block parser
+	bp := block_parser.BlockParser{
+		DasCore:            dasCore,
+		DasCache:           dasCache,
+		CurrentBlockNumber: config.Cfg.Chain.CurrentBlockNumber,
+		DbDao:              dbDao,
+		ConcurrencyNum:     config.Cfg.Chain.ConcurrencyNum,
+		ConfirmNum:         config.Cfg.Chain.ConfirmNum,
+		Ctx:                ctxServer,
+		Cancel:             cancel,
+		Wg:                 &wgServer,
+	}
+	if err := bp.Run(); err != nil {
+		return fmt.Errorf("block parser err: %s", err.Error())
+	}
+	log.Info("block parser ok")
+	return nil
+}
+
+func initApiServer(txBuilderBase *txbuilder.DasTxBuilderBase, serverScript *types.Script, dasCore *core.DasCore, dasCache *dascache.DasCache, dbDao *dao.DbDao, rc *cache.RedisCache, es *elastic.Es) error {
+	//
+	builderConfigCell, err := dasCore.ConfigCellDataBuilderByTypeArgsList(
+		common.ConfigCellTypeArgsPreservedAccount00,
+		common.ConfigCellTypeArgsPreservedAccount01,
+		common.ConfigCellTypeArgsPreservedAccount02,
+		common.ConfigCellTypeArgsPreservedAccount03,
+		common.ConfigCellTypeArgsPreservedAccount04,
+		common.ConfigCellTypeArgsPreservedAccount05,
+		common.ConfigCellTypeArgsPreservedAccount06,
+		common.ConfigCellTypeArgsPreservedAccount07,
+		common.ConfigCellTypeArgsPreservedAccount08,
+		common.ConfigCellTypeArgsPreservedAccount09,
+		common.ConfigCellTypeArgsPreservedAccount10,
+		common.ConfigCellTypeArgsPreservedAccount11,
+		common.ConfigCellTypeArgsPreservedAccount12,
+		common.ConfigCellTypeArgsPreservedAccount13,
+		common.ConfigCellTypeArgsPreservedAccount14,
+		common.ConfigCellTypeArgsPreservedAccount15,
+		common.ConfigCellTypeArgsPreservedAccount16,
+		common.ConfigCellTypeArgsPreservedAccount17,
+		common.ConfigCellTypeArgsPreservedAccount18,
+		common.ConfigCellTypeArgsPreservedAccount19,
+		common.ConfigCellTypeArgsUnavailable,
+	)
+	if err != nil {
+		return fmt.Errorf("unavailable account and preserved account init err: %s", err.Error())
+	}
+
+	// http service
+	hs, err := http_server.Initialize(http_server.HttpServerParams{
+		Address:                config.Cfg.Server.HttpServerAddr,
+		InternalAddress:        config.Cfg.Server.HttpServerInternalAddr,
+		DbDao:                  dbDao,
+		Rc:                     rc,
+		Es:                     es,
+		Ctx:                    ctxServer,
+		DasCore:                dasCore,
+		DasCache:               dasCache,
+		TxBuilderBase:          txBuilderBase,
+		ServerScript:           serverScript,
+		MapReservedAccounts:    builderConfigCell.ConfigCellPreservedAccountMap,
+		MapUnAvailableAccounts: builderConfigCell.ConfigCellUnavailableAccountMap,
+	})
+	if err != nil {
+		return fmt.Errorf("http server Initialize err:%s", err.Error())
+	}
+	hs.Run()
+	log.Info("httpserver ok")
+	return nil
 }
