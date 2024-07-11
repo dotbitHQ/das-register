@@ -50,7 +50,7 @@ func main() {
 			&cli.StringFlag{
 				Name:    "mode",
 				Aliases: []string{"m"},
-				Usage:   "Server Type `0`(default): api and timer, `1`: api, `2`: timer",
+				Usage:   "Server Type, ``(default): api and timer server, `api`: api server, `timer`: timer server",
 			},
 		},
 		Action: runServer,
