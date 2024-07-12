@@ -219,33 +219,56 @@ func TestDidCellEditOwner(t *testing.T) {
 	}
 }
 
+func TestDidCellRecyclableList(t *testing.T) {
+	req := handle.ReqDidCellRecyclableList{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgyumrp5k2es0d0hy5z6044zr2305pyzc97qqjec5vx",
+			},
+		},
+		Pagination: handle.Pagination{
+			Page: 1,
+			Size: 20,
+		},
+		Keyword: "",
+	}
+	url := TestUrl + "/did/cell/recyclable/list"
+	var data handle.RespDidCellRecyclableList
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+}
+
 func TestDidCellRecycle(t *testing.T) {
 	req := handle.ReqDidCellRecycle{
 		ChainTypeAddress: core.ChainTypeAddress{
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
 				CoinType: common.CoinTypeCKB,
-				Key:      "ckt1qrc77cdkja6s3k0v2mlyxwv6q8jhvzr2wm8s7lrg052psv6733qp7qgzt8h5fs",
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgyumrp5k2es0d0hy5z6044zr2305pyzc97qqjec5vx",
 			},
 		},
-		Account: "20240512.bit",
+		Account: "20240704.bit",
 	}
 	url := TestUrl + "/did/cell/recycle"
-	var data handle.RespDidCellRenew
+	var data handle.RespDidCellRecycle
 	if err := doReq(url, req, &data); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(toolib.JsonString(&data))
-	fmt.Println("===========================")
-	if err := doSig(&data.SignInfo); err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(toolib.JsonString(&data))
-	fmt.Println("===========================")
-
-	if err := sendTx2(data.SignInfo); err != nil {
-		t.Fatal(err)
-	}
+	//fmt.Println("===========================")
+	//if err := doSig(&data.SignInfo); err != nil {
+	//	t.Fatal(err)
+	//}
+	//fmt.Println(toolib.JsonString(&data))
+	//fmt.Println("===========================")
+	//
+	//if err := sendTx2(data.SignInfo); err != nil {
+	//	t.Fatal(err)
+	//}
 }
 
 func TestDidCellUpgradableList(t *testing.T) {

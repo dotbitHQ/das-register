@@ -211,6 +211,14 @@ func (h *HttpHandle) doTransactionSend(ctx context.Context, req *ReqTransactionS
 			outpoints = append(outpoints, common.OutPointStruct2String(v.PreviousOutput))
 		}
 		h.dasCache.AddOutPointWithDuration(outpoints, time.Hour*12)
+		//
+
+		txHash, err := txBuilder.Transaction.ComputeHash()
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, "ComputeHash err")
+			return fmt.Errorf("ComputeHash err: %s", err.Error())
+		}
+		resp.Hash = txHash.Hex()
 		apiResp.ApiRespOK(resp)
 		return nil
 	}
