@@ -217,18 +217,18 @@ func (h *HttpHandle) doDidCellEditOwner(ctx context.Context, req *ReqDidCellEdit
 				return fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
 			}
 			log.Info(ctx, "GetDidCellOccupiedCapacity:", editOwnerCapacity)
-			parseSvrAddr, err := address.Parse(config.Cfg.Server.PayServerAddress)
-			if err != nil {
-				apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
-				return fmt.Errorf("address.Parse err: %s", err.Error())
-			}
-			normalCellScript = parseSvrAddr.Script
 		}
 	} else {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid")
 		return nil
 	}
 
+	parseSvrAddr, err := address.Parse(config.Cfg.Server.PayServerAddress)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
+		return fmt.Errorf("address.Parse err: %s", err.Error())
+	}
+	normalCellScript = parseSvrAddr.Script
 	txParams, err := txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
 		DasCore:             h.dasCore,
 		DasCache:            h.dasCache,
