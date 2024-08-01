@@ -22,13 +22,16 @@ import (
 type ReqAccountRegister struct {
 	ReqAccountSearch
 	ReqOrderRegisterBase
-	CoinType string `json:"coin_type"`
-
-	//PayChainType common.ChainType  `json:"pay_chain_type"`
-	//PayAddress   string            `json:"pay_address"`
-	//PayTokenId   tables.PayTokenId `json:"pay_token_id"`
-	//PayType      tables.PayType    `json:"pay_type"`
+	CoinType string   `json:"coin_type"`
+	MintFrom MintFrom `json:"mint_from"`
 }
+
+type MintFrom string
+
+const (
+	MintFromDefault MintFrom = ""
+	MintFromPadge   MintFrom = "padge"
+)
 
 type RespAccountRegister struct {
 	OrderId string `json:"order_id"`
@@ -178,6 +181,9 @@ func (h *HttpHandle) doAccountRegister(ctx context.Context, req *ReqAccountRegis
 
 func (h *HttpHandle) doInternalRegisterOrder(ctx context.Context, req *ReqAccountRegister, apiResp *api_code.ApiResp, resp *RespAccountRegister) {
 	payTokenId := tables.TokenIdCkbInternal
+	if req.MintFrom == MintFromPadge {
+		payTokenId = tables.TokenIdPadgeInternal
+	}
 	// pay amount
 	hexAddress := core.DasAddressHex{
 		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
@@ -231,7 +237,7 @@ func (h *HttpHandle) doInternalRegisterOrder(ctx context.Context, req *ReqAccoun
 		Action:            common.DasActionApplyRegister,
 		ChainType:         req.ChainType,
 		Address:           req.Address,
-		Timestamp:         time.Now().UnixNano() / 1e6,
+		Timestamp:         time.Now().UnixMilli(),
 		PayTokenId:        payTokenId,
 		PayType:           "",
 		PayAmount:         amountTotalPayToken,

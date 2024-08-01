@@ -85,21 +85,22 @@ const (
 type PayTokenId string
 
 const (
-	TokenIdDas         PayTokenId = "ckb_das"
-	TokenIdCkb         PayTokenId = "ckb_ckb"
-	TokenIdCkbInternal PayTokenId = "ckb_internal"
-	TokenIdEth         PayTokenId = "eth_eth"
-	TokenIdTrx         PayTokenId = "tron_trx"
-	TokenIdWx          PayTokenId = "wx_cny"
-	TokenIdBnb         PayTokenId = "bsc_bnb"
-	TokenIdMatic       PayTokenId = "polygon_matic"
-	TokenCoupon        PayTokenId = "coupon"
-	TokenIdDoge        PayTokenId = "doge_doge"
-	TokenIdStripeUSD   PayTokenId = "stripe_usd"
-	TokenIdErc20USDT   PayTokenId = "eth_erc20_usdt"
-	TokenIdTrc20USDT   PayTokenId = "tron_trc20_usdt"
-	TokenIdBep20USDT   PayTokenId = "bsc_bep20_usdt"
-	ToKenIdDidPoint    PayTokenId = "did_point"
+	TokenIdDas           PayTokenId = "ckb_das"
+	TokenIdCkb           PayTokenId = "ckb_ckb"
+	TokenIdCkbInternal   PayTokenId = "ckb_internal"
+	TokenIdEth           PayTokenId = "eth_eth"
+	TokenIdTrx           PayTokenId = "tron_trx"
+	TokenIdWx            PayTokenId = "wx_cny"
+	TokenIdBnb           PayTokenId = "bsc_bnb"
+	TokenIdMatic         PayTokenId = "polygon_matic"
+	TokenCoupon          PayTokenId = "coupon"
+	TokenIdDoge          PayTokenId = "doge_doge"
+	TokenIdStripeUSD     PayTokenId = "stripe_usd"
+	TokenIdErc20USDT     PayTokenId = "eth_erc20_usdt"
+	TokenIdTrc20USDT     PayTokenId = "tron_trc20_usdt"
+	TokenIdBep20USDT     PayTokenId = "bsc_bep20_usdt"
+	ToKenIdDidPoint      PayTokenId = "did_point"
+	TokenIdPadgeInternal PayTokenId = "padge_internal"
 )
 
 func (p PayTokenId) IsTokenIdCkbInternal() bool {
