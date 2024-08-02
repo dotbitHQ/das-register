@@ -124,7 +124,7 @@ func RoundAmount(amount decimal.Decimal, tokenId tables.PayTokenId) decimal.Deci
 	case tables.TokenIdEth, tables.TokenIdBnb, tables.TokenIdMatic:
 		dec := decimal.New(1, 8)
 		amount = amount.Div(dec).Ceil().Mul(dec)
-	case tables.TokenIdDas, tables.TokenIdCkb, tables.TokenIdCkbInternal, tables.TokenIdDoge:
+	case tables.TokenIdDas, tables.TokenIdCkb, tables.TokenIdCkbInternal, tables.TokenIdDoge, tables.TokenIdPadgeInternal:
 		dec := decimal.New(1, 4)
 		amount = amount.Div(dec).Ceil().Mul(dec)
 	case tables.TokenIdTrx, tables.TokenIdErc20USDT,

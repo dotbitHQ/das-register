@@ -31,7 +31,7 @@ func SendLarkOrderNotify(p *SendLarkOrderNotifyParam) {
 	switch p.PayTokenId {
 	case tables.TokenIdBnb, tables.TokenIdEth, tables.TokenIdMatic:
 		amount = amount.DivRound(decimal.New(1, 18), 18)
-	case tables.TokenIdCkb, tables.TokenIdDas:
+	case tables.TokenIdCkb, tables.TokenIdDas, tables.TokenIdCkbInternal, tables.TokenIdPadgeInternal:
 		amount = amount.DivRound(decimal.New(1, 8), 8)
 	case tables.TokenIdTrx:
 		amount = amount.DivRound(decimal.New(1, 6), 6)
