@@ -228,6 +228,25 @@ func changeContractOwner(ctx *cli.Context) error {
 		}
 		sizeInBlock, _ := txBuilder.Transaction.SizeInBlock()
 		fee := uint64(math.Ceil(float64(sizeInBlock*1000) / float64(1000)))
+
+		deleteIdx := len(txBuilder.Transaction.Outputs)
+		for i := len(txBuilder.Transaction.Outputs) - 1; i >= 0; i-- {
+			capacity := txBuilder.Transaction.Outputs[i].Capacity
+			if capacity >= fee {
+				txBuilder.Transaction.Outputs[i].Capacity -= fee
+				if capacity == fee {
+					deleteIdx = i
+				}
+			} else {
+				fee -= capacity
+				deleteIdx = i
+			}
+			if fee == 0 {
+				break
+			}
+		}
+		txBuilder.Transaction.Outputs = txBuilder.Transaction.Outputs[:deleteIdx]
+
 		latestIndex := len(txBuilder.Transaction.Outputs) - 1
 		changeCapacity := txBuilder.Transaction.Outputs[latestIndex].Capacity - fee
 		txBuilder.Transaction.Outputs[latestIndex].Capacity = changeCapacity
