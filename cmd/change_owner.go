@@ -232,25 +232,20 @@ func changeContractOwner(ctx *cli.Context) error {
 		deleteIdx := len(txBuilder.Transaction.Outputs)
 		for i := len(txBuilder.Transaction.Outputs) - 1; i >= 0; i-- {
 			capacity := txBuilder.Transaction.Outputs[i].Capacity
-			if capacity >= fee {
+			if capacity-common.MinCellOccupiedCkb >= fee {
 				txBuilder.Transaction.Outputs[i].Capacity -= fee
-				if capacity == fee {
-					deleteIdx = i
-				}
 			} else {
 				fee -= capacity
 				deleteIdx = i
 			}
-			if fee == 0 {
+			if fee <= 0 {
 				break
 			}
 		}
 		txBuilder.Transaction.Outputs = txBuilder.Transaction.Outputs[:deleteIdx]
-
-		latestIndex := len(txBuilder.Transaction.Outputs) - 1
-		changeCapacity := txBuilder.Transaction.Outputs[latestIndex].Capacity - fee
-		txBuilder.Transaction.Outputs[latestIndex].Capacity = changeCapacity
-
+		if fee < 0 {
+			txBuilder.Transaction.Outputs[len(txBuilder.Transaction.Outputs)-1].Capacity += -fee
+		}
 		fileName := fmt.Sprintf("normalCellsTx_%d.json", i)
 		if err := os.WriteFile(fileName, []byte(txBuilder.TxString()), 0666); err != nil {
 			return err
