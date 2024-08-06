@@ -106,9 +106,9 @@ func changeContractOwner(ctx *cli.Context) error {
 					data := cell.OutputData
 					if len(cell.OutputData) > 66 {
 						data = cell.OutputData[:66]
-						log.Infof("%s: data cell, data: %s ...", outpoint, hex.EncodeToString(data))
+						fmt.Printf("%s: data cell, data: %s ...", outpoint, hex.EncodeToString(data))
 					} else {
-						log.Infof("%s: data cell, data: %s", outpoint, hex.EncodeToString(data))
+						fmt.Printf("%s: data cell, data: %s", outpoint, hex.EncodeToString(data))
 					}
 					continue
 				}
@@ -130,9 +130,9 @@ func changeContractOwner(ctx *cli.Context) error {
 					totalDidContractCells++
 					itemOutpoint := common.OutPointStruct2String(&item.OutPoint)
 					if itemOutpoint == outpoint {
-						log.Infof("%s: did contract cell (so script)[active], name: %s", outpoint, key)
+						fmt.Printf("%s: did contract cell (so script)[active], name: %s", outpoint, key)
 					} else {
-						log.Infof("%s: did contract cell (so script)[old], name: %s", outpoint, key)
+						fmt.Printf("%s: did contract cell (so script)[old], name: %s", outpoint, key)
 					}
 				}
 				return true
@@ -151,9 +151,9 @@ func changeContractOwner(ctx *cli.Context) error {
 					didCell = true
 					totalDidContractCells++
 					if outpoint == itemOutpoint {
-						log.Infof("%s: contract cell-type[active]: %s", outpoint, key)
+						fmt.Printf("%s: contract cell-type[active]: %s", outpoint, key)
 					} else {
-						log.Infof("%s: contract cell-type[old]: %s", outpoint, key)
+						fmt.Printf("%s: contract cell-type[old]: %s", outpoint, key)
 					}
 					return true
 				}
@@ -175,22 +175,22 @@ func changeContractOwner(ctx *cli.Context) error {
 				totalDidNormalCells++
 				contractName := "ContractSourceCell"
 
-				log.Infof("%s: contract cell name: %s", outpoint, contractName)
+				fmt.Printf("%s: contract cell name: %s", outpoint, contractName)
 				normalCellsMap[contractName]++
 			}
 
 			if !didCell {
 				totalUnkownCells++
-				log.Infof("%s: unkown cell, type: %s", outpoint, hex.EncodeToString(cell.Output.Type.CodeHash[:]))
+				fmt.Printf("%s: unkown cell, type: %s", outpoint, hex.EncodeToString(cell.Output.Type.CodeHash[:]))
 			}
 		}
 	}
 
-	log.Infof("total did contract cells: %d", totalDidContractCells)
-	log.Infof("total did normal cells: %d, map: %s", len(totalNormalCells), gconv.String(normalCellsMap))
-	log.Infof("total unkown cells: %d", totalUnkownCells)
-	log.Infof("total data cells: %d", totalDataCells)
-	log.Infof("total cells: %d", totalCells)
+	fmt.Printf("total did contract cells: %d", totalDidContractCells)
+	fmt.Printf("total did normal cells: %d, map: %s", len(totalNormalCells), gconv.String(normalCellsMap))
+	fmt.Printf("total unkown cells: %d", totalUnkownCells)
+	fmt.Printf("total data cells: %d", totalDataCells)
+	fmt.Printf("total cells: %d", totalCells)
 
 	// normalCellsTx
 	stepCells := 2000
@@ -236,7 +236,7 @@ func changeContractOwner(ctx *cli.Context) error {
 		if err := os.WriteFile(fileName, []byte(txBuilder.TxString()), 0666); err != nil {
 			return err
 		}
-		log.Infof("write file: %s", fileName)
+		fmt.Printf("write file: %s", fileName)
 	}
 	return nil
 }
