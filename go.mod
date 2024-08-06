@@ -3,7 +3,7 @@ module das_register_server
 go 1.18
 
 require (
-	github.com/dotbitHQ/das-lib v1.1.1-0.20240722013735-7b3fd83ed44b
+	github.com/dotbitHQ/das-lib v1.2.1-0.20240806163452-1436fc67f443
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/getsentry/sentry-go v0.25.0
@@ -22,6 +22,7 @@ require (
 )
 
 require (
+	github.com/gogf/gf/v2 v2.3.3
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/sjatsh/uint128 v0.0.0-20240313033229-578752bd051c
 )
@@ -55,7 +56,6 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/gogf/gf/v2 v2.3.3 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
