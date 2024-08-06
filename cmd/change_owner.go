@@ -162,7 +162,7 @@ func changeContractOwner(ctx *cli.Context) error {
 				if item.IsSameTypeId(cell.Output.Type.CodeHash) {
 					didCell = true
 					totalDidNormalCells++
-					log.Infof("%s: cell name: %s\n", outpoint, key)
+					fmt.Printf("%s: cell name: %s\n", outpoint, key)
 
 					contractName := string(item.ContractName)
 					normalCellsMap[contractName]++
