@@ -232,11 +232,11 @@ func (h *HttpHandle) doTransactionSend(ctx context.Context, req *ReqTransactionS
 			apiResp.ApiRespErr(api_code.ApiCodeRejectedOutPoint, err.Error())
 			return fmt.Errorf("SendTransaction err: %s", err.Error())
 		}
-		if strings.Contains(err.Error(), "-102 in the page") {
+		if strings.Contains(err.Error(), "error code -102") {
 			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "account frequency limit")
 			return fmt.Errorf("SendTransaction err: %s", err.Error())
 		}
-		if strings.Contains(err.Error(), "error code 65 in") {
+		if strings.Contains(err.Error(), "error code 65") {
 			apiResp.ApiRespErr(api_code.ApiCodeTooManyRecords, "too many records")
 			return fmt.Errorf("SendTransaction err: %s", err.Error())
 		}
