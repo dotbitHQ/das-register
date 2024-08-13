@@ -267,7 +267,7 @@ func (t *TxTimer) doRefundPre() error {
 				return fmt.Errorf("BuildTransaction err: %s", err.Error())
 			}
 			if hash, err := txBuilder.SendTransaction(); err != nil {
-				if strings.Contains(err.Error(), "see the error code 83 in the page") {
+				if strings.Contains(err.Error(), "error code 83") {
 					preBlockNumber--
 					break
 				}
