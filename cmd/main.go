@@ -54,33 +54,6 @@ func main() {
 			},
 		},
 		Action: runServer,
-		Commands: []*cli.Command{
-			{
-				Name:    "change_owner",
-				Aliases: []string{"co"},
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:    "old_address",
-						Aliases: []string{"oa"},
-					},
-					&cli.StringFlag{
-						Name:    "new_address",
-						Aliases: []string{"na"},
-					},
-					&cli.IntFlag{
-						Name:    "env",
-						Aliases: []string{"e"},
-						Value:   2,
-					},
-					&cli.StringFlag{
-						Name:    "index_url",
-						Aliases: []string{"i"},
-						Value:   "http://127.0.0.1:8114",
-					},
-				},
-				Action: changeContractOwner,
-			},
-		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
