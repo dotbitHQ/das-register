@@ -125,7 +125,7 @@ func (h *HttpHandle) doDidCellRecyclableList(ctx context.Context, req *ReqDidCel
 	for _, v := range list {
 		resp.List = append(resp.List, DidCellRecyclable{
 			Account:   v.Account,
-			ExpiredAt: v.ExpiredAt,
+			ExpiredAt: v.ExpiredAt * 1000,
 		})
 		accounts = append(accounts, v.Account)
 	}

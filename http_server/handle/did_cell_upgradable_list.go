@@ -110,7 +110,7 @@ func (h *HttpHandle) doDidCellUpgradableList(ctx context.Context, req *ReqDidCel
 		acc := UpgradableAccount{
 			AccountId:     v.AccountId,
 			Account:       v.Account,
-			ExpiredAt:     v.ExpiredAt,
+			ExpiredAt:     v.ExpiredAt * 1000,
 			UpgradeStatus: UpgradeStatusDefault,
 		}
 		resp.List = append(resp.List, acc)
