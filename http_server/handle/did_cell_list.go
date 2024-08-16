@@ -95,7 +95,7 @@ func (h *HttpHandle) doDidCellList(ctx context.Context, req *ReqDidCellList, api
 	for _, v := range list {
 		didAcc := DidAccount{
 			Account:   v.Account,
-			ExpiredAt: v.ExpiredAt,
+			ExpiredAt: v.ExpiredAt * 1000,
 		}
 		resp.List = append(resp.List, didAcc)
 	}
