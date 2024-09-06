@@ -702,7 +702,8 @@ func (h *HttpHandle) doRegisterCouponOrder(ctx context.Context, req *ReqOrderReg
 
 func (h *HttpHandle) getOrderAmount(ctx context.Context, accLen uint8, args, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
 	// pay token
-	if payTokenId == tables.TokenCoupon {
+	switch payTokenId {
+	case tables.TokenCoupon:
 		amountTotalUSD = decimal.Zero
 		amountTotalCKB = decimal.Zero
 		amountTotalPayToken = decimal.Zero
