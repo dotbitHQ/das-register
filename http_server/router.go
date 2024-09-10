@@ -101,9 +101,7 @@ func (h *HttpServer) initRouter() {
 
 		// node rpc
 		v1.POST("/node/ckb/rpc", api_code.DoMonitorLog(api_code.MethodCkbRpc), h.h.CkbRpc)
-		v1.GET("/test/tag", func(c *gin.Context) {
-			c.JSON(200, "dev--v0")
-		})
+
 	}
 
 	internalV1 := h.internalEngine.Group("v1")
