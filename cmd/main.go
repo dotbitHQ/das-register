@@ -21,6 +21,7 @@ import (
 	"github.com/dotbitHQ/das-lib/remote_sign"
 	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/dotbitHQ/das-lib/txbuilder"
+	"github.com/go-redis/redis"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/rpc"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
@@ -106,7 +107,7 @@ func runServer(ctx *cli.Context) error {
 		log.Info("es ok")
 	}
 	// das core
-	dasCore, dasCache, err := initDasCore()
+	dasCore, dasCache, err := initDasCore(red)
 	if err != nil {
 		return fmt.Errorf("initDasCore err: %s", err.Error())
 	}
@@ -275,7 +276,7 @@ func runServer(ctx *cli.Context) error {
 	return nil
 }
 
-func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
+func initDasCore(red *redis.Client) (*core.DasCore, *dascache.DasCache, error) {
 	// ckb node
 	ckbClient, err := rpc.DialWithIndexer(config.Cfg.Chain.CkbUrl, config.Cfg.Chain.IndexUrl)
 	if err != nil {
@@ -295,6 +296,7 @@ func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
 		core.WithDasContractCodeHash(env.ContractCodeHash),
 		core.WithDasNetType(config.Cfg.Server.Net),
 		core.WithTHQCodeHash(env.THQCodeHash),
+		core.WithDasRedis(red),
 	}
 	dasCore := core.NewDasCore(ctxServer, &wgServer, ops...)
 	dasCore.InitDasContract(env.MapContract)
@@ -307,6 +309,11 @@ func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
 	dasCore.RunAsyncDasContract(time.Minute * 3)   // contract outpoint
 	dasCore.RunAsyncDasConfigCell(time.Minute * 5) // config cell outpoint
 	dasCore.RunAsyncDasSoScript(time.Minute * 7)   // so
+	dasCore.RunSetConfigCellByCache([]core.CacheConfigCellKey{
+		core.CacheConfigCellKeyCharSet,
+		core.CacheConfigCellKeyBase,
+		core.CacheConfigCellKeyReservedAccounts,
+	})
 
 	log.Info("das contract ok")
 
