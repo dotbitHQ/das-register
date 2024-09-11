@@ -12,6 +12,7 @@ import (
 	"das_register_server/timer"
 	"das_register_server/txtool"
 	"das_register_server/unipay"
+	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -441,8 +442,25 @@ func initApiServer(txBuilderBase *txbuilder.DasTxBuilderBase, serverScript *type
 		common.ConfigCellTypeArgsPreservedAccount19,
 		common.ConfigCellTypeArgsUnavailable,
 	)
+	var mapReservedAccounts = make(map[string]struct{})
+	var mapUnAvailableAccounts = make(map[string]struct{})
 	if err != nil {
-		return fmt.Errorf("unavailable account and preserved account init err: %s", err.Error())
+		var cacheBuilder core.CacheConfigCellReservedAccounts
+		strCache, errCache := dasCore.GetConfigCellByCache(core.CacheConfigCellKeyReservedAccounts)
+		if errCache != nil {
+			log.Error("GetConfigCellByCache err: %s", errCache.Error())
+			return fmt.Errorf("unavailable account and preserved account init1 err: %s", err.Error())
+		} else if strCache == "" {
+			return fmt.Errorf("unavailable account and preserved account init2 err: %s", err.Error())
+		} else if errCache = json.Unmarshal([]byte(strCache), &cacheBuilder); errCache != nil {
+			log.Error("json.Unmarshal err: %s", errCache.Error())
+			return fmt.Errorf("unavailable account and preserved account init3 err: %s", err.Error())
+		}
+		mapReservedAccounts = cacheBuilder.MapReservedAccounts
+		mapUnAvailableAccounts = cacheBuilder.MapUnAvailableAccounts
+	} else {
+		mapReservedAccounts = builderConfigCell.ConfigCellPreservedAccountMap
+		mapUnAvailableAccounts = builderConfigCell.ConfigCellUnavailableAccountMap
 	}
 
 	// http service
@@ -457,8 +475,8 @@ func initApiServer(txBuilderBase *txbuilder.DasTxBuilderBase, serverScript *type
 		DasCache:               dasCache,
 		TxBuilderBase:          txBuilderBase,
 		ServerScript:           serverScript,
-		MapReservedAccounts:    builderConfigCell.ConfigCellPreservedAccountMap,
-		MapUnAvailableAccounts: builderConfigCell.ConfigCellUnavailableAccountMap,
+		MapReservedAccounts:    mapReservedAccounts,
+		MapUnAvailableAccounts: mapUnAvailableAccounts,
 	})
 	if err != nil {
 		return fmt.Errorf("http server Initialize err:%s", err.Error())
