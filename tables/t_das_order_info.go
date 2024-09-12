@@ -101,6 +101,7 @@ const (
 	TokenIdBep20USDT     PayTokenId = "bsc_bep20_usdt"
 	ToKenIdDidPoint      PayTokenId = "did_point"
 	TokenIdPadgeInternal PayTokenId = "padge_internal"
+	TokenIdCkbCCC        PayTokenId = "ckb_ccc"
 )
 
 func (p PayTokenId) IsTokenIdCkbInternal() bool {
@@ -109,7 +110,7 @@ func (p PayTokenId) IsTokenIdCkbInternal() bool {
 
 func (p PayTokenId) ToChainString() string {
 	switch p {
-	case TokenIdDas, TokenIdCkb, TokenIdCkbInternal:
+	case TokenIdDas, TokenIdCkb, TokenIdCkbInternal, TokenIdCkbCCC:
 		return "ckb"
 	case TokenIdEth:
 		return "eth"
