@@ -95,23 +95,57 @@ func (h *HttpHandle) AccountDetail(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, account string, isRenew bool) (baseAmount, accountPrice decimal.Decimal, err error) {
-	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(common.ConfigCellTypeArgsPrice, common.ConfigCellTypeArgsAccount)
-	if err != nil {
-		err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
-		return
-	}
-	//accLen := common.GetAccountLength(account)
-	//if accLen == 0 {
-	//	accLen = common.GetAccountLength(account)
-	//}
 	if accLen == 0 {
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
-	newPrice, renewPrice, err := builder.AccountPrice(accLen)
+	var newPrice, renewPrice, basicCapacity, preparedFeeCapacity uint64
+
+	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(common.ConfigCellTypeArgsPrice, common.ConfigCellTypeArgsAccount)
 	if err != nil {
-		err = fmt.Errorf("AccountPrice err: %s", err.Error())
-		return
+		var cacheBuilder core.CacheConfigCellBase
+		strCache, errCache := h.dasCore.GetConfigCellByCache(core.CacheConfigCellKeyBase)
+		if errCache != nil {
+			log.Error("GetConfigCellByCache err: %s", errCache.Error())
+			err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
+			return
+		} else if strCache == "" {
+			err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
+			return
+		} else if errCache = json.Unmarshal([]byte(strCache), &cacheBuilder); errCache != nil {
+			log.Error("json.Unmarshal err: %s", errCache.Error())
+			err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
+			return
+		}
+		newPrice, renewPrice, errCache = cacheBuilder.AccountPrice(accLen)
+		if errCache != nil {
+			log.Error("cacheBuilder.AccountPrice err: ", errCache.Error())
+			err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
+			return
+		}
+		basicCapacity, errCache = cacheBuilder.BasicCapacityFromOwnerDasAlgorithmId(args)
+		if errCache != nil {
+			log.Error("cacheBuilder.BasicCapacityFromOwnerDasAlgorithmId err: ", errCache.Error())
+			err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
+			return
+		}
+		preparedFeeCapacity = cacheBuilder.AccountCellPreparedFeeCapacity
+	} else {
+		newPrice, renewPrice, err = builder.AccountPrice(accLen)
+		if err != nil {
+			err = fmt.Errorf("AccountPrice err: %s", err.Error())
+			return
+		}
+		basicCapacity, err = builder.BasicCapacityFromOwnerDasAlgorithmId(args)
+		if err != nil {
+			err = fmt.Errorf("BasicCapacity err: %s", err.Error())
+			return
+		}
+		preparedFeeCapacity, err = builder.PreparedFeeCapacity()
+		if err != nil {
+			err = fmt.Errorf("PreparedFeeCapacity err: %s", err.Error())
+			return
+		}
 	}
 
 	quoteCell, err := h.dasCore.GetQuoteCell()
@@ -124,18 +158,8 @@ func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, ac
 	if args == "" {
 		args = "0x03"
 	}
-	basicCapacity, err := builder.BasicCapacityFromOwnerDasAlgorithmId(args)
-	if err != nil {
-		err = fmt.Errorf("BasicCapacity err: %s", err.Error())
-		return
-	}
-	preparedFeeCapacity, err := builder.PreparedFeeCapacity()
-	if err != nil {
-		err = fmt.Errorf("PreparedFeeCapacity err: %s", err.Error())
-		return
-	}
-	log.Info(ctx, "BasicCapacity:", basicCapacity, "PreparedFeeCapacity:", preparedFeeCapacity, "Quote:", quote, "Price:", newPrice, renewPrice)
 
+	log.Info(ctx, "BasicCapacity:", basicCapacity, "PreparedFeeCapacity:", preparedFeeCapacity, "Quote:", quote, "Price:", newPrice, renewPrice)
 	basicCapacity = basicCapacity/common.OneCkb + uint64(len([]byte(account))) + preparedFeeCapacity/common.OneCkb
 	baseAmount, _ = decimal.NewFromString(fmt.Sprintf("%d", basicCapacity))
 	decQuote, _ := decimal.NewFromString(fmt.Sprintf("%d", quote))
