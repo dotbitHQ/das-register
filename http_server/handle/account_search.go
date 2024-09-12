@@ -364,12 +364,29 @@ func (h *HttpHandle) checkAccountBase(ctx context.Context, req *ReqAccountSearch
 			}
 
 			configRelease, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsRelease)
+			var luckyNumber uint32
 			if err != nil {
 				log.Error(ctx, "GetDasConfigCellInfo err:", err.Error())
-				apiResp.ApiRespErr(api_code.ApiCodeError500, "search config release fail")
-				return
+
+				var builderCache core.CacheConfigCellBase
+				strCache, errCache := h.dasCore.GetConfigCellByCache(core.CacheConfigCellKeyBase)
+				if errCache != nil {
+					log.Error("GetConfigCellByCache err: ", err.Error())
+					apiResp.ApiRespErr(api_code.ApiCodeError500, "search config release fail")
+					return
+				} else if strCache == "" {
+					apiResp.ApiRespErr(api_code.ApiCodeError500, "search config release fail")
+					return
+				} else if errCache = json.Unmarshal([]byte(strCache), &builderCache); errCache != nil {
+					log.Error("json.Unmarshal err: ", err.Error())
+					apiResp.ApiRespErr(api_code.ApiCodeError500, "search config release fail")
+					return
+				}
+				luckyNumber = builderCache.LuckyNumber
+			} else {
+				luckyNumber, _ = configRelease.LuckyNumber()
 			}
-			luckyNumber, _ := configRelease.LuckyNumber()
+
 			log.Info(ctx, "config release lucky number: ", luckyNumber)
 			if resNum, _ := Blake256AndFourBytesBigEndian([]byte(req.Account)); resNum > luckyNumber {
 				status = tables.SearchStatusRegisterNotOpen

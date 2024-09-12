@@ -4,6 +4,7 @@ import (
 	"context"
 	"das_register_server/config"
 	"das_register_server/tables"
+	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -419,25 +420,43 @@ type AuctionConfig struct {
 
 func (h *HttpHandle) GetAuctionConfig(dasCore *core.DasCore) (res *AuctionConfig, err error) {
 	builderConfigCell, err := dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsAccount)
+	var gracePeriodTime, auctionPeriodTime, deliverPeriodTime uint32
 	if err != nil {
-		err = fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
-		return
+		var builderCache core.CacheConfigCellBase
+		strCache, errCache := h.dasCore.GetConfigCellByCache(core.CacheConfigCellKeyBase)
+		if errCache != nil {
+			log.Error("GetConfigCellByCache err: ", err.Error())
+			err = fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+			return
+		} else if strCache == "" {
+			err = fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+			return
+		} else if errCache = json.Unmarshal([]byte(strCache), &builderCache); errCache != nil {
+			log.Error("json.Unmarshal err: ", err.Error())
+			err = fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+			return
+		}
+		gracePeriodTime = builderCache.ExpirationGracePeriod
+		auctionPeriodTime = builderCache.ExpirationAuctionPeriod
+		deliverPeriodTime = builderCache.ExpirationDeliverPeriod
+	} else {
+		gracePeriodTime, err = builderConfigCell.ExpirationGracePeriod()
+		if err != nil {
+			err = fmt.Errorf("ExpirationGracePeriod err: %s", err.Error())
+			return
+		}
+		auctionPeriodTime, err = builderConfigCell.ExpirationAuctionPeriod()
+		if err != nil {
+			err = fmt.Errorf("ExpirationAuctionPeriod err: %s", err.Error())
+			return
+		}
+		deliverPeriodTime, err = builderConfigCell.ExpirationDeliverPeriod()
+		if err != nil {
+			err = fmt.Errorf("ExpirationDeliverPeriod err: %s", err.Error())
+			return
+		}
 	}
-	gracePeriodTime, err := builderConfigCell.ExpirationGracePeriod()
-	if err != nil {
-		err = fmt.Errorf("ExpirationGracePeriod err: %s", err.Error())
-		return
-	}
-	auctionPeriodTime, err := builderConfigCell.ExpirationAuctionPeriod()
-	if err != nil {
-		err = fmt.Errorf("ExpirationAuctionPeriod err: %s", err.Error())
-		return
-	}
-	deliverPeriodTime, err := builderConfigCell.ExpirationDeliverPeriod()
-	if err != nil {
-		err = fmt.Errorf("ExpirationDeliverPeriod err: %s", err.Error())
-		return
-	}
+
 	res = &AuctionConfig{
 		GracePeriodTime:   gracePeriodTime,
 		AuctionPeriodTime: auctionPeriodTime,

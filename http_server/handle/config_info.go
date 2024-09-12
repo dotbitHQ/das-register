@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/core"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
@@ -75,39 +76,80 @@ func (h *HttpHandle) doConfigInfo(ctx context.Context, apiResp *api_code.ApiResp
 		common.ConfigCellTypeArgsSecondaryMarket,
 		common.ConfigCellTypeArgsReverseRecord,
 	)
+	var preparedFee, baseCapacity uint64
+	var saleCellBasicCapacity, saleCellPreparedFeeCapacity, saleMinPrice uint64
+	var inviteDiscount, profitRateInviter uint32
+	var incomeCellMinTransferValue uint64
+	var transferThrottle, editManagerThrottle, editRecordsThrottle, maxAccountLen, minTtl, accountExpirationGracePeriod uint32
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
-		return fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
+		var cacheBuilder core.CacheConfigCellBase
+		strCache, errCache := h.dasCore.GetConfigCellByCache(core.CacheConfigCellKeyBase)
+		if errCache != nil {
+			log.Error("GetConfigCellByCache err: %s", errCache.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+			return fmt.Errorf("ConfigCellDataBuilderByTypeArgsList1 err: %s", err.Error())
+		} else if strCache == "" {
+			apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+			return fmt.Errorf("ConfigCellDataBuilderByTypeArgsList2 err: %s", err.Error())
+		} else if errCache = json.Unmarshal([]byte(strCache), &cacheBuilder); errCache != nil {
+			log.Error("json.Unmarshal err: %s", errCache.Error())
+			apiResp.ApiRespErr(api_code.ApiCodeError500, err.Error())
+			return fmt.Errorf("ConfigCellDataBuilderByTypeArgsList3 err: %s", err.Error())
+		}
+		preparedFee = cacheBuilder.RecordPreparedFeeCapacity
+		baseCapacity = cacheBuilder.RecordBasicCapacity
+		saleCellBasicCapacity = cacheBuilder.SaleCellBasicCapacity
+		saleCellPreparedFeeCapacity = cacheBuilder.SaleCellPreparedFeeCapacity
+		saleMinPrice = cacheBuilder.SaleMinPrice
+		inviteDiscount = cacheBuilder.PriceInvitedDiscount
+		profitRateInviter = cacheBuilder.ProfitRateInviter
+
+		incomeCellMinTransferValue = cacheBuilder.IncomeMinTransferCapacity
+		transferThrottle = cacheBuilder.TransferAccountThrottle
+		editManagerThrottle = cacheBuilder.EditManagerThrottle
+		editRecordsThrottle = cacheBuilder.EditRecordsThrottle
+		maxAccountLen = cacheBuilder.MaxLength
+		minTtl = cacheBuilder.RecordMinTtl
+		accountExpirationGracePeriod = cacheBuilder.ExpirationGracePeriod
+	} else {
+		preparedFee, _ = builder.RecordPreparedFeeCapacity()
+		baseCapacity, _ = builder.RecordBasicCapacity()
+		saleCellBasicCapacity, _ = builder.SaleCellBasicCapacity()
+		saleCellPreparedFeeCapacity, _ = builder.SaleCellPreparedFeeCapacity()
+		saleMinPrice, _ = builder.SaleMinPrice()
+		inviteDiscount, _ = builder.PriceInvitedDiscount()
+		profitRateInviter, _ = builder.ProfitRateInviter()
+
+		incomeCellMinTransferValue, _ = builder.IncomeMinTransferCapacity()
+		transferThrottle, _ = builder.TransferAccountThrottle()
+		editManagerThrottle, _ = builder.EditManagerThrottle()
+		editRecordsThrottle, _ = builder.EditRecordsThrottle()
+		maxAccountLen, _ = builder.MaxLength()
+		minTtl, _ = builder.RecordMinTtl()
+		accountExpirationGracePeriod, _ = builder.ExpirationGracePeriod()
 	}
 	//
-	preparedFee, _ := builder.RecordPreparedFeeCapacity()
-	baseCapacity, _ := builder.RecordBasicCapacity()
-
 	resp.ReverseRecordCapacity = preparedFee + baseCapacity
 	resp.MinChangeCapacity = common.DasLockWithBalanceTypeMinCkbCapacity
 	//
-	saleCellBasicCapacity, _ := builder.SaleCellBasicCapacity()
-	saleCellPreparedFeeCapacity, _ := builder.SaleCellPreparedFeeCapacity()
 	resp.SaleCellCapacity = saleCellBasicCapacity + saleCellPreparedFeeCapacity
-	resp.MinSellPrice, _ = builder.SaleMinPrice()
+	resp.MinSellPrice = saleMinPrice
 	//
-	inviteDiscount, _ := builder.PriceInvitedDiscount()
 	decInviteDiscount := decimal.NewFromFloat(float64(inviteDiscount) / common.PercentRateBase)
-
-	profitRateInviter, _ := builder.ProfitRateInviter()
 	decProfitRateInviter := decimal.NewFromFloat(float64(profitRateInviter) / common.PercentRateBase)
 	//
+	resp.IncomeCellMinTransferValue = incomeCellMinTransferValue
+	resp.TransferThrottle = transferThrottle
+	resp.EditManagerThrottle = editManagerThrottle
+	resp.EditRecordsThrottle = editRecordsThrottle
+	resp.MaxAccountLen = maxAccountLen
+	resp.MinTtl = minTtl
+	resp.AccountExpirationGracePeriod = accountExpirationGracePeriod
+
 	resp.Premium = config.Cfg.Das.Premium
-	resp.IncomeCellMinTransferValue, _ = builder.IncomeMinTransferCapacity()
-	resp.TransferThrottle, _ = builder.TransferAccountThrottle()
-	resp.EditManagerThrottle, _ = builder.EditManagerThrottle()
-	resp.EditRecordsThrottle, _ = builder.EditRecordsThrottle()
-	resp.MaxAccountLen, _ = builder.MaxLength()
 	resp.MinAccountLen = uint32(config.Cfg.Das.AccountMinLength)
 	resp.InviterDiscount = decInviteDiscount
 	resp.ProfitRateOfInviter = decProfitRateInviter
-	resp.MinTtl, _ = builder.RecordMinTtl()
-	resp.AccountExpirationGracePeriod, _ = builder.ExpirationGracePeriod()
 
 	timeCell, err := h.dasCore.GetTimeCell()
 	if err != nil {

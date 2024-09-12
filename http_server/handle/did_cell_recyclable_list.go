@@ -101,15 +101,31 @@ func (h *HttpHandle) doDidCellRecyclableList(ctx context.Context, req *ReqDidCel
 		return fmt.Errorf("GetTimeCell err: %s", err.Error())
 	}
 	builderConfigCell, err := h.dasCore.ConfigCellDataBuilderByTypeArgs(common.ConfigCellTypeArgsAccount)
+	var expirationGracePeriod uint32
 	if err != nil {
-		apiResp.ApiRespErr(http_api.ApiCodeError500, "failed to get config cell")
-		return fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+		var builderCache core.CacheConfigCellBase
+		strCache, errCache := h.dasCore.GetConfigCellByCache(core.CacheConfigCellKeyBase)
+		if errCache != nil {
+			log.Error("GetConfigCellByCache err: ", err.Error())
+			apiResp.ApiRespErr(http_api.ApiCodeError500, "failed to get config cell")
+			return fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+		} else if strCache == "" {
+			apiResp.ApiRespErr(http_api.ApiCodeError500, "failed to get config cell")
+			return fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+		} else if errCache = json.Unmarshal([]byte(strCache), &builderCache); errCache != nil {
+			log.Error("json.Unmarshal err: ", err.Error())
+			apiResp.ApiRespErr(http_api.ApiCodeError500, "failed to get config cell")
+			return fmt.Errorf("ConfigCellDataBuilderByTypeArgs err: %s", err.Error())
+		}
+		expirationGracePeriod = builderCache.ExpirationGracePeriod
+	} else {
+		expirationGracePeriod, err = builderConfigCell.ExpirationGracePeriod()
+		if err != nil {
+			apiResp.ApiRespErr(http_api.ApiCodeError500, "ExpirationGracePeriod err")
+			return fmt.Errorf("ExpirationGracePeriod err: %s", err.Error())
+		}
 	}
-	expirationGracePeriod, err := builderConfigCell.ExpirationGracePeriod()
-	if err != nil {
-		apiResp.ApiRespErr(http_api.ApiCodeError500, "ExpirationGracePeriod err")
-		return fmt.Errorf("ExpirationGracePeriod err: %s", err.Error())
-	}
+
 	expiredAt := uint64(timeCell.Timestamp()) - uint64(expirationGracePeriod)
 	log.Info("doDidCellRecyclableList:", expiredAt, timeCell.Timestamp(), expirationGracePeriod)
 
