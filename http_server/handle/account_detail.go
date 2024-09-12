@@ -99,6 +99,9 @@ func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, ac
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
+	if args == "" {
+		args = "0x03"
+	}
 	var newPrice, renewPrice, basicCapacity, preparedFeeCapacity uint64
 
 	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(common.ConfigCellTypeArgsPrice, common.ConfigCellTypeArgsAccount)
@@ -154,10 +157,6 @@ func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, ac
 		return
 	}
 	quote := quoteCell.Quote()
-
-	if args == "" {
-		args = "0x03"
-	}
 
 	log.Info(ctx, "BasicCapacity:", basicCapacity, "PreparedFeeCapacity:", preparedFeeCapacity, "Quote:", quote, "Price:", newPrice, renewPrice)
 	basicCapacity = basicCapacity/common.OneCkb + uint64(len([]byte(account))) + preparedFeeCapacity/common.OneCkb
