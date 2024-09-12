@@ -12,6 +12,7 @@ import (
 	"das_register_server/timer"
 	"das_register_server/txtool"
 	"das_register_server/unipay"
+	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -21,6 +22,7 @@ import (
 	"github.com/dotbitHQ/das-lib/remote_sign"
 	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/dotbitHQ/das-lib/txbuilder"
+	"github.com/go-redis/redis"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/rpc"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
@@ -106,7 +108,7 @@ func runServer(ctx *cli.Context) error {
 		log.Info("es ok")
 	}
 	// das core
-	dasCore, dasCache, err := initDasCore()
+	dasCore, dasCache, err := initDasCore(red)
 	if err != nil {
 		return fmt.Errorf("initDasCore err: %s", err.Error())
 	}
@@ -275,7 +277,7 @@ func runServer(ctx *cli.Context) error {
 	return nil
 }
 
-func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
+func initDasCore(red *redis.Client) (*core.DasCore, *dascache.DasCache, error) {
 	// ckb node
 	ckbClient, err := rpc.DialWithIndexer(config.Cfg.Chain.CkbUrl, config.Cfg.Chain.IndexUrl)
 	if err != nil {
@@ -295,6 +297,7 @@ func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
 		core.WithDasContractCodeHash(env.ContractCodeHash),
 		core.WithDasNetType(config.Cfg.Server.Net),
 		core.WithTHQCodeHash(env.THQCodeHash),
+		core.WithDasRedis(red),
 	}
 	dasCore := core.NewDasCore(ctxServer, &wgServer, ops...)
 	dasCore.InitDasContract(env.MapContract)
@@ -307,6 +310,11 @@ func initDasCore() (*core.DasCore, *dascache.DasCache, error) {
 	dasCore.RunAsyncDasContract(time.Minute * 3)   // contract outpoint
 	dasCore.RunAsyncDasConfigCell(time.Minute * 5) // config cell outpoint
 	dasCore.RunAsyncDasSoScript(time.Minute * 7)   // so
+	dasCore.RunSetConfigCellByCache([]core.CacheConfigCellKey{
+		core.CacheConfigCellKeyCharSet,
+		core.CacheConfigCellKeyBase,
+		core.CacheConfigCellKeyReservedAccounts,
+	})
 
 	log.Info("das contract ok")
 
@@ -434,8 +442,25 @@ func initApiServer(txBuilderBase *txbuilder.DasTxBuilderBase, serverScript *type
 		common.ConfigCellTypeArgsPreservedAccount19,
 		common.ConfigCellTypeArgsUnavailable,
 	)
+	var mapReservedAccounts = make(map[string]struct{})
+	var mapUnAvailableAccounts = make(map[string]struct{})
 	if err != nil {
-		return fmt.Errorf("unavailable account and preserved account init err: %s", err.Error())
+		var cacheBuilder core.CacheConfigCellReservedAccounts
+		strCache, errCache := dasCore.GetConfigCellByCache(core.CacheConfigCellKeyReservedAccounts)
+		if errCache != nil {
+			log.Error("GetConfigCellByCache err: %s", errCache.Error())
+			return fmt.Errorf("unavailable account and preserved account init1 err: %s", err.Error())
+		} else if strCache == "" {
+			return fmt.Errorf("unavailable account and preserved account init2 err: %s", err.Error())
+		} else if errCache = json.Unmarshal([]byte(strCache), &cacheBuilder); errCache != nil {
+			log.Error("json.Unmarshal err: %s", errCache.Error())
+			return fmt.Errorf("unavailable account and preserved account init3 err: %s", err.Error())
+		}
+		mapReservedAccounts = cacheBuilder.MapReservedAccounts
+		mapUnAvailableAccounts = cacheBuilder.MapUnAvailableAccounts
+	} else {
+		mapReservedAccounts = builderConfigCell.ConfigCellPreservedAccountMap
+		mapUnAvailableAccounts = builderConfigCell.ConfigCellUnavailableAccountMap
 	}
 
 	// http service
@@ -450,8 +475,8 @@ func initApiServer(txBuilderBase *txbuilder.DasTxBuilderBase, serverScript *type
 		DasCache:               dasCache,
 		TxBuilderBase:          txBuilderBase,
 		ServerScript:           serverScript,
-		MapReservedAccounts:    builderConfigCell.ConfigCellPreservedAccountMap,
-		MapUnAvailableAccounts: builderConfigCell.ConfigCellUnavailableAccountMap,
+		MapReservedAccounts:    mapReservedAccounts,
+		MapUnAvailableAccounts: mapUnAvailableAccounts,
 	})
 	if err != nil {
 		return fmt.Errorf("http server Initialize err:%s", err.Error())
