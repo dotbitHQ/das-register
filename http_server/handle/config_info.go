@@ -4,6 +4,7 @@ import (
 	"context"
 	"das_register_server/config"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -81,7 +82,9 @@ func (h *HttpHandle) doConfigInfo(ctx context.Context, apiResp *api_code.ApiResp
 	var inviteDiscount, profitRateInviter uint32
 	var incomeCellMinTransferValue uint64
 	var transferThrottle, editManagerThrottle, editRecordsThrottle, maxAccountLen, minTtl, accountExpirationGracePeriod uint32
+	err = errors.New("test config cell cache")
 	if err != nil {
+		log.Error(err.Error())
 		var cacheBuilder core.CacheConfigCellBase
 		strCache, errCache := h.dasCore.GetConfigCellByCache(core.CacheConfigCellKeyBase)
 		if errCache != nil {

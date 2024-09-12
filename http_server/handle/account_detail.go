@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"das_register_server/config"
+	"errors"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 
@@ -99,10 +100,15 @@ func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, ac
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
+	if args == "" {
+		args = "0x03"
+	}
 	var newPrice, renewPrice, basicCapacity, preparedFeeCapacity uint64
 
 	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(common.ConfigCellTypeArgsPrice, common.ConfigCellTypeArgsAccount)
+	err = errors.New("test config cell cache")
 	if err != nil {
+		log.Error(err.Error())
 		var cacheBuilder core.CacheConfigCellBase
 		strCache, errCache := h.dasCore.GetConfigCellByCache(core.CacheConfigCellKeyBase)
 		if errCache != nil {
@@ -154,10 +160,6 @@ func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, ac
 		return
 	}
 	quote := quoteCell.Quote()
-
-	if args == "" {
-		args = "0x03"
-	}
 
 	log.Info(ctx, "BasicCapacity:", basicCapacity, "PreparedFeeCapacity:", preparedFeeCapacity, "Quote:", quote, "Price:", newPrice, renewPrice)
 	basicCapacity = basicCapacity/common.OneCkb + uint64(len([]byte(account))) + preparedFeeCapacity/common.OneCkb
