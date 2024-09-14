@@ -135,7 +135,7 @@ func TestOrderOrderChange(t *testing.T) {
 		},
 		PayChainType: 0,
 		PayAddress:   "",
-		PayTokenId:   tables.TokenIdMatic,
+		PayTokenId:   tables.TokenIdPol,
 		PayType:      "",
 	}
 

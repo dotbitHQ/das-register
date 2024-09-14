@@ -121,7 +121,7 @@ type ToolUniPay struct {
 
 func RoundAmount(amount decimal.Decimal, tokenId tables.PayTokenId) decimal.Decimal {
 	switch tokenId {
-	case tables.TokenIdEth, tables.TokenIdBnb, tables.TokenIdMatic:
+	case tables.TokenIdEth, tables.TokenIdBnb, tables.TokenIdPol: //, tables.TokenIdMatic:
 		dec := decimal.New(1, 8)
 		amount = amount.Div(dec).Ceil().Mul(dec)
 	case tables.TokenIdDas, tables.TokenIdCkb, tables.TokenIdCkbInternal, tables.TokenIdDoge, tables.TokenIdPadgeInternal:
