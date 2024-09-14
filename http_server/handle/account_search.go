@@ -444,7 +444,7 @@ func (h *HttpHandle) checkAddressOrder(ctx context.Context, req *ReqAccountSearc
 				switch order.PayTokenId {
 				case tables.TokenIdDas, tables.TokenIdCkb, tables.TokenIdCkbInternal:
 					chainType = common.ChainTypeCkb
-				case tables.TokenIdEth, tables.TokenIdBnb, tables.TokenIdMatic:
+				case tables.TokenIdEth, tables.TokenIdBnb, tables.TokenIdPol: //, tables.TokenIdMatic:
 					chainType = common.ChainTypeEth
 				case tables.TokenIdTrx:
 					chainType = common.ChainTypeTron
