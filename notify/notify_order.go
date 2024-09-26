@@ -29,9 +29,10 @@ func SendLarkOrderNotify(p *SendLarkOrderNotifyParam) {
 	address := fmt.Sprintf("(%s)%s", p.ChainType.ToString(), p.Address)
 	amount := p.Amount
 	switch p.PayTokenId {
-	case tables.TokenIdBnb, tables.TokenIdEth, tables.TokenIdMatic:
+	case tables.TokenIdBnb, tables.TokenIdEth, tables.TokenIdPol: //, tables.TokenIdMatic:
 		amount = amount.DivRound(decimal.New(1, 18), 18)
-	case tables.TokenIdCkb, tables.TokenIdDas, tables.TokenIdCkbInternal, tables.TokenIdPadgeInternal:
+	case tables.TokenIdCkb, tables.TokenIdDas, tables.TokenIdCkbInternal,
+		tables.TokenIdPadgeInternal, tables.TokenIdCkbCCC:
 		amount = amount.DivRound(decimal.New(1, 8), 8)
 	case tables.TokenIdTrx:
 		amount = amount.DivRound(decimal.New(1, 6), 6)

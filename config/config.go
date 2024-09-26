@@ -150,7 +150,9 @@ func GetUnipayAddress(tokenId tables.PayTokenId) string {
 		return Cfg.PayAddressMap["eth"]
 	case tables.TokenIdBnb, tables.TokenIdBep20USDT:
 		return Cfg.PayAddressMap["bsc"]
-	case tables.TokenIdMatic:
+	//case tables.TokenIdMatic:
+	//	return Cfg.PayAddressMap["polygon"]
+	case tables.TokenIdPol:
 		return Cfg.PayAddressMap["polygon"]
 	case tables.TokenIdTrx, tables.TokenIdTrc20USDT:
 		return Cfg.PayAddressMap["tron"]
