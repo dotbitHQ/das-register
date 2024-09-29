@@ -891,7 +891,7 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/search -d'{"account":"aaaa.bit","chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account_char_str":[{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}]}'
+curl -X POST http://127.0.0.1:8120/v1/account/search -d'{"account":"aaaa.bit","key_info":{"coin_type": "60","key": "0xc9f53b1d85356b60453f867610888d89a0b667ad"},"account_char_str":[{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}]}'
 ```
 
 #### Account Registering List
