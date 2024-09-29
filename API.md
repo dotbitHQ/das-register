@@ -806,8 +806,6 @@ curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address"
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1, // 1-evm, 3-tron, 7-doge
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account_char_str": [
     {
       "char_set_name": 2,
