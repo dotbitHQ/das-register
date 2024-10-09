@@ -102,7 +102,7 @@ func (h *HttpServer) initRouter() {
 		// node rpc
 		v1.POST("/node/ckb/rpc", api_code.DoMonitorLog(api_code.MethodCkbRpc), h.h.CkbRpc)
 		v1.GET("/test/jenkins", func(c *gin.Context) {
-			c.JSON(200, "main--v2")
+			c.JSON(200, "main--v3")
 		})
 	}
 
