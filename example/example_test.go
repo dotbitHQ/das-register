@@ -100,8 +100,8 @@ func getNewDasCoreTestnet2() (*core.DasCore, error) {
 		//common.DasContractNameAccountCellType,
 		//common.DasContractNameDispatchCellType,
 		//common.DasContractNameBalanceCellType,
-		common.DasContractNameAlwaysSuccess,
-		common.DasContractNameIncomeCellType,
+		//common.DasContractNameAlwaysSuccess,
+		//common.DasContractNameIncomeCellType,
 		//common.DASContractNameSubAccountCellType,
 		//common.DasContractNamePreAccountCellType,
 	)

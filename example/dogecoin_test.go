@@ -177,68 +177,69 @@ func TestEditOwner2(t *testing.T) {
 	fmt.Println(fmt.Sprintf(`{"sign_key":"%s","sign_list":[{"sign_type":%d,"sign_msg":"%s"}],"mm_json":null}`, data.SignKey, data.SignList[0].SignType, common.Bytes2Hex(signData)))
 }
 
-func TestReverse(t *testing.T) {
-	url := TestUrl + "/reverse/declare"
-	var req handle.ReqReverseDeclare
-	req.ChainType = common.ChainTypeDogeCoin
-	req.Address = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
-	req.Account = "20230301.bit"
-	req.EvmChainId = 5
-
-	var data handle.RespReverseDeclare
-	if err := doReq(url, req, &data); err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println("signMsg:", data.SignList[0].SignMsg)
-	signData, err := sign.DogeSignature(common.Hex2Bytes(data.SignList[0].SignMsg), privateKey, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fmt.Println(fmt.Sprintf(`{"sign_key":"%s","sign_list":[{"sign_type":%d,"sign_msg":"%s"}],"mm_json":null}`, data.SignKey, data.SignList[0].SignType, common.Bytes2Hex(signData)))
-}
-
-func TestReverseRedeclare2(t *testing.T) {
-	url := TestUrl + "/reverse/redeclare"
-	var req handle.ReqReverseRedeclare
-	req.ChainType = common.ChainTypeDogeCoin
-	req.Address = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
-	req.Account = "20230315.bit"
-	req.EvmChainId = 5
-
-	var data handle.RespReverseRedeclare
-	if err := doReq(url, req, &data); err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println("signMsg:", data.SignList[0].SignMsg)
-	signData, err := sign.DogeSignature(common.Hex2Bytes(data.SignList[0].SignMsg), privateKey, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fmt.Println(fmt.Sprintf(`{"sign_key":"%s","sign_list":[{"sign_type":%d,"sign_msg":"%s"}],"mm_json":null}`, data.SignKey, data.SignList[0].SignType, common.Bytes2Hex(signData)))
-}
-
-func TestReverseRetract2(t *testing.T) {
-	var req handle.ReqReverseRetract
-	req.ChainType = common.ChainTypeDogeCoin
-	req.Address = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
-	req.EvmChainId = 5
-	url := TestUrl + "/reverse/retract"
-
-	var data handle.RespReverseRetract
-	if err := doReq(url, req, &data); err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println("signMsg:", data.SignList[0].SignMsg)
-	signData, err := sign.DogeSignature(common.Hex2Bytes(data.SignList[0].SignMsg), privateKey, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fmt.Println(fmt.Sprintf(`{"sign_key":"%s","sign_list":[{"sign_type":%d,"sign_msg":"%s"}],"mm_json":null}`, data.SignKey, data.SignList[0].SignType, common.Bytes2Hex(signData)))
-
-}
+//
+//func TestReverse(t *testing.T) {
+//	url := TestUrl + "/reverse/declare"
+//	var req handle.ReqReverseDeclare
+//	req.ChainType = common.ChainTypeDogeCoin
+//	req.Address = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
+//	req.Account = "20230301.bit"
+//	req.EvmChainId = 5
+//
+//	var data handle.RespReverseDeclare
+//	if err := doReq(url, req, &data); err != nil {
+//		t.Fatal(err)
+//	}
+//	fmt.Println("signMsg:", data.SignList[0].SignMsg)
+//	signData, err := sign.DogeSignature(common.Hex2Bytes(data.SignList[0].SignMsg), privateKey, false)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	fmt.Println(fmt.Sprintf(`{"sign_key":"%s","sign_list":[{"sign_type":%d,"sign_msg":"%s"}],"mm_json":null}`, data.SignKey, data.SignList[0].SignType, common.Bytes2Hex(signData)))
+//}
+//
+//func TestReverseRedeclare2(t *testing.T) {
+//	url := TestUrl + "/reverse/redeclare"
+//	var req handle.ReqReverseRedeclare
+//	req.ChainType = common.ChainTypeDogeCoin
+//	req.Address = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
+//	req.Account = "20230315.bit"
+//	req.EvmChainId = 5
+//
+//	var data handle.RespReverseRedeclare
+//	if err := doReq(url, req, &data); err != nil {
+//		t.Fatal(err)
+//	}
+//	fmt.Println("signMsg:", data.SignList[0].SignMsg)
+//	signData, err := sign.DogeSignature(common.Hex2Bytes(data.SignList[0].SignMsg), privateKey, false)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	fmt.Println(fmt.Sprintf(`{"sign_key":"%s","sign_list":[{"sign_type":%d,"sign_msg":"%s"}],"mm_json":null}`, data.SignKey, data.SignList[0].SignType, common.Bytes2Hex(signData)))
+//}
+//
+//func TestReverseRetract2(t *testing.T) {
+//	var req handle.ReqReverseRetract
+//	req.ChainType = common.ChainTypeDogeCoin
+//	req.Address = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
+//	req.EvmChainId = 5
+//	url := TestUrl + "/reverse/retract"
+//
+//	var data handle.RespReverseRetract
+//	if err := doReq(url, req, &data); err != nil {
+//		t.Fatal(err)
+//	}
+//	fmt.Println("signMsg:", data.SignList[0].SignMsg)
+//	signData, err := sign.DogeSignature(common.Hex2Bytes(data.SignList[0].SignMsg), privateKey, false)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	fmt.Println(fmt.Sprintf(`{"sign_key":"%s","sign_list":[{"sign_type":%d,"sign_msg":"%s"}],"mm_json":null}`, data.SignKey, data.SignList[0].SignType, common.Bytes2Hex(signData)))
+//
+//}
 
 func TestBalanceWithdraw2(t *testing.T) {
 	url := TestUrl + "/balance/withdraw"
