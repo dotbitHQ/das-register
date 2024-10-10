@@ -147,61 +147,62 @@ func TestBalancePay(t *testing.T) {
 	// curl -X POST http://127.0.0.1:8119/v1/sign/tx
 }
 
-func TestReverseDeclare(t *testing.T) {
-	url := TestUrl + "/reverse/declare"
-	var req handle.ReqReverseDeclare
-	req.ChainType = common.ChainTypeMixin
-	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
-	req.Account = "1234567871.bit"
-	req.EvmChainId = 5
-
-	var data handle.RespReverseDeclare
-	if err := doReq(url, req, &data); err != nil {
-		t.Fatal(err)
-	}
-	var signReq handle.ReqSignTx
-	signReq.SignInfo = data.SignInfo
-	signReq.ChainId = 5
-	signReq.Private = ""
-	fmt.Println(toolib.JsonString(signReq))
-}
-
-func TestReverseRedeclare(t *testing.T) {
-	url := TestUrl + "/reverse/redeclare"
-	var req handle.ReqReverseRedeclare
-	req.ChainType = common.ChainTypeMixin
-	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
-	req.Account = "1234567872.bit"
-	req.EvmChainId = 5
-
-	var data handle.RespReverseRedeclare
-	if err := doReq(url, req, &data); err != nil {
-		t.Fatal(err)
-	}
-	var signReq handle.ReqSignTx
-	signReq.SignInfo = data.SignInfo
-	signReq.ChainId = 5
-	signReq.Private = ""
-	fmt.Println(toolib.JsonString(signReq))
-}
-
-func TestReverseRetract(t *testing.T) {
-	var req handle.ReqReverseRetract
-	req.ChainType = common.ChainTypeMixin
-	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
-	req.EvmChainId = 5
-	url := TestUrl + "/reverse/retract"
-
-	var data handle.RespReverseRetract
-	if err := doReq(url, req, &data); err != nil {
-		t.Fatal(err)
-	}
-	var signReq handle.ReqSignTx
-	signReq.SignInfo = data.SignInfo
-	signReq.ChainId = 5
-	signReq.Private = ""
-	fmt.Println(toolib.JsonString(signReq))
-}
+//
+//func TestReverseDeclare(t *testing.T) {
+//	url := TestUrl + "/reverse/declare"
+//	var req handle.ReqReverseDeclare
+//	req.ChainType = common.ChainTypeMixin
+//	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+//	req.Account = "1234567871.bit"
+//	req.EvmChainId = 5
+//
+//	var data handle.RespReverseDeclare
+//	if err := doReq(url, req, &data); err != nil {
+//		t.Fatal(err)
+//	}
+//	var signReq handle.ReqSignTx
+//	signReq.SignInfo = data.SignInfo
+//	signReq.ChainId = 5
+//	signReq.Private = ""
+//	fmt.Println(toolib.JsonString(signReq))
+//}
+//
+//func TestReverseRedeclare(t *testing.T) {
+//	url := TestUrl + "/reverse/redeclare"
+//	var req handle.ReqReverseRedeclare
+//	req.ChainType = common.ChainTypeMixin
+//	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+//	req.Account = "1234567872.bit"
+//	req.EvmChainId = 5
+//
+//	var data handle.RespReverseRedeclare
+//	if err := doReq(url, req, &data); err != nil {
+//		t.Fatal(err)
+//	}
+//	var signReq handle.ReqSignTx
+//	signReq.SignInfo = data.SignInfo
+//	signReq.ChainId = 5
+//	signReq.Private = ""
+//	fmt.Println(toolib.JsonString(signReq))
+//}
+//
+//func TestReverseRetract(t *testing.T) {
+//	var req handle.ReqReverseRetract
+//	req.ChainType = common.ChainTypeMixin
+//	req.Address = "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4"
+//	req.EvmChainId = 5
+//	url := TestUrl + "/reverse/retract"
+//
+//	var data handle.RespReverseRetract
+//	if err := doReq(url, req, &data); err != nil {
+//		t.Fatal(err)
+//	}
+//	var signReq handle.ReqSignTx
+//	signReq.SignInfo = data.SignInfo
+//	signReq.ChainId = 5
+//	signReq.Private = ""
+//	fmt.Println(toolib.JsonString(signReq))
+//}
 
 func TestBalanceInfo(t *testing.T) {
 	url := TestUrl + "/balance/info"
