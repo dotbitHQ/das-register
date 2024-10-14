@@ -2,7 +2,7 @@ package handle
 
 import (
 	"context"
-	"das_register_server/http_server/compatible"
+	"das_register_server/config"
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
@@ -75,10 +75,11 @@ func (h *HttpHandle) BalanceTransfer(ctx *gin.Context) {
 
 func (h *HttpHandle) doBalanceTransfer(ctx context.Context, req *ReqBalanceTransfer, apiResp *api_code.ApiResp) error {
 	var resp RespBalanceTransfer
-	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
+
+	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
-		return err
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return nil
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	if req.ChainType != common.ChainTypeEth {
@@ -86,7 +87,7 @@ func (h *HttpHandle) doBalanceTransfer(ctx context.Context, req *ReqBalanceTrans
 		return nil
 	}
 	// das-lock
-	toLock, toType, err := h.dasCore.Daf().HexToScript(addressHex)
+	toLock, toType, err := h.dasCore.Daf().HexToScript(*addressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToScript err")
 		return fmt.Errorf("HexToScript err: %s", err.Error())
