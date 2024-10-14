@@ -6,6 +6,7 @@ import (
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
+	"github.com/dotbitHQ/das-lib/chain/chain_evm"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/sign"
@@ -15,9 +16,11 @@ import (
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
+	"github.com/shopspring/decimal"
 	"golang.org/x/sync/errgroup"
 	"strings"
 	"testing"
+	"time"
 )
 
 type RegUser struct {
@@ -25,6 +28,7 @@ type RegUser struct {
 	KeyInfo    core.KeyInfo      `json:"key_info"`
 	PrivateKey string            `json:"private_key"`
 	PayTokenId tables.PayTokenId `json:"pay_token_id"`
+	EthNonce   uint64            `json:"eth_nonce"`
 }
 
 func (r *RegUser) doReg(acc string) error {
@@ -93,7 +97,43 @@ func (r *RegUser) doPay(data handle.RespOrderRegister) error {
 
 		return nil
 	case tables.TokenIdEth:
-		// todo
+		node := "https://rpc.ankr.com/eth_holesky"
+		addFee := float64(2)
+		chainEvm, err := chain_evm.NewChainEvm(context.Background(), node, addFee)
+		if err != nil {
+			return fmt.Errorf("NewChainEvm err: %s", err.Error())
+		}
+		from := r.KeyInfo.Key
+		to := data.ReceiptAddress
+		value := decimal.NewFromInt(data.Amount.IntPart())
+		dataBys := []byte(data.OrderId)
+
+		nonce, err := chainEvm.NonceAt(from)
+		if err != nil {
+			return fmt.Errorf("NonceAt err: %s", err.Error())
+		}
+		if nonce > r.EthNonce {
+			r.EthNonce = nonce
+		} else {
+			nonce = r.EthNonce
+		}
+		gasPrice, gasLimit, err := chainEvm.EstimateGas(from, to, value, dataBys, addFee)
+		if err != nil {
+			return fmt.Errorf("EstimateGas err: %s", err.Error())
+		}
+		tx, err := chainEvm.NewTransaction(from, to, value, dataBys, nonce, gasPrice, gasLimit)
+		if err != nil {
+			return fmt.Errorf("NewTransaction err: %s", err.Error())
+		}
+		tx, err = chainEvm.SignWithPrivateKey(r.PrivateKey, tx)
+		if err != nil {
+			return fmt.Errorf("SignWithPrivateKey err: %s", err.Error())
+		}
+		if err = chainEvm.SendTransaction(tx); err != nil {
+			return fmt.Errorf("SendTransaction err: %s", err.Error())
+		}
+		fmt.Println("eth hash:", tx.Hash().String())
+		r.EthNonce++
 		return nil
 	}
 
@@ -145,10 +185,11 @@ func TestBatchReg(t *testing.T) {
 	u1 := RegUser{
 		KeyInfo: core.KeyInfo{
 			CoinType: common.CoinTypeEth,
-			Key:      "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+			Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
 		},
 		PrivateKey: "",
-		PayTokenId: tables.TokenIdDas,
+		//PayTokenId: tables.TokenIdDas,
+		PayTokenId: tables.TokenIdEth,
 		DC:         dc,
 	}
 
@@ -159,13 +200,13 @@ func TestBatchReg(t *testing.T) {
 	//}
 
 	// test2
-	//for i := 0; i < 50; i++ {
-	//	acc := fmt.Sprintf("batchtest01%02d.bit", i)
-	//	fmt.Println(acc)
-	//	if err := u1.doReg(acc); err != nil {
-	//		t.Fatal(err)
-	//	}
-	//}
+	for i := 0; i < 3; i++ {
+		acc := fmt.Sprintf("batchtest06%02d.bit", i)
+		fmt.Println(acc)
+		if err := u1.doReg(acc); err != nil {
+			t.Fatal(err)
+		}
+	}
 
 	// test3
 	//var ch = make(chan string, 50)
@@ -191,16 +232,73 @@ func TestBatchReg(t *testing.T) {
 	//}
 
 	// test4
-	u2 := RegUser{
-		KeyInfo: core.KeyInfo{
-			CoinType: common.CoinTypeEth,
-			Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
-		},
-		PrivateKey: "",
-		PayTokenId: tables.TokenIdDas,
-		DC:         dc,
-	}
-	u3 := RegUser{
+	//u2 := RegUser{
+	//	KeyInfo: core.KeyInfo{
+	//		CoinType: common.CoinTypeEth,
+	//		Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+	//	},
+	//	PrivateKey: "",
+	//	PayTokenId: tables.TokenIdDas,
+	//	DC:         dc,
+	//}
+	//u3 := RegUser{
+	//	KeyInfo: core.KeyInfo{
+	//		CoinType: common.CoinTypeEth,
+	//		Key:      "0x7038595295Ae464bEFEA0030a283D0f481a3be73",
+	//	},
+	//	PrivateKey: "",
+	//	PayTokenId: tables.TokenIdDas,
+	//	DC:         dc,
+	//}
+	//var ch1 = make(chan string, 50)
+	////var ch2 = make(chan string, 50)
+	////var ch3 = make(chan string, 50)
+	//group := &errgroup.Group{}
+	//group.Go(func() error {
+	//	for acc := range ch1 {
+	//		if err := u1.doReg(acc); err != nil {
+	//			t.Fatal(err)
+	//		}
+	//	}
+	//	return nil
+	//})
+	//group.Go(func() error {
+	//	for acc := range ch1 {
+	//		if err := u2.doReg(acc); err != nil {
+	//			t.Fatal(err)
+	//		}
+	//	}
+	//	return nil
+	//})
+	//group.Go(func() error {
+	//	for acc := range ch1 {
+	//		if err := u3.doReg(acc); err != nil {
+	//			t.Fatal(err)
+	//		}
+	//	}
+	//	return nil
+	//})
+	//
+	//for i := 0; i < 50; i++ {
+	//	acc := fmt.Sprintf("batchtest04%02d.bit", i)
+	//	fmt.Println(acc)
+	//	ch1 <- acc
+	//	//ch2 <- acc
+	//	//ch3 <- acc
+	//}
+	//close(ch1)
+	////close(ch2)
+	////close(ch3)
+	//
+	//if err := group.Wait(); err != nil {
+	//	t.Fatal(err)
+	//}
+
+}
+
+func TestBatchReg2(t *testing.T) {
+	dc, _ := getNewDasCoreTestnet2()
+	u1 := RegUser{
 		KeyInfo: core.KeyInfo{
 			CoinType: common.CoinTypeEth,
 			Key:      "0x7038595295Ae464bEFEA0030a283D0f481a3be73",
@@ -209,50 +307,78 @@ func TestBatchReg(t *testing.T) {
 		PayTokenId: tables.TokenIdDas,
 		DC:         dc,
 	}
-	var ch1 = make(chan string, 50)
-	//var ch2 = make(chan string, 50)
-	//var ch3 = make(chan string, 50)
-	group := &errgroup.Group{}
-	group.Go(func() error {
-		for acc := range ch1 {
-			if err := u1.doReg(acc); err != nil {
-				t.Fatal(err)
-			}
-		}
-		return nil
-	})
-	group.Go(func() error {
-		for acc := range ch1 {
-			if err := u2.doReg(acc); err != nil {
-				t.Fatal(err)
-			}
-		}
-		return nil
-	})
-	group.Go(func() error {
-		for acc := range ch1 {
-			if err := u3.doReg(acc); err != nil {
-				t.Fatal(err)
-			}
-		}
-		return nil
-	})
-
-	for i := 0; i < 50; i++ {
-		acc := fmt.Sprintf("batchtest04%02d.bit", i)
-		fmt.Println(acc)
-		ch1 <- acc
-		//ch2 <- acc
-		//ch3 <- acc
+	u2 := RegUser{
+		KeyInfo: core.KeyInfo{
+			CoinType: common.CoinTypeEth,
+			Key:      "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+		},
+		PrivateKey: "",
+		PayTokenId: tables.TokenIdDas,
+		DC:         dc,
 	}
-	close(ch1)
-	//close(ch2)
-	//close(ch3)
+	u3 := RegUser{
+		KeyInfo: core.KeyInfo{
+			CoinType: common.CoinTypeEth,
+			Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+		},
+		PrivateKey: "",
+		PayTokenId: tables.TokenIdDas,
+		DC:         dc,
+	}
 
+	group := &errgroup.Group{}
+	tic := time.NewTicker(time.Second * 10)
+	i := 75
+	var ch1 = make(chan string, 10)
+	var ch2 = make(chan string, 10)
+	var ch3 = make(chan string, 10)
+	group.Go(func() error {
+		for {
+			select {
+			case <-tic.C:
+				acc1 := fmt.Sprintf("batchtest05%03d.bit", i)
+				i++
+				acc2 := fmt.Sprintf("batchtest05%03d.bit", i)
+				i++
+				acc3 := fmt.Sprintf("batchtest05%03d.bit", i)
+				i++
+				ch1 <- acc1
+				ch2 <- acc2
+				ch3 <- acc3
+			}
+		}
+		return nil
+	})
+	group.Go(func() error {
+		for acc := range ch1 {
+			fmt.Println("ch1:", acc)
+			if err := u1.doReg(acc); err != nil {
+				fmt.Println("doReg err: ", err.Error())
+			}
+		}
+		return nil
+	})
+	group.Go(func() error {
+		for acc := range ch2 {
+			fmt.Println("ch2:", acc)
+			if err := u2.doReg(acc); err != nil {
+				fmt.Println("doReg err: ", err.Error())
+			}
+		}
+		return nil
+	})
+	group.Go(func() error {
+		for acc := range ch3 {
+			fmt.Println("ch3:", acc)
+			if err := u3.doReg(acc); err != nil {
+				fmt.Println("doReg err: ", err.Error())
+			}
+		}
+		return nil
+	})
 	if err := group.Wait(); err != nil {
 		t.Fatal(err)
 	}
-
 }
 
 func TestCkbChange(t *testing.T) {
