@@ -3,7 +3,6 @@ package handle
 import (
 	"context"
 	"das_register_server/config"
-	"das_register_server/http_server/compatible"
 	"das_register_server/internal"
 	"das_register_server/tables"
 	"encoding/json"
@@ -91,10 +90,10 @@ func (h *HttpHandle) EditRecords(ctx *gin.Context) {
 func (h *HttpHandle) doEditRecords(ctx context.Context, req *ReqEditRecords, apiResp *api_code.ApiResp) error {
 	var resp RespEditRecords
 
-	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
+	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
-		return err
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return nil
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 

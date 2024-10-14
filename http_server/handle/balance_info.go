@@ -70,12 +70,6 @@ func (h *HttpHandle) BalanceInfo(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doBalanceInfo(ctx context.Context, req *ReqBalanceInfo, apiResp *api_code.ApiResp) error {
-	//addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
-	//if err != nil {
-	//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-	//	return err
-	//}
-
 	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())

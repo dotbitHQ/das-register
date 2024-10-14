@@ -2,7 +2,7 @@ package handle
 
 import (
 	"context"
-	"das_register_server/http_server/compatible"
+	"das_register_server/config"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -79,10 +79,10 @@ func (h *HttpHandle) doWithdrawList(ctx context.Context, req *ReqWithdrawList, a
 	var resp RespWithdrawList
 	resp.List = make([]WithdrawListData, 0)
 
-	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
+	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-		return err
+		return nil
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 

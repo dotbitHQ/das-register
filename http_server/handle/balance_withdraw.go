@@ -3,7 +3,6 @@ package handle
 import (
 	"context"
 	"das_register_server/config"
-	"das_register_server/http_server/compatible"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
@@ -78,12 +77,12 @@ func (h *HttpHandle) BalanceWithdraw(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doBalanceWithdraw(ctx context.Context, req *ReqBalanceWithdraw, apiResp *api_code.ApiResp) error {
-	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
+
+	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-		return err
+		return nil
 	}
-
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	var resp RespBalanceWithdraw
@@ -140,7 +139,7 @@ func (h *HttpHandle) doBalanceWithdraw(ctx context.Context, req *ReqBalanceWithd
 	}
 
 	// das-lock
-	dasLockScript, dasTypeScript, err := h.dasCore.Daf().HexToScript(addressHex)
+	dasLockScript, dasTypeScript, err := h.dasCore.Daf().HexToScript(*addressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get das lock err")
 		return fmt.Errorf("HexToScript err: %s", err.Error())
