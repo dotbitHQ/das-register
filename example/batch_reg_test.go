@@ -298,6 +298,24 @@ func TestBatchReg(t *testing.T) {
 
 func TestBatchReg2(t *testing.T) {
 	dc, _ := getNewDasCoreTestnet2()
+	u0 := RegUser{
+		KeyInfo: core.KeyInfo{
+			CoinType: common.CoinTypeEth,
+			Key:      "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+		},
+		PrivateKey: "",
+		PayTokenId: tables.TokenIdDas,
+		DC:         dc,
+	}
+	u9 := RegUser{
+		KeyInfo: core.KeyInfo{
+			CoinType: common.CoinTypeEth,
+			Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+		},
+		PrivateKey: "",
+		PayTokenId: tables.TokenIdDas,
+		DC:         dc,
+	}
 	u1 := RegUser{
 		KeyInfo: core.KeyInfo{
 			CoinType: common.CoinTypeEth,
@@ -310,7 +328,7 @@ func TestBatchReg2(t *testing.T) {
 	u2 := RegUser{
 		KeyInfo: core.KeyInfo{
 			CoinType: common.CoinTypeEth,
-			Key:      "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+			Key:      "0x1A5CD1c976b846695633caC0307DB418E4472a5c",
 		},
 		PrivateKey: "",
 		PayTokenId: tables.TokenIdDas,
@@ -319,7 +337,52 @@ func TestBatchReg2(t *testing.T) {
 	u3 := RegUser{
 		KeyInfo: core.KeyInfo{
 			CoinType: common.CoinTypeEth,
-			Key:      "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+			Key:      "0x911399D06AE2aA323B203e6bAFA28397c2495173",
+		},
+		PrivateKey: "",
+		PayTokenId: tables.TokenIdDas,
+		DC:         dc,
+	}
+	u4 := RegUser{
+		KeyInfo: core.KeyInfo{
+			CoinType: common.CoinTypeEth,
+			Key:      "0xe5589D9d1c2D1D46e3f8B77f8b82E0eE16D33BCa",
+		},
+		PrivateKey: "",
+		PayTokenId: tables.TokenIdDas,
+		DC:         dc,
+	}
+	u5 := RegUser{
+		KeyInfo: core.KeyInfo{
+			CoinType: common.CoinTypeEth,
+			Key:      "0xF37302B4A3A665B99FCAD06eD5cfEbf85207Da8f",
+		},
+		PrivateKey: "",
+		PayTokenId: tables.TokenIdDas,
+		DC:         dc,
+	}
+	u6 := RegUser{
+		KeyInfo: core.KeyInfo{
+			CoinType: common.CoinTypeEth,
+			Key:      "0x79c5ebd2dBE02e7A0C08F38437D39c82B1DD39E2",
+		},
+		PrivateKey: "",
+		PayTokenId: tables.TokenIdDas,
+		DC:         dc,
+	}
+	u7 := RegUser{
+		KeyInfo: core.KeyInfo{
+			CoinType: common.CoinTypeEth,
+			Key:      "0x2E9a84eB6676EF2B813b7E83A596a49B6dF689f5",
+		},
+		PrivateKey: "",
+		PayTokenId: tables.TokenIdDas,
+		DC:         dc,
+	}
+	u8 := RegUser{
+		KeyInfo: core.KeyInfo{
+			CoinType: common.CoinTypeEth,
+			Key:      "0xF766FA6a9dB8F85eAae68a2B638485eDF771C65E",
 		},
 		PrivateKey: "",
 		PayTokenId: tables.TokenIdDas,
@@ -328,23 +391,52 @@ func TestBatchReg2(t *testing.T) {
 
 	group := &errgroup.Group{}
 	tic := time.NewTicker(time.Second * 10)
-	i := 75
-	var ch1 = make(chan string, 10)
-	var ch2 = make(chan string, 10)
-	var ch3 = make(chan string, 10)
+	i := 0
+	var ch0 = make(chan string, 50)
+	var ch1 = make(chan string, 50)
+	var ch2 = make(chan string, 50)
+	var ch3 = make(chan string, 50)
+	var ch4 = make(chan string, 50)
+	var ch5 = make(chan string, 50)
+	var ch6 = make(chan string, 50)
+	var ch7 = make(chan string, 50)
+	var ch8 = make(chan string, 50)
+	var ch9 = make(chan string, 50)
+
 	group.Go(func() error {
 		for {
 			select {
 			case <-tic.C:
-				acc1 := fmt.Sprintf("batchtest05%03d.bit", i)
+				acc0 := fmt.Sprintf("batchtest000%03d.bit", i)
+				acc1 := fmt.Sprintf("batchtest001%03d.bit", i)
+				acc2 := fmt.Sprintf("batchtest002%03d.bit", i)
+				acc3 := fmt.Sprintf("batchtest003%03d.bit", i)
+				acc4 := fmt.Sprintf("batchtest004%03d.bit", i)
+				acc5 := fmt.Sprintf("batchtest005%03d.bit", i)
+				acc6 := fmt.Sprintf("batchtest006%03d.bit", i)
+				acc7 := fmt.Sprintf("batchtest007%03d.bit", i)
+				acc8 := fmt.Sprintf("batchtest008%03d.bit", i)
+				acc9 := fmt.Sprintf("batchtest009%03d.bit", i)
 				i++
-				acc2 := fmt.Sprintf("batchtest05%03d.bit", i)
-				i++
-				acc3 := fmt.Sprintf("batchtest05%03d.bit", i)
-				i++
+				ch0 <- acc0
 				ch1 <- acc1
 				ch2 <- acc2
 				ch3 <- acc3
+				ch4 <- acc4
+				ch5 <- acc5
+				ch6 <- acc6
+				ch7 <- acc7
+				ch8 <- acc8
+				ch9 <- acc9
+			}
+		}
+		return nil
+	})
+	group.Go(func() error {
+		for acc := range ch0 {
+			fmt.Println("ch0:", acc)
+			if err := u0.doReg(acc); err != nil {
+				fmt.Println("doReg err: ", err.Error())
 			}
 		}
 		return nil
@@ -371,6 +463,60 @@ func TestBatchReg2(t *testing.T) {
 		for acc := range ch3 {
 			fmt.Println("ch3:", acc)
 			if err := u3.doReg(acc); err != nil {
+				fmt.Println("doReg err: ", err.Error())
+			}
+		}
+		return nil
+	})
+	group.Go(func() error {
+		for acc := range ch4 {
+			fmt.Println("ch4:", acc)
+			if err := u4.doReg(acc); err != nil {
+				fmt.Println("doReg err: ", err.Error())
+			}
+		}
+		return nil
+	})
+	group.Go(func() error {
+		for acc := range ch5 {
+			fmt.Println("ch5:", acc)
+			if err := u5.doReg(acc); err != nil {
+				fmt.Println("doReg err: ", err.Error())
+			}
+		}
+		return nil
+	})
+	group.Go(func() error {
+		for acc := range ch6 {
+			fmt.Println("ch6:", acc)
+			if err := u6.doReg(acc); err != nil {
+				fmt.Println("doReg err: ", err.Error())
+			}
+		}
+		return nil
+	})
+	group.Go(func() error {
+		for acc := range ch7 {
+			fmt.Println("ch7:", acc)
+			if err := u7.doReg(acc); err != nil {
+				fmt.Println("doReg err: ", err.Error())
+			}
+		}
+		return nil
+	})
+	group.Go(func() error {
+		for acc := range ch8 {
+			fmt.Println("ch8:", acc)
+			if err := u8.doReg(acc); err != nil {
+				fmt.Println("doReg err: ", err.Error())
+			}
+		}
+		return nil
+	})
+	group.Go(func() error {
+		for acc := range ch9 {
+			fmt.Println("ch9:", acc)
+			if err := u9.doReg(acc); err != nil {
 				fmt.Println("doReg err: ", err.Error())
 			}
 		}
