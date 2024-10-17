@@ -242,7 +242,7 @@ func (h *HttpHandle) buildBalancePayTx(p *balancePayParams) (*txbuilder.BuildTra
 	// change
 	if change := p.totalCapacity - p.payCapacity; change > 0 {
 
-		changeList, err := core.SplitOutputCell(change, 2000*common.OneCkb, 5, p.fromLockScript, p.fromTypeScript)
+		changeList, err := core.SplitOutputCell2(change, 2000*common.OneCkb, 20, p.fromLockScript, p.fromTypeScript, indexer.SearchOrderDesc)
 		if err != nil {
 			return nil, fmt.Errorf("SplitOutputCell err: %s", err.Error())
 		}
