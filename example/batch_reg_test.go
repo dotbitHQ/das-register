@@ -18,6 +18,8 @@ import (
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/shopspring/decimal"
 	"golang.org/x/sync/errgroup"
+	"io/ioutil"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -641,4 +643,144 @@ func getTxBuilderBase(dasCore *core.DasCore, args, privateKey string) *txbuilder
 	handleSign := sign.LocalSign(privateKey)
 	txBuilderBase := txbuilder.NewDasTxBuilderBase(context.Background(), dasCore, handleSign, args)
 	return txBuilderBase
+}
+
+func TestBatchCsv(t *testing.T) {
+	content, err := ioutil.ReadFile("")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	str := string(content[4:])
+	str = strings.ReplaceAll(str, "\"", "")
+	//fmt.Println(str)
+	list := strings.Split(str, "\n")
+	//fmt.Println(len(list))
+	var mapBatchCsv = make(map[string][]BatchCsv)
+	for _, v := range list {
+		if strings.TrimSpace(v) == "" {
+			break
+		}
+
+		res := strings.Split(strings.TrimSpace(v), ",")
+		timestamp, _ := strconv.ParseInt(res[2], 10, 64)
+		startTime, _ := time.ParseInLocation("2006-01-02 15:04:05", res[3], time.Local)
+		endTime, _ := time.ParseInLocation("2006-01-02 15:04:05", res[4], time.Local)
+		tmp := BatchCsv{
+			OrderId:   res[0],
+			Action:    res[1],
+			Timestamp: timestamp,
+			StartTime: startTime.Unix(),
+			EndTime:   endTime.Unix(),
+		}
+		if tmp.OrderId == "008eaf1deffafbd1a89fcc1c2f11ec0b" {
+			fmt.Println(tmp.OrderId)
+		}
+		mapBatchCsv[tmp.OrderId] = append(mapBatchCsv[tmp.OrderId], tmp)
+	}
+	totalAcc := int64(len(mapBatchCsv))
+	fmt.Println(totalAcc)
+	var mapAction = make(map[string]ActionCount)
+	for _, v := range mapBatchCsv {
+		var preAction, appAction BatchCsv
+		for _, action := range v {
+			if action.OrderId == "008eaf1deffafbd1a89fcc1c2f11ec0b" {
+				fmt.Println(action.OrderId)
+			}
+			switch action.Action {
+			case "propose", "confirm_proposal":
+				txTime := action.EndTime - preAction.Timestamp/1000
+				if item, ok := mapAction[action.Action]; ok {
+					item.AvgTime += txTime
+					if item.MinTime > txTime {
+						item.MinTime = txTime
+						item.MinOrderId = action.OrderId
+					}
+					if item.MaxTime < txTime {
+						item.MaxTime = txTime
+						item.MaxOrderId = action.OrderId
+					}
+					mapAction[action.Action] = item
+				} else {
+					mapAction[action.Action] = ActionCount{
+						MinTime:    txTime,
+						MaxTime:    txTime,
+						AvgTime:    txTime,
+						MinOrderId: action.OrderId,
+						MaxOrderId: action.OrderId,
+					}
+				}
+				if action.Action == "confirm_proposal" {
+					txTime = action.EndTime - appAction.StartTime
+					if item, ok := mapAction["avg"]; ok {
+						item.AvgTime += txTime
+						if item.MinTime > txTime {
+							item.MinTime = txTime
+							item.MinOrderId = action.OrderId
+						}
+						if item.MaxTime < txTime {
+							item.MaxTime = txTime
+							item.MaxOrderId = action.OrderId
+						}
+						mapAction["avg"] = item
+					} else {
+						mapAction["avg"] = ActionCount{
+							MinTime:    txTime,
+							MaxTime:    txTime,
+							AvgTime:    txTime,
+							MinOrderId: action.OrderId,
+							MaxOrderId: action.OrderId,
+						}
+					}
+				}
+			case "apply_register", "pre_register":
+				if action.Action == "pre_register" {
+					preAction = action
+				} else {
+					appAction = action
+				}
+
+				txTime := action.EndTime - action.StartTime
+				if item, ok := mapAction[action.Action]; ok {
+					item.AvgTime += txTime
+					if item.MinTime > txTime {
+						item.MinTime = txTime
+						item.MinOrderId = action.OrderId
+					}
+					if item.MaxTime < txTime {
+						item.MaxTime = txTime
+						item.MaxOrderId = action.OrderId
+					}
+					mapAction[action.Action] = item
+				} else {
+					mapAction[action.Action] = ActionCount{
+						MinTime:    txTime,
+						MaxTime:    txTime,
+						AvgTime:    txTime,
+						MinOrderId: action.OrderId,
+						MaxOrderId: action.OrderId,
+					}
+				}
+			}
+		}
+	}
+	for k, v := range mapAction {
+		fmt.Println(k, v.MinOrderId, v.MaxOrderId, v.MinTime, v.MaxTime, v.AvgTime/totalAcc)
+	}
+}
+
+type BatchCsv struct {
+	OrderId   string `json:"order_id"`
+	Action    string `json:"action"`
+	Timestamp int64  `json:"timestamp"`
+	StartTime int64  `json:"start_time"`
+	EndTime   int64  `json:"end_time"`
+}
+
+type ActionCount struct {
+	MinOrderId string `json:"min_order_id"`
+	MinTime    int64  `json:"min_time"`
+	MaxOrderId string `json:"max_order_id"`
+	MaxTime    int64  `json:"max_time"`
+	AvgTime    int64  `json:"avg_time"`
 }
