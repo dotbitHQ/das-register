@@ -3,7 +3,6 @@ package handle
 import (
 	"context"
 	"das_register_server/config"
-	"das_register_server/http_server/compatible"
 	"das_register_server/internal"
 	"das_register_server/tables"
 	"encoding/json"
@@ -83,12 +82,12 @@ func (h *HttpHandle) doEditOwner(ctx context.Context, req *ReqEditOwner, apiResp
 	var resp RespEditOwner
 
 	req.Account = strings.ToLower(req.Account)
-	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
-	if err != nil {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid")
-		return err
-	}
 
+	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	if err != nil {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return nil
+	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if req.RawParam.ReceiverCoinType != "" {
