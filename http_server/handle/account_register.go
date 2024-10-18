@@ -3,7 +3,6 @@ package handle
 import (
 	"context"
 	"das_register_server/config"
-	"das_register_server/http_server/compatible"
 	"das_register_server/internal"
 	"das_register_server/notify"
 	"das_register_server/tables"
@@ -98,12 +97,11 @@ func (h *HttpHandle) doAccountRegister(ctx context.Context, req *ReqAccountRegis
 		log.Info(ctx, "AccountToAccountChars:", toolib.JsonString(req.AccountCharStr))
 	}
 
-	addressHex, err := compatible.ChainTypeAndCoinType(*req, h.dasCore)
+	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
-		return err
+		return nil
 	}
-
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if !checkChainType(req.ChainType) {
