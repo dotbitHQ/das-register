@@ -204,10 +204,7 @@ func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister,
 	//}
 
 	// check un pay
-	maxUnPayCount := int64(200)
-	if config.Cfg.Server.Net != common.DasNetTypeMainNet {
-		maxUnPayCount = 200
-	}
+	maxUnPayCount := int64(300)
 	if unPayCount, err := h.dbDao.GetUnPayOrderCount(req.ChainType, req.Address); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "failed to check order count")
 		return nil
