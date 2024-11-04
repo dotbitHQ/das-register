@@ -11,9 +11,9 @@ import (
 func TestRegByStripe(t *testing.T) {
 	req := handle.ReqOrderRegister{
 		ReqAccountSearch: handle.ReqAccountSearch{
-			ChainType: common.ChainTypeEth,
-			Address:   "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
-			Account:   "20230731.bit",
+			//ChainType: common.ChainTypeEth,
+			//Address:   "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891",
+			Account: "20230731.bit",
 			AccountCharStr: []common.AccountCharSet{
 				{CharSetName: common.AccountCharTypeDigit, Char: "2"},
 				{CharSetName: common.AccountCharTypeDigit, Char: "0"},

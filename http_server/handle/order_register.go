@@ -27,14 +27,12 @@ import (
 type ReqOrderRegister struct {
 	ReqAccountSearch
 	ReqOrderRegisterBase
-	core.ChainTypeAddress
-	PayChainType  common.ChainType  `json:"pay_chain_type"`
-	PayAddress    string            `json:"pay_address"`
-	PayTokenId    tables.PayTokenId `json:"pay_token_id"`
-	PayType       tables.PayType    `json:"pay_type"`
-	CoinType      string            `json:"coin_type"`
-	CrossCoinType string            `json:"cross_coin_type"`
-	GiftCard      string            `json:"gift_card"`
+	PayChainType common.ChainType  `json:"pay_chain_type"`
+	PayAddress   string            `json:"pay_address"`
+	PayTokenId   tables.PayTokenId `json:"pay_token_id"`
+	PayType      tables.PayType    `json:"pay_type"`
+	CoinType     string            `json:"coin_type"`
+	GiftCard     string            `json:"gift_card"`
 }
 
 type ReqCheckCoupon struct {
@@ -164,7 +162,6 @@ func (h *HttpHandle) OrderRegister(ctx *gin.Context) {
 func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister, apiResp *api_code.ApiResp) error {
 	var resp RespOrderRegister
 
-	req.CrossCoinType = "" // closed cross nft
 	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
@@ -174,15 +171,15 @@ func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister,
 		return nil
 	}
 
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
-	if !checkChainType(req.ChainType) {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", req.ChainType))
+	if !checkChainType(req.addressHex.ChainType) {
+		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", req.addressHex.ChainType))
 		return nil
 	}
 
@@ -195,7 +192,6 @@ func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister,
 		return fmt.Errorf("sync block number")
 	}
 
-	log.Info("doOrderRegister:", req.Address, req.Account)
 	//if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "register", req.Account, time.Second*10); err != nil {
 	//	if err == cache.ErrDistributedLockPreemption {
 	//		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
@@ -205,11 +201,11 @@ func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister,
 
 	// check un pay
 	maxUnPayCount := int64(300)
-	if unPayCount, err := h.dbDao.GetUnPayOrderCount(req.ChainType, req.Address); err != nil {
+	if unPayCount, err := h.dbDao.GetUnPayOrderCount(req.addressHex.ChainType, req.addressHex.AddressHex); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "failed to check order count")
 		return nil
 	} else if unPayCount > maxUnPayCount {
-		log.Info(ctx, "GetUnPayOrderCount:", req.ChainType, req.Address, unPayCount)
+		log.Info(ctx, "GetUnPayOrderCount:", req.addressHex.ChainType, req.addressHex.AddressHex, unPayCount)
 		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
 		return nil
 	}
@@ -220,7 +216,7 @@ func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister,
 	//}
 
 	// order check
-	if err := h.checkOrderInfo(req.CoinType, req.CrossCoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
+	if err := h.checkOrderInfo(req.CoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
 		return fmt.Errorf("checkOrderInfo err: %s", err.Error())
 	}
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -228,6 +224,14 @@ func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister,
 	}
 
 	// account check
+	if len(req.AccountCharStr) == 0 {
+		req.AccountCharStr, err = h.dasCore.GetAccountCharSetList(req.Account)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
+			return nil
+		}
+		log.Info(ctx, "GetAccountCharSetList:", toolib.JsonString(req.AccountCharStr))
+	}
 	h.checkAccountCharSet(&req.ReqAccountSearch, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
@@ -283,7 +287,7 @@ func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister,
 	return nil
 }
 
-func (h *HttpHandle) checkOrderInfo(coinType, crossCoinType string, req *ReqOrderRegisterBase, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) checkOrderInfo(coinType string, req *ReqOrderRegisterBase, apiResp *api_code.ApiResp) error {
 	if req.RegisterYears <= 0 || req.RegisterYears > config.Cfg.Das.MaxRegisterYears {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("register years[%d] invalid", req.RegisterYears))
 		return nil
@@ -324,28 +328,18 @@ func (h *HttpHandle) checkOrderInfo(coinType, crossCoinType string, req *ReqOrde
 			return nil
 		}
 	}
-	if crossCoinType != "" {
-		if crossCoinType != string(common.CoinTypeEth) {
-			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("CrossCoinType [%s] is invalid", coinType))
-			return nil
-		}
-		//if ok, _ := regexp.MatchString("^(0|[1-9][0-9]*)$", crossCoinType); !ok {
-		//	apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("CrossCoinType [%s] is invalid", coinType))
-		//	return nil
-		//}
-	}
 	return nil
 }
 
 func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
 	// pay amount
-	addrHex := core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
+	hexAddress := core.DasAddressHex{
+		DasAlgorithmId: common.DasAlgorithmIdEth712,
+		AddressHex:     common.BlackHoleAddress,
 		IsMulti:        false,
-		ChainType:      req.ChainType,
+		ChainType:      common.ChainTypeEth,
 	}
-	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
+	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
 	if err != nil {
 		log.Error(ctx, "HexToArgs err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
@@ -390,9 +384,9 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 		return
 	}
 
-	// check balance
+	// todo dob check balance
 	if req.PayTokenId == tables.TokenIdDas {
-		dasLock, _, err := h.dasCore.Daf().HexToScript(addrHex)
+		dasLock, _, err := h.dasCore.Daf().HexToScript(*req.addressHex)
 		if err != nil {
 			log.Error(ctx, "HexToArgs err: ", err.Error())
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
@@ -418,17 +412,6 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 	var paymentInfo tables.TableDasOrderPayInfo
 	// unipay
 	if config.Cfg.Server.UniPayUrl != "" {
-		addrNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
-			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-			AddressHex:     req.Address,
-			AddressPayload: nil,
-			IsMulti:        false,
-			ChainType:      req.ChainType,
-		})
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("HexToNormal err"))
-			return
-		}
 		premiumPercentage := decimal.Zero
 		premiumBase := decimal.Zero
 		premiumAmount := decimal.Zero
@@ -444,8 +427,8 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 			ChainTypeAddress: core.ChainTypeAddress{
 				Type: "blockchain",
 				KeyInfo: core.KeyInfo{
-					CoinType: addrNormal.ChainType.ToDasAlgorithmId(true).ToCoinType(),
-					Key:      addrNormal.AddressNormal,
+					CoinType: req.KeyInfo.CoinType,
+					Key:      req.KeyInfo.Key,
 				},
 			},
 			BusinessId:        unipay.BusinessIdDasRegisterSvr,
@@ -457,8 +440,8 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 			PremiumAmount:     premiumAmount,
 			MetaData: map[string]string{
 				"account":      req.Account,
-				"algorithm_id": req.ChainType.ToString(),
-				"address":      addrNormal.AddressNormal,
+				"algorithm_id": req.addressHex.ChainType.ToString(),
+				"address":      req.KeyInfo.Key,
 				"action":       "register",
 			},
 		})
@@ -472,8 +455,8 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 			AccountId:         accountId,
 			Account:           req.Account,
 			Action:            common.DasActionApplyRegister,
-			ChainType:         req.ChainType,
-			Address:           req.Address,
+			ChainType:         req.addressHex.ChainType,
+			Address:           req.addressHex.AddressHex,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
 			PayType:           req.PayType,
@@ -485,7 +468,6 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 			OrderStatus:       tables.OrderStatusDefault,
 			RegisterStatus:    tables.RegisterStatusConfirmPayment,
 			CoinType:          req.CoinType,
-			CrossCoinType:     req.CrossCoinType,
 			IsUniPay:          tables.IsUniPayTrue,
 			PremiumPercentage: premiumPercentage,
 			PremiumBase:       premiumBase,
@@ -511,8 +493,8 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 			AccountId:         accountId,
 			Account:           req.Account,
 			Action:            common.DasActionApplyRegister,
-			ChainType:         req.ChainType,
-			Address:           req.Address,
+			ChainType:         req.addressHex.ChainType,
+			Address:           req.addressHex.AddressHex,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
 			PayType:           req.PayType,
@@ -524,7 +506,6 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 			OrderStatus:       tables.OrderStatusDefault,
 			RegisterStatus:    tables.RegisterStatusConfirmPayment,
 			CoinType:          req.CoinType,
-			CrossCoinType:     req.CrossCoinType,
 		}
 		order.CreateOrderId()
 	}
@@ -566,13 +547,13 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 func (h *HttpHandle) doRegisterCouponOrder(ctx context.Context, req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
 	req.PayTokenId = tables.TokenCoupon
 	// pay amount
-	addrHex := core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
+	hexAddress := core.DasAddressHex{
+		DasAlgorithmId: common.DasAlgorithmIdEth712,
+		AddressHex:     common.BlackHoleAddress,
 		IsMulti:        false,
-		ChainType:      req.ChainType,
+		ChainType:      common.ChainTypeEth,
 	}
-	args, err := h.dasCore.Daf().HexToArgs(addrHex, addrHex)
+	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
 	if err != nil {
 		log.Error(ctx, "HexToArgs err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
@@ -647,8 +628,8 @@ func (h *HttpHandle) doRegisterCouponOrder(ctx context.Context, req *ReqOrderReg
 		AccountId:         accountId,
 		Account:           req.Account,
 		Action:            common.DasActionApplyRegister,
-		ChainType:         req.ChainType,
-		Address:           req.Address,
+		ChainType:         req.addressHex.ChainType,
+		Address:           req.addressHex.AddressHex,
 		Timestamp:         time.Now().UnixNano() / 1e6,
 		PayTokenId:        req.PayTokenId,
 		PayType:           req.PayType,
@@ -660,7 +641,6 @@ func (h *HttpHandle) doRegisterCouponOrder(ctx context.Context, req *ReqOrderReg
 		OrderStatus:       tables.OrderStatusDefault,
 		RegisterStatus:    tables.RegisterStatusApplyRegister,
 		CoinType:          req.CoinType,
-		CrossCoinType:     req.CrossCoinType,
 	}
 	order.CreateOrderId()
 

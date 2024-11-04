@@ -5,7 +5,6 @@ import (
 	"das_register_server/http_server/handle"
 	"das_register_server/tables"
 	"fmt"
-	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	"testing"
 	"time"
@@ -14,8 +13,6 @@ import (
 func doRegister(dc *core.DasCore, account, address string) error {
 	req := handle.ReqOrderRegister{
 		ReqAccountSearch: handle.ReqAccountSearch{
-			ChainType:      common.ChainTypeEth,
-			Address:        address,
 			Account:        account,
 			AccountCharStr: nil,
 		},

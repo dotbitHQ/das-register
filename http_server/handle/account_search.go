@@ -19,10 +19,9 @@ import (
 
 type ReqAccountSearch struct {
 	core.ChainTypeAddress
-	ChainType      common.ChainType        `json:"chain_type"`
-	Address        string                  `json:"address"`
 	Account        string                  `json:"account"`
 	AccountCharStr []common.AccountCharSet `json:"account_char_str"`
+	addressHex     *core.DasAddressHex
 }
 
 type RespAccountSearch struct {
@@ -90,19 +89,16 @@ func (h *HttpHandle) doAccountSearch(ctx context.Context, req *ReqAccountSearch,
 	resp.RegisterTxMap = make(map[tables.RegisterStatus]RegisterTx)
 	resp.PremiumPercentage = config.Cfg.Stripe.PremiumPercentage
 	resp.PremiumBase = config.Cfg.Stripe.PremiumBase
+	resp.Account = req.Account
 
-	if req.Address == "" && req.KeyInfo.Key == "" {
-
-	} else {
-		addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	if req.KeyInfo.Key != "" {
+		req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 			return nil
 		}
-		req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 	}
-
-	resp.Account = req.Account
 
 	// check sub account
 	isSubAccount := false
@@ -116,6 +112,14 @@ func (h *HttpHandle) doAccountSearch(ctx context.Context, req *ReqAccountSearch,
 	}
 
 	// account char set check
+	if len(req.AccountCharStr) == 0 {
+		req.AccountCharStr, err = h.dasCore.GetAccountCharSetList(req.Account)
+		if err != nil {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, err.Error())
+			return nil
+		}
+		log.Info(ctx, "GetAccountCharSetList:", toolib.JsonString(req.AccountCharStr))
+	}
 	h.checkAccountCharSet(req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
 		return nil
@@ -131,14 +135,12 @@ func (h *HttpHandle) doAccountSearch(ctx context.Context, req *ReqAccountSearch,
 	}
 	// account price
 	argsStr := ""
-	if req.Address == "" && req.KeyInfo.Key == "" {
-
-	} else {
+	if req.addressHex != nil {
 		hexAddress := core.DasAddressHex{
-			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-			AddressHex:     req.Address,
+			DasAlgorithmId: common.DasAlgorithmIdEth712,
+			AddressHex:     common.BlackHoleAddress,
 			IsMulti:        false,
-			ChainType:      req.ChainType,
+			ChainType:      common.ChainTypeEth,
 		}
 		args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
 		if err != nil {
@@ -158,6 +160,8 @@ func (h *HttpHandle) doAccountSearch(ctx context.Context, req *ReqAccountSearch,
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
 	}
 	resp.BaseAmount, resp.AccountPrice = baseAmount, accountPrice
+
+	// todo dob count did cell amount
 	// address order
 	status, registerTxMap := h.checkAddressOrder(ctx, req, apiResp, true)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -177,6 +181,7 @@ func (h *HttpHandle) doAccountSearch(ctx context.Context, req *ReqAccountSearch,
 		apiResp.ApiRespOK(resp)
 		return nil
 	}
+
 	// other register
 	status = h.checkOtherAddressOrder(ctx, req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -207,6 +212,7 @@ func (h *HttpHandle) checkAccountCharSet(req *ReqAccountSearch, apiResp *api_cod
 		apiResp.ApiRespErr(api_code.ApiCodeAccountContainsInvalidChar, "char invalid.")
 		return
 	}
+
 	var accountCharStr string
 	for _, v := range req.AccountCharStr {
 		if v.Char == "" {
@@ -300,7 +306,8 @@ func (h *HttpHandle) checkAccountBase(ctx context.Context, req *ReqAccountSearch
 	} else if acc.Id > 0 {
 		status = acc.FormatAccountStatus()
 		confirmProposalHash = acc.ConfirmProposalHash
-		if req.ChainType == acc.OwnerChainType && strings.EqualFold(req.Address, acc.Owner) {
+		// todo dob check account owner
+		if strings.EqualFold(req.KeyInfo.Key, acc.Owner) {
 			isSelf = true
 		}
 		return
@@ -405,7 +412,15 @@ func (h *HttpHandle) checkAddressOrder(ctx context.Context, req *ReqAccountSearc
 
 	var txList []tables.TableDasOrderTxInfo
 	var order tables.TableDasOrderInfo
-	order, err := h.dbDao.GetLatestRegisterOrderByAddress(req.ChainType, req.Address, accountId)
+
+	// todo dob check owner order
+	var chainType common.ChainType
+	var address string
+	if req.addressHex != nil {
+		chainType = req.addressHex.ChainType
+		address = req.addressHex.AddressHex
+	}
+	order, err := h.dbDao.GetLatestRegisterOrderByAddress(chainType, address, accountId)
 	if err != nil {
 		log.Error(ctx, "GetLatestRegisterOrderByAddress err:", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
@@ -413,6 +428,7 @@ func (h *HttpHandle) checkAddressOrder(ctx context.Context, req *ReqAccountSearc
 	}
 	timeCheck := time.Now().Add(-time.Hour*24*365).UnixNano() / 1e6
 	log.Info(ctx, "checkAddressOrder:", timeCheck, order.Timestamp)
+
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil {
 		log.Error(ctx, "GetAccountInfoByAccountId err:", err.Error())
@@ -517,7 +533,7 @@ func (h *HttpHandle) checkSubAccount(ctx context.Context, req *ReqAccountSearch,
 			return
 		} else if acc.Id > 0 {
 			status = acc.FormatAccountStatus()
-			if req.ChainType == acc.OwnerChainType && strings.EqualFold(req.Address, acc.Owner) {
+			if strings.EqualFold(req.KeyInfo.Key, acc.Owner) {
 				isSelf = true
 			}
 			return

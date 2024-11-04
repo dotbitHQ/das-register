@@ -24,8 +24,8 @@ func TestAccountSearch(t *testing.T) {
 
 	var req handle.ReqAccountSearch
 	req.Account = "1234.bit"
-	req.ChainType = common.ChainTypeEth
-	req.Address = "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
+	//req.ChainType = common.ChainTypeEth
+	//req.Address = "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
 	accountChars, err := dc.GetAccountCharSetList(req.Account)
 	if err != nil {
 		t.Fatal(err)
@@ -48,9 +48,9 @@ func TestAccountSearch(t *testing.T) {
 func TestOrderRegister(t *testing.T) {
 	req := handle.ReqOrderRegister{
 		ReqAccountSearch: handle.ReqAccountSearch{
-			ChainType: common.ChainTypeMixin,
-			Address:   "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58",
-			Account:   "1234567873.bit",
+			//ChainType: common.ChainTypeMixin,
+			//Address:   "0x99c648a7968540a630dc665a676cf90adaeaad923685f03803abd23bc17c5b58",
+			Account: "1234567873.bit",
 			AccountCharStr: []common.AccountCharSet{
 				{CharSetName: common.AccountCharTypeDigit, Char: "1"},
 				{CharSetName: common.AccountCharTypeDigit, Char: "2"},

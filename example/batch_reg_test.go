@@ -37,18 +37,18 @@ func (r *RegUser) doReg(acc string) error {
 	//fmt.Println(r.KeyInfo.CoinType, r.KeyInfo.Key)
 	req := handle.ReqOrderRegister{
 		ReqAccountSearch: handle.ReqAccountSearch{
+			ChainTypeAddress: core.ChainTypeAddress{
+				Type: "blockchain",
+				KeyInfo: core.KeyInfo{
+					CoinType: r.KeyInfo.CoinType,
+					Key:      r.KeyInfo.Key,
+				},
+			},
 			Account:        acc,
 			AccountCharStr: nil,
 		},
 		ReqOrderRegisterBase: handle.ReqOrderRegisterBase{
 			RegisterYears: 1,
-		},
-		ChainTypeAddress: core.ChainTypeAddress{
-			Type: "blockchain",
-			KeyInfo: core.KeyInfo{
-				CoinType: r.KeyInfo.CoinType,
-				Key:      r.KeyInfo.Key,
-			},
 		},
 		PayTokenId: r.PayTokenId,
 	}

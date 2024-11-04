@@ -46,7 +46,7 @@ func (h *HttpServer) initRouter() {
 		v1.GET("/version", api_code.DoMonitorLog("Version"), cacheHandleShort, h.h.Version)
 		v1.POST("/token/list", api_code.DoMonitorLog(api_code.MethodTokenList), cacheHandleLong, h.h.TokenList)
 		v1.POST("/config/info", api_code.DoMonitorLog(api_code.MethodConfigInfo), cacheHandleShort, h.h.ConfigInfo)
-		v1.POST("/account/list", api_code.DoMonitorLog(api_code.MethodAccountList), cacheHandleLong, h.h.AccountList) // user's not on sale accounts
+		//v1.POST("/account/list", api_code.DoMonitorLog(api_code.MethodAccountList), cacheHandleLong, h.h.AccountList) // user's not on sale accounts
 		v1.POST("/account/mine", api_code.DoMonitorLog(api_code.MethodAccountMine), cacheHandleLong, h.h.AccountMine) // user's accounts by pagination
 		v1.POST("/account/detail", api_code.DoMonitorLog(api_code.MethodAccountDetail), cacheHandleLong, h.h.AccountDetail)
 		v1.POST("/account/records", api_code.DoMonitorLog(api_code.MethodAccountRecords), cacheHandleShort, h.h.AccountRecords)
@@ -56,11 +56,11 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/balance/info", api_code.DoMonitorLog(api_code.MethodBalanceInfo), cacheHandleLong, h.h.BalanceInfo) // balance（712，not 712，sort address）
 		v1.POST("/transaction/list", api_code.DoMonitorLog(api_code.MethodTransactionList), cacheHandleLong, h.h.TransactionList)
 		v1.POST("/rewards/mine", api_code.DoMonitorLog(api_code.MethodRewardsMine), cacheHandleLong, h.h.RewardsMine)
-		v1.POST("/withdraw/list", api_code.DoMonitorLog(api_code.MethodWithdrawList), cacheHandleLong, h.h.WithdrawList)
+		//v1.POST("/withdraw/list", api_code.DoMonitorLog(api_code.MethodWithdrawList), cacheHandleLong, h.h.WithdrawList)
 		v1.POST("/account/search", api_code.DoMonitorLog(api_code.MethodAccountSearch), cacheHandleShort, h.h.AccountSearch)
 		v1.POST("/account/registering/list", api_code.DoMonitorLog(api_code.MethodRegisteringList), cacheHandleLong, h.h.RegisteringList)
 		v1.POST("/account/order/detail", api_code.DoMonitorLog(api_code.MethodOrderDetail), h.h.OrderDetail)
-		v1.POST("/address/deposit", api_code.DoMonitorLog(api_code.MethodAddressDeposit), cacheHandleLong, h.h.AddressDeposit)
+		//v1.POST("/address/deposit", api_code.DoMonitorLog(api_code.MethodAddressDeposit), cacheHandleLong, h.h.AddressDeposit)
 		v1.POST("/character/set/list", api_code.DoMonitorLog(api_code.MethodCharacterSetList), cacheHandleLong, h.h.CharacterSetList)
 		v1.POST("/account/auction/info", api_code.DoMonitorLog(api_code.MethodAuctionInfo), h.h.GetAccountAuctionInfo)
 		v1.POST("/account/auction/price", api_code.DoMonitorLog(api_code.MethodAuctionPrice), h.h.GetAccountAuctionPrice)
@@ -80,7 +80,7 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/balance/pay", api_code.DoMonitorLog(api_code.MethodBalancePay), h.h.BalancePay)
 		v1.POST("/balance/withdraw", api_code.DoMonitorLog(api_code.MethodBalanceWithdraw), h.h.BalanceWithdraw)
 		v1.POST("/balance/transfer", api_code.DoMonitorLog(api_code.MethodBalanceTransfer), h.h.BalanceTransfer)
-		v1.POST("/balance/deposit", api_code.DoMonitorLog(api_code.MethodBalanceDeposit), h.h.BalanceDeposit)
+		//v1.POST("/balance/deposit", api_code.DoMonitorLog(api_code.MethodBalanceDeposit), h.h.BalanceDeposit)
 		v1.POST("/account/edit/manager", api_code.DoMonitorLog(api_code.MethodEditManager), h.h.EditManager)
 		//v1.POST("/account/edit/owner", api_code.DoMonitorLog(api_code.MethodEditOwner), h.h.EditOwner)
 		v1.POST("/account/edit/owner", api_code.DoMonitorLog(api_code.MethodEditOwner), h.h.DidCellEditOwner)

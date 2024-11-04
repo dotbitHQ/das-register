@@ -26,12 +26,11 @@ type ReqOrderChange struct {
 	Address   string           `json:"address"`
 	Account   string           `json:"account"`
 
-	PayChainType  common.ChainType  `json:"pay_chain_type"`
-	PayTokenId    tables.PayTokenId `json:"pay_token_id"`
-	PayAddress    string            `json:"pay_address"`
-	PayType       tables.PayType    `json:"pay_type"`
-	CoinType      string            `json:"coin_type"`
-	CrossCoinType string            `json:"cross_coin_type"`
+	PayChainType common.ChainType  `json:"pay_chain_type"`
+	PayTokenId   tables.PayTokenId `json:"pay_token_id"`
+	PayAddress   string            `json:"pay_address"`
+	PayType      tables.PayType    `json:"pay_type"`
+	CoinType     string            `json:"coin_type"`
 
 	ReqOrderRegisterBase
 }
@@ -127,7 +126,7 @@ func (h *HttpHandle) doOrderChange(ctx context.Context, req *ReqOrderChange, api
 	//}
 
 	// order check
-	if err := h.checkOrderInfo(req.CoinType, req.CrossCoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
+	if err := h.checkOrderInfo(req.CoinType, &req.ReqOrderRegisterBase, apiResp); err != nil {
 		return fmt.Errorf("checkOrderInfo err: %s", err.Error())
 	}
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {
@@ -273,7 +272,6 @@ func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiRes
 			OrderStatus:       tables.OrderStatusDefault,
 			RegisterStatus:    tables.RegisterStatusConfirmPayment,
 			CoinType:          req.CoinType,
-			CrossCoinType:     req.CrossCoinType,
 			IsUniPay:          tables.IsUniPayTrue,
 			PremiumPercentage: premiumPercentage,
 			PremiumBase:       premiumBase,
@@ -313,7 +311,6 @@ func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiRes
 			RegisterStatus:    tables.RegisterStatusConfirmPayment,
 			OrderStatus:       tables.OrderStatusDefault,
 			CoinType:          req.CoinType,
-			CrossCoinType:     req.CrossCoinType,
 		}
 		order.CreateOrderId()
 	}

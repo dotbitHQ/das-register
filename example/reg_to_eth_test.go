@@ -11,9 +11,9 @@ import (
 func TestRegToEth(t *testing.T) {
 	req := handle.ReqOrderRegister{
 		ReqAccountSearch: handle.ReqAccountSearch{
-			ChainType: common.ChainTypeEth,
-			Address:   "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
-			Account:   "tzh20220913-03.bit",
+			//ChainType: common.ChainTypeEth,
+			//Address:   "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+			Account: "tzh20220913-03.bit",
 			AccountCharStr: []common.AccountCharSet{
 				{CharSetName: common.AccountCharTypeEn, Char: "t"},
 				{CharSetName: common.AccountCharTypeEn, Char: "z"},
@@ -42,12 +42,12 @@ func TestRegToEth(t *testing.T) {
 			ChannelAccount: "0001.bit",
 		},
 
-		PayChainType:  0,
-		PayAddress:    "",
-		PayTokenId:    tables.TokenIdDas,
-		PayType:       "",
-		CoinType:      "60",
-		CrossCoinType: "60",
+		PayChainType: 0,
+		PayAddress:   "",
+		PayTokenId:   tables.TokenIdDas,
+		PayType:      "",
+		CoinType:     "60",
+		//CrossCoinType: "60",
 	}
 
 	url := TestUrl + "/account/order/register"

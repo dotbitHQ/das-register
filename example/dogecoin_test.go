@@ -15,9 +15,9 @@ import (
 func TestRegisterByDogecoin(t *testing.T) {
 	req := handle.ReqOrderRegister{
 		ReqAccountSearch: handle.ReqAccountSearch{
-			ChainType: common.ChainTypeDogeCoin,
-			Address:   "DP86MSmWjEZw8GKotxcvAaW5D4e3qoEh6f",
-			Account:   "20230315.bit",
+			//ChainType: common.ChainTypeDogeCoin,
+			//Address:   "DP86MSmWjEZw8GKotxcvAaW5D4e3qoEh6f",
+			Account: "20230315.bit",
 			AccountCharStr: []common.AccountCharSet{
 				{CharSetName: common.AccountCharTypeDigit, Char: "2"},
 				{CharSetName: common.AccountCharTypeDigit, Char: "0"},
