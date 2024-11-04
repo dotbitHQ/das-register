@@ -22,17 +22,11 @@ import (
 
 type ReqOrderChange struct {
 	core.ChainTypeAddress
-	ChainType common.ChainType `json:"chain_type"`
-	Address   string           `json:"address"`
-	Account   string           `json:"account"`
-
-	PayChainType common.ChainType  `json:"pay_chain_type"`
-	PayTokenId   tables.PayTokenId `json:"pay_token_id"`
-	PayAddress   string            `json:"pay_address"`
-	PayType      tables.PayType    `json:"pay_type"`
-	CoinType     string            `json:"coin_type"`
-
+	Account    string            `json:"account"`
+	PayTokenId tables.PayTokenId `json:"pay_token_id"`
+	CoinType   string            `json:"coin_type"`
 	ReqOrderRegisterBase
+	addressHex *core.DasAddressHex
 }
 
 type RespOrderChange struct {
@@ -97,13 +91,13 @@ func (h *HttpHandle) doOrderChange(ctx context.Context, req *ReqOrderChange, api
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("pay token id [%s] invalid", req.PayTokenId))
 		return nil
 	}
-
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
+
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
 	}
@@ -113,7 +107,6 @@ func (h *HttpHandle) doOrderChange(ctx context.Context, req *ReqOrderChange, api
 		return fmt.Errorf("sync block number")
 	}
 
-	log.Info("doOrderChange:", req.Address, req.Account)
 	//if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "change", req.Account, time.Second*10); err != nil {
 	//	if err == cache.ErrDistributedLockPreemption {
 	//		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
@@ -154,10 +147,10 @@ func (h *HttpHandle) doOrderChange(ctx context.Context, req *ReqOrderChange, api
 func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiResp *api_code.ApiResp, resp *RespOrderChange, oldOrderContent *tables.TableOrderContent) {
 	// pay amount
 	hexAddress := core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
+		DasAlgorithmId: common.DasAlgorithmIdEth712,
+		AddressHex:     common.BlackHoleAddress,
 		IsMulti:        false,
-		ChainType:      req.ChainType,
+		ChainType:      common.ChainTypeEth,
 	}
 	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
 	if err != nil {
@@ -205,17 +198,6 @@ func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiRes
 	var paymentInfo tables.TableDasOrderPayInfo
 	// unipay
 	if config.Cfg.Server.UniPayUrl != "" {
-		addrNormal, err := h.dasCore.Daf().HexToNormal(core.DasAddressHex{
-			DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-			AddressHex:     req.Address,
-			AddressPayload: nil,
-			IsMulti:        false,
-			ChainType:      req.ChainType,
-		})
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, fmt.Sprintf("HexToNormal err: %s", err.Error()))
-			return
-		}
 		premiumPercentage := decimal.Zero
 		premiumBase := decimal.Zero
 		premiumAmount := decimal.Zero
@@ -231,8 +213,8 @@ func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiRes
 			ChainTypeAddress: core.ChainTypeAddress{
 				Type: "blockchain",
 				KeyInfo: core.KeyInfo{
-					CoinType: addrNormal.ChainType.ToDasAlgorithmId(true).ToCoinType(),
-					Key:      addrNormal.AddressNormal,
+					CoinType: req.KeyInfo.CoinType,
+					Key:      req.KeyInfo.Key,
 				},
 			},
 			BusinessId:        unipay.BusinessIdDasRegisterSvr,
@@ -244,8 +226,8 @@ func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiRes
 			PremiumAmount:     premiumAmount,
 			MetaData: map[string]string{
 				"account":      req.Account,
-				"algorithm_id": req.ChainType.ToString(),
-				"address":      addrNormal.AddressNormal,
+				"algorithm_id": req.addressHex.ChainType.ToString(),
+				"address":      req.KeyInfo.Key,
 				"action":       "register",
 			},
 		})
@@ -259,11 +241,10 @@ func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiRes
 			AccountId:         accountId,
 			Account:           req.Account,
 			Action:            common.DasActionApplyRegister,
-			ChainType:         req.ChainType,
-			Address:           req.Address,
+			ChainType:         req.addressHex.ChainType,
+			Address:           req.addressHex.AddressHex,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
-			PayType:           req.PayType,
 			PayAmount:         amountTotalPayToken,
 			Content:           string(contentDataStr),
 			PayStatus:         tables.TxStatusDefault,
@@ -298,11 +279,10 @@ func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiRes
 			AccountId:         accountId,
 			Account:           req.Account,
 			Action:            common.DasActionApplyRegister,
-			ChainType:         req.ChainType,
-			Address:           req.Address,
+			ChainType:         req.addressHex.ChainType,
+			Address:           req.addressHex.AddressHex,
 			Timestamp:         time.Now().UnixNano() / 1e6,
 			PayTokenId:        req.PayTokenId,
-			PayType:           req.PayType,
 			PayAmount:         amountTotalPayToken,
 			Content:           string(contentDataStr),
 			PayStatus:         tables.TxStatusDefault,
@@ -348,7 +328,8 @@ func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiRes
 
 func (h *HttpHandle) oldOrderCheck(ctx context.Context, req *ReqOrderChange, apiResp *api_code.ApiResp) (oldOrderContent *tables.TableOrderContent) {
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
-	order, err := h.dbDao.GetLatestRegisterOrderBySelf(req.ChainType, req.Address, accountId)
+
+	order, err := h.dbDao.GetLatestRegisterOrderBySelf(req.addressHex.ChainType, req.addressHex.AddressHex, accountId)
 	if err != nil {
 		log.Error(ctx, "GetLatestRegisterOrderBySelf err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")

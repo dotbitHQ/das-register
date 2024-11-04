@@ -57,8 +57,48 @@ func TestDobOrderRegister(t *testing.T) {
 	fmt.Println(toolib.JsonString(&data))
 }
 
-func TestDobOrderChange(t *testing.T) {
+func TestDobRegisteringList(t *testing.T) {
+	req := handle.ReqRegisteringList{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgjzk3ntzys3nuwmvnar2lrs54l9pat6wy3qq5glj65",
+			},
+		},
+	}
+	url := TestUrl + "/account/registering/list"
+	var data handle.RespRegisteringList
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+}
 
+func TestDobOrderChange(t *testing.T) {
+	req := handle.ReqOrderChange{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgjzk3ntzys3nuwmvnar2lrs54l9pat6wy3qq5glj65",
+			},
+		},
+		Account:    "2024110401.bit",
+		PayTokenId: tables.TokenIdPol,
+		ReqOrderRegisterBase: handle.ReqOrderRegisterBase{
+			RegisterYears:  2,
+			InviterAccount: "",
+			ChannelAccount: "",
+		},
+	}
+
+	url := TestUrl + "/account/order/change"
+	var data handle.RespOrderRegister
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
 }
 
 func TestDobAccountDetail(t *testing.T) {
@@ -66,10 +106,6 @@ func TestDobAccountDetail(t *testing.T) {
 }
 
 func TestDobOrderDetail(t *testing.T) {
-
-}
-
-func TestDobRegisteringList(t *testing.T) {
 
 }
 

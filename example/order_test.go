@@ -124,27 +124,27 @@ func TestOrderRenew(t *testing.T) {
 }
 
 func TestOrderOrderChange(t *testing.T) {
-	req := handle.ReqOrderChange{
-		ChainType: common.ChainTypeEth,
-		Address:   "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
-		Account:   "1234567885.bit",
-		ReqOrderRegisterBase: handle.ReqOrderRegisterBase{
-			RegisterYears:  2,
-			InviterAccount: "",
-			ChannelAccount: "",
-		},
-		PayChainType: 0,
-		PayAddress:   "",
-		PayTokenId:   tables.TokenIdPol,
-		PayType:      "",
-	}
-
-	url := TestUrl + "/account/order/change"
-	var data handle.RespOrderRegister
-	if err := doReq(url, req, &data); err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(data)
+	//req := handle.ReqOrderChange{
+	//	ChainType: common.ChainTypeEth,
+	//	Address:   "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+	//	Account:   "1234567885.bit",
+	//	ReqOrderRegisterBase: handle.ReqOrderRegisterBase{
+	//		RegisterYears:  2,
+	//		InviterAccount: "",
+	//		ChannelAccount: "",
+	//	},
+	//	PayChainType: 0,
+	//	PayAddress:   "",
+	//	PayTokenId:   tables.TokenIdPol,
+	//	PayType:      "",
+	//}
+	//
+	//url := TestUrl + "/account/order/change"
+	//var data handle.RespOrderRegister
+	//if err := doReq(url, req, &data); err != nil {
+	//	t.Fatal(err)
+	//}
+	//fmt.Println(data)
 }
 
 func TestCkbRpc(t *testing.T) {
@@ -161,17 +161,4 @@ func TestCkbRpc(t *testing.T) {
 		t.Fatal(errs)
 	}
 	fmt.Println(body)
-}
-
-func TestRegisteringList(t *testing.T) {
-	req := handle.ReqRegisteringList{
-		ChainType: common.ChainTypeEth,
-		Address:   "0xc9f53b1d85356b60453f867610888d89a0b667ad",
-	}
-	url := TestUrl + "/account/registering/list"
-	var data handle.RespRegisteringList
-	if err := doReq(url, req, &data); err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(data)
 }

@@ -6,7 +6,6 @@ import (
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
-	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
@@ -16,8 +15,7 @@ import (
 
 type ReqRegisteringList struct {
 	core.ChainTypeAddress
-	ChainType common.ChainType `json:"chain_type"`
-	Address   string           `json:"address"`
+	addressHex *core.DasAddressHex
 }
 
 type RespRegisteringList struct {
@@ -25,9 +23,8 @@ type RespRegisteringList struct {
 }
 
 type RespRegisteringData struct {
-	Account       string                `json:"account"`
-	Status        tables.RegisterStatus `json:"status"`
-	CrossCoinType string                `json:"cross_coin_type"`
+	Account string                `json:"account"`
+	Status  tables.RegisterStatus `json:"status"`
 }
 
 func (h *HttpHandle) RpcRegisteringList(p json.RawMessage, apiResp *api_code.ApiResp) {
@@ -75,20 +72,16 @@ func (h *HttpHandle) RegisteringList(ctx *gin.Context) {
 func (h *HttpHandle) doRegisteringList(ctx context.Context, req *ReqRegisteringList, apiResp *api_code.ApiResp) error {
 	var resp RespRegisteringList
 
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
+
 	resp.RegisteringAccounts = make([]RespRegisteringData, 0)
 
-	if req.Address == "" {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
-		return nil
-	}
-
-	list, err := h.dbDao.GetRegisteringOrders(req.ChainType, req.Address)
+	list, err := h.dbDao.GetRegisteringOrders(req.addressHex.ChainType, req.addressHex.AddressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "get registering account fail")
 		return fmt.Errorf("GetRegisteringOrders err: %s", err.Error())
@@ -98,13 +91,11 @@ func (h *HttpHandle) doRegisteringList(ctx context.Context, req *ReqRegisteringL
 		if item, ok := accMap[v.AccountId]; ok {
 			if v.RegisterStatus > resp.RegisteringAccounts[item].Status {
 				resp.RegisteringAccounts[item].Status = v.RegisterStatus
-				resp.RegisteringAccounts[item].CrossCoinType = v.CrossCoinType
 			}
 		} else {
 			resp.RegisteringAccounts = append(resp.RegisteringAccounts, RespRegisteringData{
-				Account:       v.Account,
-				Status:        v.RegisterStatus,
-				CrossCoinType: v.CrossCoinType,
+				Account: v.Account,
+				Status:  v.RegisterStatus,
 			})
 			accMap[v.AccountId] = len(resp.RegisteringAccounts) - 1
 		}
