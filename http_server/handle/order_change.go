@@ -2,7 +2,6 @@ package handle
 
 import (
 	"context"
-	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/internal"
 	"das_register_server/notify"
@@ -115,12 +114,13 @@ func (h *HttpHandle) doOrderChange(ctx context.Context, req *ReqOrderChange, api
 		return fmt.Errorf("sync block number")
 	}
 
-	if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "change", req.Account, time.Second*10); err != nil {
-		if err == cache.ErrDistributedLockPreemption {
-			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
-			return nil
-		}
-	}
+	log.Info("doOrderChange:", req.Address, req.Account)
+	//if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "change", req.Account, time.Second*10); err != nil {
+	//	if err == cache.ErrDistributedLockPreemption {
+	//		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
+	//		return nil
+	//	}
+	//}
 	//if exi := h.rc.RegisterLimitExist(req.ChainType, req.Address, req.Account, "2"); exi {
 	//	apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
 	//	return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)

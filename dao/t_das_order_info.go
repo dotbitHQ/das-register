@@ -378,23 +378,26 @@ func (d *DbDao) GetNeedExpiredOrders() (list []ExpiredOrder, err error) {
 	//	SELECT order_id FROM t_das_order_info WHERE order_type=1 AND register_status=1 AND order_status=0 AND `timestamp`<0
 	//) o LEFT JOIN t_das_order_pay_info p ON p.order_id=o.order_id
 	//WHERE p.order_id IS NULL
-	sql := fmt.Sprintf("SELECT o.order_id FROM(SELECT order_id FROM %s WHERE order_type=? AND register_status=? AND order_status=? AND `timestamp`<?) o LEFT JOIN %s p ON p.order_id=o.order_id WHERE p.order_id IS NULL", tables.TableNameDasOrderInfo, tables.TableNameDasOrderPayInfo)
+	regStatus := []tables.RegisterStatus{tables.RegisterStatusConfirmPayment, tables.RegisterStatusDefault}
+	sql := fmt.Sprintf("SELECT o.order_id FROM(SELECT order_id FROM %s WHERE order_type=? AND register_status IN(?) AND order_status=? AND `timestamp`<?) o LEFT JOIN %s p ON p.order_id=o.order_id WHERE p.order_id IS NULL", tables.TableNameDasOrderInfo, tables.TableNameDasOrderPayInfo)
 	timestamp := time.Now().Add(-time.Hour*24).UnixNano() / 1e6
-	err = d.db.Raw(sql, tables.OrderTypeSelf, tables.RegisterStatusConfirmPayment, tables.OrderStatusDefault, timestamp).Find(&list).Error
+	err = d.db.Raw(sql, tables.OrderTypeSelf, regStatus, tables.OrderStatusDefault, timestamp).Find(&list).Error
 	return
 }
 
 func (d *DbDao) GetNeedExpiredOrders2() (list []ExpiredOrder, err error) {
-	sql := fmt.Sprintf("SELECT order_id FROM %s WHERE order_type=? AND register_status=? AND order_status=? AND `timestamp`<?", tables.TableNameDasOrderInfo)
+	regStatus := []tables.RegisterStatus{tables.RegisterStatusConfirmPayment, tables.RegisterStatusDefault}
+	sql := fmt.Sprintf("SELECT order_id FROM %s WHERE order_type=? AND register_status IN (?) AND order_status=? AND `timestamp`<?", tables.TableNameDasOrderInfo)
 	timestamp := time.Now().Add(-time.Hour*24*7).UnixNano() / 1e6
-	err = d.db.Raw(sql, tables.OrderTypeSelf, tables.RegisterStatusConfirmPayment, tables.OrderStatusDefault, timestamp).Find(&list).Error
+	err = d.db.Raw(sql, tables.OrderTypeSelf, regStatus, tables.OrderStatusDefault, timestamp).Find(&list).Error
 	return
 }
 
 func (d *DbDao) DoExpiredOrder(orderId string) error {
+	regStatus := []tables.RegisterStatus{tables.RegisterStatusConfirmPayment, tables.RegisterStatusDefault}
 	return d.db.Model(tables.TableDasOrderInfo{}).
-		Where("order_id=? AND order_type=? AND register_status=? AND order_status=?",
-			orderId, tables.OrderTypeSelf, tables.RegisterStatusConfirmPayment, tables.OrderStatusDefault).
+		Where("order_id=? AND order_type=? AND register_status IN(?) AND order_status=?",
+			orderId, tables.OrderTypeSelf, regStatus, tables.OrderStatusDefault).
 		Updates(map[string]interface{}{
 			"order_status": tables.OrderStatusClosed,
 		}).Error

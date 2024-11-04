@@ -115,10 +115,11 @@ func (h *HttpHandle) doOrderRenew(ctx context.Context, req *ReqOrderRenew, apiRe
 		return fmt.Errorf("sync block number")
 	}
 
-	if exi := h.rc.AccountLimitExist(req.Account); exi {
-		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
-		return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
-	}
+	log.Info("doOrderRenew:", req.Address, req.Account)
+	//if exi := h.rc.AccountLimitExist(req.Account); exi {
+	//	apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
+	//	return fmt.Errorf("AccountActionLimitExist: %d %s %s", req.ChainType, req.Address, req.Account)
+	//}
 
 	acc := h.checkRenewOrder(req, apiResp)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {

@@ -2,7 +2,6 @@ package handle
 
 import (
 	"context"
-	"das_register_server/cache"
 	"das_register_server/config"
 	"das_register_server/internal"
 	"das_register_server/notify"
@@ -196,18 +195,16 @@ func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister,
 		return fmt.Errorf("sync block number")
 	}
 
-	if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "register", req.Account, time.Second*10); err != nil {
-		if err == cache.ErrDistributedLockPreemption {
-			apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
-			return nil
-		}
-	}
+	log.Info("doOrderRegister:", req.Address, req.Account)
+	//if err := h.rc.RegisterLimitLockWithRedis(req.ChainType, req.Address, "register", req.Account, time.Second*10); err != nil {
+	//	if err == cache.ErrDistributedLockPreemption {
+	//		apiResp.ApiRespErr(api_code.ApiCodeOperationFrequent, "the operation is too frequent")
+	//		return nil
+	//	}
+	//}
 
 	// check un pay
-	maxUnPayCount := int64(200)
-	if config.Cfg.Server.Net != common.DasNetTypeMainNet {
-		maxUnPayCount = 200
-	}
+	maxUnPayCount := int64(300)
 	if unPayCount, err := h.dbDao.GetUnPayOrderCount(req.ChainType, req.Address); err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "failed to check order count")
 		return nil
