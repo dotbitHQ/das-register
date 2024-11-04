@@ -238,9 +238,7 @@ curl -X POST http://127.0.0.1:8120/v1/config/info
   "key_info": {
     "coin_type": "60",
     "key": "0x111..."
-  },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356B60453F867610888D89a0B667Ad"
+  }
 }
 ```
 
@@ -269,7 +267,7 @@ curl -X POST http://127.0.0.1:8120/v1/config/info
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/list -d'{"chain_type":1,"address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad"}'
+curl -X POST http://127.0.0.1:8120/v1/account/list -d'{"key_info": {"coin_type": "60","key": "0x111..."}}'
 ```
 
 #### Account Mine
@@ -550,8 +548,6 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/list -d'{"chain_type":1,"address":
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "actions": [
     8,
     9
@@ -586,7 +582,7 @@ curl -X POST http://127.0.0.1:8120/v1/reverse/list -d'{"chain_type":1,"address":
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/transaction/status -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","actions":[8,9]}'
+curl -X POST http://127.0.0.1:8120/v1/transaction/status -d'{"key_info": {"coin_type": "60","key": "0x111..."},"actions":[8,9]}'
 ```
 
 #### Balance Info
@@ -603,8 +599,6 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/status -d'{"chain_type":1,"add
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "transfer_address": "ckt1qyq9k9w0anm56x8denhq3u6cvag637tzs68sn6f99z"
 }
 ```
@@ -625,7 +619,7 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/status -d'{"chain_type":1,"add
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/balance/info -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","transfer_address":"ckt1qyq9k9w0anm56x8denhq3u6cvag637tzs68sn6f99z"}'
+curl -X POST http://127.0.0.1:8120/v1/balance/info -d'{"key_info": {"coin_type": "60","key": "0x111..."},"transfer_address":"ckt1qyq9k9w0anm56x8denhq3u6cvag637tzs68sn6f99z"}'
 ```
 
 #### Transaction List
@@ -642,8 +636,6 @@ curl -X POST http://127.0.0.1:8120/v1/balance/info -d'{"chain_type":1,"address":
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "page": 1,
   "size": 2
 }
@@ -682,7 +674,7 @@ curl -X POST http://127.0.0.1:8120/v1/balance/info -d'{"chain_type":1,"address":
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/transaction/list -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","page":1,"size":2}'
+curl -X POST http://127.0.0.1:8120/v1/transaction/list -d'{"key_info": {"coin_type": "60","key": "0x111..."},"page":1,"size":2}'
 ```
 
 #### Rewards Mine
@@ -699,8 +691,6 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/list -d'{"chain_type":1,"addre
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "page": 1,
   "size": 2
 }
@@ -734,7 +724,7 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/list -d'{"chain_type":1,"addre
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/rewards/mine -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","page":1,"size":2}'
+curl -X POST http://127.0.0.1:8120/v1/rewards/mine -d'{"key_info": {"coin_type": "60","key": "0x111..."},"page":1,"size":2}'
 ```
 
 #### Withdraw List
@@ -751,8 +741,6 @@ curl -X POST http://127.0.0.1:8120/v1/rewards/mine -d'{"chain_type":1,"address":
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "page": 1,
   "size": 2
 }
@@ -786,7 +774,7 @@ curl -X POST http://127.0.0.1:8120/v1/rewards/mine -d'{"chain_type":1,"address":
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","page":1,"size":2}'
+curl -X POST http://127.0.0.1:8120/v1/withdraw/list -d'{"key_info": {"coin_type": "60","key": "0x111..."},"page":1,"size":2}'
 ```
 
 #### Account Search
@@ -907,9 +895,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/search -d'{"account":"aaaa.bit","t
   "key_info": {
     "coin_type": "60",
     "key": "0x111..."
-  },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad"
+  }
 }
 ```
 
@@ -934,7 +920,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/search -d'{"account":"aaaa.bit","t
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad"}'
+curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"key_info": {"coin_type": "60","key": "0x111..."}}'
 ```
 
 #### Account Order Detail
@@ -951,10 +937,9 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1, // 1-evm, 3-tron, 7-doge
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad", 
+
   "account": "xasdaaxaaa.bit",
-  "action": "pre_register
+  "action": "pre_register"
 }
 ```
 
@@ -989,7 +974,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/registering/list -d'{"chain_type":
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/order/detail -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"xasdaaxaaa.bit","action":"apply_register"}'
+curl -X POST http://127.0.0.1:8120/v1/account/order/detail -d'{"key_info": {"coin_type": "60","key": "0x111..."},"account":"xasdaaxaaa.bit","action":"apply_register"}'
 ```
 
 #### Address Deposit
@@ -1544,8 +1529,6 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/send -d'{"sign_key": "","sign_
     "key": "0x111..."
   },
   "evm_chain_id": 97,
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "order_id": "d2ccdcee9a7c163efb50d4a808a3d3f1"
 }
 ```
@@ -1572,7 +1555,7 @@ curl -X POST http://127.0.0.1:8120/v1/transaction/send -d'{"sign_key": "","sign_
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","order_id":"d2ccdcee9a7c163efb50d4a808a3d3f1"}'
+curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"key_info": {"coin_type": "60","key": "0x111..."},"order_id":"d2ccdcee9a7c163efb50d4a808a3d3f1"}'
 ```
 
 #### Balance Withdraw
@@ -1589,8 +1572,6 @@ curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_t
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "receiver_address": "ckt1qsexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6q7f75a3mpf4ddsy20uxwcgg3rvf5zmx0tgre86nk8v9x44kq3flsemppzyd3xstveadktaqfa",
   "withdraw_all": false,
   "amount": "20000000000",
@@ -1620,7 +1601,7 @@ curl -X POST http://127.0.0.1:8120/v1/balance/pay -d'{"evm_chain_id":97,"chain_t
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/balance/withdraw -d'{"evm_chain_id":5,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","receiver_chain_type":0,"receiver_address":"ckt1qsexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6q7f75a3mpf4ddsy20uxwcgg3rvf5zmx0tgre86nk8v9x44kq3flsemppzyd3xstveadktaqfa","withdraw_all":false,"amount":"20000000000"}'
+curl -X POST http://127.0.0.1:8120/v1/balance/withdraw -d'{"evm_chain_id":5,"key_info": {"coin_type": "60","key": "0x111..."},"receiver_chain_type":0,"receiver_address":"ckt1qsexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6q7f75a3mpf4ddsy20uxwcgg3rvf5zmx0tgre86nk8v9x44kq3flsemppzyd3xstveadktaqfa","withdraw_all":false,"amount":"20000000000"}'
 ```
 
 #### Balance Transfer
@@ -1637,8 +1618,6 @@ curl -X POST http://127.0.0.1:8120/v1/balance/withdraw -d'{"evm_chain_id":5,"cha
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "transfer_address": ""
 }
 ```
@@ -1664,7 +1643,7 @@ curl -X POST http://127.0.0.1:8120/v1/balance/withdraw -d'{"evm_chain_id":5,"cha
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/balance/transfer -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad"}'
+curl -X POST http://127.0.0.1:8120/v1/balance/transfer -d'{"key_info": {"coin_type": "60","key": "0x111..."}}'
 ```
 
 #### Balance Deposit
@@ -1722,8 +1701,6 @@ curl -X POST http://127.0.0.1:8120/v1/balance/deposit -d'{"from_ckb_address":"",
     "key": "0x111..."
   },
   "evm_chain_id": 5,
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "0001.bit",
   "raw_param": {
     "manager_chain_type": 1,
@@ -1755,7 +1732,7 @@ curl -X POST http://127.0.0.1:8120/v1/balance/deposit -d'{"from_ckb_address":"",
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/edit/manager -d'{"evm_chain_id":5,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"0001.bit","raw_param":{"manager_chain_type":1,"manager_address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad"}}'
+curl -X POST http://127.0.0.1:8120/v1/account/edit/manager -d'{"evm_chain_id":5,"key_info": {"coin_type": "60","key": "0x111..."},"account":"0001.bit","raw_param":{"manager_chain_type":1,"manager_address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad"}}'
 ```
 
 #### Account Edit Owner
@@ -1772,8 +1749,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/manager -d'{"evm_chain_id":5,
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "0001.bit",
   "evm_chain_id": 5,
   "raw_param": {
@@ -1806,7 +1781,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/manager -d'{"evm_chain_id":5,
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/edit/owner -d'{"evm_chain_id":5,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"0001.bit","raw_param":{"receiver_chain_type":1,"receiver_address":"0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"}}'
+curl -X POST http://127.0.0.1:8120/v1/account/edit/owner -d'{"evm_chain_id":5,"key_info": {"coin_type": "60","key": "0x111..."},"account":"0001.bit","raw_param":{"receiver_chain_type":1,"receiver_address":"0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"}}'
 ```
 
 #### Account Edit Records
@@ -1824,8 +1799,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/owner -d'{"evm_chain_id":5,"c
     "key": "0x111..."
   },
   "evm_chain_id": 5,
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "11111111.bit",
   "raw_param": {
     "records": [
@@ -1863,7 +1836,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/owner -d'{"evm_chain_id":5,"c
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"11111111.bit","raw_param":{"records":[{"type":"profile","key":"twitter","label":"","value":"111","ttl":"300","action":"add"}]}}'
+curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,"key_info": {"coin_type": "60","key": "0x111..."},"account":"11111111.bit","raw_param":{"records":[{"type":"profile","key":"twitter","label":"","value":"111","ttl":"300","action":"add"}]}}'
 ```
 
 #### Account Order Renew
@@ -1880,8 +1853,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "11111111.bit",
   "pay_chain_type": 0,
   "pay_token_id": "ckb_das",
@@ -1912,7 +1883,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/edit/records -d'{"evm_chain_id":5,
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/order/renew -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"0001.bit","pay_chain_type":0,"pay_token_id":"ckb_das","pay_type":"","pay_address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","renew_years":1}'
+curl -X POST http://127.0.0.1:8120/v1/account/order/renew -d'{"key_info": {"coin_type": "60","key": "0x111..."},"account":"0001.bit","pay_chain_type":0,"pay_token_id":"ckb_das","pay_type":"","pay_address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","renew_years":1}'
 ```
 
 
@@ -1931,8 +1902,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/renew -d'{"chain_type":1,"ad
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "asxasadasx.bit",
   "pay_chain_type": 0,
   "pay_token_id": "ckb_das",
@@ -2025,7 +1994,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/renew -d'{"chain_type":1,"ad
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"asxasadasx.bit","pay_chain_type":0,"pay_token_id":"ckb_das","pay_address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","pay_type":"","register_years":1,"inviter_account":"","channel_account":"","account_char_str":[{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"x"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"d"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"x"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}]}'
+curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"key_info": {"coin_type": "60","key": "0x111..."},"account":"asxasadasx.bit","pay_chain_type":0,"pay_token_id":"ckb_das","pay_address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","pay_type":"","register_years":1,"inviter_account":"","channel_account":"","account_char_str":[{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"x"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"d"},{"char_set_name":2,"char":"a"},{"char_set_name":2,"char":"s"},{"char_set_name":2,"char":"x"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}]}'
 ```
 
 #### Account Order Change
@@ -2042,8 +2011,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"chain_type":1,
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "asxasadasx.bit",
   "pay_chain_type": 0,
   "pay_token_id": "ckb_das",
@@ -2077,7 +2044,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/register -d'{"chain_type":1,
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/order/change -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"asxasadasx.bit","pay_chain_type":0,"pay_token_id":"ckb_das","pay_address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","pay_type":"","register_years":2,"inviter_account":"","channel_account":""}'
+curl -X POST http://127.0.0.1:8120/v1/account/order/change -d'{"key_info": {"coin_type": "60","key": "0x111..."},"account":"asxasadasx.bit","pay_chain_type":0,"pay_token_id":"ckb_das","pay_address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","pay_type":"","register_years":2,"inviter_account":"","channel_account":""}'
 ```
 
 #### Account Order Pay Hash
@@ -2094,8 +2061,6 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/change -d'{"chain_type":1,"a
     "coin_type": "60",
     "key": "0x111..."
   },
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
   "account": "asxasadasx.bit",
   "order_id": "17b05429826dc39016a6f9e4de9c55ba",
   "pay_hash": "0xfcc6eca382311be8702862f36c0863e27c4f63beedd9ff786b8413558be14559"
@@ -2123,7 +2088,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/change -d'{"chain_type":1,"a
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8120/v1/account/order/pay/hash -d'{"chain_type":1,"address":"0xc9f53b1d85356b60453f867610888d89a0b667ad","account":"asxasadasx.bit","order_id":"17b05429826dc39016a6f9e4de9c55ba","pay_hash":"0xfcc6eca382311be8702862f36c0863e27c4f63beedd9ff786b8413558be14559"}'
+curl -X POST http://127.0.0.1:8120/v1/account/order/pay/hash -d'{"key_info": {"coin_type": "60","key": "0x111..."},"account":"asxasadasx.bit","order_id":"17b05429826dc39016a6f9e4de9c55ba","pay_hash":"0xfcc6eca382311be8702862f36c0863e27c4f63beedd9ff786b8413558be14559"}'
 ```
 
 #### Account Register
@@ -2136,8 +2101,10 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/pay/hash -d'{"chain_type":1,
 
 ```json
 {
-  "chain_type": 1,
-  "address": "0xc9f53b1d85356b60453f867610888d89a0b667ad",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "account": "1234.bit",
   "account_char_str": [
     {
@@ -2194,7 +2161,7 @@ curl -X POST http://127.0.0.1:8120/v1/account/order/pay/hash -d'{"chain_type":1,
 **Usage**
 
 ```curl
-curl -X POST http://127.0.0.1:8119/v1/account/register -d'{"chain_type":1,"address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad","account":"1234567887.bit","account_char_str":[{"char_set_name":1,"char":"1"},{"char_set_name":1,"char":"2"},{"char_set_name":1,"char":"3"},{"char_set_name":1,"char":"4"},{"char_set_name":1,"char":"5"},{"char_set_name":1,"char":"6"},{"char_set_name":1,"char":"7"},{"char_set_name":1,"char":"8"},{"char_set_name":1,"char":"8"},{"char_set_name":1,"char":"7"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}],"register_years":1,"inviter_account":"","channel_account":""}'
+curl -X POST http://127.0.0.1:8119/v1/account/register -d'{"key_info": {"coin_type": "60","key": "0x111..."},"account":"1234567887.bit","account_char_str":[{"char_set_name":1,"char":"1"},{"char_set_name":1,"char":"2"},{"char_set_name":1,"char":"3"},{"char_set_name":1,"char":"4"},{"char_set_name":1,"char":"5"},{"char_set_name":1,"char":"6"},{"char_set_name":1,"char":"7"},{"char_set_name":1,"char":"8"},{"char_set_name":1,"char":"8"},{"char_set_name":1,"char":"7"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}],"register_years":1,"inviter_account":"","channel_account":""}'
 ```
 
 #### Account Renew
@@ -2207,8 +2174,10 @@ curl -X POST http://127.0.0.1:8119/v1/account/register -d'{"chain_type":1,"addre
 
 ```json
 {
-  "chain_type": 1,
-  "address": "0x111...",
+  "key_info": {
+    "coin_type": "60",
+    "key": "0x111..."
+  },
   "account": "121134.bit",
   "renew_years": 1
 }
@@ -2227,7 +2196,7 @@ curl -X POST http://127.0.0.1:8119/v1/account/register -d'{"chain_type":1,"addre
 ```
 
 ```curl
-curl -X POST http://127.0.0.1:8119/v1/account/renew -d'{"chain_type":1,"address":"0xc9f53b1d85356B60453F867610888D89a0B667Ad","account":"1234567887.bit","renew_years":1}'
+curl -X POST http://127.0.0.1:8119/v1/account/renew -d'{"key_info": {"coin_type": "60","key": "0x111..."},"account":"1234567887.bit","renew_years":1}'
 ```
 
 ### NODE RPC

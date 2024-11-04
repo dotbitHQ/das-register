@@ -78,7 +78,7 @@ func (h *HttpHandle) doAccountRenew(ctx context.Context, req *ReqAccountRenew, a
 	var resp RespAccountRenew
 
 	req.Account = strings.ToLower(req.Account)
-	if req.Address == "" || req.Account == "" {
+	if req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	} else if !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
