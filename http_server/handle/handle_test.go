@@ -3,11 +3,11 @@ package handle
 import (
 	"context"
 	"das_register_server/config"
-	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/dotbitHQ/das-lib/sign"
 	"github.com/nervosnetwork/ckb-sdk-go/rpc"
 	"github.com/parnurzeal/gorequest"
@@ -21,7 +21,6 @@ func TestCheckAccountCharSet(t *testing.T) {
 	var h HttpHandle
 	var req ReqAccountSearch
 	reqStr := `{"chain_type":1,"address":"0xa0324794ff56ecb258220046034a363d0da98f51","account":"1111ぁぁぁぁ.bit","account_char_str":[{"char_set_name":1,"char":"1"},{"char_set_name":1,"char":"1"},{"char_set_name":1,"char":"1"},{"char_set_name":1,"char":"1"},{"char_set_name":5,"char":"ぁ"},{"char_set_name":5,"char":"ぁ"},{"char_set_name":5,"char":"ぁ"},{"char_set_name":5,"char":"ぁ"},{"char_set_name":2,"char":"."},{"char_set_name":2,"char":"b"},{"char_set_name":2,"char":"i"},{"char_set_name":2,"char":"t"}]}`
-
 	json.Unmarshal([]byte(reqStr), &req)
 	var apiResp api_code.ApiResp
 	h.checkAccountCharSet(&req, &apiResp)
@@ -63,8 +62,8 @@ func TestEditManager(t *testing.T) {
 	url := TestUrl + "/account/edit/manager"
 
 	var req ReqEditManager
-	req.ChainType = common.ChainTypeDogeCoin
-	req.Address = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
+	req.KeyInfo.Key = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
+	req.KeyInfo.CoinType = common.CoinTypeDogeCoin
 	req.Account = "20230301.bit"
 	req.RawParam.ManagerChainType = common.ChainTypeDogeCoin
 	req.RawParam.ManagerAddress = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
@@ -95,9 +94,9 @@ func TestEditOwner(t *testing.T) {
 	url := TestUrl + "/account/edit/owner"
 
 	var req ReqEditOwner
-	req.ChainType = common.ChainTypeEth
-	req.Address = "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"
 	req.Account = "tzh2022070401.bit"
+	req.KeyInfo.Key = "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"
+	req.KeyInfo.CoinType = common.CoinTypeEth
 	req.RawParam.ReceiverChainType = common.ChainTypeDogeCoin
 	req.RawParam.ReceiverAddress = "DMjVFBqbqZGAyTXgkt7fTuqihhCCVuLwZ6"
 	req.EvmChainId = 5
@@ -139,8 +138,8 @@ func TestEditRecords2(t *testing.T) {
 	url := TestUrl + "/account/edit/records"
 
 	var req ReqEditRecords
-	req.ChainType = common.ChainTypeEth
-	req.Address = "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"
+	req.KeyInfo.Key = "0x15a33588908cF8Edb27D1AbE3852Bf287Abd3891"
+	req.KeyInfo.CoinType = common.CoinTypeEth
 	req.Account = "20230301.bit"
 	req.RawParam.Records = []ReqRecord{{
 		Key:   "60",
