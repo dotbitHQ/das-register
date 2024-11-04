@@ -87,7 +87,7 @@ func TestDobOrderChange(t *testing.T) {
 		Account:    "2024110401.bit",
 		PayTokenId: tables.TokenIdPol,
 		ReqOrderRegisterBase: handle.ReqOrderRegisterBase{
-			RegisterYears:  2,
+			RegisterYears:  1,
 			InviterAccount: "",
 			ChannelAccount: "",
 		},
@@ -101,11 +101,27 @@ func TestDobOrderChange(t *testing.T) {
 	fmt.Println(toolib.JsonString(&data))
 }
 
-func TestDobAccountDetail(t *testing.T) {
-
+func TestDobOrderDetail(t *testing.T) {
+	req := handle.ReqOrderDetail{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgjzk3ntzys3nuwmvnar2lrs54l9pat6wy3qq5glj65",
+			},
+		},
+		Account: "2024110401.bit",
+		Action:  common.DasActionApplyRegister,
+	}
+	url := TestUrl + "/account/order/detail"
+	var data handle.RespOrderDetail
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
 }
 
-func TestDobOrderDetail(t *testing.T) {
+func TestDobAccountDetail(t *testing.T) {
 
 }
 
@@ -123,14 +139,6 @@ func TestDobTransactionStatus(t *testing.T) {
 }
 
 func TestDobDidCellRenew(t *testing.T) {
-
-}
-
-func TestDobOrderPayHash(t *testing.T) {
-
-}
-
-func TestDobCheckCoupon(t *testing.T) {
 
 }
 

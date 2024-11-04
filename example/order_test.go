@@ -89,18 +89,18 @@ func TestOrderRegister(t *testing.T) {
 }
 
 func TestOrderDetail(t *testing.T) {
-	req := handle.ReqOrderDetail{
-		ChainType: common.ChainTypeEth,
-		Address:   "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
-		Account:   "11111111.bit",
-		Action:    common.DasActionRenewAccount,
-	}
-	url := TestUrl + "/account/order/detail"
-	var data handle.RespOrderDetail
-	if err := doReq(url, req, &data); err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(data)
+	//req := handle.ReqOrderDetail{
+	//	ChainType: common.ChainTypeEth,
+	//	Address:   "0xc9f53b1d85356B60453F867610888D89a0B667Ad",
+	//	Account:   "11111111.bit",
+	//	Action:    common.DasActionRenewAccount,
+	//}
+	//url := TestUrl + "/account/order/detail"
+	//var data handle.RespOrderDetail
+	//if err := doReq(url, req, &data); err != nil {
+	//	t.Fatal(err)
+	//}
+	//fmt.Println(data)
 }
 
 func TestOrderRenew(t *testing.T) {

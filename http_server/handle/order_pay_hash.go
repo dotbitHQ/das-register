@@ -6,7 +6,6 @@ import (
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
-	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
@@ -18,11 +17,10 @@ import (
 
 type ReqOrderPayHash struct {
 	core.ChainTypeAddress
-	ChainType common.ChainType `json:"chain_type"`
-	Address   string           `json:"address"`
-	Account   string           `json:"account"`
-	OrderId   string           `json:"order_id"`
-	PayHash   string           `json:"pay_hash"`
+	Account    string `json:"account"`
+	OrderId    string `json:"order_id"`
+	PayHash    string `json:"pay_hash"`
+	addressHex *core.DasAddressHex
 }
 
 type RespOrderPayHash struct {
@@ -78,12 +76,12 @@ func (h *HttpHandle) doOrderPayHash(ctx context.Context, req *ReqOrderPayHash, a
 	}
 	req.Account = strings.ToLower(req.Account)
 
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	order, err := h.dbDao.GetOrderByOrderId(req.OrderId)
 	if err != nil {
@@ -95,7 +93,7 @@ func (h *HttpHandle) doOrderPayHash(ctx context.Context, req *ReqOrderPayHash, a
 	} else if !strings.EqualFold(order.Account, req.Account) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("account[%s] does not match the order", req.Account))
 		return nil
-	} else if req.ChainType != order.ChainType || !strings.EqualFold(req.Address, order.Address) {
+	} else if req.addressHex.ChainType != order.ChainType || !strings.EqualFold(req.addressHex.AddressHex, order.Address) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "order's owner does not match")
 		return nil
 	}
@@ -103,8 +101,8 @@ func (h *HttpHandle) doOrderPayHash(ctx context.Context, req *ReqOrderPayHash, a
 		Id:           0,
 		Hash:         req.PayHash,
 		OrderId:      req.OrderId,
-		ChainType:    req.ChainType,
-		Address:      req.Address,
+		ChainType:    req.addressHex.ChainType,
+		Address:      req.addressHex.AddressHex,
 		Status:       tables.OrderTxStatusDefault,
 		RefundStatus: tables.TxStatusDefault,
 		RefundHash:   "",

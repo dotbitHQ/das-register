@@ -19,10 +19,9 @@ import (
 
 type ReqOrderDetail struct {
 	core.ChainTypeAddress
-	ChainType common.ChainType `json:"chain_type"`
-	Address   string           `json:"address"`
-	Account   string           `json:"account"`
-	Action    common.DasAction `json:"action"`
+	Account    string           `json:"account"`
+	Action     common.DasAction `json:"action"`
+	addressHex *core.DasAddressHex
 }
 
 type RespOrderDetail struct {
@@ -40,7 +39,6 @@ type RespOrderDetail struct {
 	RegisterYears  int               `json:"register_years"`
 	//CodeUrl        string            `json:"code_url"` // wx pay code
 	CoinType        string `json:"coin_type"`
-	CrossCoinType   string `json:"cross_coin_type"`
 	ContractAddress string `json:"contract_address"`
 	ClientSecret    string `json:"client_secret"`
 }
@@ -94,16 +92,15 @@ func (h *HttpHandle) doOrderDetail(ctx context.Context, req *ReqOrderDetail, api
 		return nil
 	}
 	req.Account = strings.ToLower(req.Account)
-
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
-	order, err := h.dbDao.GetLatestRegisterOrderBySelf(req.ChainType, req.Address, accountId)
+	order, err := h.dbDao.GetLatestRegisterOrderBySelf(req.addressHex.ChainType, req.addressHex.AddressHex, accountId)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search order fail")
 		return fmt.Errorf("GetLatestOrderBySelf err: %s", err.Error())
@@ -121,7 +118,6 @@ func (h *HttpHandle) doOrderDetail(ctx context.Context, req *ReqOrderDetail, api
 	resp.Timestamp = order.Timestamp
 	resp.Status = order.PayStatus
 	resp.CoinType = order.CoinType
-	resp.CrossCoinType = order.CrossCoinType
 
 	switch order.PayTokenId {
 	case tables.TokenIdStripeUSD, tables.TokenIdTrc20USDT,
@@ -155,7 +151,6 @@ func (h *HttpHandle) doOrderDetail(ctx context.Context, req *ReqOrderDetail, api
 	} else {
 		resp.ReceiptAddress = addr
 	}
-	//resp.CodeUrl = ""
 
 	apiResp.ApiRespOK(resp)
 	return nil
