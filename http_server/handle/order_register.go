@@ -179,8 +179,10 @@ func (h *HttpHandle) doOrderRegister(ctx context.Context, req *ReqOrderRegister,
 	}
 
 	if !checkChainType(req.addressHex.ChainType) {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", req.addressHex.ChainType))
-		return nil
+		if req.addressHex.ChainType != common.ChainTypeAnyLock {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", req.addressHex.ChainType))
+			return nil
+		}
 	}
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {

@@ -3,8 +3,10 @@ package example
 import (
 	"das_register_server/http_server/handle"
 	"das_register_server/tables"
+	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
+	"github.com/scorpiotzh/toolib"
 	"testing"
 )
 
@@ -14,10 +16,10 @@ func TestDobAccountSearch(t *testing.T) {
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
 				CoinType: common.CoinTypeCKB,
-				Key:      "",
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgjzk3ntzys3nuwmvnar2lrs54l9pat6wy3qq5glj65",
 			},
 		},
-		Account:        "",
+		Account:        "2024110401.bit",
 		AccountCharStr: nil,
 	}
 
@@ -26,6 +28,7 @@ func TestDobAccountSearch(t *testing.T) {
 	if err := doReq(url, req, &data); err != nil {
 		t.Fatal(err)
 	}
+	fmt.Println(toolib.JsonString(&data))
 }
 
 func TestDobOrderRegister(t *testing.T) {
@@ -35,10 +38,10 @@ func TestDobOrderRegister(t *testing.T) {
 				Type: "blockchain",
 				KeyInfo: core.KeyInfo{
 					CoinType: common.CoinTypeCKB,
-					Key:      "",
+					Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgjzk3ntzys3nuwmvnar2lrs54l9pat6wy3qq5glj65",
 				},
 			},
-			Account:        "",
+			Account:        "2024110401.bit",
 			AccountCharStr: nil,
 		},
 		ReqOrderRegisterBase: handle.ReqOrderRegisterBase{
@@ -51,7 +54,7 @@ func TestDobOrderRegister(t *testing.T) {
 	if err := doReq(url, req, &data); err != nil {
 		t.Fatal(err)
 	}
-
+	fmt.Println(toolib.JsonString(&data))
 }
 
 func TestDobOrderChange(t *testing.T) {
