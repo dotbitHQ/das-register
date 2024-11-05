@@ -177,7 +177,22 @@ func TestDobTransactionList(t *testing.T) {
 }
 
 func TestDobTransactionStatus(t *testing.T) {
-
+	req := handle.ReqTransactionStatus{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgjzk3ntzys3nuwmvnar2lrs54l9pat6wy3qq5glj65",
+			},
+		},
+		Actions: []tables.TxAction{tables.ActionEditRecords},
+	}
+	url := TestUrl + "/transaction/status"
+	var data handle.RespTransactionStatus
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
 }
 
 // todo dob padge mint svr
