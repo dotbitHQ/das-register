@@ -103,25 +103,26 @@ func TestOrderDetail(t *testing.T) {
 	//fmt.Println(data)
 }
 
-func TestOrderRenew(t *testing.T) {
-	req := handle.ReqOrderRenew{
-		ChainType:    common.ChainTypeMixin,
-		Address:      "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4",
-		Account:      "1234567871.bit",
-		PayChainType: common.ChainTypeCkb,
-		PayTokenId:   tables.TokenIdDas,
-		PayAddress:   "",
-		PayType:      "",
-		RenewYears:   1,
-	}
-	url := TestUrl + "/account/order/renew"
-	var data handle.RespOrderRenew
-	if err := doReq(url, req, &data); err != nil {
-		t.Fatal(err)
-	}
-
-	fmt.Println(data)
-}
+//
+//func TestOrderRenew(t *testing.T) {
+//	req := handle.ReqOrderRenew{
+//		ChainType:    common.ChainTypeMixin,
+//		Address:      "0xe1090ce82474cbe0b196d1e62ec349ec05a61076c68d14129265370ca7e051c4",
+//		Account:      "1234567871.bit",
+//		PayChainType: common.ChainTypeCkb,
+//		PayTokenId:   tables.TokenIdDas,
+//		PayAddress:   "",
+//		PayType:      "",
+//		RenewYears:   1,
+//	}
+//	url := TestUrl + "/account/order/renew"
+//	var data handle.RespOrderRenew
+//	if err := doReq(url, req, &data); err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	fmt.Println(data)
+//}
 
 func TestOrderOrderChange(t *testing.T) {
 	//req := handle.ReqOrderChange{

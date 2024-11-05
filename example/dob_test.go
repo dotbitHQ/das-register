@@ -133,11 +133,47 @@ func TestDobAccountDetail(t *testing.T) {
 
 //
 func TestDobRewardsMine(t *testing.T) {
-
+	req := handle.ReqRewardsMine{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgjzk3ntzys3nuwmvnar2lrs54l9pat6wy3qq5glj65",
+			},
+		},
+		Pagination: handle.Pagination{
+			Page: 1,
+			Size: 20,
+		},
+	}
+	url := TestUrl + "/rewards/mine"
+	var data handle.RespRewardsMine
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
 }
 
 func TestDobTransactionList(t *testing.T) {
-
+	req := handle.ReqTransactionList{
+		ChainTypeAddress: core.ChainTypeAddress{
+			Type: "blockchain",
+			KeyInfo: core.KeyInfo{
+				CoinType: common.CoinTypeCKB,
+				Key:      "ckt1qrejnmlar3r452tcg57gvq8patctcgy8acync0hxfnyka35ywafvkqgjzk3ntzys3nuwmvnar2lrs54l9pat6wy3qq5glj65",
+			},
+		},
+		Pagination: handle.Pagination{
+			Page: 1,
+			Size: 20,
+		},
+	}
+	url := TestUrl + "/transaction/list"
+	var data handle.RespTransactionList
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
 }
 
 func TestDobTransactionStatus(t *testing.T) {

@@ -43,7 +43,7 @@ func (d *DbDao) GetTransactionListByOutpoints(outpoints []string) (list []tables
 }
 
 func (d *DbDao) GetTransactionListTotal(chainType common.ChainType, address string) (count int64, err error) {
-	err = d.parserDb.Model(tables.TableTransactionInfo{}).Where(" chain_type=? AND address=? AND action NOT IN(?) ", chainType, address, actionList).Count(&count).Error
+	err = d.parserDb.Model(tables.TableTransactionInfo{}).Where(" chain_type=? AND address=? AND action NOT IN(?) AND capacity>0 ", chainType, address, actionList).Count(&count).Error
 	return
 }
 
