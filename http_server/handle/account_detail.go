@@ -173,16 +173,26 @@ func (h *HttpHandle) getAccountPrice(ctx context.Context, didCellHex *core.DasAd
 	}
 	// did cell amount
 	var didCellCapacity uint64
+
 	// todo default didCellHex
-	if didCellHex != nil {
-		didCellCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(didCellHex.ParsedAddress.Script, account)
-		if err != nil {
-			err = fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
-			return
+	var didCellLock *types.Script
+	if didCellHex == nil {
+		defaultArgs := make([]byte, 32)
+		didCellLock = &types.Script{
+			CodeHash: types.HexToHash(common.AnyLockCodeHashOfMainnetOmniLock),
+			HashType: types.HashTypeType,
+			Args:     defaultArgs,
 		}
-		didCellAmount, _ = decimal.NewFromString(fmt.Sprintf("%d", didCellCapacity/common.OneCkb))
-		didCellAmount = didCellAmount.Mul(decQuote).DivRound(decUsdRateBase, 6)
+	} else {
+		didCellLock = didCellHex.ParsedAddress.Script
 	}
+	didCellCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(didCellLock, account)
+	if err != nil {
+		err = fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
+		return
+	}
+	didCellAmount, _ = decimal.NewFromString(fmt.Sprintf("%d", didCellCapacity/common.OneCkb))
+	didCellAmount = didCellAmount.Mul(decQuote).DivRound(decUsdRateBase, 6)
 
 	return
 }
