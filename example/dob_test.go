@@ -138,11 +138,7 @@ func TestDobTransactionStatus(t *testing.T) {
 
 }
 
-func TestDobDidCellRenew(t *testing.T) {
-
-}
-
-//
+// todo dob padge mint svr
 func TestDobAccountRegister(t *testing.T) {
 
 }

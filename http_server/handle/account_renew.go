@@ -22,10 +22,9 @@ import (
 
 type ReqAccountRenew struct {
 	core.ChainTypeAddress
-	ChainType  common.ChainType `json:"chain_type"`
-	Address    string           `json:"address"`
-	Account    string           `json:"account"`
-	RenewYears int              `json:"renew_years"`
+	Account    string `json:"account"`
+	RenewYears int    `json:"renew_years"`
+	addressHex *core.DasAddressHex
 }
 
 type RespAccountRenew struct {
@@ -78,20 +77,19 @@ func (h *HttpHandle) doAccountRenew(ctx context.Context, req *ReqAccountRenew, a
 	var resp RespAccountRenew
 
 	req.Account = strings.ToLower(req.Account)
-	if req.Address == "" || req.Account == "" {
+	if req.KeyInfo.Key == "" || req.Account == "" {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	} else if !strings.HasSuffix(req.Account, common.DasAccountSuffix) {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
 		return nil
 	}
-
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
 		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
@@ -183,17 +181,14 @@ func (h *HttpHandle) doInternalRenewOrder(ctx context.Context, acc tables.TableA
 	}
 
 	order := tables.TableDasOrderInfo{
-		Id:                0,
 		OrderType:         tables.OrderTypeSelf,
-		OrderId:           "",
 		AccountId:         accountId,
 		Account:           req.Account,
 		Action:            common.DasActionRenewAccount,
-		ChainType:         req.ChainType,
-		Address:           req.Address,
+		ChainType:         req.addressHex.ChainType,
+		Address:           req.addressHex.AddressHex,
 		Timestamp:         time.Now().UnixNano() / 1e6,
 		PayTokenId:        payTokenId,
-		PayType:           "",
 		PayAmount:         amountTotalPayToken,
 		Content:           string(contentDataStr),
 		PayStatus:         tables.TxStatusSending,

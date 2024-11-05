@@ -104,8 +104,10 @@ func (h *HttpHandle) doAccountRegister(ctx context.Context, req *ReqAccountRegis
 	}
 
 	if !checkChainType(req.addressHex.ChainType) {
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", req.addressHex.ChainType))
-		return nil
+		if req.addressHex.ChainType != common.ChainTypeAnyLock {
+			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, fmt.Sprintf("chain type [%d] invalid", req.addressHex.ChainType))
+			return nil
+		}
 	}
 
 	if err := h.checkSystemUpgrade(apiResp); err != nil {
@@ -226,9 +228,7 @@ func (h *HttpHandle) doInternalRegisterOrder(ctx context.Context, req *ReqAccoun
 		return
 	}
 	order := tables.TableDasOrderInfo{
-		Id:                0,
 		OrderType:         tables.OrderTypeSelf,
-		OrderId:           "",
 		AccountId:         accountId,
 		Account:           req.Account,
 		Action:            common.DasActionApplyRegister,
@@ -236,7 +236,6 @@ func (h *HttpHandle) doInternalRegisterOrder(ctx context.Context, req *ReqAccoun
 		Address:           req.addressHex.AddressHex,
 		Timestamp:         time.Now().UnixMilli(),
 		PayTokenId:        payTokenId,
-		PayType:           "",
 		PayAmount:         amountTotalPayToken,
 		Content:           string(contentDataStr),
 		PayStatus:         tables.TxStatusSending,
