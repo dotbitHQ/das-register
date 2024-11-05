@@ -6,7 +6,6 @@ import (
 	"das_register_server/tables"
 	"encoding/json"
 	"fmt"
-	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
@@ -17,9 +16,8 @@ import (
 
 type ReqRewardsMine struct {
 	core.ChainTypeAddress
-	ChainType common.ChainType `json:"chain_type"`
-	Address   string           `json:"address"`
 	Pagination
+	addressHex *core.DasAddressHex
 }
 
 type RespRewardsMine struct {
@@ -80,14 +78,14 @@ func (h *HttpHandle) doRewardsMine(ctx context.Context, req *ReqRewardsMine, api
 	var resp RespRewardsMine
 	resp.List = make([]RewardsData, 0)
 
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
-	list, err := h.dbDao.GetMyRewards(req.ChainType, req.Address, tables.ServiceTypeRegister, tables.RewardTypeInviter, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.GetMyRewards(req.addressHex.ChainType, req.addressHex.AddressHex, tables.ServiceTypeRegister, tables.RewardTypeInviter, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search rewards err")
 		return fmt.Errorf("GetMyRewards err: %s", err.Error())
@@ -102,7 +100,7 @@ func (h *HttpHandle) doRewardsMine(ctx context.Context, req *ReqRewardsMine, api
 		})
 	}
 
-	rc, err := h.dbDao.GetMyRewardsCount(req.ChainType, req.Address, tables.ServiceTypeRegister, tables.RewardTypeInviter)
+	rc, err := h.dbDao.GetMyRewardsCount(req.addressHex.ChainType, req.addressHex.AddressHex, tables.ServiceTypeRegister, tables.RewardTypeInviter)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search rewards count err")
 		return fmt.Errorf("GetMyRewardsCount err: %s", err.Error())

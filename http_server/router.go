@@ -54,9 +54,9 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/account/mine", api_code.DoMonitorLog(api_code.MethodAccountMine), cacheHandleLong, h.h.AccountMine) // user's accounts by pagination
 		v1.POST("/account/detail", api_code.DoMonitorLog(api_code.MethodAccountDetail), cacheHandleLong, h.h.AccountDetail)
 		v1.POST("/account/records", api_code.DoMonitorLog(api_code.MethodAccountRecords), cacheHandleShort, h.h.AccountRecords)
-		v1.POST("/transaction/status", api_code.DoMonitorLog(api_code.MethodTransactionStatus), cacheHandleShort, h.h.TransactionStatus)
 		v1.POST("/balance/info", api_code.DoMonitorLog(api_code.MethodBalanceInfo), cacheHandleLong, h.h.BalanceInfo) // balance（712，not 712，sort address）
 		v1.POST("/transaction/list", api_code.DoMonitorLog(api_code.MethodTransactionList), cacheHandleLong, h.h.TransactionList)
+		v1.POST("/transaction/status", api_code.DoMonitorLog(api_code.MethodTransactionStatus), cacheHandleShort, h.h.TransactionStatus)
 		v1.POST("/rewards/mine", api_code.DoMonitorLog(api_code.MethodRewardsMine), cacheHandleLong, h.h.RewardsMine)
 		v1.POST("/account/search", api_code.DoMonitorLog(api_code.MethodAccountSearch), cacheHandleShort, h.h.AccountSearch)
 		v1.POST("/account/registering/list", api_code.DoMonitorLog(api_code.MethodRegisteringList), cacheHandleLong, h.h.RegisteringList)

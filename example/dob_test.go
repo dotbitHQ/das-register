@@ -122,7 +122,13 @@ func TestDobOrderDetail(t *testing.T) {
 }
 
 func TestDobAccountDetail(t *testing.T) {
-
+	req := handle.ReqAccountDetail{Account: "20241104.bit"}
+	url := TestUrl + "/account/detail"
+	var data handle.RespAccountDetail
+	if err := doReq(url, req, &data); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
 }
 
 //

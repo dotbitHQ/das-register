@@ -17,9 +17,8 @@ import (
 
 type ReqTransactionStatus struct {
 	core.ChainTypeAddress
-	ChainType common.ChainType  `json:"chain_type"`
-	Address   string            `json:"address"`
-	Actions   []tables.TxAction `json:"actions"`
+	Actions    []tables.TxAction `json:"actions"`
+	addressHex *core.DasAddressHex
 }
 
 type RespTransactionStatus struct {
@@ -72,13 +71,12 @@ func (h *HttpHandle) TransactionStatus(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doTransactionStatus(ctx context.Context, req *ReqTransactionStatus, apiResp *api_code.ApiResp) error {
-
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
 	var resp RespTransactionStatus
 	actionList := make([]common.DasAction, 0)
@@ -86,7 +84,7 @@ func (h *HttpHandle) doTransactionStatus(ctx context.Context, req *ReqTransactio
 		actionList = append(actionList, tables.FormatActionType(v))
 	}
 
-	tx, err := h.dbDao.GetPendingStatus(req.ChainType, req.Address, actionList)
+	tx, err := h.dbDao.GetPendingStatus(req.addressHex.ChainType, req.addressHex.AddressHex, actionList)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search tx status err")
 		return fmt.Errorf("GetTransactionStatus err: %s", err.Error())

@@ -17,8 +17,7 @@ import (
 type ReqTransactionList struct {
 	Pagination
 	core.ChainTypeAddress
-	ChainType common.ChainType `json:"chain_type"`
-	Address   string           `json:"address"`
+	addressHex *core.DasAddressHex
 }
 type RespTransactionList struct {
 	Total int64             `json:"total"`
@@ -77,17 +76,17 @@ func (h *HttpHandle) TransactionList(ctx *gin.Context) {
 }
 
 func (h *HttpHandle) doTransactionList(ctx context.Context, req *ReqTransactionList, apiResp *api_code.ApiResp) error {
-
-	addressHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
+
 	var resp RespTransactionList
 	resp.List = make([]DataTransaction, 0)
 
-	list, err := h.dbDao.GetTransactionList(req.ChainType, req.Address, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.GetTransactionList(req.addressHex.ChainType, req.addressHex.AddressHex, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search tx list err")
 		return fmt.Errorf("GetTransactionList err: %s", err.Error())
@@ -104,7 +103,7 @@ func (h *HttpHandle) doTransactionList(ctx context.Context, req *ReqTransactionL
 		})
 	}
 	//
-	count, err := h.dbDao.GetTransactionListTotal(req.ChainType, req.Address)
+	count, err := h.dbDao.GetTransactionListTotal(req.addressHex.ChainType, req.addressHex.AddressHex)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search tx count err")
 		return fmt.Errorf("GetTransactionListTotal err: %s", err.Error())
