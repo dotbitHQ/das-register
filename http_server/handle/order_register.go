@@ -335,24 +335,12 @@ func (h *HttpHandle) checkOrderInfo(coinType string, req *ReqOrderRegisterBase, 
 
 func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
 	// pay amount
-	hexAddress := core.DasAddressHex{
-		DasAlgorithmId: common.DasAlgorithmIdEth712,
-		AddressHex:     common.BlackHoleAddress,
-		IsMulti:        false,
-		ChainType:      common.ChainTypeEth,
-	}
-	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
-	if err != nil {
-		log.Error(ctx, "HexToArgs err: ", err.Error())
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
-		return
-	}
 	accLen := uint8(len(req.AccountCharStr))
 	if tables.EndWithDotBitChar(req.AccountCharStr) {
 		accLen -= 4
 	}
 
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
@@ -549,18 +537,6 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 func (h *HttpHandle) doRegisterCouponOrder(ctx context.Context, req *ReqOrderRegister, apiResp *api_code.ApiResp, resp *RespOrderRegister) {
 	req.PayTokenId = tables.TokenCoupon
 	// pay amount
-	hexAddress := core.DasAddressHex{
-		DasAlgorithmId: common.DasAlgorithmIdEth712,
-		AddressHex:     common.BlackHoleAddress,
-		IsMulti:        false,
-		ChainType:      common.ChainTypeEth,
-	}
-	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
-	if err != nil {
-		log.Error(ctx, "HexToArgs err: ", err.Error())
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
-		return
-	}
 	accLen := uint8(len(req.AccountCharStr))
 	if tables.EndWithDotBitChar(req.AccountCharStr) {
 		accLen -= 4
@@ -593,7 +569,7 @@ func (h *HttpHandle) doRegisterCouponOrder(ctx context.Context, req *ReqOrderReg
 		return
 	}
 
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
@@ -678,7 +654,7 @@ func (h *HttpHandle) doRegisterCouponOrder(ctx context.Context, req *ReqOrderReg
 	return
 }
 
-func (h *HttpHandle) getOrderAmount(ctx context.Context, accLen uint8, args, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
+func (h *HttpHandle) getOrderAmount(ctx context.Context, accLen uint8, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
 	// pay token
 	switch payTokenId {
 	case tables.TokenCoupon:
@@ -701,7 +677,7 @@ func (h *HttpHandle) getOrderAmount(ctx context.Context, accLen uint8, args, acc
 	quote := quoteCell.Quote()
 	decQuote := decimal.NewFromInt(int64(quote)).Div(decimal.NewFromInt(common.UsdRateBase))
 	// base price
-	baseAmount, accountPrice, err := h.getAccountPrice(ctx, accLen, args, account, isRenew)
+	_, baseAmount, accountPrice, err := h.getAccountPrice(ctx, accLen, account, isRenew)
 	if err != nil {
 		e = fmt.Errorf("getAccountPrice err: %s", err.Error())
 		return

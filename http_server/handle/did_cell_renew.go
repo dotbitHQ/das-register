@@ -201,7 +201,7 @@ func (h *HttpHandle) doDidCellRenew(ctx context.Context, req *ReqDidCellRenew, a
 		return fmt.Errorf("mapAcc is nil")
 	}
 
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, uint8(accBuilder.AccountChars.Len()), "", req.Account, "", req.RenewYears, true, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, uint8(accBuilder.AccountChars.Len()), req.Account, "", req.RenewYears, true, req.PayTokenId)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return fmt.Errorf("getOrderAmount err: %s", err.Error())

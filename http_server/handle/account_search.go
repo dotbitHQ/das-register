@@ -134,27 +134,12 @@ func (h *HttpHandle) doAccountSearch(ctx context.Context, req *ReqAccountSearch,
 		return nil
 	}
 	// account price
-	argsStr := ""
-	if req.addressHex != nil {
-		hexAddress := core.DasAddressHex{
-			DasAlgorithmId: common.DasAlgorithmIdEth712,
-			AddressHex:     common.BlackHoleAddress,
-			IsMulti:        false,
-			ChainType:      common.ChainTypeEth,
-		}
-		args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
-		if err != nil {
-			apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
-			return fmt.Errorf("HexToArgs err: %s", err.Error())
-		}
-		argsStr = common.Bytes2Hex(args)
-	}
 
 	accLen := uint8(len(req.AccountCharStr))
 	if tables.EndWithDotBitChar(req.AccountCharStr) {
 		accLen -= 4
 	}
-	baseAmount, accountPrice, err := h.getAccountPrice(ctx, accLen, argsStr, req.Account, false)
+	_, baseAmount, accountPrice, err := h.getAccountPrice(ctx, accLen, req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())

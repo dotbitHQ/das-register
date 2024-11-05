@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
-	"github.com/dotbitHQ/das-lib/core"
 	api_code "github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
@@ -184,23 +183,11 @@ func (h *HttpHandle) doInternalRegisterOrder(ctx context.Context, req *ReqAccoun
 		payTokenId = tables.TokenIdPadgeInternal
 	}
 	// pay amount
-	hexAddress := core.DasAddressHex{
-		DasAlgorithmId: common.DasAlgorithmIdEth712,
-		AddressHex:     common.BlackHoleAddress,
-		IsMulti:        false,
-		ChainType:      common.ChainTypeEth,
-	}
-	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
-	if err != nil {
-		log.Error(ctx, "HexToArgs err:", err.Error())
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
-		return
-	}
 	accLen := uint8(len(req.ReqAccountSearch.AccountCharStr))
 	if tables.EndWithDotBitChar(req.ReqAccountSearch.AccountCharStr) {
 		accLen -= 4
 	}
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, payTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, payTokenId)
 	if err != nil {
 		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

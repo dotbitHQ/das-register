@@ -146,23 +146,11 @@ func (h *HttpHandle) doOrderChange(ctx context.Context, req *ReqOrderChange, api
 
 func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiResp *api_code.ApiResp, resp *RespOrderChange, oldOrderContent *tables.TableOrderContent) {
 	// pay amount
-	hexAddress := core.DasAddressHex{
-		DasAlgorithmId: common.DasAlgorithmIdEth712,
-		AddressHex:     common.BlackHoleAddress,
-		IsMulti:        false,
-		ChainType:      common.ChainTypeEth,
-	}
-	args, err := h.dasCore.Daf().HexToArgs(hexAddress, hexAddress)
-	if err != nil {
-		log.Error(ctx, "HexToArgs err:", err.Error())
-		apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
-		return
-	}
 	accLen := uint8(len(oldOrderContent.AccountCharStr))
 	if tables.EndWithDotBitChar(oldOrderContent.AccountCharStr) {
 		accLen -= 4
 	}
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, common.Bytes2Hex(args), req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

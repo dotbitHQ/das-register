@@ -83,7 +83,7 @@ func (h *HttpHandle) doGetAccountAuctionPrice(ctx context.Context, req *ReqAucti
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
-	baseAmount, accountPrice, err := h.getAccountPrice(ctx, uint8(accLen), "", req.Account, false)
+	_, baseAmount, accountPrice, err := h.getAccountPrice(ctx, uint8(accLen), req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())

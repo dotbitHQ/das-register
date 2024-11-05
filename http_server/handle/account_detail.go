@@ -42,6 +42,7 @@ type RespAccountDetail struct {
 	Status               tables.SearchStatus     `json:"status"`
 	AccountPrice         decimal.Decimal         `json:"account_price"`
 	BaseAmount           decimal.Decimal         `json:"base_amount"`
+	DidCellAmount        decimal.Decimal         `json:"did_cell_amount"`
 	ConfirmProposalHash  string                  `json:"confirm_proposal_hash"`
 	EnableSubAccount     tables.EnableSubAccount `json:"enable_sub_account"`
 	RenewSubAccountPrice uint64                  `json:"renew_sub_account_price"`
@@ -94,14 +95,12 @@ func (h *HttpHandle) AccountDetail(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, account string, isRenew bool) (baseAmount, accountPrice decimal.Decimal, err error) {
+func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, account string, isRenew bool) (didCellAmount, baseAmount, accountPrice decimal.Decimal, err error) {
 	if accLen == 0 {
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
-	if args == "" {
-		args = "0x03"
-	}
+
 	var newPrice, renewPrice, basicCapacity, preparedFeeCapacity uint64
 
 	builder, err := h.dasCore.ConfigCellDataBuilderByTypeArgsList(common.ConfigCellTypeArgsPrice, common.ConfigCellTypeArgsAccount)
@@ -126,7 +125,7 @@ func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, ac
 			err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
 			return
 		}
-		basicCapacity, errCache = cacheBuilder.BasicCapacityFromOwnerDasAlgorithmId(args)
+		basicCapacity, errCache = cacheBuilder.BasicCapacityFromOwnerDasAlgorithmId("0x05")
 		if errCache != nil {
 			log.Error("cacheBuilder.BasicCapacityFromOwnerDasAlgorithmId err: ", errCache.Error())
 			err = fmt.Errorf("ConfigCellDataBuilderByTypeArgsList err: %s", err.Error())
@@ -139,7 +138,7 @@ func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, ac
 			err = fmt.Errorf("AccountPrice err: %s", err.Error())
 			return
 		}
-		basicCapacity, err = builder.BasicCapacityFromOwnerDasAlgorithmId(args)
+		basicCapacity, err = builder.BasicCapacityFromOwnerDasAlgorithmId("0x05")
 		if err != nil {
 			err = fmt.Errorf("BasicCapacity err: %s", err.Error())
 			return
@@ -172,6 +171,13 @@ func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, args, ac
 		accountPrice, _ = decimal.NewFromString(fmt.Sprintf("%d", newPrice))
 		accountPrice = accountPrice.DivRound(decUsdRateBase, 2)
 	}
+	// did cell amount
+	//editOwnerLock = addrHexTo.ParsedAddress.Script
+	//editOwnerCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(editOwnerLock, req.Account)
+	//if err != nil {
+	//	apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to get did cell capacity")
+	//	return fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
+	//}
 	return
 }
 
@@ -259,7 +265,7 @@ func (h *HttpHandle) doAccountDetail(ctx context.Context, req *ReqAccountDetail,
 		}
 
 		// price
-		resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(ctx, uint8(accBuilder.AccountChars.Len()), "", req.Account, true)
+		_, resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(ctx, uint8(accBuilder.AccountChars.Len()), req.Account, true)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 			return fmt.Errorf("getAccountPrice err: %s", err.Error())
