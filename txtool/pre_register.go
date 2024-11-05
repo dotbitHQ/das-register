@@ -103,14 +103,23 @@ func (t *TxTool) DoOrderPreRegisterTx(order *tables.TableDasOrderInfo) error {
 		return fmt.Errorf("getOrderInviterChannelScript err: %s", err.Error())
 	}
 	// owner lock args
+	//ownerLockScript, _, err := t.DasCore.Daf().HexToScript(core.DasAddressHex{
+	//	DasAlgorithmId: order.ChainType.ToDasAlgorithmId(true),
+	//	AddressHex:     order.Address,
+	//	IsMulti:        true,
+	//	ChainType:      order.ChainType,
+	//})
+	//if err != nil {
+	//	return fmt.Errorf("NormalToScript err: %s", err.Error())
+	//}
 	ownerLockScript, _, err := t.DasCore.Daf().HexToScript(core.DasAddressHex{
-		DasAlgorithmId: order.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     order.Address,
+		DasAlgorithmId: common.DasAlgorithmIdEth712,
+		AddressHex:     common.BlackHoleAddress,
 		IsMulti:        true,
-		ChainType:      order.ChainType,
+		ChainType:      common.ChainTypeEth,
 	})
 	if err != nil {
-		return fmt.Errorf("NormalToScript err: %s", err.Error())
+		return fmt.Errorf("HexToScript err: %s", err.Error())
 	}
 	p := preRegisterTxParams{
 		order:                      order,
@@ -362,27 +371,30 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		}
 	}
 
-	var initialCrossChain witness.ChainInfo
-	if p.order.CrossCoinType != "" {
-		initialCrossChain.Checked = true
-		initialCrossChain.CoinType = p.order.CrossCoinType
+	var didCellScript *types.Script
+	if p.order.ChainType == common.ChainTypeAnyLock {
+		addrP, err := address.Parse(p.order.Address)
+		if err != nil {
+			return nil, fmt.Errorf("address.Parse(p.order.Address) err: %s", err.Error())
+		}
+		didCellScript = addrP.Script
 	}
+
 	var preBuilder witness.PreAccountCellDataBuilder
 	preWitness, preData, err := preBuilder.GenWitness(&witness.PreAccountCellParam{
-		NewIndex:          0,
-		Action:            common.DasActionPreRegister,
-		InvitedDiscount:   invitedDiscount,
-		Quote:             quoteCell.Quote(),
-		InviterScript:     p.inviterScript,
-		ChannelScript:     p.channelScript,
-		InviterId:         p.inviterId,
-		OwnerLockArgs:     p.ownerLockArgs,
-		RefundLock:        p.refundLock,
-		Price:             *price,
-		AccountChars:      accountChars,
-		InitialRecords:    initialRecords,
-		InitialCrossChain: initialCrossChain,
-		CreatedAt:         timeCell.Timestamp(),
+		NewIndex:        0,
+		Action:          common.DasActionPreRegister,
+		InvitedDiscount: invitedDiscount,
+		Quote:           quoteCell.Quote(),
+		InviterScript:   p.inviterScript,
+		ChannelScript:   p.channelScript,
+		InviterId:       p.inviterId,
+		OwnerLockArgs:   p.ownerLockArgs,
+		RefundLock:      p.refundLock,
+		Price:           *price,
+		AccountChars:    accountChars,
+		InitialRecords:  initialRecords,
+		DidCellScript:   didCellScript,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GenWitness err: %s", err.Error())
