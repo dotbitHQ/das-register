@@ -150,7 +150,7 @@ func (h *HttpHandle) doNewOrder(ctx context.Context, req *ReqOrderChange, apiRes
 	if tables.EndWithDotBitChar(oldOrderContent.AccountCharStr) {
 		accLen -= 4
 	}
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, req.addressHex, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

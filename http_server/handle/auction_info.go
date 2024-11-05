@@ -19,8 +19,7 @@ import (
 type ReqAccountAuctionInfo struct {
 	Account string `json:"account"  binding:"required"`
 	core.ChainTypeAddress
-	address   string
-	chainType common.ChainType
+	addressHex *core.DasAddressHex
 }
 
 type RespAccountAuctionInfo struct {
@@ -60,14 +59,12 @@ func (h *HttpHandle) GetAccountAuctionInfo(ctx *gin.Context) {
 
 func (h *HttpHandle) doGetAccountAuctionInfo(ctx context.Context, req *ReqAccountAuctionInfo, apiResp *http_api.ApiResp) (err error) {
 	var resp RespAccountAuctionInfo
-	var addrHex *core.DasAddressHex
 	if req.KeyInfo.Key != "" {
-		addrHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+		req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 		if err != nil {
 			apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 			return nil
 		}
-		req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 	}
 
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
@@ -103,13 +100,13 @@ func (h *HttpHandle) doGetAccountAuctionInfo(ctx context.Context, req *ReqAccoun
 		return
 	}
 
-	if addrHex != nil {
+	if req.addressHex != nil {
 		if len(list) == 0 {
 			resp.BidStatus = tables.BidStatusNoOne
 		} else {
 			resp.BidStatus = tables.BidStatusByOthers
 			for _, v := range list {
-				if v.ChainType == addrHex.ChainType && v.Address == addrHex.AddressHex {
+				if v.ChainType == req.addressHex.ChainType && v.Address == req.addressHex.AddressHex {
 					resp.BidStatus = tables.BidStatusByMe
 					resp.Hash, _ = common.String2OutPoint(v.Outpoint)
 				}
@@ -127,7 +124,7 @@ func (h *HttpHandle) doGetAccountAuctionInfo(ctx context.Context, req *ReqAccoun
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
-	_, baseAmount, accountPrice, err := h.getAccountPrice(ctx, uint8(accLen), req.Account, false)
+	_, baseAmount, accountPrice, err := h.getAccountPrice(ctx, req.addressHex, uint8(accLen), req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())

@@ -340,7 +340,7 @@ func (h *HttpHandle) doRegisterOrder(ctx context.Context, req *ReqOrderRegister,
 		accLen -= 4
 	}
 
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, req.addressHex, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
@@ -569,7 +569,7 @@ func (h *HttpHandle) doRegisterCouponOrder(ctx context.Context, req *ReqOrderReg
 		return
 	}
 
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, req.addressHex, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, req.PayTokenId)
 	if err != nil {
 		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
@@ -654,7 +654,7 @@ func (h *HttpHandle) doRegisterCouponOrder(ctx context.Context, req *ReqOrderReg
 	return
 }
 
-func (h *HttpHandle) getOrderAmount(ctx context.Context, accLen uint8, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
+func (h *HttpHandle) getOrderAmount(ctx context.Context, didCellHex *core.DasAddressHex, accLen uint8, account, inviterAccount string, years int, isRenew bool, payTokenId tables.PayTokenId) (amountTotalUSD decimal.Decimal, amountTotalCKB decimal.Decimal, amountTotalPayToken decimal.Decimal, e error) {
 	// pay token
 	switch payTokenId {
 	case tables.TokenCoupon:
@@ -677,13 +677,14 @@ func (h *HttpHandle) getOrderAmount(ctx context.Context, accLen uint8, account, 
 	quote := quoteCell.Quote()
 	decQuote := decimal.NewFromInt(int64(quote)).Div(decimal.NewFromInt(common.UsdRateBase))
 	// base price
-	_, baseAmount, accountPrice, err := h.getAccountPrice(ctx, accLen, account, isRenew)
+	didCellAmount, baseAmount, accountPrice, err := h.getAccountPrice(ctx, didCellHex, accLen, account, isRenew)
 	if err != nil {
 		e = fmt.Errorf("getAccountPrice err: %s", err.Error())
 		return
 	}
 	if isRenew {
 		baseAmount = decimal.Zero
+		didCellAmount = decimal.Zero
 	}
 	accountPrice = accountPrice.Mul(decimal.NewFromInt(int64(years)))
 	if inviterAccount != "" {
@@ -698,14 +699,14 @@ func (h *HttpHandle) getOrderAmount(ctx context.Context, accLen uint8, account, 
 	}
 	amountTotalUSD = accountPrice
 
-	log.Info(ctx, "before Premium:", account, isRenew, amountTotalUSD, baseAmount, accountPrice)
+	log.Info(ctx, "before Premium:", account, isRenew, amountTotalUSD, baseAmount, accountPrice, didCellAmount)
 	if config.Cfg.Das.Premium.Cmp(decimal.Zero) == 1 {
 		amountTotalUSD = amountTotalUSD.Mul(config.Cfg.Das.Premium.Add(decimal.NewFromInt(1)))
 	}
 	if config.Cfg.Das.Discount.Cmp(decimal.Zero) == 1 {
 		amountTotalUSD = amountTotalUSD.Mul(config.Cfg.Das.Discount)
 	}
-	amountTotalUSD = amountTotalUSD.Add(baseAmount)
+	amountTotalUSD = amountTotalUSD.Add(baseAmount).Add(didCellAmount)
 	log.Info(ctx, "after Premium:", account, isRenew, amountTotalUSD, baseAmount, accountPrice)
 
 	amountTotalUSD = amountTotalUSD.Mul(decimal.NewFromInt(100)).Ceil().DivRound(decimal.NewFromInt(100), 2)

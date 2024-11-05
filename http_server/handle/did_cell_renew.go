@@ -30,6 +30,7 @@ type ReqDidCellRenew struct {
 	Account    string            `json:"account"`
 	PayTokenId tables.PayTokenId `json:"pay_token_id"`
 	RenewYears int               `json:"renew_years"`
+	addressHex *core.DasAddressHex
 }
 
 type RespDidCellRenew struct {
@@ -85,14 +86,14 @@ func (h *HttpHandle) DidCellRenew(ctx *gin.Context) {
 
 func (h *HttpHandle) doDidCellRenew(ctx context.Context, req *ReqDidCellRenew, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellRenew
-
-	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	var err error
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "FormatChainTypeAddress err")
 		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
 	}
 
-	switch addrHex.DasAlgorithmId {
+	switch req.addressHex.DasAlgorithmId {
 	case common.DasAlgorithmIdAnyLock, common.DasAlgorithmIdBitcoin:
 		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address invalid")
 		return nil
@@ -201,7 +202,7 @@ func (h *HttpHandle) doDidCellRenew(ctx context.Context, req *ReqDidCellRenew, a
 		return fmt.Errorf("mapAcc is nil")
 	}
 
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, uint8(accBuilder.AccountChars.Len()), req.Account, "", req.RenewYears, true, req.PayTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, req.addressHex, uint8(accBuilder.AccountChars.Len()), req.Account, "", req.RenewYears, true, req.PayTokenId)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")
 		return fmt.Errorf("getOrderAmount err: %s", err.Error())
@@ -223,11 +224,11 @@ func (h *HttpHandle) doDidCellRenew(ctx context.Context, req *ReqDidCellRenew, a
 		return fmt.Errorf("json.Marshal err: %s", err.Error())
 	}
 	if req.PayTokenId == tables.TokenIdDas {
-		if addrHex.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
+		if req.addressHex.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
 			apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "address invalid")
 			return nil
 		}
-		dasLock, _, err := h.dasCore.Daf().HexToScript(*addrHex)
+		dasLock, _, err := h.dasCore.Daf().HexToScript(*req.addressHex)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "HexToArgs err")
 			return fmt.Errorf("HexToScript err: %s", err.Error())
@@ -277,7 +278,7 @@ func (h *HttpHandle) doDidCellRenew(ctx context.Context, req *ReqDidCellRenew, a
 		PremiumAmount:     premiumAmount,
 		MetaData: map[string]string{
 			"account":      req.Account,
-			"algorithm_id": addrHex.ChainType.ToString(),
+			"algorithm_id": req.addressHex.ChainType.ToString(),
 			"address":      req.KeyInfo.Key,
 			"action":       "renew",
 		},
@@ -292,7 +293,7 @@ func (h *HttpHandle) doDidCellRenew(ctx context.Context, req *ReqDidCellRenew, a
 		AccountId:         accountId,
 		Account:           req.Account,
 		Action:            common.DasActionRenewAccount,
-		ChainType:         addrHex.ChainType,
+		ChainType:         req.addressHex.ChainType,
 		Address:           req.KeyInfo.Key,
 		Timestamp:         time.Now().UnixMilli(),
 		PayTokenId:        req.PayTokenId,

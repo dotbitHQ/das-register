@@ -23,11 +23,10 @@ import (
 )
 
 type ReqAuctionBid struct {
-	Account   string `json:"account"  binding:"required"`
-	address   string
-	chainType common.ChainType
-	CoinType  string `json:"coin_type"` //default record
+	Account  string `json:"account"  binding:"required"`
+	CoinType string `json:"coin_type"` //default record
 	core.ChainTypeAddress
+	addressHex *core.DasAddressHex
 }
 
 type RespAuctionBid struct {
@@ -58,17 +57,17 @@ func (h *HttpHandle) AccountAuctionBid(ctx *gin.Context) {
 }
 func (h *HttpHandle) doAccountAuctionBid(ctx context.Context, req *ReqAuctionBid, apiResp *http_api.ApiResp) (err error) {
 	var resp RespAuctionBid
-	addrHex, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	fromLock, _, err := h.dasCore.Daf().HexToScript(*addrHex)
+	fromLock, _, err := h.dasCore.Daf().HexToScript(*req.addressHex)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "key info is invalid: "+err.Error())
 		return nil
 	}
-	req.address, req.chainType = addrHex.AddressHex, addrHex.ChainType
 
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
@@ -103,7 +102,7 @@ func (h *HttpHandle) doAccountAuctionBid(ctx context.Context, req *ReqAuctionBid
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
-	_, baseAmount, accountPrice, err := h.getAccountPrice(ctx, uint8(accLen), req.Account, false)
+	_, baseAmount, accountPrice, err := h.getAccountPrice(ctx, req.addressHex, uint8(accLen), req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
@@ -142,8 +141,8 @@ func (h *HttpHandle) doAccountAuctionBid(ctx context.Context, req *ReqAuctionBid
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasActionBidExpiredAccountAuction
 	reqBuild.Account = req.Account
-	reqBuild.ChainType = req.chainType
-	reqBuild.Address = req.address
+	reqBuild.ChainType = req.addressHex.ChainType
+	reqBuild.Address = req.addressHex.AddressHex
 	reqBuild.Capacity = 0
 	reqBuild.AuctionInfo = AuctionInfo{
 		BasicPrice:   basicPrice,
@@ -173,7 +172,7 @@ func (h *HttpHandle) doAccountAuctionBid(ctx context.Context, req *ReqAuctionBid
 	var initialRecords []witness.Record
 	coinType := req.KeyInfo.CoinType
 
-	if addr, err := common.FormatAddressByCoinType(string(coinType), req.address); err == nil {
+	if addr, err := common.FormatAddressByCoinType(string(coinType), req.addressHex.AddressHex); err == nil {
 		initialRecords = append(initialRecords, witness.Record{
 			Key:   string(coinType),
 			Type:  "address",

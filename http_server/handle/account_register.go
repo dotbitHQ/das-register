@@ -187,7 +187,7 @@ func (h *HttpHandle) doInternalRegisterOrder(ctx context.Context, req *ReqAccoun
 	if tables.EndWithDotBitChar(req.ReqAccountSearch.AccountCharStr) {
 		accLen -= 4
 	}
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, payTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, req.addressHex, accLen, req.Account, req.InviterAccount, req.RegisterYears, false, payTokenId)
 	if err != nil {
 		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

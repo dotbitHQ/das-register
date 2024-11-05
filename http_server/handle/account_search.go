@@ -29,6 +29,7 @@ type RespAccountSearch struct {
 	Account           string                               `json:"account"`
 	AccountPrice      decimal.Decimal                      `json:"account_price"`
 	BaseAmount        decimal.Decimal                      `json:"base_amount"`
+	DidCellAmount     decimal.Decimal                      `json:"did_cell_amount"`
 	IsSelf            bool                                 `json:"is_self"`
 	RegisterTxMap     map[tables.RegisterStatus]RegisterTx `json:"register_tx_map"`
 	OpenTimestamp     int64                                `json:"open_timestamp"`
@@ -139,14 +140,11 @@ func (h *HttpHandle) doAccountSearch(ctx context.Context, req *ReqAccountSearch,
 	if tables.EndWithDotBitChar(req.AccountCharStr) {
 		accLen -= 4
 	}
-	_, baseAmount, accountPrice, err := h.getAccountPrice(ctx, accLen, req.Account, false)
+	resp.DidCellAmount, resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(ctx, req.addressHex, accLen, req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
 	}
-	resp.BaseAmount, resp.AccountPrice = baseAmount, accountPrice
-
-	// todo dob count did cell amount
 	// address order
 	status, registerTxMap := h.checkAddressOrder(ctx, req, apiResp, true)
 	if apiResp.ErrNo != api_code.ApiCodeSuccess {

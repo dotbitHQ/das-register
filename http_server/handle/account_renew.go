@@ -155,7 +155,7 @@ func (h *HttpHandle) doInternalRenewOrder(ctx context.Context, acc tables.TableA
 	//
 	payTokenId := tables.TokenIdCkbInternal
 	// pay amount
-	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, uint8(accBuilder.AccountChars.Len()), req.Account, "", req.RenewYears, true, payTokenId)
+	amountTotalUSD, amountTotalCKB, amountTotalPayToken, err := h.getOrderAmount(ctx, req.addressHex, uint8(accBuilder.AccountChars.Len()), req.Account, "", req.RenewYears, true, payTokenId)
 	if err != nil {
 		log.Error(ctx, "getOrderAmount err: ", err.Error())
 		apiResp.ApiRespErr(api_code.ApiCodeError500, "get order amount fail")

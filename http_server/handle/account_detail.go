@@ -95,7 +95,7 @@ func (h *HttpHandle) AccountDetail(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, account string, isRenew bool) (didCellAmount, baseAmount, accountPrice decimal.Decimal, err error) {
+func (h *HttpHandle) getAccountPrice(ctx context.Context, didCellHex *core.DasAddressHex, accLen uint8, account string, isRenew bool) (didCellAmount, baseAmount, accountPrice decimal.Decimal, err error) {
 	if accLen == 0 {
 		err = fmt.Errorf("accLen is 0")
 		return
@@ -172,12 +172,18 @@ func (h *HttpHandle) getAccountPrice(ctx context.Context, accLen uint8, account 
 		accountPrice = accountPrice.DivRound(decUsdRateBase, 2)
 	}
 	// did cell amount
-	//editOwnerLock = addrHexTo.ParsedAddress.Script
-	//editOwnerCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(editOwnerLock, req.Account)
-	//if err != nil {
-	//	apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to get did cell capacity")
-	//	return fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
-	//}
+	var didCellCapacity uint64
+	// todo default didCellHex
+	if didCellHex != nil {
+		didCellCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(didCellHex.ParsedAddress.Script, account)
+		if err != nil {
+			err = fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
+			return
+		}
+		didCellAmount, _ = decimal.NewFromString(fmt.Sprintf("%d", didCellCapacity/common.OneCkb))
+		didCellAmount = didCellAmount.Mul(decQuote).DivRound(decUsdRateBase, 6)
+	}
+
 	return
 }
 
@@ -265,7 +271,7 @@ func (h *HttpHandle) doAccountDetail(ctx context.Context, req *ReqAccountDetail,
 		}
 
 		// price
-		_, resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(ctx, uint8(accBuilder.AccountChars.Len()), req.Account, true)
+		resp.DidCellAmount, resp.BaseAmount, resp.AccountPrice, err = h.getAccountPrice(ctx, nil, uint8(accBuilder.AccountChars.Len()), req.Account, true)
 		if err != nil {
 			apiResp.ApiRespErr(api_code.ApiCodeError500, "get account price err")
 			return fmt.Errorf("getAccountPrice err: %s", err.Error())
