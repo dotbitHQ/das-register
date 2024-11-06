@@ -332,6 +332,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	totalDiscount := priceCapacity.Mul(uint128.From64(uint64(invitedDiscount))).Div(uint128.From64(common.PercentRateBase))
 	priceCapacity = priceCapacity.Sub(totalDiscount)
 	priceCapacity = priceCapacity.Mul(uint128.From64(uint64(p.registerYears)))
+	//
 	log.Info("buildOrderPreRegisterTx:", priceCapacity, newPrice, p.registerYears, quote, invitedDiscount)
 	// basicCapacity
 	basicCapacity, _ := priceBuilder.BasicCapacityFromOwnerDasAlgorithmId(common.Bytes2Hex(p.ownerLockArgs))
@@ -370,7 +371,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 			log.Error("buildOrderPreRegisterTx FormatAddressByCoinType err: ", err.Error())
 		}
 	}
-
+	//
 	var didCellScript *types.Script
 	if p.order.ChainType == common.ChainTypeAnyLock {
 		addrP, err := address.Parse(p.order.Address)
@@ -379,7 +380,12 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 		}
 		didCellScript = addrP.Script
 	}
-
+	didCellCapacity, err := t.DasCore.GetDidCellOccupiedCapacity(didCellScript, p.order.Account)
+	if err != nil {
+		return nil, fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
+	}
+	log.Info("didCellScript:", didCellCapacity)
+	//
 	var preBuilder witness.PreAccountCellDataBuilder
 	preWitness, preData, err := preBuilder.GenWitness(&witness.PreAccountCellParam{
 		NewIndex:        0,
@@ -422,7 +428,7 @@ func (t *TxTool) buildOrderPreRegisterTx(p *preRegisterTxParams) (*txbuilder.Bui
 	preData = append(preData, accountId...)
 	txParams.OutputsData = append(txParams.OutputsData, preData)
 
-	preOutputs.Capacity = basicCapacity + priceCapacity.Big().Uint64()
+	preOutputs.Capacity = basicCapacity + priceCapacity.Big().Uint64() + didCellCapacity
 	txParams.Outputs = append(txParams.Outputs, preOutputs)
 
 	// search balance
