@@ -2,9 +2,11 @@ package handle
 
 import (
 	"context"
+	"das_register_server/config"
 	"das_register_server/tables"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
+	"github.com/dotbitHQ/das-lib/core"
 	"github.com/dotbitHQ/das-lib/http_api"
 	"github.com/gin-gonic/gin"
 	"github.com/scorpiotzh/toolib"
@@ -14,12 +16,15 @@ import (
 )
 
 type ReqAuctionPrice struct {
-	Account string `json:"account"  binding:"required"`
+	Account               string `json:"account"  binding:"required"`
+	core.ChainTypeAddress        // ccc address
+	addressHex            *core.DasAddressHex
 }
 
 type RespAuctionPrice struct {
 	//BasicPrice   decimal.Decimal `json:"basic_price"`
 	AccountPrice decimal.Decimal `json:"account_price"`
+	DidCellPrice decimal.Decimal `json:"did_cell_amount"`
 	BaseAmount   decimal.Decimal `json:"base_amount"`
 	PremiumPrice decimal.Decimal `json:"premium_price"`
 }
@@ -49,6 +54,11 @@ func (h *HttpHandle) GetAccountAuctionPrice(ctx *gin.Context) {
 }
 func (h *HttpHandle) doGetAccountAuctionPrice(ctx context.Context, req *ReqAuctionPrice, apiResp *http_api.ApiResp) (err error) {
 	var resp RespAuctionPrice
+	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
+		return nil
+	}
 	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
 	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -83,7 +93,7 @@ func (h *HttpHandle) doGetAccountAuctionPrice(ctx context.Context, req *ReqAucti
 		err = fmt.Errorf("accLen is 0")
 		return
 	}
-	_, baseAmount, accountPrice, err := h.getAccountPrice(ctx, nil, uint8(accLen), req.Account, false)
+	didCellAmount, baseAmount, accountPrice, err := h.getAccountPrice(ctx, req.addressHex, uint8(accLen), req.Account, false)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeError500, "get account price err")
 		return fmt.Errorf("getAccountPrice err: %s", err.Error())
@@ -93,8 +103,10 @@ func (h *HttpHandle) doGetAccountAuctionPrice(ctx context.Context, req *ReqAucti
 		err = fmt.Errorf("GetAuctionConfig err: %s", err.Error())
 		return
 	}
+
 	resp.BaseAmount = baseAmount
 	resp.AccountPrice = accountPrice
+	resp.DidCellPrice = didCellAmount
 	resp.PremiumPrice = decimal.NewFromFloat(common.Premium(int64(acc.ExpiredAt+uint64(auctionConfig.GracePeriodTime)), int64(nowTime)))
 	apiResp.ApiRespOK(resp)
 	return

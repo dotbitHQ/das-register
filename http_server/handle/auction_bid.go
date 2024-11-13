@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nervosnetwork/ckb-sdk-go/address"
 	"github.com/nervosnetwork/ckb-sdk-go/indexer"
+	"github.com/nervosnetwork/ckb-sdk-go/transaction"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
 	"github.com/shopspring/decimal"
@@ -23,10 +24,11 @@ import (
 )
 
 type ReqAuctionBid struct {
-	Account  string `json:"account"  binding:"required"`
-	CoinType string `json:"coin_type"` //default record
-	core.ChainTypeAddress
-	addressHex *core.DasAddressHex
+	Account               string       `json:"account"  binding:"required"`
+	CoinType              string       `json:"coin_type"`    //default record
+	core.ChainTypeAddress                                    // ccc address
+	PayKeyInfo            core.KeyInfo `json:"pay_key_info"` //pay address
+	addressHex            *core.DasAddressHex
 }
 
 type RespAuctionBid struct {
@@ -57,13 +59,40 @@ func (h *HttpHandle) AccountAuctionBid(ctx *gin.Context) {
 }
 func (h *HttpHandle) doAccountAuctionBid(ctx context.Context, req *ReqAuctionBid, apiResp *http_api.ApiResp) (err error) {
 	var resp RespAuctionBid
-
+	//new owner address (ccc address)
 	req.addressHex, err = req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid: "+err.Error())
 		return nil
 	}
-	fromLock, _, err := h.dasCore.Daf().HexToScript(*req.addressHex)
+	//fromLock, _, err := h.dasCore.Daf().HexToScript(*req.addressHex)
+	//if err != nil {
+	//	apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "key info is invalid: "+err.Error())
+	//	return nil
+	//}
+
+	if req.addressHex.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
+		apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
+		return nil
+	}
+	if req.addressHex.DasAlgorithmId == common.DasAlgorithmIdAnyLock &&
+		req.addressHex.ParsedAddress.Script.CodeHash.Hex() == transaction.SECP256K1_BLAKE160_SIGHASH_ALL_TYPE_HASH {
+		apiResp.ApiRespErr(http_api.ApiCodeAnyLockAddressInvalid, "address invalid")
+		return nil
+	}
+	newOwnerLock := req.addressHex.ParsedAddress.Script
+
+	//pay address daslock
+	toCTA := core.ChainTypeAddress{
+		Type:    "blockchain",
+		KeyInfo: req.PayKeyInfo,
+	}
+	payAddrHex, err := toCTA.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeInvalidTargetAddress, "receiver address is invalid")
+		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
+	}
+	fromLock, _, err := h.dasCore.Daf().HexToScript(*payAddrHex)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "key info is invalid: "+err.Error())
 		return nil
@@ -141,8 +170,8 @@ func (h *HttpHandle) doAccountAuctionBid(ctx context.Context, req *ReqAuctionBid
 	var reqBuild reqBuildTx
 	reqBuild.Action = common.DasActionBidExpiredAccountAuction
 	reqBuild.Account = req.Account
-	reqBuild.ChainType = req.addressHex.ChainType
-	reqBuild.Address = req.addressHex.AddressHex
+	//reqBuild.ChainType = req.addressHex.ChainType
+	//reqBuild.Address = req.addressHex.AddressHex
 	reqBuild.Capacity = 0
 	reqBuild.AuctionInfo = AuctionInfo{
 		BasicPrice:   basicPrice,
@@ -188,6 +217,7 @@ func (h *HttpHandle) doAccountAuctionBid(ctx context.Context, req *ReqAuctionBid
 	p.Account = &acc
 	p.AmountDP = amountDP
 	p.FromLock = fromLock
+	p.NewOwnerLock = newOwnerLock
 	p.ToLock = toLock.Script
 	p.NormalCellLock = normalCellLock.Script
 	p.TimeCell = timeCell
@@ -212,6 +242,7 @@ type auctionBidParams struct {
 	Account        *tables.TableAccountInfo
 	DefaultRecord  []witness.Record
 	AmountDP       uint64
+	NewOwnerLock   *types.Script
 	FromLock       *types.Script
 	ToLock         *types.Script
 	NormalCellLock *types.Script
@@ -257,13 +288,16 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 		return nil, fmt.Errorf("GenActionDataWitness err: %s", err.Error())
 	}
 	txParams.Witnesses = append(txParams.Witnesses, actionWitness)
+
 	//-----acc witness
+	moleculeRefundLock := molecule.CkbScript2MoleculeScript(p.NewOwnerLock)
 	accWitness, accData, err := builder.GenWitness(&witness.AccountCellParam{
 		OldIndex:   0,
 		NewIndex:   0,
 		Action:     common.DasActionBidExpiredAccountAuction,
 		RegisterAt: uint64(p.TimeCell.Timestamp()),
 		Records:    p.DefaultRecord,
+		RefundLock: &moleculeRefundLock,
 	})
 	txParams.Witnesses = append(txParams.Witnesses, accWitness)
 
@@ -274,10 +308,10 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 
 	//output account cell
 	newOwnerAddrHex := core.DasAddressHex{
-		DasAlgorithmId: req.ChainType.ToDasAlgorithmId(true),
-		AddressHex:     req.Address,
+		DasAlgorithmId: common.DasAlgorithmIdEth712,
+		AddressHex:     common.BlackHoleAddress,
 		IsMulti:        false,
-		ChainType:      req.ChainType,
+		ChainType:      common.ChainTypeEth,
 	}
 	lockArgs, err := h.dasCore.Daf().HexToArgs(newOwnerAddrHex, newOwnerAddrHex)
 
@@ -296,11 +330,97 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	newAccData = append(newAccData, accData2...)
 	txParams.OutputsData = append(txParams.OutputsData, newAccData)
 
+	//----- output did cell start -----
+	input0 := txParams.Inputs[0]
+	indexDidCellFrom := uint64(0)
+	didCellParamList := []core.GenDidCellParam{
+		{
+			DidCellLock: p.NewOwnerLock,
+			Account:     builder.Account,
+			ExpireAt:    builder.ExpiredAt,
+		},
+	}
+	didCellList, outputsDataList, witnessList, err := h.dasCore.GenDidCellList(input0, indexDidCellFrom, didCellParamList)
+	if err != nil {
+		return nil, fmt.Errorf("GenDidCellList err: %s", err.Error())
+	}
+
+	txParams.LatestWitness = append(txParams.LatestWitness, witnessList[0])
+	txParams.Outputs = append(txParams.Outputs, didCellList[0])
+	txParams.OutputsData = append(txParams.OutputsData, outputsDataList[0])
+	contractDidCell, err := core.GetDasContractInfo(common.DasContractNameDidCellType)
+	if err != nil {
+		return nil, fmt.Errorf("GetDasContractInfo err: %s", err.Error())
+	}
+	indexDidCell := uint64(1)
+	didEntity := witness.DidEntity{
+		Target: witness.CellMeta{
+			Index:  indexDidCell,
+			Source: witness.SourceTypeOutputs,
+		},
+		ItemId:               witness.ItemIdWitnessDataDidCellV0,
+		DidCellWitnessDataV0: &witness.DidCellWitnessDataV0{Records: nil},
+	}
+	didCellWitness, err := didEntity.ObjToBys()
+	if err != nil {
+		return nil, fmt.Errorf("didEntity.ObjToBys err: %s", err.Error())
+	}
+	txParams.LatestWitness = append(txParams.LatestWitness, didCellWitness)
+	didCellArgs, err := common.GetDidCellTypeArgs(txParams.Inputs[0], indexDidCell)
+	if err != nil {
+		return nil, fmt.Errorf("common.GetDidCellTypeArgs err: %s", err.Error())
+	}
+	didCell := types.CellOutput{
+		Capacity: 0,
+		Lock:     p.NewOwnerLock, //ccc address lock
+		Type:     contractDidCell.ToScript(didCellArgs),
+	}
+	didCellDataLV := witness.DidCellDataLV{
+		Flag:        witness.DidCellDataLVFlag,
+		Version:     witness.DidCellDataLVVersion,
+		WitnessHash: didEntity.HashBys(),
+		ExpireAt:    builder.ExpiredAt,
+		Account:     builder.Account,
+	}
+	contentBys, err := didCellDataLV.ObjToBys()
+	if err != nil {
+		return nil, fmt.Errorf("contentBys.ObjToBys err: %s", err.Error())
+	}
+	sporeData := witness.SporeData{
+		ContentType: []byte{},
+		Content:     contentBys,
+		ClusterId:   witness.GetClusterId(h.dasCore.NetType()),
+	}
+	didCellDataBys, err := sporeData.ObjToBys()
+	if err != nil {
+		return nil, fmt.Errorf("sporeData.ObjToBys err: %s", err.Error())
+	}
+	didCellCapacity, err := h.dasCore.GetDidCellOccupiedCapacity(didCell.Lock, didCellDataLV.Account)
+	if err != nil {
+		return nil, fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
+	}
+	didCell.Capacity = didCellCapacity
+	txParams.Outputs = append(txParams.Outputs, &didCell)
+	txParams.OutputsData = append(txParams.OutputsData, didCellDataBys)
+	//----- output did cell end -----
+
+	//didcell storage fee
+	didCellCapacity, err = h.dasCore.GetDidCellOccupiedCapacity(p.NewOwnerLock, req.Account)
+	if err != nil {
+		err = fmt.Errorf("GetDidCellOccupiedCapacity err: %s", err.Error())
+		return nil, err
+	}
+	quote := quoteCell.Quote()
+	decQuote, _ := decimal.NewFromString(fmt.Sprintf("%d", quote))
+	decUsdRateBase := decimal.NewFromInt(common.UsdRateBase)
+	didCellAmount, _ := decimal.NewFromString(fmt.Sprintf("%d", didCellCapacity/common.OneCkb))
+	didCellAmount = didCellAmount.Mul(decQuote).DivRound(decUsdRateBase, 6)
+
 	//dp
 	liveCell, totalDP, totalCapacity, err := h.dasCore.GetDpCells(&core.ParamGetDpCells{
 		DasCache:           h.dasCache,
 		LockScript:         p.FromLock,
-		AmountNeed:         p.AmountDP,
+		AmountNeed:         p.AmountDP + didCellAmount.BigInt().Uint64(),
 		CurrentBlockNumber: 0,
 		SearchOrder:        indexer.SearchOrderAsc,
 	})
