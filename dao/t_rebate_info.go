@@ -7,8 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func (d *DbDao) GetMyRewards(chainType common.ChainType, address string, serviceType, rewardType, limit, offset int) (list []tables.TableRebateInfo, err error) {
-	err = d.parserDb.Where(" inviter_chain_type=? AND inviter_address=? AND service_type=? AND reward_type=? ", chainType, address, serviceType, rewardType).
+func (d *DbDao) GetMyRewards(chainType common.ChainType, address string, serviceType int, rewardType []int, limit, offset int) (list []tables.TableRebateInfo, err error) {
+	err = d.parserDb.Where(" inviter_chain_type=? AND inviter_address=? AND service_type=? AND reward_type IN(?) ", chainType, address, serviceType, rewardType).
 		Order("id DESC").Limit(limit).Offset(offset).Find(&list).Error
 	if err == gorm.ErrRecordNotFound {
 		err = nil
@@ -21,10 +21,10 @@ type RewardsCount struct {
 	TotalReward decimal.Decimal `json:"total_reward" gorm:"column:total_reward"`
 }
 
-func (d *DbDao) GetMyRewardsCount(chainType common.ChainType, address string, serviceType, rewardType int) (rc RewardsCount, err error) {
+func (d *DbDao) GetMyRewardsCount(chainType common.ChainType, address string, serviceType int, rewardType []int) (rc RewardsCount, err error) {
 	err = d.parserDb.Model(tables.TableRebateInfo{}).
 		Select(" count(*) AS count_number,SUM(reward) AS total_reward ").
-		Where(" inviter_chain_type=? AND inviter_address=? AND service_type=? AND reward_type=? ", chainType, address, serviceType, rewardType).
+		Where(" inviter_chain_type=? AND inviter_address=? AND service_type=? AND reward_type IN(?) ", chainType, address, serviceType, rewardType).
 		Find(&rc).Error
 	return
 }

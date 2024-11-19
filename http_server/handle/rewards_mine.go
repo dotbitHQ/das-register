@@ -87,7 +87,7 @@ func (h *HttpHandle) doRewardsMine(ctx context.Context, req *ReqRewardsMine, api
 	}
 	req.ChainType, req.Address = addressHex.ChainType, addressHex.AddressHex
 
-	list, err := h.dbDao.GetMyRewards(req.ChainType, req.Address, tables.ServiceTypeRegister, tables.RewardTypeInviter, req.GetLimit(), req.GetOffset())
+	list, err := h.dbDao.GetMyRewards(req.ChainType, req.Address, tables.ServiceTypeRegister, []int{tables.RewardTypeInviter, tables.RewardTypeChannel}, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search rewards err")
 		return fmt.Errorf("GetMyRewards err: %s", err.Error())
@@ -102,7 +102,7 @@ func (h *HttpHandle) doRewardsMine(ctx context.Context, req *ReqRewardsMine, api
 		})
 	}
 
-	rc, err := h.dbDao.GetMyRewardsCount(req.ChainType, req.Address, tables.ServiceTypeRegister, tables.RewardTypeInviter)
+	rc, err := h.dbDao.GetMyRewardsCount(req.ChainType, req.Address, tables.ServiceTypeRegister, []int{tables.RewardTypeInviter, tables.RewardTypeChannel})
 	if err != nil {
 		apiResp.ApiRespErr(api_code.ApiCodeDbError, "search rewards count err")
 		return fmt.Errorf("GetMyRewardsCount err: %s", err.Error())
