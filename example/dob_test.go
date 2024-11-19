@@ -155,6 +155,56 @@ func TestDobRewardsMine(t *testing.T) {
 }
 
 func TestDobTransactionList(t *testing.T) {
+	//bid_expired_account_dutch_auction
+	//confirm_proposal
+	//did_recycle
+	//recycle_expired_account
+	//transfer_account
+
+	//accept_offer
+	//buy_account
+	//cancel_account_sale
+	//cancel_offer
+	//make_offer
+	//offer_accepted
+	//order_refund
+	//sale_account
+	//start_account_sale
+	//transfer
+	//transfer_balance
+	//withdraw_from_wallet
+
+	//apply_register
+	//balance_deposit
+	//collect_sub_account_profit
+	//config_sub_account_custom_script
+	//consolidate_income
+	//create_approval
+	//create_sub_account
+	//cross_refund
+	//declare_reverse_record
+	//delay_approval
+	//did_edit_owner
+	//did_edit_records
+	//edit_account_sale
+	//edit_manager
+	//edit_records
+	//edit_sub_account
+	//enable_sub_account
+	//force_recover_account_status
+	//fulfill_approval
+	//lock_account_for_cross_chain
+	//offer_edit_add
+	//offer_edit_sub
+	//pre_register
+	//propose
+	//redeclare_reverse_record
+	//renew_account
+	//renew_sub_account
+	//retract_reverse_record
+	//revoke_approval
+	//unlock_account_for_cross_chain
+
 	req := handle.ReqTransactionList{
 		ChainTypeAddress: core.ChainTypeAddress{
 			Type: "blockchain",
@@ -200,5 +250,4 @@ func TestDobAccountRegister(t *testing.T) {
 
 }
 func TestDobAccountRenew(t *testing.T) {
-
 }
