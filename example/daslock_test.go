@@ -27,6 +27,13 @@ func TestDidCellDasLockEditOwner(t *testing.T) {
 			ReceiverAddress:  "ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqxjg99grmvgl0sljs3essy47l8tthsxp9sumhp20",
 		},
 	}
+
+	addrHexFrom, err := req.FormatChainTypeAddress(common.DasNetTypeTestnet2, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(addrHexFrom.AddressHex, addrHexFrom.DasAlgorithmId, addrHexFrom.AddressPayload)
+
 	url := TestUrl + "/did/cell/daslock/edit/owner"
 	var data handle.RespDidCellDasLockEditOwner
 	if err := doReq(url, req, &data); err != nil {

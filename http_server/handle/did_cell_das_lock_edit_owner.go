@@ -144,20 +144,26 @@ func (h *HttpHandle) doDidCellDasLockEditOwner(ctx context.Context, req *ReqDidC
 	} else if didAccount.Id == 0 {
 		apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, "did cell not exist")
 		return nil
-	} else if addrHexFrom.ParsedAddress == nil || bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHexFrom.ParsedAddress.Script.Args) != 0 {
+	} else if addrHexFrom.ParsedAddress != nil && bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHexFrom.ParsedAddress.Script.Args) != 0 {
 		apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
+		return nil
+	}
+	dasLock, _, err := h.dasCore.Daf().HexToScript(*addrHexFrom)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "HexToScript address invalid")
+		return nil
+	} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), dasLock.Args) != 0 {
+		apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "dasLock transfer account permission denied")
 		return nil
 	}
 	didCellOutPoint = didAccount.GetOutpoint()
 
 	// owner check
-	if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock && addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
-		// did cell -> did cell
-		editOwnerLock = addrHexTo.ParsedAddress.Script
-	} else {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid")
+	if addrHexTo.DasAlgorithmId != common.DasAlgorithmIdAnyLock {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "DasAlgorithmId address invalid")
 		return nil
 	}
+	editOwnerLock = addrHexTo.ParsedAddress.Script
 
 	parseSvrAddr, err := address.Parse(config.Cfg.Server.PayServerAddress)
 	if err != nil {
@@ -196,6 +202,7 @@ func (h *HttpHandle) doDidCellDasLockEditOwner(ctx context.Context, req *ReqDidC
 			resp.SignInfo.CKBTx = didCellTx
 		}
 	}
+	log.Info("doDidCellDasLockEditOwner:", toolib.JsonString(&resp))
 
 	apiResp.ApiRespOK(resp)
 	return nil
