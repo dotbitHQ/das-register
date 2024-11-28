@@ -79,17 +79,26 @@ func (h *HttpHandle) doDidCellDasLockEditOwner(ctx context.Context, req *ReqDidC
 	var resp RespDidCellDasLockEditOwner
 
 	req.Account = strings.ToLower(req.Account)
-	addrHexFrom, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
-	if err != nil {
+	if req.KeyInfo.CoinType != common.CoinTypeCKB {
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
-		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
-	}
-
-	switch addrHexFrom.DasAlgorithmId {
-	case common.DasAlgorithmIdBitcoin:
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
 		return nil
 	}
+	addrFrom, err := address.Parse(req.KeyInfo.Key)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
+		return nil
+	}
+	//addrHexFrom, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	//if err != nil {
+	//	apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
+	//	return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
+	//}
+	//
+	//switch addrHexFrom.DasAlgorithmId {
+	//case common.DasAlgorithmIdBitcoin:
+	//	apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
+	//	return nil
+	//}
 	toCTA := core.ChainTypeAddress{
 		Type: "blockchain",
 		KeyInfo: core.KeyInfo{
@@ -144,16 +153,8 @@ func (h *HttpHandle) doDidCellDasLockEditOwner(ctx context.Context, req *ReqDidC
 	} else if didAccount.Id == 0 {
 		apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, "did cell not exist")
 		return nil
-	} else if addrHexFrom.ParsedAddress != nil && bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHexFrom.ParsedAddress.Script.Args) != 0 {
+	} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), addrFrom.Script.Args) != 0 {
 		apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
-		return nil
-	}
-	dasLock, _, err := h.dasCore.Daf().HexToScript(*addrHexFrom)
-	if err != nil {
-		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "HexToScript address invalid")
-		return nil
-	} else if bytes.Compare(common.Hex2Bytes(didAccount.Args), dasLock.Args) != 0 {
-		apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "dasLock transfer account permission denied")
 		return nil
 	}
 	didCellOutPoint = didAccount.GetOutpoint()
@@ -188,8 +189,8 @@ func (h *HttpHandle) doDidCellDasLockEditOwner(ctx context.Context, req *ReqDidC
 	reqBuild := reqBuildTx{
 		OrderId:    "",
 		Action:     common.DasActionTransferAccount,
-		ChainType:  addrHexFrom.ChainType,
-		Address:    addrHexFrom.AddressHex,
+		ChainType:  common.ChainTypeAnyLock,
+		Address:    req.KeyInfo.Key,
 		Account:    req.Account,
 		EvmChainId: req.GetChainId(config.Cfg.Server.Net),
 	}
