@@ -71,6 +71,8 @@ func (h *HttpServer) initRouter() {
 		v1.POST("/did/cell/upgradable/list", api_code.DoMonitorLog("did-cell-upgradable-list"), cacheHandleShort, h.h.DidCellUpgradableList)
 		v1.POST("/did/cell/upgrade/price", api_code.DoMonitorLog("did-cell-upgrade-price"), cacheHandleShort, h.h.DidCellUpgradePrice)
 		v1.POST("/did/cell/recyclable/list", api_code.DoMonitorLog("did-cell-recyclable-list"), cacheHandleShort, h.h.DidCellRecyclableList)
+		//v1.POST("/did/cell/daslock/list", api_code.DoMonitorLog("did-cell-daslock-list"), cacheHandleShort, h.h.DidCellDasLockList)
+		v1.POST("/did/cell/daslock/edit/owner", api_code.DoMonitorLog("did-cell-daslock-edit-owner"), h.h.DidCellDasLockEditOwner)
 
 		// operate
 		//v1.POST("/reverse/declare", api_code.DoMonitorLog(api_code.MethodReverseDeclare), h.h.ReverseDeclare)

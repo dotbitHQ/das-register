@@ -109,3 +109,23 @@ func (d *DbDao) GetDidAccountByAccountIdWithoutArgs(accountId string) (info tabl
 		Order("expired_at DESC").Limit(1).Find(&info).Error
 	return
 }
+
+func (d *DbDao) GetDasLockDidCellList(args, codeHash string, limit, offset int) (list []tables.TableDidCellInfo, err error) {
+	expiredAt := tables.GetDidCellRecycleExpiredAt()
+
+	db := d.parserDb.Where("args=? AND lock_code_hash=? AND expired_at>=?",
+		args, codeHash, expiredAt)
+	err = db.Limit(limit).Offset(offset).Find(&list).Error
+	return
+}
+
+func (d *DbDao) GetDasLockDidCellListTotal(args, codeHash string) (count int64, err error) {
+	expiredAt := tables.GetDidCellRecycleExpiredAt()
+
+	db := d.parserDb.Model(tables.TableDidCellInfo{}).
+		Where("args=? AND lock_code_hash=? AND expired_at>=?",
+			args, codeHash, expiredAt)
+
+	err = db.Count(&count).Error
+	return
+}
