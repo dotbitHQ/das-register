@@ -15,7 +15,8 @@ func TestDidCellDasLockEditOwner(t *testing.T) {
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
 				CoinType: common.CoinTypeCKB,
-				Key:      "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qggq7ljq22xat77lgqumuvm685cytdl54du4qyq00eq99rw4l005qwd7xdar6vz9kl62k72s2gs3zc",
+				Key:      "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qgrzk3ntzys3nuwmvnar2lrs54l9pat6wy3qv26xdvgjzx03mdj05dtuwzjhu5840fcjyg4hdja",
+				//Key:      "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qggq7ljq22xat77lgqumuvm685cytdl54du4qyq00eq99rw4l005qwd7xdar6vz9kl62k72s2gs3zc",
 			},
 		},
 		Account: "2023100802.bit",
