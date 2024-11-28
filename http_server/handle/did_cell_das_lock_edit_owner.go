@@ -1,14 +1,23 @@
 package handle
 
 import (
+	"bytes"
 	"context"
+	"das_register_server/config"
+	"das_register_server/internal"
+	"das_register_server/tables"
 	"encoding/json"
+	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
-	api_code "github.com/dotbitHQ/das-lib/http_api"
+	"github.com/dotbitHQ/das-lib/http_api"
+	"github.com/dotbitHQ/das-lib/txbuilder"
 	"github.com/gin-gonic/gin"
+	"github.com/nervosnetwork/ckb-sdk-go/address"
+	"github.com/nervosnetwork/ckb-sdk-go/types"
 	"github.com/scorpiotzh/toolib"
 	"net/http"
+	"strings"
 )
 
 type ReqDidCellDasLockEditOwner struct {
@@ -21,18 +30,19 @@ type ReqDidCellDasLockEditOwner struct {
 }
 
 type RespDidCellDasLockEditOwner struct {
+	SignInfo
 }
 
-func (h *HttpHandle) RpcDidCellDasLockEditOwner(p json.RawMessage, apiResp *api_code.ApiResp) {
+func (h *HttpHandle) RpcDidCellDasLockEditOwner(p json.RawMessage, apiResp *http_api.ApiResp) {
 	var req []ReqDidCellDasLockEditOwner
 	err := json.Unmarshal(p, &req)
 	if err != nil {
 		log.Error("json.Unmarshal err:", err.Error())
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		return
 	} else if len(req) == 0 {
 		log.Error("len(req) is 0")
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		return
 	}
 
@@ -46,13 +56,13 @@ func (h *HttpHandle) DidCellDasLockEditOwner(ctx *gin.Context) {
 		funcName = "DidCellDasLockEditOwner"
 		clientIp = GetClientIp(ctx)
 		req      ReqDidCellDasLockEditOwner
-		apiResp  api_code.ApiResp
+		apiResp  http_api.ApiResp
 		err      error
 	)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		log.Error("ShouldBindJSON err: ", err.Error(), funcName, clientIp, ctx)
-		apiResp.ApiRespErr(api_code.ApiCodeParamsInvalid, "params invalid")
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params invalid")
 		ctx.JSON(http.StatusOK, apiResp)
 		return
 	}
@@ -65,8 +75,127 @@ func (h *HttpHandle) DidCellDasLockEditOwner(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, apiResp)
 }
 
-func (h *HttpHandle) doDidCellDasLockEditOwner(ctx context.Context, req *ReqDidCellDasLockEditOwner, apiResp *api_code.ApiResp) error {
+func (h *HttpHandle) doDidCellDasLockEditOwner(ctx context.Context, req *ReqDidCellDasLockEditOwner, apiResp *http_api.ApiResp) error {
 	var resp RespDidCellDasLockEditOwner
+
+	req.Account = strings.ToLower(req.Account)
+	addrHexFrom, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
+		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
+	}
+
+	switch addrHexFrom.DasAlgorithmId {
+	case common.DasAlgorithmIdBitcoin:
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address invalid")
+		return nil
+	}
+	toCTA := core.ChainTypeAddress{
+		Type: "blockchain",
+		KeyInfo: core.KeyInfo{
+			CoinType: req.RawParam.ReceiverCoinType,
+			Key:      req.RawParam.ReceiverAddress,
+		},
+	}
+	addrHexTo, err := toCTA.FormatChainTypeAddress(config.Cfg.Server.Net, true)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeInvalidTargetAddress, "receiver address is invalid")
+		return fmt.Errorf("FormatChainTypeAddress err: %s", err.Error())
+	}
+
+	accountId := common.Bytes2Hex(common.GetAccountIdByAccount(req.Account))
+	if strings.EqualFold(req.KeyInfo.Key, req.RawParam.ReceiverAddress) {
+		apiResp.ApiRespErr(http_api.ApiCodeSameLock, "same address")
+		return nil
+	}
+	if err := h.checkSystemUpgrade(apiResp); err != nil {
+		return fmt.Errorf("checkSystemUpgrade err: %s", err.Error())
+	}
+	if ok := internal.IsLatestBlockNumber(config.Cfg.Server.ParserUrl); !ok {
+		apiResp.ApiRespErr(http_api.ApiCodeSyncBlockNumber, "sync block number")
+		return fmt.Errorf("sync block number")
+	}
+
+	var didCellOutPoint *types.OutPoint
+	var editOwnerLock, normalCellScript *types.Script
+
+	acc, err := h.dbDao.GetAccountInfoByAccountId(accountId)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get account info")
+		return fmt.Errorf("GetAccountInfoByAccountId err: %s", err.Error())
+	} else if acc.Id == 0 {
+		apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, "account not exist")
+		return nil
+	} else if acc.IsExpired() {
+		apiResp.ApiRespErr(http_api.ApiCodeAccountIsExpired, "account expired")
+		return nil
+	} else if acc.ParentAccountId != "" {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "not support sub account")
+		return nil
+	}
+	if acc.Status != tables.AccountStatusOnUpgrade {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "account is not a dob")
+		return nil
+	}
+	didAccount, err := h.dbDao.GetDidAccountByAccountIdWithoutArgs(accountId)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeDbError, "Failed to get did cell info")
+		return fmt.Errorf("GetDidAccountByAccountId err: %s", err.Error())
+	} else if didAccount.Id == 0 {
+		apiResp.ApiRespErr(http_api.ApiCodeAccountNotExist, "did cell not exist")
+		return nil
+	} else if addrHexFrom.ParsedAddress == nil || bytes.Compare(common.Hex2Bytes(didAccount.Args), addrHexFrom.ParsedAddress.Script.Args) != 0 {
+		apiResp.ApiRespErr(http_api.ApiCodeNoAccountPermissions, "transfer account permission denied")
+		return nil
+	}
+	didCellOutPoint = didAccount.GetOutpoint()
+
+	// owner check
+	if addrHexFrom.DasAlgorithmId == common.DasAlgorithmIdAnyLock && addrHexTo.DasAlgorithmId == common.DasAlgorithmIdAnyLock {
+		// did cell -> did cell
+		editOwnerLock = addrHexTo.ParsedAddress.Script
+	} else {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "params is invalid")
+		return nil
+	}
+
+	parseSvrAddr, err := address.Parse(config.Cfg.Server.PayServerAddress)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, err.Error())
+		return fmt.Errorf("address.Parse err: %s", err.Error())
+	}
+	normalCellScript = parseSvrAddr.Script
+	txParams, err := txbuilder.BuildDidCellTx(txbuilder.DidCellTxParams{
+		DasCore:             h.dasCore,
+		DasCache:            h.dasCache,
+		Action:              common.DidCellActionEditOwner,
+		DidCellOutPoint:     didCellOutPoint,
+		AccountCellOutPoint: nil,
+		EditOwnerLock:       editOwnerLock,
+		NormalCellScript:    normalCellScript,
+	})
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeError500, "Failed to build tx")
+		return fmt.Errorf("BuildDidCellTx err: %s", err.Error())
+	}
+
+	reqBuild := reqBuildTx{
+		OrderId:    "",
+		Action:     common.DasActionTransferAccount,
+		ChainType:  addrHexFrom.ChainType,
+		Address:    addrHexFrom.AddressHex,
+		Account:    req.Account,
+		EvmChainId: req.GetChainId(config.Cfg.Server.Net),
+	}
+	if didCellTx, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
+		checkBuildTxErr(err, apiResp)
+		return fmt.Errorf("buildTx: %s", err.Error())
+	} else {
+		resp.SignInfo = *si
+		if acc.Status == tables.AccountStatusOnUpgrade {
+			resp.SignInfo.CKBTx = didCellTx
+		}
+	}
 
 	apiResp.ApiRespOK(resp)
 	return nil
