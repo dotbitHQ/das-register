@@ -194,14 +194,14 @@ func (h *HttpHandle) doDidCellDasLockEditOwner(ctx context.Context, req *ReqDidC
 		Account:    req.Account,
 		EvmChainId: req.GetChainId(config.Cfg.Server.Net),
 	}
-	if didCellTx, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
+	if _, si, err := h.buildTx(ctx, &reqBuild, txParams); err != nil {
 		checkBuildTxErr(err, apiResp)
 		return fmt.Errorf("buildTx: %s", err.Error())
 	} else {
 		resp.SignInfo = *si
-		if acc.Status == tables.AccountStatusOnUpgrade {
-			resp.SignInfo.CKBTx = didCellTx
-		}
+		//if acc.Status == tables.AccountStatusOnUpgrade {
+		//	resp.SignInfo.CKBTx = didCellTx
+		//}
 	}
 	log.Info("doDidCellDasLockEditOwner:", toolib.JsonString(&resp))
 
