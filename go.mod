@@ -3,7 +3,7 @@ module das_register_server
 go 1.18
 
 require (
-	github.com/dotbitHQ/das-lib v1.2.1-0.20241129033859-b830cf0f6c5c
+	github.com/dotbitHQ/das-lib v1.2.1-0.20241129073649-57eb578249bd
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/getsentry/sentry-go v0.25.0
