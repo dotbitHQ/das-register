@@ -314,7 +314,7 @@ func TestDidCellUpgradePrice(t *testing.T) {
 }
 
 func doSig(sigInfo *handle.SignInfo) error {
-	private := ""
+	private := "69fc8fe3e30f6cad2f1dbeec65dcf308f250af0d3ba2663d8b51fae8fcd67e54"
 	chainId := 17000
 	var err error
 	for i, v := range sigInfo.SignList {
