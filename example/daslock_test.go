@@ -43,14 +43,14 @@ func TestDidCellDasLockEditOwner(t *testing.T) {
 	}
 	fmt.Println(toolib.JsonString(&data))
 	fmt.Println("===========================")
-	//fmt.Println(data.CKBTx)
+	fmt.Println(data.CKBTx)
 
-	//if err := doSig(&data.SignInfo); err != nil {
-	//	t.Fatal(err)
-	//}
-	//fmt.Println(toolib.JsonString(&data))
-	//fmt.Println("===========================")
-	//if err := sendTx2(data.SignInfo); err != nil {
-	//	t.Fatal(err)
-	//}
+	if err := doSig(&data.SignInfo); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(toolib.JsonString(&data))
+	fmt.Println("===========================")
+	if err := sendTx2(data.SignInfo); err != nil {
+		t.Fatal(err)
+	}
 }
