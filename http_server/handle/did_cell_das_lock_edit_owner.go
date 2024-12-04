@@ -88,6 +88,19 @@ func (h *HttpHandle) doDidCellDasLockEditOwner(ctx context.Context, req *ReqDidC
 		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
 		return nil
 	}
+	formHex, _, err := h.dasCore.Daf().ScriptToHex(addrFrom.Script)
+	if err != nil {
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
+		return nil
+	}
+	switch formHex.DasAlgorithmId {
+	case common.DasAlgorithmIdEth, common.DasAlgorithmIdTron,
+		common.DasAlgorithmIdEth712, common.DasAlgorithmIdWebauthn:
+	default:
+		apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
+		return nil
+	}
+
 	//addrHexFrom, err := req.FormatChainTypeAddress(config.Cfg.Server.Net, true)
 	//if err != nil {
 	//	apiResp.ApiRespErr(http_api.ApiCodeParamsInvalid, "address is invalid")
@@ -189,8 +202,8 @@ func (h *HttpHandle) doDidCellDasLockEditOwner(ctx context.Context, req *ReqDidC
 	reqBuild := reqBuildTx{
 		OrderId:    "",
 		Action:     common.DasActionTransferAccount,
-		ChainType:  common.ChainTypeAnyLock,
-		Address:    req.KeyInfo.Key,
+		ChainType:  formHex.ChainType,
+		Address:    formHex.AddressHex,
 		Account:    req.Account,
 		EvmChainId: req.GetChainId(config.Cfg.Server.Net),
 	}

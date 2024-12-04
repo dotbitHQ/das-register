@@ -15,12 +15,12 @@ func TestDidCellDasLockEditOwner(t *testing.T) {
 			Type: "blockchain",
 			KeyInfo: core.KeyInfo{
 				CoinType: common.CoinTypeCKB,
-				//Key:      "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qgrzk3ntzys3nuwmvnar2lrs54l9pat6wy3qv26xdvgjzx03mdj05dtuwzjhu5840fcjyg4hdja",
-				Key: "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qg9zk3ntzys3nuwmvnar2lrs54l9pat6wy3q526xdvgjzx03mdj05dtuwzjhu5840fcjy2c9u8d",
+				Key:      "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qgrzk3ntzys3nuwmvnar2lrs54l9pat6wy3qv26xdvgjzx03mdj05dtuwzjhu5840fcjyg4hdja",
+				//Key: "ckt1qqexmutxu0c2jq9q4msy8cc6fh4q7q02xvr7dc347zw3ks3qka0m6qg9zk3ntzys3nuwmvnar2lrs54l9pat6wy3q526xdvgjzx03mdj05dtuwzjhu5840fcjy2c9u8d",
 			},
 		},
-		//Account: "2023100802.bit",
-		Account: "20240620.bit",
+		Account: "2023100802.bit",
+		//Account: "20240620.bit",
 		RawParam: struct {
 			ReceiverCoinType common.CoinType `json:"receiver_coin_type"`
 			ReceiverAddress  string          `json:"receiver_address"`
@@ -41,9 +41,9 @@ func TestDidCellDasLockEditOwner(t *testing.T) {
 	if err := doReq(url, req, &data); err != nil {
 		t.Fatal(err)
 	}
-	//fmt.Println(toolib.JsonString(&data))
+	fmt.Println(toolib.JsonString(&data))
 	fmt.Println("===========================")
-	//fmt.Println(data.CKBTx)
+	fmt.Println(data.CKBTx)
 
 	if err := doSig(&data.SignInfo); err != nil {
 		t.Fatal(err)
