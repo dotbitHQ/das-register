@@ -252,6 +252,14 @@ func (h *HttpHandle) buildAuctionBidTx(req *reqBuildTx, p *auctionBidParams) (*t
 	}
 	accCellCapacity := accTx.Transaction.Outputs[builder.Index].Capacity
 	oldAccOwnerArgs := accTx.Transaction.Outputs[builder.Index].Lock.Args
+	oldOwnerHex, _, err := h.dasCore.Daf().ArgsToHex(oldAccOwnerArgs)
+	if err != nil {
+		return nil, fmt.Errorf("ArgsToHex err: %s", err.Error())
+	}
+	oldAccOwnerArgs, err = h.dasCore.Daf().HexToArgs(oldOwnerHex, oldOwnerHex)
+	if err != nil {
+		return nil, fmt.Errorf("HexToArgs err: %s", err.Error())
+	}
 
 	actionWitness, err := witness.GenActionDataWitness(common.DasActionBidExpiredAccountAuction, nil)
 	if err != nil {
