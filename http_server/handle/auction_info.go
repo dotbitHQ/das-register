@@ -96,7 +96,7 @@ func (h *HttpHandle) doGetAccountAuctionInfo(ctx context.Context, req *ReqAccoun
 	}
 
 	//search bid status of a account
-	createTime := time.Now().Unix() - 365*86400
+	createTime := time.Now().Unix() - 30*86400
 	list, err := h.dbDao.GetAuctionOrderByAccount(req.Account, createTime)
 	if err != nil {
 		apiResp.ApiRespErr(http_api.ApiCodeDbError, "db error")
