@@ -150,6 +150,8 @@ github.com/dop251/goja v0.0.0-20211011172007-d99e4b8cbf48/go.mod h1:R9ET47fwRVRP
 github.com/dop251/goja_nodejs v0.0.0-20210225215109-d91c329300e7/go.mod h1:hn7BA7c8pLvoGndExHudxTDKZ84Pyvv+90pbBjbTz0Y=
 github.com/dotbitHQ/das-lib v1.2.1-0.20250122014940-55d02a41efc3 h1:2W7Pky+yEPYyJBQG5ZEIqMWpZ8UDU1LCv7QhuwenKR8=
 github.com/dotbitHQ/das-lib v1.2.1-0.20250122014940-55d02a41efc3/go.mod h1:XaVxHy7B8cN70gsDa6FhtbJFs3bnAYMo2sShodQC4G8=
+github.com/dotbitHQ/das-lib v1.2.1-0.20250919152318-f364f10b9ca9 h1:/hvMk2hL1gFPntzgtzyCETc7uIrxm4SswNPdIVAyFMk=
+github.com/dotbitHQ/das-lib v1.2.1-0.20250919152318-f364f10b9ca9/go.mod h1:XaVxHy7B8cN70gsDa6FhtbJFs3bnAYMo2sShodQC4G8=
 github.com/eclipse/paho.mqtt.golang v1.2.0/go.mod h1:H9keYFcgq3Qr5OUJm/JZI/i6U7joQ8SYLhZwfeOo6Ts=
 github.com/edsrzf/mmap-go v1.0.0 h1:CEBF7HpRnUCSJgGUb5h1Gm7e3VkmVDrR8lvWVLtrOFw=
 github.com/edsrzf/mmap-go v1.0.0/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
