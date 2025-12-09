@@ -167,6 +167,11 @@ func (h *HttpHandle) tokenRecommend(tokens []string) (recommendTokens [][]string
 }
 func (h *HttpHandle) separateToken(acc string) (tokens []string, separateTag string, err error) {
 
+	if h.es == nil {
+		err = fmt.Errorf("elasticsearch client is not initialized")
+		return tokens, separateTag, err
+	}
+
 	res, err := h.es.TermQueryAcc(acc)
 	if err != nil {
 		err = fmt.Errorf("TermQuery err: %s", err.Error())
