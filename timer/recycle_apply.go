@@ -2,6 +2,7 @@ package timer
 
 import (
 	"das_register_server/config"
+	"das_register_server/internal"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -51,7 +52,7 @@ func (t *TxTimer) doRecycleApply() error {
 		return nil
 	}
 
-	tipBlockNumber, err := t.dasCore.Client().GetTipBlockNumber(t.ctx)
+	tipBlockNumber, err := internal.GetTipBlockNumberWithRetry(t.ctx, t.dasCore.Client(), internal.DefaultRetryConfig())
 	if err != nil {
 		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
 	}

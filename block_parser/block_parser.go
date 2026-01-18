@@ -14,6 +14,7 @@ import (
 	"github.com/dotbitHQ/das-lib/http_api/logger"
 	"github.com/dotbitHQ/das-lib/witness"
 	"github.com/nervosnetwork/ckb-sdk-go/types"
+	"math"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -34,9 +35,28 @@ type BlockParser struct {
 	Wg                   *sync.WaitGroup
 }
 
+// getTipBlockNumberWithRetry wraps GetTipBlockNumber with retry logic and exponential backoff
+func (b *BlockParser) getTipBlockNumberWithRetry(maxRetries int) (uint64, error) {
+	var lastErr error
+	for i := 0; i < maxRetries; i++ {
+		blockNumber, err := b.DasCore.Client().GetTipBlockNumber(b.Ctx)
+		if err == nil {
+			return blockNumber, nil
+		}
+		lastErr = err
+		backoffSeconds := math.Pow(2, float64(i))
+		if backoffSeconds > 30 {
+			backoffSeconds = 30 // max backoff 30 seconds
+		}
+		log.Warn("GetTipBlockNumber retry", i+1, "/", maxRetries, "err:", err.Error(), "backoff:", backoffSeconds, "s")
+		time.Sleep(time.Duration(backoffSeconds) * time.Second)
+	}
+	return 0, fmt.Errorf("GetTipBlockNumber failed after %d retries: %s", maxRetries, lastErr.Error())
+}
+
 func (b *BlockParser) Run() error {
 	b.registerTransactionHandle()
-	currentBlockNumber, err := b.DasCore.Client().GetTipBlockNumber(b.Ctx)
+	currentBlockNumber, err := b.getTipBlockNumberWithRetry(5)
 	if err != nil {
 		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
 	}
@@ -51,9 +71,11 @@ func (b *BlockParser) Run() error {
 		for {
 			select {
 			default:
-				latestBlockNumber, err := b.DasCore.Client().GetTipBlockNumber(b.Ctx)
+				latestBlockNumber, err := b.getTipBlockNumberWithRetry(3)
 				if err != nil {
 					log.Error("GetTipBlockNumber err:", err.Error())
+					time.Sleep(time.Second * 5) // backoff before next attempt
+					continue
 				} else {
 					if b.ConcurrencyNum > 1 && b.CurrentBlockNumber < (latestBlockNumber-b.ConfirmNum-b.ConcurrencyNum) {
 						nowTime := time.Now()

@@ -3,6 +3,7 @@ package timer
 import (
 	"bytes"
 	"das_register_server/config"
+	"das_register_server/internal"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -27,7 +28,7 @@ type preCellRecycleParams struct {
 }
 
 func (t *TxTimer) getPreCellRecycleParams() (*preCellRecycleParams, error) {
-	tipBlockNumber, err := t.dasCore.Client().GetTipBlockNumber(t.ctx)
+	tipBlockNumber, err := internal.GetTipBlockNumberWithRetry(t.ctx, t.dasCore.Client(), internal.DefaultRetryConfig())
 	if err != nil {
 		return nil, fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
 	}
@@ -103,7 +104,7 @@ func (t *TxTimer) getPreCellByMedianTime(p *preCellRecycleParams, blockRange, ti
 
 	var list []preCellRecycleInfo
 	for i, v := range liveCells.Objects {
-		numberBlock, err := t.dasCore.Client().GetBlockByNumber(t.ctx, v.BlockNumber)
+		numberBlock, err := internal.GetBlockByNumberWithRetry(t.ctx, t.dasCore.Client(), v.BlockNumber, internal.DefaultRetryConfig())
 		if err != nil {
 			return nil, fmt.Errorf("GetBlockByNumber err: %s", err.Error())
 		}
@@ -112,7 +113,7 @@ func (t *TxTimer) getPreCellByMedianTime(p *preCellRecycleParams, blockRange, ti
 			break
 		}
 
-		res, err := t.dasCore.Client().GetTransaction(t.ctx, v.OutPoint.TxHash)
+		res, err := internal.GetTransactionWithRetry(t.ctx, t.dasCore.Client(), v.OutPoint.TxHash, internal.DefaultRetryConfig())
 		if err != nil {
 			return nil, fmt.Errorf("GetTransaction err: %s", err.Error())
 		}

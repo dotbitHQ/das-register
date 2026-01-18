@@ -2,6 +2,7 @@ package timer
 
 import (
 	"das_register_server/config"
+	"das_register_server/internal"
 	"fmt"
 	"github.com/dotbitHQ/das-lib/common"
 	"github.com/dotbitHQ/das-lib/core"
@@ -38,7 +39,7 @@ func (t *TxTimer) doRefundApply() error {
 		applyMaxWaitingBlockNumber = 8640
 	}
 
-	blockNumber, err := t.dasCore.Client().GetTipBlockNumber(t.ctx)
+	blockNumber, err := internal.GetTipBlockNumberWithRetry(t.ctx, t.dasCore.Client(), internal.DefaultRetryConfig())
 	if err != nil {
 		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
 	}
@@ -151,7 +152,7 @@ func (t *TxTimer) doRefundPre() error {
 		return fmt.Errorf("GetDasContractInfo err: %s", err.Error())
 	}
 
-	blockNumber, err := t.dasCore.Client().GetTipBlockNumber(t.ctx)
+	blockNumber, err := internal.GetTipBlockNumberWithRetry(t.ctx, t.dasCore.Client(), internal.DefaultRetryConfig())
 	if err != nil {
 		return fmt.Errorf("GetTipBlockNumber err: %s", err.Error())
 	}
@@ -182,7 +183,7 @@ func (t *TxTimer) doRefundPre() error {
 
 	for _, v := range liveCells.Objects {
 		preBlockNumber = v.BlockNumber
-		res, err := t.dasCore.Client().GetTransaction(t.ctx, v.OutPoint.TxHash)
+		res, err := internal.GetTransactionWithRetry(t.ctx, t.dasCore.Client(), v.OutPoint.TxHash, internal.DefaultRetryConfig())
 		if err != nil {
 			return fmt.Errorf("GetTransaction err: %s", err.Error())
 		}
