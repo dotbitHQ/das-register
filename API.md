@@ -2315,7 +2315,7 @@ curl --location 'http://127.0.0.1:8120/v1/account/auction/bid' \
     "type":"blockchain",
     "key_info":{
         "coin_type":"60",
-        "key":"0xd437b8e9cA16Fce24bF3258760c3567214213C5A"
+        "key":"0x0000000000000000000000000000000000000000"
     }
 }'
 ```
